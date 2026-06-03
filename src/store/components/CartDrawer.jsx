@@ -188,6 +188,9 @@ export default function CartDrawer({ store = 'sale' }) {
                       )}
                       <div className="le-cart-line-info">
                         <div className="le-cart-line-title">{item.title}</div>
+                        {item.optionSummary && (
+                          <div className="le-cart-line-options">{item.optionSummary}</div>
+                        )}
                         <div className="le-cart-line-price">{fmt(item.unitPrice)}</div>
                         <div className="le-cart-line-controls">
                           <button

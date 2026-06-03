@@ -1,183 +1,370 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSquareCard } from '../../hooks/useSquareCard';
+import { useSquareExpressPay } from '../../hooks/useSquareExpressPay';
+import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
+import { trackEvent } from '../../lib/trackEvent';
 import { useCart } from '../cart/CartContext';
 import '../../styles/le-checkout.css';
 
-const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
+const fmt = (cents) => `$${((Number(cents) || 0) / 100).toFixed(2)}`;
+const PROFILE_STORAGE_KEY = 'le:storeCheckoutProfile';
+
+const blankAddress = { line1: '', line2: '', city: '', state: 'MN', postal: '' };
+const blankProfile = {
+  customer: { name: '', email: '', phone: '' },
+  pickup: true,
+  address: blankAddress,
+  deliveryInstructions: '',
+};
+
+const normalizePhone = (value) => String(value || '').replace(/\D/g, '').slice(0, 10);
+const formatPhone = (value) => {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
+const loadProfile = () => {
+  if (typeof window === 'undefined') return blankProfile;
+  try {
+    const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!raw) return blankProfile;
+    const parsed = JSON.parse(raw);
+    return {
+      customer: {
+        name: parsed?.customer?.name || '',
+        email: parsed?.customer?.email || '',
+        phone: formatPhone(parsed?.customer?.phone || ''),
+      },
+      pickup: parsed?.pickup !== false,
+      address: { ...blankAddress, ...(parsed?.address || {}) },
+      deliveryInstructions: parsed?.deliveryInstructions || '',
+    };
+  } catch (_) {
+    return blankProfile;
+  }
+};
+
+const buildCartPayload = (items) => items.map((item) => ({
+  productId: item.productId,
+  variationId: item.variationId || null,
+  qty: item.qty,
+  addOnIndices: item.addOnIndices || [],
+  dairyFree: !!item.dairyFree,
+  title: item.title,
+}));
+
+function useServerPricing(items, localSubtotal) {
+  const [pricing, setPricing] = useState({
+    loading: false,
+    error: '',
+    subtotal: null,
+    lines: [],
+    pricedAt: null,
+  });
+
+  const payloadKey = useMemo(() => JSON.stringify(buildCartPayload(items)), [items]);
+
+  useEffect(() => {
+    if (!items.length) {
+      setPricing({ loading: false, error: '', subtotal: null, lines: [], pricedAt: null });
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setPricing((current) => ({ ...current, loading: true, error: '' }));
+
+    fetch('/api/store/price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: buildCartPayload(items) }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data?.error || 'Unable to confirm order total.');
+        setPricing({
+          loading: false,
+          error: '',
+          subtotal: Number.isInteger(data?.subtotal) ? data.subtotal : null,
+          lines: Array.isArray(data?.lines) ? data.lines : [],
+          pricedAt: data?.pricedAt || null,
+        });
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        setPricing({
+          loading: false,
+          error: error?.message || 'Unable to confirm order total.',
+          subtotal: null,
+          lines: [],
+          pricedAt: null,
+        });
+      });
+
+    return () => controller.abort();
+  }, [payloadKey, items]);
+
+  return {
+    ...pricing,
+    subtotal: pricing.subtotal ?? localSubtotal,
+    confirmed: pricing.subtotal !== null && !pricing.error,
+  };
+}
 
 export default function CheckoutPanel({ store = 'sale', onBack }) {
   const { items, subtotal, open, closeCart, clear } = useCart();
-  const [processing, setProcessing] = useState(false);
+  const loadedProfile = useMemo(loadProfile, []);
+  const [customer, setCustomer] = useState(loadedProfile.customer);
+  const [pickup, setPickup] = useState(loadedProfile.pickup);
+  const [address, setAddress] = useState(loadedProfile.address);
+  const [deliveryInstructions, setDeliveryInstructions] = useState(loadedProfile.deliveryInstructions);
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [pickup, setPickup] = useState(true);
-  const [address, setAddress] = useState({ line1: '', line2: '', city: '', state: '', postal: '' });
-  const [orderResult, setOrderResult] = useState(null); // { name, email, pickup }
-  const cardRef = React.useRef(null);
-  const cardElRef = React.useRef(null);
-  // Prevents re-initialization if items change while checkout is already open.
-  const sqInitRef = React.useRef(false);
+  const [orderResult, setOrderResult] = useState(null);
+  const checkoutAttemptRef = useRef('');
+  const attemptStorageKey = `le:checkoutAttempt:store:${store}`;
 
-  // Load Square Web Payments SDK once when the panel opens.
-  // Depends only on `open` — not on `items` — to avoid tearing down and
-  // re-attaching the card form every time the cart contents change.
-  React.useEffect(() => {
-    const appId = import.meta?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
-    const locationId = import.meta?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
-    if (!open) return;
-    if (!items || items.length === 0) return;
-    // Already initialised for this open session — do not re-attach.
-    if (sqInitRef.current) return;
+  const pricing = useServerPricing(items, subtotal);
+  const amountCents = pricing.subtotal;
+  const enabled = open && items.length > 0 && status !== 'success';
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
+    '#store-card-container',
+    enabled,
+    []
+  );
+
+  const updateCustomer = useCallback((patch) => {
+    setCustomer((current) => ({ ...current, ...patch }));
+    if (status !== 'idle') {
+      setStatus('idle');
+      setError('');
+    }
+  }, [status]);
+
+  const updateAddress = useCallback((patch) => {
+    setAddress((current) => ({ ...current, ...patch }));
+    if (status !== 'idle') {
+      setStatus('idle');
+      setError('');
+    }
+  }, [status]);
+
+  const resolveCheckoutAttemptId = useCallback(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, [attemptStorageKey]);
+
+  const clearCheckoutAttempt = useCallback(() => {
+    checkoutAttemptRef.current = '';
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, [attemptStorageKey]);
+
+  const canSubmit = useCallback((requireCard = true) => {
+    if (!items.length) return false;
+    if (!customer.name.trim()) return false;
+    if (!isValidEmail(customer.email)) return false;
+    if (customer.phone && normalizePhone(customer.phone).length < 10) return false;
+    if (!pickup) {
+      if (!address.line1.trim() || !address.city.trim()) return false;
+      if (!address.state.trim() || address.postal.trim().replace(/\D/g, '').length < 5) return false;
+    }
+    if (requireCard && !cardLoaded) return false;
+    return true;
+  }, [address, cardLoaded, customer, items.length, pickup]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
+        customer,
+        pickup,
+        address,
+        deliveryInstructions,
+      }));
+    } catch (_) {
+      // Storage is a convenience only.
+    }
+  }, [address, customer, deliveryInstructions, pickup]);
+
+  useEffect(() => {
+    if (!open) {
+      setStatus('idle');
+      setError('');
+      setOrderResult(null);
+      clearCheckoutAttempt();
+      reset();
+    }
+  }, [clearCheckoutAttempt, open, reset]);
+
+  const verificationDetails = useMemo(() => {
+    const nameParts = customer.name.trim().split(/\s+/).filter(Boolean);
+    return {
+      amount: (amountCents / 100).toFixed(2),
+      currencyCode: 'USD',
+      intent: 'CHARGE',
+      billingContact: {
+        givenName: nameParts[0] || undefined,
+        familyName: nameParts.slice(1).join(' ') || undefined,
+        email: customer.email.trim() || undefined,
+        phone: normalizePhone(customer.phone) || undefined,
+        addressLines: pickup ? undefined : [address.line1, address.line2].filter(Boolean),
+        city: pickup ? undefined : address.city || undefined,
+        state: pickup ? undefined : address.state || undefined,
+        postalCode: pickup ? undefined : address.postal || undefined,
+        countryCode: 'US',
+      },
+    };
+  }, [address, amountCents, customer, pickup]);
+
+  const submitCheckout = useCallback(async ({ token, verificationToken, method }) => {
+    const checkoutAttemptId = resolveCheckoutAttemptId();
+    const response = await fetch('/api/store/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: {
+          name: customer.name.trim(),
+          email: customer.email.trim(),
+          phone: formatPhone(customer.phone),
+        },
+        pickup,
+        address: pickup ? null : address,
+        deliveryInstructions,
+        items: buildCartPayload(items),
+        token,
+        verificationToken,
+        checkoutAttemptId,
+        store,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data?.error || 'Checkout failed.');
+    trackEvent('order.placed', {
+      store,
+      method,
+      sessionId: checkoutAttemptId,
+      paymentId: data?.paymentId,
+      amountCents: data?.amountCents || amountCents,
+    });
+    setOrderResult({
+      name: customer.name.trim(),
+      email: customer.email.trim(),
+      pickup,
+      amountCents: data?.amountCents || amountCents,
+      paymentId: data?.paymentId || '',
+    });
+    clear();
+    setStatus('success');
+    clearCheckoutAttempt();
+  }, [
+    address,
+    amountCents,
+    clear,
+    clearCheckoutAttempt,
+    customer,
+    deliveryInstructions,
+    items,
+    pickup,
+    resolveCheckoutAttemptId,
+    store,
+  ]);
+
+  const handleSubmit = useCallback(async (event) => {
+    event.preventDefault();
+    if (status === 'submitting') return;
     setError('');
-    if (!appId || !locationId) {
-      setError('Square not configured');
+
+    if (!canSubmit(true)) {
+      setError('Please complete the required checkout fields before paying.');
       return;
     }
-    let canceled = false;
-    sqInitRef.current = true;
-    (async () => {
-      try {
-        if (!document.getElementById('sq-wpsdk')) {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.id = 'sq-wpsdk';
-            s.src = 'https://web.squarecdn.com/v1/square.js';
-            s.onload = resolve;
-            s.onerror = () => reject(new Error('Square SDK failed'));
-            document.head.appendChild(s);
-          });
-        }
-        if (canceled) return;
-        const ensureSquare = () => new Promise((resolve, reject) => {
-          let tries = 0;
-          const t = setInterval(() => {
-            tries++;
-            if (window.Square && typeof window.Square.payments === 'function') {
-              clearInterval(t); resolve();
-            } else if (tries > 50) {
-              clearInterval(t); reject(new Error('Square SDK not ready'));
-            }
-          }, 100);
-        });
-        await ensureSquare();
-        if (canceled) return;
-        const p = window.Square ? window.Square.payments(appId, locationId) : null;
-        if (!p) throw new Error('Square payments unavailable');
-        if (cardRef.current && typeof cardRef.current.destroy === 'function') {
-          try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
-          cardRef.current = null;
-        }
-        const card = await p.card();
-        cardRef.current = card;
-        if (canceled) return;
-        // Attach using the direct DOM ref for reliability.
-        if (cardElRef.current) {
-          await card.attach(cardElRef.current);
-        }
-      } catch (e) {
-        if (!canceled) {
-          sqInitRef.current = false;
-          setError(e?.message ? `Payment form failed: ${e.message}` : 'Payment form failed to load');
-        }
-      }
-    })();
-    return () => { canceled = true; };
-  }, [open, items]);
 
-  React.useEffect(() => {
-    if (!open && cardRef.current && typeof cardRef.current.destroy === 'function') {
-      try { cardRef.current.destroy(); } catch (e) { /* ignore */ }
-      cardRef.current = null;
-    }
-    if (!open) {
-      sqInitRef.current = false;
-      // Reset form state when drawer closes
-      setOrderResult(null);
-      setError('');
-      setName('');
-      setEmail('');
-      setPhone('');
-      setPickup(true);
-      setAddress({ line1: '', line2: '', city: '', state: '', postal: '' });
-    }
-  }, [open]);
+    setStatus('submitting');
+    const checkoutAttemptId = resolveCheckoutAttemptId();
+    trackEvent('payment.attempted', { store, sessionId: checkoutAttemptId, amountCents });
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setProcessing(true);
-    setError('');
     try {
-      let token = null;
-      if (cardRef.current) {
-        const result = await cardRef.current.tokenize();
-        if (result.status !== 'OK') {
-          const msg = (result?.errors && result.errors[0]?.message) || result?.status || 'Card details invalid';
-          throw new Error(msg);
-        }
-        token = result.token;
-      }
-      const res = await fetch('/api/store/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer: { name, email, phone },
-          pickup,
-          address: pickup ? null : address,
-          items: items.map((i) => ({
-            productId: i.productId,
-            variationId: i.variationId,
-            qty: i.qty,
-            unitPrice: i.unitPrice,
-            title: i.title,
-          })),
-          token,
-          store,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Checkout failed');
-      setOrderResult({ name, email, pickup });
-      clear();
-    } catch (e) {
-      setError(e.message || 'Checkout failed');
-    } finally {
-      setProcessing(false);
+      const token = await tokenize();
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      await submitCheckout({ token, verificationToken, method: 'card' });
+    } catch (err) {
+      trackEvent('payment.failed', { store, reason: err?.message });
+      setStatus('error');
+      setError(err?.message || 'Unable to complete purchase.');
     }
-  };
+  }, [
+    amountCents,
+    canSubmit,
+    resolveCheckoutAttemptId,
+    status,
+    store,
+    submitCheckout,
+    tokenize,
+    verificationDetails,
+    verifyBuyer,
+  ]);
+
+  const handleExpressToken = useCallback(async (token) => {
+    if (status === 'submitting') return;
+    setError('');
+    if (!canSubmit(false)) {
+      setError('Add your contact and fulfillment details before using express pay.');
+      return;
+    }
+
+    setStatus('submitting');
+    try {
+      trackEvent('express_pay.used', { store, amountCents });
+      await submitCheckout({ token, verificationToken: undefined, method: 'express' });
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Unable to complete purchase.');
+    }
+  }, [amountCents, canSubmit, status, store, submitCheckout]);
+
+  const { googlePayAvailable, applePayAvailable, error: expressError } = useSquareExpressPay({
+    amountCents,
+    containerId: '#store-express-pay',
+    enabled,
+    onToken: handleExpressToken,
+  });
+  const expressPayAvailable = googlePayAvailable || applePayAvailable;
+
+  useEffect(() => {
+    if (expressPayAvailable) trackEvent('express_pay.shown', { store });
+  }, [expressPayAvailable, store]);
 
   if (!open) return null;
 
-  // Success state — replaces form
   if (orderResult) {
     return (
       <>
         <div className="le-checkout-drawer-header">
           <span className="le-checkout-drawer-title">Order confirmed</span>
-          <button
-            type="button"
-            className="le-cart-close"
-            onClick={closeCart}
-            aria-label="Close"
-          >✕</button>
+          <button type="button" className="le-cart-close" onClick={closeCart} aria-label="Close">x</button>
         </div>
-        <div style={{ padding: '1.5rem' }}>
+        <div className="le-checkout-drawer" style={{ overflowY: 'auto', flex: '1 1 0' }}>
           <div className="le-checkout-success">
             <div className="le-checkout-success-title">Order placed</div>
             <p className="le-checkout-success-copy">
               Thanks{orderResult.name ? `, ${orderResult.name.split(' ')[0]}` : ''}. A confirmation email is on the way to {orderResult.email}.
             </p>
-            <p className="le-checkout-success-copy" style={{ marginTop: '0.5rem' }}>
+            <p className="le-checkout-success-copy">
               {orderResult.pickup
-                ? "We\u2019ll be in touch with pickup details."
-                : "We\u2019ll be in touch with delivery details."}
+                ? 'Pickup details will be sent separately.'
+                : 'Delivery details will be sent separately.'}
             </p>
+            <div className="le-checkout-success-meta">
+              {fmt(orderResult.amountCents)} paid{orderResult.paymentId ? ` - ${orderResult.paymentId}` : ''}
+            </div>
           </div>
-          <button
-            type="button"
-            className="le-checkout-submit"
-            onClick={closeCart}
-          >
+          <button type="button" className="le-checkout-submit" onClick={closeCart}>
             Continue shopping
           </button>
         </div>
@@ -190,54 +377,52 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       <div className="le-checkout-drawer-header">
         {onBack ? (
           <button type="button" className="le-checkout-drawer-back" onClick={onBack}>
-            ← Bag
+            Back to bag
           </button>
         ) : (
           <span className="le-checkout-drawer-title">Checkout</span>
         )}
-        <button
-          type="button"
-          className="le-cart-close"
-          onClick={closeCart}
-          aria-label="Close"
-        >✕</button>
+        <button type="button" className="le-cart-close" onClick={closeCart} aria-label="Close">x</button>
       </div>
 
       {items.length === 0 ? (
         <p className="le-cart-empty" style={{ padding: '2rem 1.5rem' }}>Your bag is empty.</p>
       ) : (
         <div className="le-checkout-drawer" style={{ overflowY: 'auto', flex: '1 1 0' }}>
-
-          {/* Order summary */}
           <div className="le-checkout-section" style={{ paddingTop: 0 }}>
             <div className="le-checkout-section-title">Your order</div>
             {items.map((item) => (
-              <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.8125rem', color: '#111' }}>
-                  {item.title}
-                  {item.qty > 1 && (
-                    <span style={{ fontFamily: 'ui-monospace, SF Mono, monospace', color: '#6b655d', marginLeft: '0.4rem' }}>
-                      ×{item.qty}
-                    </span>
+              <div key={item.key} className="le-checkout-line">
+                <div className="le-checkout-line-main">
+                  <span className="le-checkout-line-title">{item.title}</span>
+                  {item.optionSummary && (
+                    <span className="le-checkout-line-options">{item.optionSummary}</span>
                   )}
-                </span>
-                <span style={{ fontFamily: 'ui-monospace, SF Mono, monospace', fontSize: '0.8125rem', color: '#111', whiteSpace: 'nowrap' }}>
-                  {fmt(item.unitPrice * item.qty)}
+                </div>
+                <span className="le-checkout-line-meta">
+                  {item.qty > 1 ? `${item.qty} x ` : ''}{fmt(item.unitPrice)}
                 </span>
               </div>
             ))}
             <div className="le-checkout-summary" style={{ marginTop: '0.5rem' }}>
-              <span className="le-checkout-summary-label">Subtotal</span>
-              <span className="le-checkout-summary-value">{fmt(subtotal)}</span>
+              <span className="le-checkout-summary-label">
+                Total{pricing.confirmed ? '' : ' est.'}
+              </span>
+              <span className="le-checkout-summary-value">{fmt(amountCents)}</span>
             </div>
-            <p style={{ fontSize: '0.7rem', color: '#6b655d', margin: '0.25rem 0 0', fontFamily: 'ui-monospace, SF Mono, monospace' }}>
-              Tax and fulfillment calculated at checkout.
-            </p>
+            {pricing.loading && (
+              <p className="le-checkout-footnote" style={{ margin: 0, textAlign: 'left' }}>
+                Confirming current prices...
+              </p>
+            )}
+            {pricing.error && (
+              <div className="le-checkout-warning">
+                {pricing.error} Final total is still recomputed before payment.
+              </div>
+            )}
           </div>
 
-          <form onSubmit={onSubmit} className="le-checkout-form">
-
-            {/* Contact */}
+          <form onSubmit={handleSubmit} className="le-checkout-form">
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Contact</div>
               <div className="le-checkout-field">
@@ -245,8 +430,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                 <input
                   id="co-name"
                   className="le-checkout-input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={customer.name}
+                  onChange={(event) => updateCustomer({ name: event.target.value })}
                   autoComplete="name"
                   required
                 />
@@ -257,9 +442,10 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                   id="co-email"
                   type="email"
                   className="le-checkout-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={customer.email}
+                  onChange={(event) => updateCustomer({ email: event.target.value })}
                   autoComplete="email"
+                  inputMode="email"
                   required
                 />
               </div>
@@ -269,14 +455,15 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                   id="co-phone"
                   type="tel"
                   className="le-checkout-input"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={customer.phone}
+                  onChange={(event) => updateCustomer({ phone: formatPhone(event.target.value) })}
                   autoComplete="tel"
+                  inputMode="tel"
+                  placeholder="Optional"
                 />
               </div>
             </div>
 
-            {/* Fulfillment */}
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Fulfillment</div>
               <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
@@ -301,24 +488,25 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
               {!pickup && (
                 <>
                   <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="addr1">Street address</label>
+                    <label className="le-checkout-label" htmlFor="co-address-line1">Street address</label>
                     <input
-                      id="addr1"
+                      id="co-address-line1"
                       className="le-checkout-input"
                       value={address.line1}
-                      onChange={(e) => setAddress({ ...address, line1: e.target.value })}
-                      autoComplete="address-line1"
+                      onChange={(event) => updateAddress({ line1: event.target.value })}
+                      autoComplete="shipping address-line1"
                       required
                     />
                   </div>
                   <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="addr2">Unit / suite <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    <label className="le-checkout-label" htmlFor="co-address-line2">Apt / suite</label>
                     <input
-                      id="addr2"
+                      id="co-address-line2"
                       className="le-checkout-input"
                       value={address.line2}
-                      onChange={(e) => setAddress({ ...address, line2: e.target.value })}
-                      autoComplete="address-line2"
+                      onChange={(event) => updateAddress({ line2: event.target.value })}
+                      autoComplete="shipping address-line2"
+                      placeholder="Optional"
                     />
                   </div>
                   <div className="le-checkout-field-row">
@@ -328,8 +516,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                         id="co-city"
                         className="le-checkout-input"
                         value={address.city}
-                        onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                        autoComplete="address-level2"
+                        onChange={(event) => updateAddress({ city: event.target.value })}
+                        autoComplete="shipping address-level2"
                         required
                       />
                     </div>
@@ -339,58 +527,77 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                         id="co-state"
                         className="le-checkout-input"
                         value={address.state}
-                        onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                        autoComplete="address-level1"
+                        onChange={(event) => updateAddress({ state: event.target.value.toUpperCase().slice(0, 2) })}
+                        autoComplete="shipping address-level1"
                         required
                       />
                     </div>
                   </div>
                   <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="co-zip">ZIP</label>
+                    <label className="le-checkout-label" htmlFor="co-postal">ZIP</label>
                     <input
-                      id="co-zip"
+                      id="co-postal"
                       className="le-checkout-input"
                       value={address.postal}
-                      onChange={(e) => setAddress({ ...address, postal: e.target.value })}
-                      autoComplete="postal-code"
+                      onChange={(event) => updateAddress({ postal: event.target.value.replace(/[^\d-]/g, '').slice(0, 10) })}
+                      autoComplete="shipping postal-code"
+                      inputMode="numeric"
                       required
+                    />
+                  </div>
+                  <div className="le-checkout-field">
+                    <label className="le-checkout-label" htmlFor="co-delivery-notes">Delivery notes</label>
+                    <textarea
+                      id="co-delivery-notes"
+                      className="le-checkout-textarea"
+                      value={deliveryInstructions}
+                      onChange={(event) => setDeliveryInstructions(event.target.value)}
+                      autoComplete="off"
+                      placeholder="Optional"
                     />
                   </div>
                 </>
               )}
             </div>
 
-            {/* Payment */}
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Payment</div>
               <div className="le-checkout-payment">
+                <div
+                  id="store-express-pay"
+                  className="le-checkout-express"
+                  aria-label="Express payment options"
+                />
+                {expressPayAvailable && <div className="le-checkout-express-divider">or</div>}
                 <div className="le-checkout-card-container">
-                  <div id="sq-card" ref={cardElRef} />
+                  <div id="store-card-container" />
+                  {(loadingScript || (!cardLoaded && !cardError)) && (
+                    <div className="le-checkout-card-loading">Loading secure payment form...</div>
+                  )}
                 </div>
                 <div className="le-checkout-trust">
-                  <svg className="le-checkout-trust-icon" viewBox="0 0 12 14" fill="none" aria-hidden="true">
-                    <rect x="1" y="5" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-                    <path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
+                  <span aria-hidden="true">Lock</span>
                   Secured by Square
-                  <span className="le-checkout-trust-sep">·</span>
-                  Visa, MC, Amex, Discover
+                  <span className="le-checkout-trust-sep">/</span>
+                  Visa, Mastercard, Amex, Discover
                 </div>
               </div>
             </div>
 
-            {error && <div className="le-checkout-error">{error}</div>}
+            {(error || cardError || expressError) && (
+              <div className="le-checkout-error">{error || cardError || expressError}</div>
+            )}
 
             <button
               type="submit"
               className="le-checkout-submit"
-              disabled={processing}
+              disabled={status === 'submitting' || !canSubmit(true)}
             >
-              {processing ? 'Processing…' : `Pay ${fmt(subtotal)}`}
+              {status === 'submitting' ? 'Processing...' : `Pay ${fmt(amountCents)}`}
             </button>
 
             <p className="le-checkout-footnote">
-              A confirmation email will be sent after purchase.
+              Contact and fulfillment details are saved on this device for faster checkout next time.
             </p>
           </form>
         </div>

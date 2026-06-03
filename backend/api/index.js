@@ -4242,8 +4242,9 @@ app.post('/api/intake/submit', async (req, res) => {
         'first_delivery',
         'preferred_start_date',
         'delivery_timing',
+        'delivery_preference',
       ],
-      'Household': ['household_size', 'servings_per_meal', 'meals_per_week', 'meal_mix'],
+      'Household': ['household_size', 'meal_requests_selected', 'meal_requests_details', 'servings_per_meal', 'meals_per_week', 'meal_mix'],
       'Proteins': [
         'proteins_selected',
         'proteins_everyday',
@@ -4264,8 +4265,11 @@ app.post('/api/intake/submit', async (req, res) => {
         'dislikes',
         'allergies',
         'dietary_notes',
+        'nutritional_goals',
+        'spice_heat_tolerance',
+        'flavor_adventurousness',
       ],
-      'Goals': ['meal_priorities', 'nutrition_goals'],
+      'Goals': ['meal_priorities', 'nutrition_goals', 'specific_needs_to_detail'],
       'Meal Logistics': [
         'lunch_settings',
         'dinner_settings',

@@ -141,6 +141,16 @@
   font-weight: 650;
 }
 
+.meal-prep-intake-sub-label {
+  color: #6f6a5f;
+  font-family: var(--font-office-code), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
 .meal-prep-intake-input,
 .meal-prep-intake-textarea {
   width: 100%;
@@ -208,6 +218,37 @@
 .meal-prep-intake-proteins {
   display: grid;
   gap: 0.55rem;
+}
+
+.meal-prep-intake-split-field {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.meal-prep-intake-meals {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.meal-prep-intake-meal {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: minmax(170px, 0.55fr) minmax(0, 1fr);
+  align-items: center;
+  border: 1px solid rgba(103, 91, 74, 0.22);
+  border-radius: 0.75rem;
+  background: #fffefb;
+  padding: 0.65rem 0.85rem;
+}
+
+.meal-prep-intake-meal.is-selected {
+  border-color: rgba(68, 96, 71, 0.45);
+  background: rgba(68, 96, 71, 0.08);
+}
+
+.meal-detail-input {
+  min-width: 0;
 }
 
 .meal-prep-intake-protein {
@@ -389,7 +430,9 @@
 
   .meal-prep-intake-protein-main,
   .meal-prep-intake-actions,
-  .meal-prep-intake-response {
+  .meal-prep-intake-response,
+  .meal-prep-intake-split-field,
+  .meal-prep-intake-meal {
     grid-template-columns: 1fr;
   }
 

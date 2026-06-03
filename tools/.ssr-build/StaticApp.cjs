@@ -4065,10 +4065,10 @@ var FoodItemModal_exports = {};
 __export(FoodItemModal_exports, {
   default: () => FoodItemModal_default
 });
-var import_react32, import_framer_motion7, import_jsx_runtime38, backdrop, modal, FoodItemModal, FoodItemModal_default;
+var import_react34, import_framer_motion7, import_jsx_runtime38, backdrop, modal, FoodItemModal, FoodItemModal_default;
 var init_FoodItemModal = __esm({
   "src/components/menu/FoodItemModal.jsx"() {
-    import_react32 = __toESM(require("react"));
+    import_react34 = __toESM(require("react"));
     import_framer_motion7 = require("framer-motion");
     import_jsx_runtime38 = require("react/jsx-runtime");
     backdrop = {
@@ -4125,14 +4125,14 @@ var FeedbackForm_exports = {};
 __export(FeedbackForm_exports, {
   default: () => FeedbackForm_default
 });
-var import_react33, import_framer_motion8, import_jsx_runtime39, FeedbackForm, FeedbackForm_default;
+var import_react35, import_framer_motion8, import_jsx_runtime39, FeedbackForm, FeedbackForm_default;
 var init_FeedbackForm = __esm({
   "src/components/menu/FeedbackForm.jsx"() {
-    import_react33 = __toESM(require("react"));
+    import_react35 = __toESM(require("react"));
     import_framer_motion8 = require("framer-motion");
     import_jsx_runtime39 = require("react/jsx-runtime");
     FeedbackForm = () => {
-      const [formData, setFormData] = (0, import_react33.useState)({
+      const [formData, setFormData] = (0, import_react35.useState)({
         name: "",
         email: "",
         phone: "",
@@ -4140,7 +4140,7 @@ var init_FeedbackForm = __esm({
         message: "",
         website: ""
       });
-      const [status, setStatus] = (0, import_react33.useState)({ type: "", message: "" });
+      const [status, setStatus] = (0, import_react35.useState)({ type: "", message: "" });
       const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -4293,10 +4293,10 @@ var LoadingSpinner_exports = {};
 __export(LoadingSpinner_exports, {
   LoadingSpinner: () => LoadingSpinner
 });
-var import_react34, import_framer_motion9, import_jsx_runtime40, LoadingSpinner;
+var import_react36, import_framer_motion9, import_jsx_runtime40, LoadingSpinner;
 var init_LoadingSpinner = __esm({
   "src/components/layout/LoadingSpinner.jsx"() {
-    import_react34 = __toESM(require("react"));
+    import_react36 = __toESM(require("react"));
     import_framer_motion9 = require("framer-motion");
     import_jsx_runtime40 = require("react/jsx-runtime");
     LoadingSpinner = () => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
@@ -4364,6 +4364,7 @@ var Header = () => {
   const location = (0, import_react_router_dom.useLocation)();
   const navItems = FULLPAGE_PAGES.slice(1);
   const isBlogRoute = location.pathname === "/blog" || location.pathname.startsWith("/blog/");
+  const isLocalistRoute = location.pathname === "/localist";
   (0, import_react.useEffect)(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
     return () => {
@@ -4503,6 +4504,23 @@ var Header = () => {
                 onMouseLeave: handleHoverOff,
                 children: "Blog"
               }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              import_react_router_dom.Link,
+              {
+                to: "/localist",
+                "data-active": isLocalistRoute ? "true" : "false",
+                className: "px-4 py-2 rounded-md text-sm font-medium transition-all group",
+                style: {
+                  backgroundColor: isLocalistRoute ? "var(--color-bg-secondary)" : "transparent",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "'Office Code Pro', monospace",
+                  textDecoration: "none"
+                },
+                onMouseEnter: handleHoverOn,
+                onMouseLeave: handleHoverOff,
+                children: "Localist"
+              }
             )
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
@@ -4584,6 +4602,21 @@ var Header = () => {
                       variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
                       children: "Blog"
                     }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    import_framer_motion.motion.a,
+                    {
+                      href: "/localist",
+                      onClick: (e) => {
+                        e.preventDefault();
+                        navigate("/localist");
+                        setIsOpen(false);
+                      },
+                      className: "text-3xl uppercase text-center text-slate-900",
+                      style: { fontFamily: "'Office Code Pro', monospace", textDecoration: "none" },
+                      variants: { hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } },
+                      children: "Localist"
+                    }
                   )
                 ]
               }
@@ -4599,17 +4632,86 @@ var Header = () => {
 var import_react2 = __toESM(require("react"));
 var import_jsx_runtime2 = require("react/jsx-runtime");
 var CartContext = (0, import_react2.createContext)(null);
+var normalizeAddOnIndices = (value) => {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(
+    value.map((idx) => Number(idx)).filter((idx) => Number.isInteger(idx) && idx >= 0)
+  )].sort((a, b) => a - b);
+};
+var buildCartKey = (productId, variationId = null, addOnIndices = [], dairyFree = false) => {
+  const addOns = normalizeAddOnIndices(addOnIndices);
+  const optionKey = [
+    addOns.length ? `addons=${addOns.join(".")}` : "",
+    dairyFree ? "df=1" : ""
+  ].filter(Boolean).join("&");
+  return `${productId}:${variationId || ""}${optionKey ? `:${optionKey}` : ""}`;
+};
+var normalizeStoredState = (rawState) => {
+  if (!rawState || typeof rawState !== "object") return initial;
+  const rawItems = rawState.items && typeof rawState.items === "object" ? rawState.items : {};
+  const items = {};
+  Object.values(rawItems).forEach((item) => {
+    if (!item || typeof item !== "object" || !item.productId) return;
+    const qty = Math.max(1, Number(item.qty) || 1);
+    const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
+    const dairyFree = !!item.dairyFree;
+    const key = buildCartKey(item.productId, item.variationId || null, addOnIndices, dairyFree);
+    const normalized = {
+      ...item,
+      key,
+      variationId: item.variationId || null,
+      addOnIndices,
+      dairyFree,
+      qty,
+      unitPrice: Number(item.unitPrice) || 0
+    };
+    if (items[key]) {
+      items[key] = {
+        ...items[key],
+        qty: items[key].qty + qty
+      };
+    } else {
+      items[key] = normalized;
+    }
+  });
+  return {
+    items,
+    updatedAt: Number(rawState.updatedAt) || Date.now()
+  };
+};
 function reducer(state, action) {
   switch (action.type) {
     case "init":
-      return action.payload || state;
+      return normalizeStoredState(action.payload);
     case "add": {
-      const { productId, variationId, unitPrice, title, image } = action.payload;
-      const key = `${productId}:${variationId || ""}`;
+      const {
+        productId,
+        variationId,
+        unitPrice,
+        title,
+        image,
+        addOnIndices: rawAddOnIndices,
+        dairyFree: rawDairyFree,
+        optionSummary
+      } = action.payload;
+      const addOnIndices = normalizeAddOnIndices(rawAddOnIndices);
+      const dairyFree = !!rawDairyFree;
+      const key = buildCartKey(productId, variationId || null, addOnIndices, dairyFree);
       const qty = Math.max(1, action.payload.qty || 1);
       const next = { ...state, items: { ...state.items || {} } };
       const existing = next.items[key];
-      next.items[key] = existing ? { ...existing, qty: existing.qty + qty } : { key, productId, variationId, unitPrice, qty, title, image };
+      next.items[key] = existing ? { ...existing, qty: existing.qty + qty } : {
+        key,
+        productId,
+        variationId: variationId || null,
+        unitPrice: Number(unitPrice) || 0,
+        qty,
+        title,
+        image,
+        addOnIndices,
+        dairyFree,
+        optionSummary: optionSummary || ""
+      };
       next.updatedAt = Date.now();
       return next;
     }
@@ -13729,7 +13831,7 @@ var import_react20 = require("@portabletext/react");
 
 // src/store/data/generatedReleasesPageData.json
 var generatedReleasesPageData_default = {
-  generatedAt: "2026-05-27T23:02:53.238Z",
+  generatedAt: "2026-06-03T00:13:47.497Z",
   releases: [
     {
       _id: "release-local-pizza-1000-2025-09-30",
@@ -14151,7 +14253,7 @@ var ReleasesPage = () => {
 var ReleasesPage_default = ReleasesPage;
 
 // src/pages/SalePage.jsx
-var import_react28 = __toESM(require("react"));
+var import_react30 = __toESM(require("react"));
 var import_react_helmet_async5 = __toESM(require_lib());
 var import_react_router_dom6 = require("react-router-dom");
 
@@ -14210,7 +14312,7 @@ function ProductTile({ product, sku, onSelect, showSku = true, showDetailRow = t
     }
     return bits.join(" | ");
   }, [product]);
-  const inCart = Object.keys(map || {}).some((k) => k.startsWith(product.id));
+  const inCart = Object.keys(map || {}).some((k) => k === product.id || k.startsWith(`${product.id}:`));
   return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
     "button",
     {
@@ -14307,7 +14409,21 @@ function ProductDetail({ product, sku, onClose }) {
   const unitPrice = basePrice + addOnTotal + dairyFreeExtra;
   const unitPriceLabel = product.priceDisplay && addOnTotal === 0 && dairyFreeExtra === 0 ? product.priceDisplay : fmt2(unitPrice);
   const variationId = chosen?.squareVariationId || product.squareVariationId || null;
-  const cartKey = `${product.id}:${variationId || ""}`;
+  const selectedAddOnIndices = (0, import_react23.useMemo)(
+    () => Object.keys(selectedAddOns).filter((k) => selectedAddOns[k]).map(Number),
+    [selectedAddOns]
+  );
+  const optionSummary = (0, import_react23.useMemo)(() => {
+    const labels = [];
+    if (chosen?.name) labels.push(chosen.name);
+    selectedAddOnIndices.forEach((idx) => {
+      const name = product.addOns?.[idx]?.name;
+      if (name) labels.push(name);
+    });
+    if (isDairyFree && product.offerDairyFree) labels.push("Dairy-free");
+    return labels.join(", ");
+  }, [chosen, selectedAddOnIndices, product.addOns, isDairyFree, product.offerDairyFree]);
+  const cartKey = buildCartKey(product.id, variationId, selectedAddOnIndices, isDairyFree);
   const inCartQty = map?.[cartKey]?.qty || 0;
   const isOutOfStock = product.inventoryManaged && (product.inventory ?? 0) <= inCartQty;
   const leadText = (0, import_react23.useMemo)(() => {
@@ -14325,8 +14441,9 @@ function ProductDetail({ product, sku, onClose }) {
       qty: 1,
       title: product.title,
       image: images[0] || null,
-      addOnIndices: Object.keys(selectedAddOns).filter((k) => selectedAddOns[k]).map(Number),
-      dairyFree: isDairyFree
+      addOnIndices: selectedAddOnIndices,
+      dairyFree: isDairyFree,
+      optionSummary
     });
     notify(`${product.title} added`, {
       actionLabel: "View bag",
@@ -14335,7 +14452,7 @@ function ProductDetail({ product, sku, onClose }) {
         openCart();
       }
     });
-  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOns, isDairyFree, notify, onClose, openCart]);
+  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOnIndices, isDairyFree, optionSummary, notify, onClose, openCart]);
   (0, import_react23.useEffect)(() => {
     prevFocusRef.current = document.activeElement;
     if (closeBtnRef.current) closeBtnRef.current.focus();
@@ -14553,9 +14670,36 @@ function ProductGrid({
   loading = false,
   basePath = "/sale",
   showSku = true,
-  showDetailRow = true
+  showDetailRow = true,
+  openSlug = null,
+  onOpen = null,
+  onClose = null
 }) {
   const [selected, setSelected] = (0, import_react25.useState)(null);
+  const hasAutoOpened = (0, import_react25.useRef)(false);
+  (0, import_react25.useEffect)(() => {
+    if (!openSlug || loading || !products.length) return;
+    if (hasAutoOpened.current) return;
+    const product = products.find((p) => (p.slug || p.id) === openSlug);
+    if (product) {
+      hasAutoOpened.current = true;
+      setSelected(product);
+    }
+  }, [openSlug, products, loading]);
+  (0, import_react25.useEffect)(() => {
+    if (!openSlug) {
+      hasAutoOpened.current = false;
+      setSelected(null);
+    }
+  }, [openSlug]);
+  const handleSelect = (product) => {
+    setSelected(product);
+    if (onOpen) onOpen(product.slug || product.id);
+  };
+  const handleClose = () => {
+    setSelected(null);
+    if (onClose) onClose();
+  };
   const selectedSku = selected ? `${skuPrefix}-${padded(products.indexOf(selected) + 1)}` : null;
   return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_jsx_runtime31.Fragment, { children: [
     loading ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "le-grid-loading", "aria-live": "polite", children: "Loading..." }) : products.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "le-grid-empty", children: "No products available." }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("ul", { className: "le-grid", "aria-label": "Products", children: products.map((product, i) => {
@@ -14588,7 +14732,7 @@ function ProductGrid({
               {
                 product,
                 sku,
-                onSelect: setSelected,
+                onSelect: handleSelect,
                 showSku,
                 showDetailRow
               }
@@ -14603,14 +14747,14 @@ function ProductGrid({
       {
         product: selected,
         sku: selectedSku,
-        onClose: () => setSelected(null)
+        onClose: handleClose
       }
     )
   ] });
 }
 
 // src/store/components/CartDrawer.jsx
-var import_react27 = __toESM(require("react"));
+var import_react29 = __toESM(require("react"));
 
 // src/lib/trackEvent.js
 function trackEvent(event, meta = {}) {
@@ -14630,1154 +14774,11 @@ function trackEvent(event, meta = {}) {
 }
 
 // src/store/components/CheckoutPanel.jsx
-var import_react26 = __toESM(require("react"));
-var import_jsx_runtime32 = require("react/jsx-runtime");
-var import_meta4 = {};
-var fmt3 = (cents) => `$${(cents / 100).toFixed(2)}`;
-function CheckoutPanel({ store = "sale", onBack }) {
-  const { items, subtotal, open, closeCart, clear } = useCart();
-  const [processing, setProcessing] = (0, import_react26.useState)(false);
-  const [error, setError] = (0, import_react26.useState)("");
-  const [name, setName] = (0, import_react26.useState)("");
-  const [email, setEmail] = (0, import_react26.useState)("");
-  const [phone, setPhone] = (0, import_react26.useState)("");
-  const [pickup, setPickup] = (0, import_react26.useState)(true);
-  const [address, setAddress] = (0, import_react26.useState)({ line1: "", line2: "", city: "", state: "", postal: "" });
-  const [orderResult, setOrderResult] = (0, import_react26.useState)(null);
-  const cardRef = import_react26.default.useRef(null);
-  const cardElRef = import_react26.default.useRef(null);
-  import_react26.default.useEffect(() => {
-    const appId = import_meta4?.env?.VITE_SQUARE_APP_ID || window?.__SQUARE_APP_ID__;
-    const locationId = import_meta4?.env?.VITE_SQUARE_LOCATION_ID || window?.__SQUARE_LOCATION_ID__;
-    if (!open) return;
-    if (!items || items.length === 0) return;
-    setError("");
-    if (!appId || !locationId) {
-      setError("Square not configured");
-      return;
-    }
-    let canceled = false;
-    (async () => {
-      try {
-        if (!document.getElementById("sq-wpsdk")) {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement("script");
-            s.id = "sq-wpsdk";
-            s.src = "https://web.squarecdn.com/v1/square.js";
-            s.onload = resolve;
-            s.onerror = () => reject(new Error("Square SDK failed"));
-            document.head.appendChild(s);
-          });
-        }
-        if (canceled) return;
-        const ensureSquare = () => new Promise((resolve, reject) => {
-          let tries = 0;
-          const t = setInterval(() => {
-            tries++;
-            if (window.Square && typeof window.Square.payments === "function") {
-              clearInterval(t);
-              resolve();
-            } else if (tries > 50) {
-              clearInterval(t);
-              reject(new Error("Square SDK not ready"));
-            }
-          }, 100);
-        });
-        await ensureSquare();
-        const p = window.Square ? window.Square.payments(appId, locationId) : null;
-        if (!p) throw new Error("Square payments unavailable");
-        if (cardRef.current && typeof cardRef.current.destroy === "function") {
-          try {
-            cardRef.current.destroy();
-          } catch (e) {
-          }
-          cardRef.current = null;
-        }
-        const card = await p.card();
-        cardRef.current = card;
-        if (cardElRef.current) {
-          await card.attach("#sq-card");
-        }
-      } catch (e) {
-        if (!canceled) setError(e?.message ? `Payment form failed: ${e.message}` : "Payment form failed to load");
-      }
-    })();
-    return () => {
-      canceled = true;
-    };
-  }, [open, items]);
-  import_react26.default.useEffect(() => {
-    if (!open && cardRef.current && typeof cardRef.current.destroy === "function") {
-      try {
-        cardRef.current.destroy();
-      } catch (e) {
-      }
-      cardRef.current = null;
-    }
-    if (!open) {
-      setOrderResult(null);
-      setError("");
-      setName("");
-      setEmail("");
-      setPhone("");
-      setPickup(true);
-      setAddress({ line1: "", line2: "", city: "", state: "", postal: "" });
-    }
-  }, [open]);
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setProcessing(true);
-    setError("");
-    try {
-      let token = null;
-      if (cardRef.current) {
-        const result = await cardRef.current.tokenize();
-        if (result.status !== "OK") {
-          const msg = result?.errors && result.errors[0]?.message || result?.status || "Card details invalid";
-          throw new Error(msg);
-        }
-        token = result.token;
-      }
-      const res = await fetch("/api/store/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: { name, email, phone },
-          pickup,
-          address: pickup ? null : address,
-          items: items.map((i) => ({
-            productId: i.productId,
-            variationId: i.variationId,
-            qty: i.qty,
-            unitPrice: i.unitPrice,
-            title: i.title
-          })),
-          token,
-          store
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Checkout failed");
-      setOrderResult({ name, email, pickup });
-      clear();
-    } catch (e2) {
-      setError(e2.message || "Checkout failed");
-    } finally {
-      setProcessing(false);
-    }
-  };
-  if (!open) return null;
-  if (orderResult) {
-    return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer-header", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-drawer-title", children: "Order confirmed" }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "le-cart-close",
-            onClick: closeCart,
-            "aria-label": "Close",
-            children: "\u2715"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { style: { padding: "1.5rem" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-success", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-success-title", children: "Order placed" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "le-checkout-success-copy", children: [
-            "Thanks",
-            orderResult.name ? `, ${orderResult.name.split(" ")[0]}` : "",
-            ". A confirmation email is on the way to ",
-            orderResult.email,
-            "."
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-success-copy", style: { marginTop: "0.5rem" }, children: orderResult.pickup ? "We\u2019ll be in touch with pickup details." : "We\u2019ll be in touch with delivery details." })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "le-checkout-submit",
-            onClick: closeCart,
-            children: "Continue shopping"
-          }
-        )
-      ] })
-    ] });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer-header", children: [
-      onBack ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "le-checkout-drawer-back", onClick: onBack, children: "\u2190 Bag" }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-drawer-title", children: "Checkout" }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-        "button",
-        {
-          type: "button",
-          className: "le-cart-close",
-          onClick: closeCart,
-          "aria-label": "Close",
-          children: "\u2715"
-        }
-      )
-    ] }),
-    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-cart-empty", style: { padding: "2rem 1.5rem" }, children: "Your bag is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer", style: { overflowY: "auto", flex: "1 1 0" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", style: { paddingTop: 0 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Your order" }),
-        items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { style: { fontSize: "0.8125rem", color: "#111" }, children: [
-            item.title,
-            item.qty > 1 && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { style: { fontFamily: "ui-monospace, SF Mono, monospace", color: "#6b655d", marginLeft: "0.4rem" }, children: [
-              "\xD7",
-              item.qty
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { style: { fontFamily: "ui-monospace, SF Mono, monospace", fontSize: "0.8125rem", color: "#111", whiteSpace: "nowrap" }, children: fmt3(item.unitPrice * item.qty) })
-        ] }, item.key)),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-summary", style: { marginTop: "0.5rem" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-summary-label", children: "Subtotal" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-summary-value", children: fmt3(subtotal) })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { style: { fontSize: "0.7rem", color: "#6b655d", margin: "0.25rem 0 0", fontFamily: "ui-monospace, SF Mono, monospace" }, children: "Tax and fulfillment calculated at checkout." })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("form", { onSubmit, className: "le-checkout-form", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Contact" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-name", children: "Name" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-              "input",
-              {
-                id: "co-name",
-                className: "le-checkout-input",
-                value: name,
-                onChange: (e) => setName(e.target.value),
-                autoComplete: "name",
-                required: true
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-email", children: "Email" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-              "input",
-              {
-                id: "co-email",
-                type: "email",
-                className: "le-checkout-input",
-                value: email,
-                onChange: (e) => setEmail(e.target.value),
-                autoComplete: "email",
-                required: true
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-phone", children: "Phone" }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-              "input",
-              {
-                id: "co-phone",
-                type: "tel",
-                className: "le-checkout-input",
-                value: phone,
-                onChange: (e) => setPhone(e.target.value),
-                autoComplete: "tel"
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Fulfillment" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-pickup-selector", role: "group", "aria-label": "Fulfillment method", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-              "button",
-              {
-                type: "button",
-                className: `le-checkout-pickup-pill${pickup ? " is-selected" : ""}`,
-                onClick: () => setPickup(true),
-                "aria-pressed": pickup,
-                children: "Pickup"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-              "button",
-              {
-                type: "button",
-                className: `le-checkout-pickup-pill${!pickup ? " is-selected" : ""}`,
-                onClick: () => setPickup(false),
-                "aria-pressed": !pickup,
-                children: "Local delivery"
-              }
-            )
-          ] }),
-          !pickup && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "addr1", children: "Street address" }),
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-                "input",
-                {
-                  id: "addr1",
-                  className: "le-checkout-input",
-                  value: address.line1,
-                  onChange: (e) => setAddress({ ...address, line1: e.target.value }),
-                  autoComplete: "address-line1",
-                  required: true
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("label", { className: "le-checkout-label", htmlFor: "addr2", children: [
-                "Unit / suite ",
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { style: { fontWeight: 400, textTransform: "none", letterSpacing: 0 }, children: "(optional)" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-                "input",
-                {
-                  id: "addr2",
-                  className: "le-checkout-input",
-                  value: address.line2,
-                  onChange: (e) => setAddress({ ...address, line2: e.target.value }),
-                  autoComplete: "address-line2"
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field-row", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-city", children: "City" }),
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-                  "input",
-                  {
-                    id: "co-city",
-                    className: "le-checkout-input",
-                    value: address.city,
-                    onChange: (e) => setAddress({ ...address, city: e.target.value }),
-                    autoComplete: "address-level2",
-                    required: true
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-state", children: "State" }),
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-                  "input",
-                  {
-                    id: "co-state",
-                    className: "le-checkout-input",
-                    value: address.state,
-                    onChange: (e) => setAddress({ ...address, state: e.target.value }),
-                    autoComplete: "address-level1",
-                    required: true
-                  }
-                )
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-zip", children: "ZIP" }),
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-                "input",
-                {
-                  id: "co-zip",
-                  className: "le-checkout-input",
-                  value: address.postal,
-                  onChange: (e) => setAddress({ ...address, postal: e.target.value }),
-                  autoComplete: "postal-code",
-                  required: true
-                }
-              )
-            ] })
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Payment" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-payment", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-card-container", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { id: "sq-card", ref: cardElRef }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-trust", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("svg", { className: "le-checkout-trust-icon", viewBox: "0 0 12 14", fill: "none", "aria-hidden": "true", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("rect", { x: "1", y: "5", width: "10", height: "8", rx: "1", stroke: "currentColor", strokeWidth: "1.2" }),
-                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("path", { d: "M4 5V4a2 2 0 0 1 4 0v1", stroke: "currentColor", strokeWidth: "1.2", strokeLinecap: "round" })
-              ] }),
-              "Secured by Square",
-              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-trust-sep", children: "\xB7" }),
-              "Visa, MC, Amex, Discover"
-            ] })
-          ] })
-        ] }),
-        error && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-error", children: error }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
-          "button",
-          {
-            type: "submit",
-            className: "le-checkout-submit",
-            disabled: processing,
-            children: processing ? "Processing\u2026" : `Pay ${fmt3(subtotal)}`
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-footnote", children: "A confirmation email will be sent after purchase." })
-      ] })
-    ] })
-  ] });
-}
-
-// src/store/components/CartDrawer.jsx
-var import_jsx_runtime33 = require("react/jsx-runtime");
-var fmt4 = (cents) => `$${(cents / 100).toFixed(2)}`;
-var usePricedSubtotal = (items) => {
-  const [serverSubtotal, setServerSubtotal] = (0, import_react27.useState)(null);
-  const [pricingError, setPricingError] = (0, import_react27.useState)(false);
-  const timerRef = (0, import_react27.useRef)(null);
-  (0, import_react27.useEffect)(() => {
-    if (!items.length) {
-      setServerSubtotal(null);
-      setPricingError(false);
-      return;
-    }
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(async () => {
-      try {
-        const payload = {
-          items: items.map((i) => ({
-            productId: i.productId,
-            variationId: i.variationId || null,
-            qty: i.qty,
-            addOnIndices: i.addOnIndices || [],
-            dairyFree: i.dairyFree || false
-          }))
-        };
-        const res = await fetch("/api/store/price", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("pricing failed");
-        const data = await res.json();
-        setServerSubtotal(data.subtotal ?? null);
-        setPricingError(false);
-      } catch (_) {
-        setPricingError(true);
-      }
-    }, 400);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [items]);
-  return { serverSubtotal, pricingError };
-};
-function CartDrawer({ store = "sale" }) {
-  const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
-  const { serverSubtotal, pricingError } = usePricedSubtotal(items);
-  const drawerRef = (0, import_react27.useRef)(null);
-  const closeBtnRef = (0, import_react27.useRef)(null);
-  const prevFocusRef = (0, import_react27.useRef)(null);
-  const [confirmClear, setConfirmClear] = (0, import_react27.useState)(false);
-  const [checkingOut, setCheckingOut] = (0, import_react27.useState)(false);
-  const displaySubtotal = serverSubtotal ?? subtotal;
-  const isServerConfirmed = serverSubtotal !== null && !pricingError;
-  (0, import_react27.useEffect)(() => {
-    if (open) trackEvent("cart.opened", { store });
-  }, [open, store]);
-  (0, import_react27.useEffect)(() => {
-    if (!open) return;
-    prevFocusRef.current = document.activeElement;
-    if (closeBtnRef.current) closeBtnRef.current.focus();
-    const handleKey = (e) => {
-      if (e.key === "Escape") {
-        closeCart();
-        return;
-      }
-      if (e.key === "Tab" && drawerRef.current) {
-        const focusable = Array.from(
-          drawerRef.current.querySelectorAll(
-            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          )
-        ).filter((el) => el.offsetParent !== null);
-        if (!focusable.length) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        } else if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", handleKey, true);
-    return () => {
-      document.removeEventListener("keydown", handleKey, true);
-      prevFocusRef.current?.focus?.();
-    };
-  }, [open, closeCart]);
-  (0, import_react27.useEffect)(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      setConfirmClear(false);
-      setCheckingOut(false);
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-  const handleCheckout = (0, import_react27.useCallback)(() => {
-    trackEvent("checkout.started", { store, itemCount: items.length });
-    setCheckingOut(true);
-  }, [store, items.length]);
-  if (!open) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-      "div",
-      {
-        className: "le-cart-backdrop",
-        onClick: closeCart,
-        "aria-hidden": "true"
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-      "div",
-      {
-        className: "le-cart-drawer",
-        role: "dialog",
-        "aria-modal": "true",
-        "aria-label": checkingOut ? "Checkout" : "Your cart",
-        ref: drawerRef,
-        style: { display: "flex", flexDirection: "column" },
-        children: checkingOut ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-          CheckoutPanel,
-          {
-            store,
-            onBack: () => setCheckingOut(false)
-          }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-header", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-heading", children: "Bag" }),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-              "button",
-              {
-                ref: closeBtnRef,
-                type: "button",
-                className: "le-cart-close",
-                onClick: closeCart,
-                "aria-label": "Close cart",
-                children: "\u2715"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-body", children: items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-empty", children: "Your bag is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("ul", { className: "le-cart-lines", "aria-label": "Cart items", children: items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("li", { className: "le-cart-line", children: [
-            item.image && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-              "img",
-              {
-                src: item.image,
-                alt: "",
-                "aria-hidden": "true",
-                className: "le-cart-line-img"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-line-info", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-title", children: item.title }),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-price", children: fmt4(item.unitPrice) }),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-line-controls", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    className: "le-cart-qty-btn",
-                    onClick: () => updateQty(item.key, Math.max(0, item.qty - 1)),
-                    "aria-label": `Decrease quantity of ${item.title}`,
-                    children: "\u2212"
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-qty-count", "aria-live": "polite", children: item.qty }),
-                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    className: "le-cart-qty-btn",
-                    onClick: () => updateQty(item.key, item.qty + 1),
-                    "aria-label": `Increase quantity of ${item.title}`,
-                    children: "+"
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    className: "le-cart-remove",
-                    onClick: () => remove(item.key),
-                    "aria-label": `Remove ${item.title}`,
-                    children: "Remove"
-                  }
-                )
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-total", children: fmt4(item.unitPrice * item.qty) })
-          ] }, item.key)) }) }),
-          items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-footer", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-subtotal", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("span", { className: "le-cart-subtotal-label", children: [
-                "Subtotal",
-                isServerConfirmed ? "" : " (est.)"
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-subtotal-value", children: fmt4(displaySubtotal) })
-            ] }),
-            pricingError && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-pricing-note", children: "Prices are estimated. Final total confirmed at checkout." }),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-tax-note", children: "Tax and fulfillment calculated at checkout." }),
-            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-              "button",
-              {
-                type: "button",
-                className: "le-cart-checkout-btn",
-                onClick: handleCheckout,
-                children: "Checkout"
-              }
-            ),
-            confirmClear ? /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-confirm-row", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-confirm-label", children: "Clear bag?" }),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-                "button",
-                {
-                  type: "button",
-                  className: "le-cart-clear",
-                  onClick: () => {
-                    clear();
-                    setConfirmClear(false);
-                  },
-                  children: "Yes"
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-                "button",
-                {
-                  type: "button",
-                  className: "le-cart-clear",
-                  onClick: () => setConfirmClear(false),
-                  children: "No"
-                }
-              )
-            ] }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
-              "button",
-              {
-                type: "button",
-                className: "le-cart-clear",
-                onClick: () => setConfirmClear(true),
-                children: "Clear bag"
-              }
-            )
-          ] })
-        ] })
-      }
-    )
-  ] });
-}
-
-// src/store/data/generatedSalePageData.json
-var generatedSalePageData_default = {
-  generatedAt: "2026-05-27T23:02:52.524Z",
-  page: {
-    title: "Local Effort Sale",
-    subheading: "holiday pie sale",
-    introText: "pickup at Henry & Son 11/26 (day before thanksgiving).\nwe'll get some christmas dates up soon too."
-  },
-  products: [
-    {
-      id: "178a4ea0-417b-460a-b699-0c11b8811ef0",
-      title: "Apple Pie",
-      slug: "apple-pie",
-      shortDescription: "zestar apples and a double crust",
-      longDescription: null,
-      longDescriptionBlocks: [
-        {
-          _key: "0a7292eba3ce",
-          _type: "block",
-          children: [
-            {
-              _key: "5c38fc7ca4dc",
-              _type: "span",
-              marks: [],
-              text: "we use butter for the crust but let us know if you like lard, could be good. local zestar apples for now and we're picking up haralson next - if you have a firm preference, let us know. "
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        }
-      ],
-      images: [
-        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/53ff9d67f5da93947c1af57eb31029867b0be07b-3024x4032.jpg"
-      ],
-      price: 4200,
-      salePrice: null,
-      priceDisplay: null,
-      inventoryManaged: false,
-      inventory: null,
-      squareItemId: null,
-      squareVariationId: null,
-      variants: [],
-      addOns: [],
-      offerDairyFree: false,
-      dairyFreeCost: 0,
-      stores: [
-        "sale"
-      ]
-    },
-    {
-      id: "c530941a-d2b0-4aa4-a60f-ce0b47088699",
-      title: "Peach Pie",
-      slug: "peach-pie",
-      shortDescription: "tree-ripe peaches from Shafer, Minnesota",
-      longDescription: null,
-      longDescriptionBlocks: [
-        {
-          _key: "dc471b98ce84",
-          _type: "block",
-          children: [
-            {
-              _key: "be3b6a7f0b92",
-              _type: "span",
-              marks: [],
-              text: 'grown in high tunnels, and picked around 9/14. big big pieces of peach. crust from local flour and Hope butter. 9" double crust.'
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        }
-      ],
-      images: [
-        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/6ce1acb345a667305c399dd71cefb369dc17eb6f-3024x4032.jpg"
-      ],
-      price: 4200,
-      salePrice: null,
-      priceDisplay: null,
-      inventoryManaged: false,
-      inventory: null,
-      squareItemId: null,
-      squareVariationId: null,
-      variants: [],
-      addOns: [],
-      offerDairyFree: false,
-      dairyFreeCost: 0,
-      stores: [
-        "sale"
-      ]
-    },
-    {
-      id: "38cd2d7d-2461-420f-8259-8fbdc4369ff0",
-      title: "Pumpkin Pie",
-      slug: "pumpkin-pie",
-      shortDescription: "early season pumpkin custard, classic.",
-      longDescription: null,
-      longDescriptionBlocks: [
-        {
-          _key: "b379841a834b",
-          _type: "block",
-          children: [
-            {
-              _key: "45becbcadd4b",
-              _type: "span",
-              marks: [],
-              text: "roasted pumpkin puree with warming spices like cardamom and clove, on a classic crust. "
-            }
-          ],
-          markDefs: [],
-          style: "normal"
-        }
-      ],
-      images: [
-        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/9cc8dfda88f44126651f7f2d5f133b866235f54f-1536x2048.jpg"
-      ],
-      price: 3500,
-      salePrice: null,
-      priceDisplay: null,
-      inventoryManaged: false,
-      inventory: null,
-      squareItemId: null,
-      squareVariationId: null,
-      variants: [],
-      addOns: [],
-      offerDairyFree: false,
-      dairyFreeCost: 0,
-      stores: [
-        "sale"
-      ]
-    }
-  ]
-};
-
-// src/pages/SalePage.jsx
-var import_jsx_runtime34 = require("react/jsx-runtime");
-var INITIAL_PRODUCTS = Array.isArray(generatedSalePageData_default?.products) ? generatedSalePageData_default.products : [];
-var INITIAL_PAGE = generatedSalePageData_default?.page || {};
-var INITIAL_GENERATED_AT = generatedSalePageData_default?.generatedAt || "";
-var FALLBACK_TITLE = "Local Effort Sale";
-var FALLBACK_SUBHEADING = "Seasonal prepared foods, pantry goods, and limited preorders.";
-var FALLBACK_INTRO = "Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.";
-var getProductSummary2 = (product) => {
-  const portableText = ptToHtml(product?.longDescriptionBlocks);
-  const summary = (portableText || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
-  if (!summary) return "";
-  return summary.length > 170 ? `${summary.slice(0, 167).trim()}...` : summary;
-};
-var formatGeneratedDate = (value) => {
-  if (!value) return "";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "";
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
-};
-var SalePage = () => {
-  const { totalQty, openCart } = useCart();
-  const [products, setProducts] = (0, import_react28.useState)(INITIAL_PRODUCTS);
-  const [loading, setLoading] = (0, import_react28.useState)(INITIAL_PRODUCTS.length === 0);
-  (0, import_react28.useEffect)(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/store/products?store=sale");
-        const data = res.ok ? await res.json() : { products: [] };
-        if (alive && Array.isArray(data.products)) {
-          setProducts(data.products);
-        }
-      } catch (_) {
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-  const pageTitle = INITIAL_PAGE.title || FALLBACK_TITLE;
-  const pageSubheading = INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
-  const introText = INITIAL_PAGE.introText || FALLBACK_INTRO;
-  const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
-  const metaDescription = (0, import_react28.useMemo)(() => {
-    const names = products.slice(0, 3).map((product) => product.title).filter(Boolean);
-    const namesLabel = names.length ? ` including ${names.join(", ")}` : "";
-    return `Shop the Local Effort sale${namesLabel}. Seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.`;
-  }, [products]);
-  const heroImage = products.find((product) => Array.isArray(product.images) && product.images[0])?.images?.[0] || null;
-  const schema = (0, import_react28.useMemo)(() => {
-    const canonical = `${SITE_URL}/sale`;
-    const productList = products.map((product, idx) => ({
-      "@type": "ListItem",
-      position: idx + 1,
-      url: `${canonical}#${product.slug || product.id}`,
-      item: {
-        "@type": "Product",
-        name: product.title,
-        image: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
-        description: getProductSummary2(product),
-        sku: product.squareVariationId || product.squareItemId || product.id,
-        brand: {
-          "@type": "Brand",
-          name: "Local Effort Cooperative"
-        },
-        offers: {
-          "@type": "Offer",
-          url: `${canonical}#${product.slug || product.id}`,
-          priceCurrency: "USD",
-          price: ((product.salePrice ?? product.price) / 100).toFixed(2),
-          availability: product.inventoryManaged && (product.inventory ?? 0) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-          seller: {
-            "@type": "Organization",
-            name: "Local Effort Cooperative",
-            url: SITE_URL
-          }
-        }
-      }
-    }));
-    return {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "CollectionPage",
-          name: pageTitle,
-          url: canonical,
-          description: metaDescription,
-          mainEntity: {
-            "@id": `${canonical}#sale-items`
-          }
-        },
-        {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            {
-              "@type": "ListItem",
-              position: 1,
-              name: "Home",
-              item: SITE_URL
-            },
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: "Sale",
-              item: canonical
-            }
-          ]
-        },
-        {
-          "@id": `${canonical}#sale-items`,
-          "@type": "ItemList",
-          name: "Local Effort sale products",
-          numberOfItems: productList.length,
-          itemListElement: productList
-        }
-      ]
-    };
-  }, [metaDescription, pageTitle, products]);
-  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_helmet_async5.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("title", { children: `${pageTitle} | Local Effort Cooperative` }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "description", content: metaDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "keywords", content: "Local Effort sale, Minneapolis food preorder, prepared foods Minneapolis, pantry goods Minneapolis, local delivery food, seasonal food drop" }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:title", content: `${pageTitle} | Local Effort Cooperative` }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:description", content: metaDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:type", content: "website" }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:url", content: `${SITE_URL}/sale` }),
-      heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:image", content: heroImage }),
-      heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:image", content: heroImage }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:title", content: `${pageTitle} | Local Effort Cooperative` }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:description", content: metaDescription }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "robots", content: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("link", { rel: "canonical", href: `${SITE_URL}/sale` }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "#products", className: "sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:px-3 focus:py-2 focus:text-xs focus:uppercase focus:tracking-widest focus:border focus:border-black", children: "Skip to products" }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("header", { className: "le-sale-header", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_react_router_dom6.Link, { to: "/", className: "le-sale-home-link", children: "Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
-        "button",
-        {
-          type: "button",
-          className: "le-sale-bag-btn",
-          onClick: openCart,
-          "aria-label": `Open bag, ${totalQty} item${totalQty !== 1 ? "s" : ""}`,
-          children: [
-            "Bag",
-            totalQty > 0 ? ` (${totalQty})` : ""
-          ]
-        }
-      )
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("main", { id: "products", className: "le-sale-main", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-hero", "aria-labelledby": "sale-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-hero-copy", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-eyebrow", children: "Minneapolis sale" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { id: "sale-title", className: "le-sale-title", children: pageTitle }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-subheading", children: pageSubheading }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-intro", children: introText.split(/\n{2,}/).filter(Boolean).map((paragraph) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { children: paragraph }, paragraph)) })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("aside", { className: "le-sale-summary", "aria-label": "Sale details", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Products live" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: products.length || "Updating" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Fulfillment" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Pickup + local delivery" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "How to shop" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Open any item for full details" })
-          ] }),
-          generatedLabel && /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Catalog snapshot" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: generatedLabel })
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-links", "aria-labelledby": "sale-links-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-links-title", className: "le-sale-section-title", children: "Looking for a specific event or drop?" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Some Local Effort offers live on dedicated landing pages with fuller booking and product context. These links help search engines and visitors move between the store, specialty drops, and private-event booking pages." })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-link-grid", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/psyche", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Psyche olive oil" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Dedicated product page with provenance, pricing, and fulfillment details." })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/february", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "February chef dinner" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private in-home dinner booking flow with date, pricing, and guest information." })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/#small-events", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Small events" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private dinners, pizza parties, and other event windows from the main site." })
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-products", "aria-labelledby": "sale-products-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-products-header", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-products-title", className: "le-sale-section-title", children: "Current sale catalog" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Product cards include visible names and summaries in the HTML so Google and AI crawlers can understand what the sale contains before JavaScript finishes loading." })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(ProductGrid, { products, skuPrefix: "LE", loading })
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CartDrawer, { store: "sale" })
-  ] });
-};
-var SalePage_default = SalePage;
-
-// src/pages/happymondaypage.jsx
-var import_react35 = __toESM(require("react"));
-var import_react_helmet_async6 = __toESM(require_lib());
-var import_framer_motion10 = require("framer-motion");
-
-// src/components/menu/FoodItemCard.jsx
-var import_react29 = __toESM(require("react"));
-var import_framer_motion6 = require("framer-motion");
-var import_jsx_runtime35 = require("react/jsx-runtime");
-var FoodItemCard = ({ item, onClick }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
-    import_framer_motion6.motion.div,
-    {
-      variants: fadeInUp,
-      onClick,
-      className: "border border-neutral-200 rounded-lg p-6 cursor-pointer hover:shadow-lg hover:border-neutral-400 transition-all duration-300 bg-white",
-      whileHover: { scale: 1.03 },
-      whileTap: { scale: 0.98 },
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
-      ]
-    }
-  );
-};
-var FoodItemCard_default = FoodItemCard;
-
-// src/components/ErrorBoundary.jsx
-var import_react30 = __toESM(require("react"));
-var import_jsx_runtime36 = require("react/jsx-runtime");
-var ErrorBoundary = class extends import_react30.default.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null, info: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-  componentDidCatch(error, info) {
-    console.error("ErrorBoundary caught", error, info);
-    this.setState({ info });
-  }
-  render() {
-    const { error, info } = this.state;
-    if (error) {
-      return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h1", { children: "Application error" }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
-        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("summary", { children: "Component stack" }),
-          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { children: info.componentStack })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
-      ] });
-    }
-    return this.props.children;
-  }
-};
-var ErrorBoundary_default = ErrorBoundary;
-
-// src/components/ui/Separator.jsx
-var import_react31 = __toESM(require("react"));
-var import_jsx_runtime37 = require("react/jsx-runtime");
-function Separator({ className = "", orientation = "horizontal", decorative = true, ...props }) {
-  const isHorizontal = orientation !== "vertical";
-  const base = isHorizontal ? "h-px w-full my-12" : "w-px h-full mx-4";
-  const classes = [base, "bg-neutral-200", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
-}
-
-// src/pages/happymondaypage.jsx
-var import_jsx_runtime41 = require("react/jsx-runtime");
-var BlockContent = (0, import_react35.lazy)(() => import("@sanity/block-content-to-react"));
-var FoodItemModal2 = (0, import_react35.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
-var FeedbackForm2 = (0, import_react35.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
-var LoadingSpinner2 = (0, import_react35.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
-var HappyMondayPage = () => {
-  const [menuItems, setMenuItems] = (0, import_react35.useState)([]);
-  const [pageContent, setPageContent] = (0, import_react35.useState)(null);
-  const [selectedItem, setSelectedItem] = (0, import_react35.useState)(null);
-  const [isLoading, setIsLoading] = (0, import_react35.useState)(true);
-  (0, import_react35.useEffect)(() => {
-    const query = `{
-      "menuItems": *[_type == "menuItems"],
-      "pageContent": *[_type == "happyMondayPage"][0]
-    }`;
-    sanityClient_default.fetch(query).then((data) => {
-      setMenuItems(data.menuItems || []);
-      setPageContent(data.pageContent);
-      setIsLoading(false);
-    }).catch(console.error);
-  }, []);
-  const handleCardClick = (item) => {
-    setSelectedItem(item);
-  };
-  const handleCloseModal = () => {
-    setSelectedItem(null);
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx_runtime41.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_react_helmet_async6.Helmet, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Happy Monday | Local Effort" }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
-        "meta",
-        {
-          name: "description",
-          content: "Explore our special Happy Monday menu, made with the finest local ingredients."
-        }
-      )
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-24 mb-24", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        pageContent && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "text-center mb-12", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
-            "img",
-            {
-              src: "https://www.localeffortfood.com/gallery/IMG_3145.jpg",
-              alt: "Happy Monday",
-              className: "max-w-full h-auto rounded-lg shadow-lg",
-              style: { width: "50%" }
-            }
-          ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react35.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react35.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
-          import_framer_motion10.motion.div,
-          {
-            className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
-            initial: "initial",
-            animate: "animate",
-            variants: { animate: { transition: { staggerChildren: 0.1 } } },
-            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
-          }
-        ) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
-        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
-        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react35.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FeedbackForm2, {}) }) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Separator, {})
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react35.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
-  ] });
-};
-var happymondaypage_default = HappyMondayPage;
-
-// src/pages/PizzaPartyPage.jsx
-var import_react37 = __toESM(require("react"));
-var import_react_helmet_async7 = __toESM(require_lib());
-var import_framer_motion11 = require("framer-motion");
+var import_react28 = __toESM(require("react"));
 
 // src/hooks/useSquareCard.js
-var import_react36 = require("react");
-var import_meta5 = {};
+var import_react26 = require("react");
+var import_meta4 = {};
 var SQUARE_SCRIPT_ATTR = "data-square-sdk";
 var squareScriptState = { url: null, promise: null };
 var readSquareRuntimeConfig = () => {
@@ -15790,8 +14791,8 @@ var readSquareRuntimeConfig = () => {
       environment: "production"
     };
   }
-  const runtimeAppId = window.__SQUARE_APP_ID__ || import_meta5?.env?.VITE_SQUARE_APP_ID || window.SQUARE_APPLICATION_ID || "";
-  const envHintRaw = (window.__SQUARE_ENV__ ?? import_meta5?.env?.VITE_SQUARE_ENV ?? "").toString().trim().toLowerCase();
+  const runtimeAppId = window.__SQUARE_APP_ID__ || import_meta4?.env?.VITE_SQUARE_APP_ID || window.SQUARE_APPLICATION_ID || "";
+  const envHintRaw = (window.__SQUARE_ENV__ ?? import_meta4?.env?.VITE_SQUARE_ENV ?? "").toString().trim().toLowerCase();
   const hostname = window.location?.hostname || "";
   let isSandbox = false;
   if (["sandbox", "dev", "development", "test"].includes(envHintRaw)) {
@@ -15806,7 +14807,7 @@ var readSquareRuntimeConfig = () => {
   const sdkUrl = isSandbox ? "https://sandbox.web.squarecdn.com/v1/square.js" : "https://web.squarecdn.com/v1/square.js";
   return {
     appId: runtimeAppId || null,
-    locationId: window.__SQUARE_LOCATION_ID__ || import_meta5?.env?.VITE_SQUARE_LOCATION_ID || window.SQUARE_LOCATION_ID || null,
+    locationId: window.__SQUARE_LOCATION_ID__ || import_meta4?.env?.VITE_SQUARE_LOCATION_ID || window.SQUARE_LOCATION_ID || null,
     sdkUrl,
     isSandbox,
     environment: isSandbox ? "sandbox" : "production"
@@ -15892,19 +14893,19 @@ var ensureSquareSdkScript = (sdkUrl, isSandbox) => {
   return promise;
 };
 function useSquareCard(containerId, enabled, deps = []) {
-  const paymentsRef = (0, import_react36.useRef)(null);
-  const cardRef = (0, import_react36.useRef)(null);
-  const cardInstanceIdRef = (0, import_react36.useRef)(0);
-  const activeCardInstanceIdRef = (0, import_react36.useRef)(0);
-  const lastTokenRef = (0, import_react36.useRef)({ token: null, cardInstanceId: 0, at: 0 });
-  const [cardLoaded, setCardLoaded] = (0, import_react36.useState)(false);
-  const [attempts, setAttempts] = (0, import_react36.useState)(0);
-  const attemptsRef = (0, import_react36.useRef)(0);
-  const [error, setError] = (0, import_react36.useState)("");
-  const [loadingScript, setLoadingScript] = (0, import_react36.useState)(false);
-  const attachStartedRef = (0, import_react36.useRef)(false);
+  const paymentsRef = (0, import_react26.useRef)(null);
+  const cardRef = (0, import_react26.useRef)(null);
+  const cardInstanceIdRef = (0, import_react26.useRef)(0);
+  const activeCardInstanceIdRef = (0, import_react26.useRef)(0);
+  const lastTokenRef = (0, import_react26.useRef)({ token: null, cardInstanceId: 0, at: 0 });
+  const [cardLoaded, setCardLoaded] = (0, import_react26.useState)(false);
+  const [attempts, setAttempts] = (0, import_react26.useState)(0);
+  const attemptsRef = (0, import_react26.useRef)(0);
+  const [error, setError] = (0, import_react26.useState)("");
+  const [loadingScript, setLoadingScript] = (0, import_react26.useState)(false);
+  const attachStartedRef = (0, import_react26.useRef)(false);
   const securityState = getSquareSecurityState();
-  const [envInfo, setEnvInfo] = (0, import_react36.useState)({
+  const [envInfo, setEnvInfo] = (0, import_react26.useState)({
     appId: null,
     locationId: null,
     sdkUrl: null,
@@ -15917,7 +14918,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     hostname: securityState.hostname,
     protocol: securityState.protocol
   });
-  const cleanupContainer = (0, import_react36.useCallback)(() => {
+  const cleanupContainer = (0, import_react26.useCallback)(() => {
     if (typeof document === "undefined") return;
     try {
       const node = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
@@ -15927,7 +14928,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [containerId]);
-  const destroyCardInstance = (0, import_react36.useCallback)(() => {
+  const destroyCardInstance = (0, import_react26.useCallback)(() => {
     const card = cardRef.current;
     cardRef.current = null;
     attachStartedRef.current = false;
@@ -15952,7 +14953,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     }
     finalize();
   }, [cleanupContainer]);
-  const reset = (0, import_react36.useCallback)(() => {
+  const reset = (0, import_react26.useCallback)(() => {
     try {
       destroyCardInstance();
       paymentsRef.current = null;
@@ -15962,7 +14963,7 @@ function useSquareCard(containerId, enabled, deps = []) {
     } catch (_) {
     }
   }, [destroyCardInstance]);
-  (0, import_react36.useEffect)(() => {
+  (0, import_react26.useEffect)(() => {
     if (!enabled) return;
     let cancelled = false;
     const config = readSquareRuntimeConfig();
@@ -15999,7 +15000,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       cancelled = true;
     };
   }, [enabled]);
-  (0, import_react36.useEffect)(() => {
+  (0, import_react26.useEffect)(() => {
     if (!enabled) return;
     const abortController = new AbortController();
     const { signal } = abortController;
@@ -16171,7 +15172,7 @@ function useSquareCard(containerId, enabled, deps = []) {
       paymentsRef.current = null;
     };
   }, [enabled, containerId, destroyCardInstance, cleanupContainer, ...deps]);
-  (0, import_react36.useEffect)(() => {
+  (0, import_react26.useEffect)(() => {
     setEnvInfo((info) => ({ ...info, attempts }));
   }, [attempts]);
   const withTimeout = async (promise, ms, message2) => {
@@ -16233,6 +15234,144 @@ function useSquareCard(containerId, enabled, deps = []) {
   return { cardLoaded, error, loadingScript, tokenize, verifyBuyer, reset, envInfo };
 }
 
+// src/hooks/useSquareExpressPay.js
+var import_react27 = require("react");
+var import_meta5 = {};
+var readConfig = () => {
+  if (typeof window === "undefined") return { appId: null, locationId: null };
+  return {
+    appId: window.__SQUARE_APP_ID__ || import_meta5?.env?.VITE_SQUARE_APP_ID || null,
+    locationId: window.__SQUARE_LOCATION_ID__ || import_meta5?.env?.VITE_SQUARE_LOCATION_ID || null
+  };
+};
+var waitForSquare = (signal) => new Promise((resolve, reject) => {
+  if (window.Square) return resolve();
+  const start = Date.now();
+  const interval = setInterval(() => {
+    if (signal?.aborted) {
+      clearInterval(interval);
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    if (window.Square) {
+      clearInterval(interval);
+      resolve();
+      return;
+    }
+    if (Date.now() - start > 15e3) {
+      clearInterval(interval);
+      reject(new Error("Square SDK not ready"));
+    }
+  }, 150);
+});
+var buildWalletError = (walletName, tokenResult) => {
+  const first = tokenResult?.errors?.[0];
+  return new Error(first?.message || first?.code || tokenResult?.status || `${walletName} was not approved.`);
+};
+function useSquareExpressPay({ amountCents, containerId, enabled, onToken }) {
+  const [googlePayAvailable, setGooglePayAvailable] = (0, import_react27.useState)(false);
+  const [applePayAvailable, setApplePayAvailable] = (0, import_react27.useState)(false);
+  const [loading, setLoading] = (0, import_react27.useState)(false);
+  const [error, setError] = (0, import_react27.useState)("");
+  const googlePayRef = (0, import_react27.useRef)(null);
+  const applePayRef = (0, import_react27.useRef)(null);
+  const destroy = (0, import_react27.useCallback)(() => {
+    [googlePayRef, applePayRef].forEach((ref) => {
+      if (ref.current) {
+        try {
+          ref.current.destroy?.();
+        } catch (_) {
+        }
+        ref.current = null;
+      }
+    });
+    setGooglePayAvailable(false);
+    setApplePayAvailable(false);
+  }, []);
+  (0, import_react27.useEffect)(() => {
+    if (!enabled || !amountCents || amountCents <= 0) return void 0;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const handleWalletToken = async (walletName, tokenResult) => {
+      if (tokenResult?.status !== "OK" || !tokenResult?.token) {
+        throw buildWalletError(walletName, tokenResult);
+      }
+      await onToken?.(tokenResult.token, tokenResult);
+    };
+    const mountWalletButton = async ({ walletName, create: create2, attachOptions, ref, setAvailable }) => {
+      const container = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+      if (!container) throw new Error("Express pay container not found");
+      const wallet = await create2();
+      const buttonHost = document.createElement("div");
+      buttonHost.className = "le-checkout-wallet-button";
+      container.appendChild(buttonHost);
+      await wallet.attach(buttonHost, attachOptions);
+      ref.current = wallet;
+      buttonHost.onclick = async () => {
+        try {
+          setError("");
+          await handleWalletToken(walletName, await wallet.tokenize());
+        } catch (err) {
+          setError(err?.message || `${walletName} failed.`);
+        }
+      };
+      if (!signal.aborted) setAvailable(true);
+    };
+    const init = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { appId, locationId } = readConfig();
+        if (!appId || !locationId) throw new Error("Square not configured");
+        await waitForSquare(signal);
+        if (signal.aborted) return;
+        const payments = window.Square.payments(appId, locationId);
+        const paymentRequest = payments.paymentRequest({
+          countryCode: "US",
+          currencyCode: "USD",
+          total: {
+            amount: (amountCents / 100).toFixed(2),
+            label: "Local Effort"
+          }
+        });
+        const container = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
+        if (!container) throw new Error("Express pay container not found");
+        container.innerHTML = "";
+        try {
+          await mountWalletButton({
+            walletName: "Google Pay",
+            create: () => payments.googlePay(paymentRequest),
+            attachOptions: { buttonType: "long" },
+            ref: googlePayRef,
+            setAvailable: setGooglePayAvailable
+          });
+        } catch (_) {
+        }
+        try {
+          await mountWalletButton({
+            walletName: "Apple Pay",
+            create: () => payments.applePay(paymentRequest),
+            attachOptions: void 0,
+            ref: applePayRef,
+            setAvailable: setApplePayAvailable
+          });
+        } catch (_) {
+        }
+      } catch (err) {
+        if (!signal.aborted) setError(err?.message || "Express pay unavailable");
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    };
+    init();
+    return () => {
+      controller.abort();
+      destroy();
+    };
+  }, [enabled, amountCents, containerId, onToken, destroy]);
+  return { googlePayAvailable, applePayAvailable, loading, error };
+}
+
 // src/lib/checkoutAttemptId.js
 var resolveStorage = () => {
   if (typeof window === "undefined") return null;
@@ -16271,7 +15410,1319 @@ var clearCheckoutAttemptId = (storageKey) => {
   storage.removeItem(storageKey);
 };
 
+// src/store/components/CheckoutPanel.jsx
+var import_jsx_runtime32 = require("react/jsx-runtime");
+var fmt3 = (cents) => `$${((Number(cents) || 0) / 100).toFixed(2)}`;
+var PROFILE_STORAGE_KEY = "le:storeCheckoutProfile";
+var blankAddress = { line1: "", line2: "", city: "", state: "MN", postal: "" };
+var blankProfile = {
+  customer: { name: "", email: "", phone: "" },
+  pickup: true,
+  address: blankAddress,
+  deliveryInstructions: ""
+};
+var normalizePhone2 = (value) => String(value || "").replace(/\D/g, "").slice(0, 10);
+var formatPhone2 = (value) => {
+  const digits = normalizePhone2(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+var isValidEmail2 = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+var loadProfile = () => {
+  if (typeof window === "undefined") return blankProfile;
+  try {
+    const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!raw) return blankProfile;
+    const parsed = JSON.parse(raw);
+    return {
+      customer: {
+        name: parsed?.customer?.name || "",
+        email: parsed?.customer?.email || "",
+        phone: formatPhone2(parsed?.customer?.phone || "")
+      },
+      pickup: parsed?.pickup !== false,
+      address: { ...blankAddress, ...parsed?.address || {} },
+      deliveryInstructions: parsed?.deliveryInstructions || ""
+    };
+  } catch (_) {
+    return blankProfile;
+  }
+};
+var buildCartPayload = (items) => items.map((item) => ({
+  productId: item.productId,
+  variationId: item.variationId || null,
+  qty: item.qty,
+  addOnIndices: item.addOnIndices || [],
+  dairyFree: !!item.dairyFree,
+  title: item.title
+}));
+function useServerPricing(items, localSubtotal) {
+  const [pricing, setPricing] = (0, import_react28.useState)({
+    loading: false,
+    error: "",
+    subtotal: null,
+    lines: [],
+    pricedAt: null
+  });
+  const payloadKey = (0, import_react28.useMemo)(() => JSON.stringify(buildCartPayload(items)), [items]);
+  (0, import_react28.useEffect)(() => {
+    if (!items.length) {
+      setPricing({ loading: false, error: "", subtotal: null, lines: [], pricedAt: null });
+      return void 0;
+    }
+    const controller = new AbortController();
+    setPricing((current) => ({ ...current, loading: true, error: "" }));
+    fetch("/api/store/price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: buildCartPayload(items) }),
+      signal: controller.signal
+    }).then(async (response) => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || "Unable to confirm order total.");
+      setPricing({
+        loading: false,
+        error: "",
+        subtotal: Number.isInteger(data?.subtotal) ? data.subtotal : null,
+        lines: Array.isArray(data?.lines) ? data.lines : [],
+        pricedAt: data?.pricedAt || null
+      });
+    }).catch((error) => {
+      if (error?.name === "AbortError") return;
+      setPricing({
+        loading: false,
+        error: error?.message || "Unable to confirm order total.",
+        subtotal: null,
+        lines: [],
+        pricedAt: null
+      });
+    });
+    return () => controller.abort();
+  }, [payloadKey, items]);
+  return {
+    ...pricing,
+    subtotal: pricing.subtotal ?? localSubtotal,
+    confirmed: pricing.subtotal !== null && !pricing.error
+  };
+}
+function CheckoutPanel({ store = "sale", onBack }) {
+  const { items, subtotal, open, closeCart, clear } = useCart();
+  const loadedProfile = (0, import_react28.useMemo)(loadProfile, []);
+  const [customer, setCustomer] = (0, import_react28.useState)(loadedProfile.customer);
+  const [pickup, setPickup] = (0, import_react28.useState)(loadedProfile.pickup);
+  const [address, setAddress] = (0, import_react28.useState)(loadedProfile.address);
+  const [deliveryInstructions, setDeliveryInstructions] = (0, import_react28.useState)(loadedProfile.deliveryInstructions);
+  const [status, setStatus] = (0, import_react28.useState)("idle");
+  const [error, setError] = (0, import_react28.useState)("");
+  const [orderResult, setOrderResult] = (0, import_react28.useState)(null);
+  const checkoutAttemptRef = (0, import_react28.useRef)("");
+  const attemptStorageKey = `le:checkoutAttempt:store:${store}`;
+  const pricing = useServerPricing(items, subtotal);
+  const amountCents = pricing.subtotal;
+  const enabled = open && items.length > 0 && status !== "success";
+  const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
+    "#store-card-container",
+    enabled,
+    []
+  );
+  const updateCustomer = (0, import_react28.useCallback)((patch) => {
+    setCustomer((current) => ({ ...current, ...patch }));
+    if (status !== "idle") {
+      setStatus("idle");
+      setError("");
+    }
+  }, [status]);
+  const updateAddress = (0, import_react28.useCallback)((patch) => {
+    setAddress((current) => ({ ...current, ...patch }));
+    if (status !== "idle") {
+      setStatus("idle");
+      setError("");
+    }
+  }, [status]);
+  const resolveCheckoutAttemptId = (0, import_react28.useCallback)(() => {
+    if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
+    const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
+    checkoutAttemptRef.current = next;
+    return next;
+  }, [attemptStorageKey]);
+  const clearCheckoutAttempt = (0, import_react28.useCallback)(() => {
+    checkoutAttemptRef.current = "";
+    clearCheckoutAttemptId(attemptStorageKey);
+  }, [attemptStorageKey]);
+  const canSubmit = (0, import_react28.useCallback)((requireCard = true) => {
+    if (!items.length) return false;
+    if (!customer.name.trim()) return false;
+    if (!isValidEmail2(customer.email)) return false;
+    if (customer.phone && normalizePhone2(customer.phone).length < 10) return false;
+    if (!pickup) {
+      if (!address.line1.trim() || !address.city.trim()) return false;
+      if (!address.state.trim() || address.postal.trim().replace(/\D/g, "").length < 5) return false;
+    }
+    if (requireCard && !cardLoaded) return false;
+    return true;
+  }, [address, cardLoaded, customer, items.length, pickup]);
+  (0, import_react28.useEffect)(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
+        customer,
+        pickup,
+        address,
+        deliveryInstructions
+      }));
+    } catch (_) {
+    }
+  }, [address, customer, deliveryInstructions, pickup]);
+  (0, import_react28.useEffect)(() => {
+    if (!open) {
+      setStatus("idle");
+      setError("");
+      setOrderResult(null);
+      clearCheckoutAttempt();
+      reset();
+    }
+  }, [clearCheckoutAttempt, open, reset]);
+  const verificationDetails = (0, import_react28.useMemo)(() => {
+    const nameParts = customer.name.trim().split(/\s+/).filter(Boolean);
+    return {
+      amount: (amountCents / 100).toFixed(2),
+      currencyCode: "USD",
+      intent: "CHARGE",
+      billingContact: {
+        givenName: nameParts[0] || void 0,
+        familyName: nameParts.slice(1).join(" ") || void 0,
+        email: customer.email.trim() || void 0,
+        phone: normalizePhone2(customer.phone) || void 0,
+        addressLines: pickup ? void 0 : [address.line1, address.line2].filter(Boolean),
+        city: pickup ? void 0 : address.city || void 0,
+        state: pickup ? void 0 : address.state || void 0,
+        postalCode: pickup ? void 0 : address.postal || void 0,
+        countryCode: "US"
+      }
+    };
+  }, [address, amountCents, customer, pickup]);
+  const submitCheckout = (0, import_react28.useCallback)(async ({ token, verificationToken, method }) => {
+    const checkoutAttemptId = resolveCheckoutAttemptId();
+    const response = await fetch("/api/store/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: {
+          name: customer.name.trim(),
+          email: customer.email.trim(),
+          phone: formatPhone2(customer.phone)
+        },
+        pickup,
+        address: pickup ? null : address,
+        deliveryInstructions,
+        items: buildCartPayload(items),
+        token,
+        verificationToken,
+        checkoutAttemptId,
+        store
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data?.error || "Checkout failed.");
+    trackEvent("order.placed", {
+      store,
+      method,
+      sessionId: checkoutAttemptId,
+      paymentId: data?.paymentId,
+      amountCents: data?.amountCents || amountCents
+    });
+    setOrderResult({
+      name: customer.name.trim(),
+      email: customer.email.trim(),
+      pickup,
+      amountCents: data?.amountCents || amountCents,
+      paymentId: data?.paymentId || ""
+    });
+    clear();
+    setStatus("success");
+    clearCheckoutAttempt();
+  }, [
+    address,
+    amountCents,
+    clear,
+    clearCheckoutAttempt,
+    customer,
+    deliveryInstructions,
+    items,
+    pickup,
+    resolveCheckoutAttemptId,
+    store
+  ]);
+  const handleSubmit = (0, import_react28.useCallback)(async (event) => {
+    event.preventDefault();
+    if (status === "submitting") return;
+    setError("");
+    if (!canSubmit(true)) {
+      setError("Please complete the required checkout fields before paying.");
+      return;
+    }
+    setStatus("submitting");
+    const checkoutAttemptId = resolveCheckoutAttemptId();
+    trackEvent("payment.attempted", { store, sessionId: checkoutAttemptId, amountCents });
+    try {
+      const token = await tokenize();
+      const verificationToken = await verifyBuyer(token, verificationDetails);
+      await submitCheckout({ token, verificationToken, method: "card" });
+    } catch (err) {
+      trackEvent("payment.failed", { store, reason: err?.message });
+      setStatus("error");
+      setError(err?.message || "Unable to complete purchase.");
+    }
+  }, [
+    amountCents,
+    canSubmit,
+    resolveCheckoutAttemptId,
+    status,
+    store,
+    submitCheckout,
+    tokenize,
+    verificationDetails,
+    verifyBuyer
+  ]);
+  const handleExpressToken = (0, import_react28.useCallback)(async (token) => {
+    if (status === "submitting") return;
+    setError("");
+    if (!canSubmit(false)) {
+      setError("Add your contact and fulfillment details before using express pay.");
+      return;
+    }
+    setStatus("submitting");
+    try {
+      trackEvent("express_pay.used", { store, amountCents });
+      await submitCheckout({ token, verificationToken: void 0, method: "express" });
+    } catch (err) {
+      setStatus("error");
+      setError(err?.message || "Unable to complete purchase.");
+    }
+  }, [amountCents, canSubmit, status, store, submitCheckout]);
+  const { googlePayAvailable, applePayAvailable, error: expressError } = useSquareExpressPay({
+    amountCents,
+    containerId: "#store-express-pay",
+    enabled,
+    onToken: handleExpressToken
+  });
+  const expressPayAvailable = googlePayAvailable || applePayAvailable;
+  (0, import_react28.useEffect)(() => {
+    if (expressPayAvailable) trackEvent("express_pay.shown", { store });
+  }, [expressPayAvailable, store]);
+  if (!open) return null;
+  if (orderResult) {
+    return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer-header", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-drawer-title", children: "Order confirmed" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "le-cart-close", onClick: closeCart, "aria-label": "Close", children: "x" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer", style: { overflowY: "auto", flex: "1 1 0" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-success", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-success-title", children: "Order placed" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "le-checkout-success-copy", children: [
+            "Thanks",
+            orderResult.name ? `, ${orderResult.name.split(" ")[0]}` : "",
+            ". A confirmation email is on the way to ",
+            orderResult.email,
+            "."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-success-copy", children: orderResult.pickup ? "Pickup details will be sent separately." : "Delivery details will be sent separately." }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-success-meta", children: [
+            fmt3(orderResult.amountCents),
+            " paid",
+            orderResult.paymentId ? ` - ${orderResult.paymentId}` : ""
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "le-checkout-submit", onClick: closeCart, children: "Continue shopping" })
+      ] })
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer-header", children: [
+      onBack ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "le-checkout-drawer-back", onClick: onBack, children: "Back to bag" }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-drawer-title", children: "Checkout" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "le-cart-close", onClick: closeCart, "aria-label": "Close", children: "x" })
+    ] }),
+    items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-cart-empty", style: { padding: "2rem 1.5rem" }, children: "Your bag is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-drawer", style: { overflowY: "auto", flex: "1 1 0" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", style: { paddingTop: 0 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Your order" }),
+        items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-line", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-line-main", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-line-title", children: item.title }),
+            item.optionSummary && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-line-options", children: item.optionSummary })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "le-checkout-line-meta", children: [
+            item.qty > 1 ? `${item.qty} x ` : "",
+            fmt3(item.unitPrice)
+          ] })
+        ] }, item.key)),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-summary", style: { marginTop: "0.5rem" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "le-checkout-summary-label", children: [
+            "Total",
+            pricing.confirmed ? "" : " est."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-summary-value", children: fmt3(amountCents) })
+        ] }),
+        pricing.loading && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-footnote", style: { margin: 0, textAlign: "left" }, children: "Confirming current prices..." }),
+        pricing.error && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-warning", children: [
+          pricing.error,
+          " Final total is still recomputed before payment."
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("form", { onSubmit: handleSubmit, className: "le-checkout-form", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Contact" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-name", children: "Name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "input",
+              {
+                id: "co-name",
+                className: "le-checkout-input",
+                value: customer.name,
+                onChange: (event) => updateCustomer({ name: event.target.value }),
+                autoComplete: "name",
+                required: true
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-email", children: "Email" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "input",
+              {
+                id: "co-email",
+                type: "email",
+                className: "le-checkout-input",
+                value: customer.email,
+                onChange: (event) => updateCustomer({ email: event.target.value }),
+                autoComplete: "email",
+                inputMode: "email",
+                required: true
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-phone", children: "Phone" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "input",
+              {
+                id: "co-phone",
+                type: "tel",
+                className: "le-checkout-input",
+                value: customer.phone,
+                onChange: (event) => updateCustomer({ phone: formatPhone2(event.target.value) }),
+                autoComplete: "tel",
+                inputMode: "tel",
+                placeholder: "Optional"
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Fulfillment" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-pickup-selector", role: "group", "aria-label": "Fulfillment method", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "button",
+              {
+                type: "button",
+                className: `le-checkout-pickup-pill${pickup ? " is-selected" : ""}`,
+                onClick: () => setPickup(true),
+                "aria-pressed": pickup,
+                children: "Pickup"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "button",
+              {
+                type: "button",
+                className: `le-checkout-pickup-pill${!pickup ? " is-selected" : ""}`,
+                onClick: () => setPickup(false),
+                "aria-pressed": !pickup,
+                children: "Local delivery"
+              }
+            )
+          ] }),
+          !pickup && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-address-line1", children: "Street address" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                "input",
+                {
+                  id: "co-address-line1",
+                  className: "le-checkout-input",
+                  value: address.line1,
+                  onChange: (event) => updateAddress({ line1: event.target.value }),
+                  autoComplete: "shipping address-line1",
+                  required: true
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-address-line2", children: "Apt / suite" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                "input",
+                {
+                  id: "co-address-line2",
+                  className: "le-checkout-input",
+                  value: address.line2,
+                  onChange: (event) => updateAddress({ line2: event.target.value }),
+                  autoComplete: "shipping address-line2",
+                  placeholder: "Optional"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field-row", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-city", children: "City" }),
+                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                  "input",
+                  {
+                    id: "co-city",
+                    className: "le-checkout-input",
+                    value: address.city,
+                    onChange: (event) => updateAddress({ city: event.target.value }),
+                    autoComplete: "shipping address-level2",
+                    required: true
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-state", children: "State" }),
+                /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                  "input",
+                  {
+                    id: "co-state",
+                    className: "le-checkout-input",
+                    value: address.state,
+                    onChange: (event) => updateAddress({ state: event.target.value.toUpperCase().slice(0, 2) }),
+                    autoComplete: "shipping address-level1",
+                    required: true
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-postal", children: "ZIP" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                "input",
+                {
+                  id: "co-postal",
+                  className: "le-checkout-input",
+                  value: address.postal,
+                  onChange: (event) => updateAddress({ postal: event.target.value.replace(/[^\d-]/g, "").slice(0, 10) }),
+                  autoComplete: "shipping postal-code",
+                  inputMode: "numeric",
+                  required: true
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-delivery-notes", children: "Delivery notes" }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+                "textarea",
+                {
+                  id: "co-delivery-notes",
+                  className: "le-checkout-textarea",
+                  value: deliveryInstructions,
+                  onChange: (event) => setDeliveryInstructions(event.target.value),
+                  autoComplete: "off",
+                  placeholder: "Optional"
+                }
+              )
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Payment" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-payment", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+              "div",
+              {
+                id: "store-express-pay",
+                className: "le-checkout-express",
+                "aria-label": "Express payment options"
+              }
+            ),
+            expressPayAvailable && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-express-divider", children: "or" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-card-container", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { id: "store-card-container" }),
+              (loadingScript || !cardLoaded && !cardError) && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-card-loading", children: "Loading secure payment form..." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-trust", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { "aria-hidden": "true", children: "Lock" }),
+              "Secured by Square",
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "le-checkout-trust-sep", children: "/" }),
+              "Visa, Mastercard, Amex, Discover"
+            ] })
+          ] })
+        ] }),
+        (error || cardError || expressError) && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-error", children: error || cardError || expressError }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+          "button",
+          {
+            type: "submit",
+            className: "le-checkout-submit",
+            disabled: status === "submitting" || !canSubmit(true),
+            children: status === "submitting" ? "Processing..." : `Pay ${fmt3(amountCents)}`
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-footnote", children: "Contact and fulfillment details are saved on this device for faster checkout next time." })
+      ] })
+    ] })
+  ] });
+}
+
+// src/store/components/CartDrawer.jsx
+var import_jsx_runtime33 = require("react/jsx-runtime");
+var fmt4 = (cents) => `$${(cents / 100).toFixed(2)}`;
+var usePricedSubtotal = (items) => {
+  const [serverSubtotal, setServerSubtotal] = (0, import_react29.useState)(null);
+  const [pricingError, setPricingError] = (0, import_react29.useState)(false);
+  const timerRef = (0, import_react29.useRef)(null);
+  (0, import_react29.useEffect)(() => {
+    if (!items.length) {
+      setServerSubtotal(null);
+      setPricingError(false);
+      return;
+    }
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      try {
+        const payload = {
+          items: items.map((i) => ({
+            productId: i.productId,
+            variationId: i.variationId || null,
+            qty: i.qty,
+            addOnIndices: i.addOnIndices || [],
+            dairyFree: i.dairyFree || false
+          }))
+        };
+        const res = await fetch("/api/store/price", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("pricing failed");
+        const data = await res.json();
+        setServerSubtotal(data.subtotal ?? null);
+        setPricingError(false);
+      } catch (_) {
+        setPricingError(true);
+      }
+    }, 400);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [items]);
+  return { serverSubtotal, pricingError };
+};
+function CartDrawer({ store = "sale" }) {
+  const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
+  const { serverSubtotal, pricingError } = usePricedSubtotal(items);
+  const drawerRef = (0, import_react29.useRef)(null);
+  const closeBtnRef = (0, import_react29.useRef)(null);
+  const prevFocusRef = (0, import_react29.useRef)(null);
+  const [confirmClear, setConfirmClear] = (0, import_react29.useState)(false);
+  const [checkingOut, setCheckingOut] = (0, import_react29.useState)(false);
+  const displaySubtotal = serverSubtotal ?? subtotal;
+  const isServerConfirmed = serverSubtotal !== null && !pricingError;
+  (0, import_react29.useEffect)(() => {
+    if (open) trackEvent("cart.opened", { store });
+  }, [open, store]);
+  (0, import_react29.useEffect)(() => {
+    if (!open) return;
+    prevFocusRef.current = document.activeElement;
+    if (closeBtnRef.current) closeBtnRef.current.focus();
+    const handleKey = (e) => {
+      if (e.key === "Escape") {
+        closeCart();
+        return;
+      }
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => el.offsetParent !== null);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKey, true);
+    return () => {
+      document.removeEventListener("keydown", handleKey, true);
+      prevFocusRef.current?.focus?.();
+    };
+  }, [open, closeCart]);
+  (0, import_react29.useEffect)(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      setConfirmClear(false);
+      setCheckingOut(false);
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+  const handleCheckout = (0, import_react29.useCallback)(() => {
+    trackEvent("checkout.started", { store, itemCount: items.length });
+    setCheckingOut(true);
+  }, [store, items.length]);
+  if (!open) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+      "div",
+      {
+        className: "le-cart-backdrop",
+        onClick: closeCart,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+      "div",
+      {
+        className: "le-cart-drawer",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": checkingOut ? "Checkout" : "Your cart",
+        ref: drawerRef,
+        style: { display: "flex", flexDirection: "column" },
+        children: checkingOut ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+          CheckoutPanel,
+          {
+            store,
+            onBack: () => setCheckingOut(false)
+          }
+        ) : /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-header", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-heading", children: "Bag" }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+              "button",
+              {
+                ref: closeBtnRef,
+                type: "button",
+                className: "le-cart-close",
+                onClick: closeCart,
+                "aria-label": "Close cart",
+                children: "\u2715"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-body", children: items.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-empty", children: "Your bag is empty." }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("ul", { className: "le-cart-lines", "aria-label": "Cart items", children: items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("li", { className: "le-cart-line", children: [
+            item.image && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+              "img",
+              {
+                src: item.image,
+                alt: "",
+                "aria-hidden": "true",
+                className: "le-cart-line-img"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-line-info", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-title", children: item.title }),
+              item.optionSummary && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-options", children: item.optionSummary }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-price", children: fmt4(item.unitPrice) }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-line-controls", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    className: "le-cart-qty-btn",
+                    onClick: () => updateQty(item.key, Math.max(0, item.qty - 1)),
+                    "aria-label": `Decrease quantity of ${item.title}`,
+                    children: "\u2212"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-qty-count", "aria-live": "polite", children: item.qty }),
+                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    className: "le-cart-qty-btn",
+                    onClick: () => updateQty(item.key, item.qty + 1),
+                    "aria-label": `Increase quantity of ${item.title}`,
+                    children: "+"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    className: "le-cart-remove",
+                    onClick: () => remove(item.key),
+                    "aria-label": `Remove ${item.title}`,
+                    children: "Remove"
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "le-cart-line-total", children: fmt4(item.unitPrice * item.qty) })
+          ] }, item.key)) }) }),
+          items.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-footer", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-subtotal", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("span", { className: "le-cart-subtotal-label", children: [
+                "Subtotal",
+                isServerConfirmed ? "" : " (est.)"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-subtotal-value", children: fmt4(displaySubtotal) })
+            ] }),
+            pricingError && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-pricing-note", children: "Prices are estimated. Final total confirmed at checkout." }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "le-cart-tax-note", children: "Tax and fulfillment calculated at checkout." }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "le-cart-checkout-btn",
+                onClick: handleCheckout,
+                children: "Checkout"
+              }
+            ),
+            confirmClear ? /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "le-cart-confirm-row", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "le-cart-confirm-label", children: "Clear bag?" }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "le-cart-clear",
+                  onClick: () => {
+                    clear();
+                    setConfirmClear(false);
+                  },
+                  children: "Yes"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+                "button",
+                {
+                  type: "button",
+                  className: "le-cart-clear",
+                  onClick: () => setConfirmClear(false),
+                  children: "No"
+                }
+              )
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "le-cart-clear",
+                onClick: () => setConfirmClear(true),
+                children: "Clear bag"
+              }
+            )
+          ] })
+        ] })
+      }
+    )
+  ] });
+}
+
+// src/store/data/generatedSalePageData.json
+var generatedSalePageData_default = {
+  generatedAt: "2026-06-03T00:13:46.777Z",
+  page: {
+    title: "local effort sales",
+    subheading: "sale",
+    introText: "one-off or small run items, usually go quickly.\n\npickup at\n\nNeon Collective Kitchens\n\n2103 W Broadway in Minneapolis\n\ncoordinate with Weston for time and day, most days are fine."
+  },
+  products: [
+    {
+      id: "2ae482d9-9e96-4431-8f8e-d701d4ea575f",
+      title: "Ice Cream - Fior di Latte - Pint",
+      slug: "ice-cream-fior-di-latte-pint",
+      shortDescription: "Highlighting the flavor of local dairy",
+      longDescription: null,
+      longDescriptionBlocks: [
+        {
+          _key: "8afd4cdd7d75",
+          _type: "block",
+          children: [
+            {
+              _key: "74d23ded93f4",
+              _type: "span",
+              marks: [],
+              text: "Autumnwood Dairy from Forest Lake provides the milk and cream for this perfectly simple custard-style ice cream. "
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "7a3967508bd7",
+          _type: "block",
+          children: [
+            {
+              _key: "d11cc13c5ac3",
+              _type: "span",
+              marks: [],
+              text: ""
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "ee6ff924e4ec",
+          _type: "block",
+          children: [
+            {
+              _key: "74d23ded93f4",
+              _type: "span",
+              marks: [],
+              text: "Fior di Latte is an italian tradition of Milk Flavored Ice Cream."
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "fe6f7f456010",
+          _type: "block",
+          children: [
+            {
+              _key: "15bb20f0da9c",
+              _type: "span",
+              marks: [],
+              text: ""
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        },
+        {
+          _key: "c03c9f07d515",
+          _type: "block",
+          children: [
+            {
+              _key: "e145e1a9c5ea",
+              _type: "span",
+              marks: [],
+              text: "milk, cream, panela, honey, egg yolks. "
+            }
+          ],
+          markDefs: [],
+          style: "normal"
+        }
+      ],
+      images: [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/d6a397a0a1fd10febf59d3c830a3a950c7d3b650-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0337b7545adb19b50d3b8b2276ee5dd4e457fd7d-4284x5712.jpg"
+      ],
+      price: 800,
+      salePrice: null,
+      priceDisplay: null,
+      inventoryManaged: false,
+      inventory: null,
+      squareItemId: null,
+      squareVariationId: null,
+      variants: [],
+      addOns: [],
+      offerDairyFree: false,
+      dairyFreeCost: 0,
+      stores: [
+        "sale"
+      ]
+    }
+  ]
+};
+
+// src/pages/SalePage.jsx
+var import_jsx_runtime34 = require("react/jsx-runtime");
+var INITIAL_PRODUCTS = Array.isArray(generatedSalePageData_default?.products) ? generatedSalePageData_default.products : [];
+var INITIAL_PAGE = generatedSalePageData_default?.page || {};
+var INITIAL_GENERATED_AT = generatedSalePageData_default?.generatedAt || "";
+var FALLBACK_TITLE = "Local Effort Sale";
+var FALLBACK_SUBHEADING = "Seasonal prepared foods, pantry goods, and limited preorders.";
+var FALLBACK_INTRO = "Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.";
+var getProductSummary2 = (product) => {
+  const portableText = ptToHtml(product?.longDescriptionBlocks);
+  const summary = (portableText || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
+  if (!summary) return "";
+  return summary.length > 170 ? `${summary.slice(0, 167).trim()}...` : summary;
+};
+var formatGeneratedDate = (value) => {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+};
+var SalePage = () => {
+  const { totalQty, openCart } = useCart();
+  const location = (0, import_react_router_dom6.useLocation)();
+  const navigate = (0, import_react_router_dom6.useNavigate)();
+  const openSlug = location.hash ? location.hash.slice(1) : null;
+  const [products, setProducts] = (0, import_react30.useState)(INITIAL_PRODUCTS);
+  const [loading, setLoading] = (0, import_react30.useState)(INITIAL_PRODUCTS.length === 0);
+  const [livePage, setLivePage] = (0, import_react30.useState)(null);
+  (0, import_react30.useEffect)(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/store/products?store=sale");
+        const data = res.ok ? await res.json() : { products: [] };
+        if (alive) {
+          if (Array.isArray(data.products)) setProducts(data.products);
+          if (data.page && typeof data.page === "object") setLivePage(data.page);
+        }
+      } catch (_) {
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const pageTitle = livePage?.title || INITIAL_PAGE.title || FALLBACK_TITLE;
+  const pageSubheading = livePage?.subheading || INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
+  const introText = livePage?.introText || INITIAL_PAGE.introText || FALLBACK_INTRO;
+  const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
+  const metaDescription = (0, import_react30.useMemo)(() => {
+    const names = products.slice(0, 3).map((product) => product.title).filter(Boolean);
+    const namesLabel = names.length ? ` including ${names.join(", ")}` : "";
+    return `Shop the Local Effort sale${namesLabel}. Seasonal food drops, pantry goods, and limited preorders with Minneapolis pickup and local delivery.`;
+  }, [products]);
+  const heroImage = products.find((product) => Array.isArray(product.images) && product.images[0])?.images?.[0] || null;
+  const schema = (0, import_react30.useMemo)(() => {
+    const canonical = `${SITE_URL}/sale`;
+    const productList = products.map((product, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${canonical}#${product.slug || product.id}`,
+      item: {
+        "@type": "Product",
+        name: product.title,
+        image: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
+        description: getProductSummary2(product),
+        sku: product.squareVariationId || product.squareItemId || product.id,
+        brand: {
+          "@type": "Brand",
+          name: "Local Effort Cooperative"
+        },
+        offers: {
+          "@type": "Offer",
+          url: `${canonical}#${product.slug || product.id}`,
+          priceCurrency: "USD",
+          price: ((product.salePrice ?? product.price) / 100).toFixed(2),
+          availability: product.inventoryManaged && (product.inventory ?? 0) <= 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+          seller: {
+            "@type": "Organization",
+            name: "Local Effort Cooperative",
+            url: SITE_URL
+          }
+        }
+      }
+    }));
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          name: pageTitle,
+          url: canonical,
+          description: metaDescription,
+          mainEntity: {
+            "@id": `${canonical}#sale-items`
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: SITE_URL
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Sale",
+              item: canonical
+            }
+          ]
+        },
+        {
+          "@id": `${canonical}#sale-items`,
+          "@type": "ItemList",
+          name: "Local Effort sale products",
+          numberOfItems: productList.length,
+          itemListElement: productList
+        }
+      ]
+    };
+  }, [metaDescription, pageTitle, products]);
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_helmet_async5.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("title", { children: `${pageTitle} | Local Effort Cooperative` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "keywords", content: "Local Effort sale, Minneapolis food preorder, prepared foods Minneapolis, pantry goods Minneapolis, local delivery food, seasonal food drop" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:title", content: `${pageTitle} | Local Effort Cooperative` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:type", content: "website" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:url", content: `${SITE_URL}/sale` }),
+      heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { property: "og:image", content: heroImage }),
+      heroImage && /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:image", content: heroImage }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:title", content: `${pageTitle} | Local Effort Cooperative` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "twitter:description", content: metaDescription }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("meta", { name: "robots", content: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("link", { rel: "canonical", href: `${SITE_URL}/sale` }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "#products", className: "sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:px-3 focus:py-2 focus:text-xs focus:uppercase focus:tracking-widest focus:border focus:border-black", children: "Skip to products" }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("header", { className: "le-sale-header", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_react_router_dom6.Link, { to: "/", className: "le-sale-home-link", children: "Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
+        "button",
+        {
+          type: "button",
+          className: "le-sale-bag-btn",
+          onClick: openCart,
+          "aria-label": `Open bag, ${totalQty} item${totalQty !== 1 ? "s" : ""}`,
+          children: [
+            "Bag",
+            totalQty > 0 ? ` (${totalQty})` : ""
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("main", { id: "products", className: "le-sale-main", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-hero", "aria-labelledby": "sale-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-hero-copy", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-eyebrow", children: "Minneapolis sale" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { id: "sale-title", className: "le-sale-title", children: pageTitle }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-subheading", children: pageSubheading }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-intro", children: introText.split(/\n{2,}/).filter(Boolean).map((paragraph) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { children: paragraph }, paragraph)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("aside", { className: "le-sale-summary", "aria-label": "Sale details", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Products live" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: products.length || "Updating" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Fulfillment" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Pickup + local delivery" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "How to shop" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Open any item for full details" })
+          ] }),
+          generatedLabel && /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Catalog snapshot" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: generatedLabel })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-links", "aria-labelledby": "sale-links-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-links-title", className: "le-sale-section-title", children: "Looking for a specific event or drop?" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Some Local Effort offers live on dedicated landing pages with fuller booking and product context. These links help search engines and visitors move between the store, specialty drops, and private-event booking pages." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-link-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/psyche", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Psyche olive oil" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Dedicated product page with provenance, pricing, and fulfillment details." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/february", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "February chef dinner" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private in-home dinner booking flow with date, pricing, and guest information." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/#small-events", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Small events" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private dinners, pizza parties, and other event windows from the main site." })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-products", "aria-labelledby": "sale-products-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-products-header", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-products-title", className: "le-sale-section-title", children: "Current sale catalog" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Product cards include visible names and summaries in the HTML so Google and AI crawlers can understand what the sale contains before JavaScript finishes loading." })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+          ProductGrid,
+          {
+            products,
+            skuPrefix: "LE",
+            loading,
+            openSlug,
+            onOpen: (slug) => navigate(`/sale#${slug}`, { replace: false }),
+            onClose: () => navigate("/sale", { replace: false })
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CartDrawer, { store: "sale" })
+  ] });
+};
+var SalePage_default = SalePage;
+
+// src/pages/happymondaypage.jsx
+var import_react37 = __toESM(require("react"));
+var import_react_helmet_async6 = __toESM(require_lib());
+var import_framer_motion10 = require("framer-motion");
+
+// src/components/menu/FoodItemCard.jsx
+var import_react31 = __toESM(require("react"));
+var import_framer_motion6 = require("framer-motion");
+var import_jsx_runtime35 = require("react/jsx-runtime");
+var FoodItemCard = ({ item, onClick }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
+    import_framer_motion6.motion.div,
+    {
+      variants: fadeInUp,
+      onClick,
+      className: "border border-neutral-200 rounded-lg p-6 cursor-pointer hover:shadow-lg hover:border-neutral-400 transition-all duration-300 bg-white",
+      whileHover: { scale: 1.03 },
+      whileTap: { scale: 0.98 },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h4", { className: "text-xl font-bold text-neutral-800", children: item.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "text-neutral-600 mt-2 line-clamp-2", children: item.description })
+      ]
+    }
+  );
+};
+var FoodItemCard_default = FoodItemCard;
+
+// src/components/ErrorBoundary.jsx
+var import_react32 = __toESM(require("react"));
+var import_jsx_runtime36 = require("react/jsx-runtime");
+var ErrorBoundary = class extends import_react32.default.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null, info: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught", error, info);
+    this.setState({ info });
+  }
+  render() {
+    const { error, info } = this.state;
+    if (error) {
+      return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { style: { padding: 24, fontFamily: "system-ui, Arial", color: "#111" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h1", { children: "Application error" }),
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { style: { whiteSpace: "pre-wrap" }, children: String(error && (error.message || error)) }),
+        info && info.componentStack && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("details", { style: { marginTop: 12, whiteSpace: "pre-wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("summary", { children: "Component stack" }),
+          /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { children: info.componentStack })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { style: { marginTop: 12 }, children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("button", { onClick: () => window.location.reload(), children: "Reload" }) })
+      ] });
+    }
+    return this.props.children;
+  }
+};
+var ErrorBoundary_default = ErrorBoundary;
+
+// src/components/ui/Separator.jsx
+var import_react33 = __toESM(require("react"));
+var import_jsx_runtime37 = require("react/jsx-runtime");
+function Separator({ className = "", orientation = "horizontal", decorative = true, ...props }) {
+  const isHorizontal = orientation !== "vertical";
+  const base = isHorizontal ? "h-px w-full my-12" : "w-px h-full mx-4";
+  const classes = [base, "bg-neutral-200", className].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { role: decorative ? "none" : "separator", "aria-orientation": orientation, className: classes, ...props });
+}
+
+// src/pages/happymondaypage.jsx
+var import_jsx_runtime41 = require("react/jsx-runtime");
+var BlockContent = (0, import_react37.lazy)(() => import("@sanity/block-content-to-react"));
+var FoodItemModal2 = (0, import_react37.lazy)(() => Promise.resolve().then(() => (init_FoodItemModal(), FoodItemModal_exports)));
+var FeedbackForm2 = (0, import_react37.lazy)(() => Promise.resolve().then(() => (init_FeedbackForm(), FeedbackForm_exports)));
+var LoadingSpinner2 = (0, import_react37.lazy)(() => Promise.resolve().then(() => (init_LoadingSpinner(), LoadingSpinner_exports)).then((mod) => ({ default: mod.LoadingSpinner })));
+var HappyMondayPage = () => {
+  const [menuItems, setMenuItems] = (0, import_react37.useState)([]);
+  const [pageContent, setPageContent] = (0, import_react37.useState)(null);
+  const [selectedItem, setSelectedItem] = (0, import_react37.useState)(null);
+  const [isLoading, setIsLoading] = (0, import_react37.useState)(true);
+  (0, import_react37.useEffect)(() => {
+    const query = `{
+      "menuItems": *[_type == "menuItems"],
+      "pageContent": *[_type == "happyMondayPage"][0]
+    }`;
+    sanityClient_default.fetch(query).then((data) => {
+      setMenuItems(data.menuItems || []);
+      setPageContent(data.pageContent);
+      setIsLoading(false);
+    }).catch(console.error);
+  }, []);
+  const handleCardClick = (item) => {
+    setSelectedItem(item);
+  };
+  const handleCloseModal = () => {
+    setSelectedItem(null);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_jsx_runtime41.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(import_react_helmet_async6.Helmet, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("title", { children: "Happy Monday | Local Effort" }),
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+        "meta",
+        {
+          name: "description",
+          content: "Explore our special Happy Monday menu, made with the finest local ingredients."
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-24 mb-24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        pageContent && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "text-center mb-12", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Weekly Special", title: pageContent.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center mt-8 mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+            "img",
+            {
+              src: "https://www.localeffortfood.com/gallery/IMG_3145.jpg",
+              alt: "Happy Monday",
+              className: "max-w-full h-auto rounded-lg shadow-lg",
+              style: { width: "50%" }
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "prose lg:prose-lg mx-auto max-w-3xl", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react37.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center", children: "Loading content\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(BlockContent, { blocks: pageContent.body, client: sanityClient_default }) }) }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center mb-8", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h2", { className: "text-2xl font-semibold", children: "Ingredient Lists" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react37.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: "Loading\u2026" }), children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex justify-center items-center h-64", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(LoadingSpinner2, {}) }) : /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+          import_framer_motion10.motion.div,
+          {
+            className: "grid md:grid-cols-2 lg:grid-cols-3 gap-6",
+            initial: "initial",
+            animate: "animate",
+            variants: { animate: { transition: { staggerChildren: 0.1 } } },
+            children: menuItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemCard_default, { item, onClick: () => handleCardClick(item) }, item._id))
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("section", { className: "mx-auto max-w-6xl px-4 md:px-6 lg:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(SectionHeader, { overline: "Help Us Improve", title: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "text-body mb-8 max-w-2xl", children: "Have a suggestion, a request, or feedback on our quality? We'd love to hear it. Your input helps us grow and improve." }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react37.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-center p-8", children: "Loading form\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FeedbackForm2, {}) }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Separator, {})
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_framer_motion10.AnimatePresence, { children: selectedItem && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ErrorBoundary_default, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_react37.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "fixed inset-0 flex items-center justify-center", children: "Loading\u2026" }), children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(FoodItemModal2, { item: selectedItem, onClose: handleCloseModal }) }) }) })
+  ] });
+};
+var happymondaypage_default = HappyMondayPage;
+
 // src/pages/PizzaPartyPage.jsx
+var import_react38 = __toESM(require("react"));
+var import_react_helmet_async7 = __toESM(require_lib());
+var import_framer_motion11 = require("framer-motion");
 var import_jsx_runtime42 = require("react/jsx-runtime");
 var import_meta6 = {};
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -16396,40 +16847,40 @@ var PizzaPartyPage = () => {
     ]
   };
   const jsonLd = [serviceSchema, ...eventsSchema, breadcrumbSchema];
-  const [images, setImages] = (0, import_react37.useState)([]);
-  const [error, setError] = (0, import_react37.useState)(null);
-  const [loading, setLoading] = (0, import_react37.useState)(true);
-  const [bookingState, setBookingState] = (0, import_react37.useState)({});
-  const [soldOutDates, setSoldOutDates] = (0, import_react37.useState)(() => new Set(SOLD_OUT_OVERRIDES));
-  const [showModal, setShowModal] = (0, import_react37.useState)(false);
-  const [selectedDate, setSelectedDate] = (0, import_react37.useState)(null);
+  const [images, setImages] = (0, import_react38.useState)([]);
+  const [error, setError] = (0, import_react38.useState)(null);
+  const [loading, setLoading] = (0, import_react38.useState)(true);
+  const [bookingState, setBookingState] = (0, import_react38.useState)({});
+  const [soldOutDates, setSoldOutDates] = (0, import_react38.useState)(() => new Set(SOLD_OUT_OVERRIDES));
+  const [showModal, setShowModal] = (0, import_react38.useState)(false);
+  const [selectedDate, setSelectedDate] = (0, import_react38.useState)(null);
   const squareEnabled = showModal;
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset, envInfo } = useSquareCard("#pp-card-container", squareEnabled, [squareEnabled]);
-  const checkoutAttemptRef = (0, import_react37.useRef)("");
+  const checkoutAttemptRef = (0, import_react38.useRef)("");
   const attemptStorageKey = "le:checkoutAttempt:pizza-party";
-  const resolveCheckoutAttemptId = (0, import_react37.useCallback)(() => {
+  const resolveCheckoutAttemptId = (0, import_react38.useCallback)(() => {
     if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
     const next = getOrCreateCheckoutAttemptId(attemptStorageKey);
     checkoutAttemptRef.current = next;
     return next;
   }, []);
-  const clearCheckoutAttempt = (0, import_react37.useCallback)(() => {
+  const clearCheckoutAttempt = (0, import_react38.useCallback)(() => {
     checkoutAttemptRef.current = "";
     clearCheckoutAttemptId(attemptStorageKey);
   }, []);
-  const [bookedDate, setBookedDate] = (0, import_react37.useState)(null);
-  const [justBooked, setJustBooked] = (0, import_react37.useState)(false);
-  const [email, setEmail] = (0, import_react37.useState)("");
-  const [fullName, setFullName] = (0, import_react37.useState)("");
-  const [phone, setPhone] = (0, import_react37.useState)("");
-  const [address, setAddress] = (0, import_react37.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
-  const [mealTime, setMealTime] = (0, import_react37.useState)("5:00 PM");
-  const [pizzaRequests, setPizzaRequests] = (0, import_react37.useState)("");
-  const [addOnEnabled, setAddOnEnabled] = (0, import_react37.useState)(false);
-  const [guestCount, setGuestCount] = (0, import_react37.useState)(10);
-  const [submitting, setSubmitting] = (0, import_react37.useState)(false);
-  const isValidEmail4 = (val) => /.+@.+\..+/.test(val.trim());
-  const formatPhone4 = (val) => {
+  const [bookedDate, setBookedDate] = (0, import_react38.useState)(null);
+  const [justBooked, setJustBooked] = (0, import_react38.useState)(false);
+  const [email, setEmail] = (0, import_react38.useState)("");
+  const [fullName, setFullName] = (0, import_react38.useState)("");
+  const [phone, setPhone] = (0, import_react38.useState)("");
+  const [address, setAddress] = (0, import_react38.useState)({ line1: "", line2: "", city: "", state: "MN", postal: "" });
+  const [mealTime, setMealTime] = (0, import_react38.useState)("5:00 PM");
+  const [pizzaRequests, setPizzaRequests] = (0, import_react38.useState)("");
+  const [addOnEnabled, setAddOnEnabled] = (0, import_react38.useState)(false);
+  const [guestCount, setGuestCount] = (0, import_react38.useState)(10);
+  const [submitting, setSubmitting] = (0, import_react38.useState)(false);
+  const isValidEmail5 = (val) => /.+@.+\..+/.test(val.trim());
+  const formatPhone5 = (val) => {
     const digits = val.replace(/\D/g, "").slice(0, 10);
     if (digits.length < 4) return digits;
     if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
@@ -16442,7 +16893,7 @@ var PizzaPartyPage = () => {
   const estimatedTotal = 450;
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
   const grandTotal = basePrice + addOnTotal;
-  (0, import_react37.useEffect)(() => {
+  (0, import_react38.useEffect)(() => {
     let active = true;
     fetchPizzaImages((imgs) => {
       if (active) setImages(imgs);
@@ -16468,7 +16919,7 @@ var PizzaPartyPage = () => {
       active = false;
     };
   }, []);
-  (0, import_react37.useEffect)(() => {
+  (0, import_react38.useEffect)(() => {
     let mounted = true;
     const loadAvailability = async () => {
       try {
@@ -16494,12 +16945,12 @@ var PizzaPartyPage = () => {
       clearInterval(timer);
     };
   }, []);
-  (0, import_react37.useEffect)(() => {
+  (0, import_react38.useEffect)(() => {
     if (selectedDate && soldOutDates.has(selectedDate)) {
       setSelectedDate(null);
     }
   }, [selectedDate, soldOutDates]);
-  (0, import_react37.useEffect)(() => {
+  (0, import_react38.useEffect)(() => {
     if (!showModal) return;
     const apiKey = window.GOOGLE_PLACES_KEY || import_meta6?.env?.VITE_GOOGLE_PLACES_KEY;
     if (!apiKey) return;
@@ -16542,7 +16993,7 @@ var PizzaPartyPage = () => {
       }
     };
   }, [showModal]);
-  (0, import_react37.useEffect)(() => {
+  (0, import_react38.useEffect)(() => {
     const params = new URLSearchParams(window.location.search);
     const b = params.get("booked");
     if (b) {
@@ -16576,7 +17027,7 @@ var PizzaPartyPage = () => {
   const submitBooking = async () => {
     if (!selectedDate) return;
     if (submitting) return;
-    if (!fullName.trim() || !isValidEmail4(email) || !isValidPhone(phone) || !isValidAddress(address)) {
+    if (!fullName.trim() || !isValidEmail5(email) || !isValidPhone(phone) || !isValidAddress(address)) {
       setBookingState((s) => ({ ...s, [selectedDate]: { ...s[selectedDate] || {}, error: "Please complete required contact & address fields." } }));
       return;
     }
@@ -16838,7 +17289,7 @@ var PizzaPartyPage = () => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("label", { className: "block text-sm font-medium", children: [
                 "Phone",
-                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone4(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("input", { type: "tel", value: phone, onChange: (e) => setPhone(formatPhone5(e.target.value)), placeholder: "(555) 123-4567", className: "mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("fieldset", { className: "border rounded-md p-3 space-y-2", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("legend", { className: "text-xs font-semibold uppercase tracking-wide text-neutral-600", children: "Address" }),
@@ -16910,9 +17361,9 @@ var PizzaPartyPage = () => {
                 {
                   onClick: selectedDate ? submitBooking : void 0,
                   type: "button",
-                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail4(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
+                  disabled: selectedDate ? bookingState[selectedDate]?.loading || submitting || !cardLoaded || !!cardError || loadingScript || !isValidEmail5(email) || !fullName.trim() || !isValidPhone(phone) || !isValidAddress(address) : false,
                   className: `flex-1 rounded-md text-sm font-semibold px-4 py-2 shadow disabled:opacity-60 disabled:cursor-not-allowed ${selectedDate ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-neutral-200 text-neutral-500 cursor-not-allowed"}`,
-                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail4(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
+                  children: selectedDate ? bookingState[selectedDate]?.loading || submitting ? "Processing\u2026" : !fullName.trim() ? "Enter Name" : !isValidEmail5(email) ? "Enter Email" : !isValidPhone(phone) ? "Phone Needed" : !isValidAddress(address) ? "Address Needed" : "Pay Deposit" : "Select a Date"
                 }
               )
             ] }),
@@ -16935,9 +17386,9 @@ var PizzaPartyPage = () => {
   ] });
 };
 var FallbackLink = ({ date, email, addOnGuests }) => {
-  const [url, setUrl] = import_react37.default.useState(null);
-  const [loading, setLoading] = import_react37.default.useState(false);
-  const [err, setErr] = import_react37.default.useState("");
+  const [url, setUrl] = import_react38.default.useState(null);
+  const [loading, setLoading] = import_react38.default.useState(false);
+  const [err, setErr] = import_react38.default.useState("");
   const build = async () => {
     if (loading) return;
     setLoading(true);
@@ -16973,7 +17424,7 @@ var import_react_helmet_async8 = __toESM(require_lib());
 
 // node_modules/.pnpm/react-image-zooom@1.6.0_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/react-image-zooom/dist/react-image-zooom.mjs
 var import_jsx_runtime43 = require("react/jsx-runtime");
-var import_react38 = require("react");
+var import_react39 = require("react");
 (function() {
   "use strict";
   try {
@@ -16986,12 +17437,12 @@ var import_react38 = require("react");
   }
 })();
 function A(t, o) {
-  (0, import_react38.useEffect)(() => {
+  (0, import_react39.useEffect)(() => {
     const e = getComputedStyle(document.body).overflow || "auto";
     return t ? document.body.style.overflow = "hidden" : document.body.style.overflow = e, () => {
       document.body.style.overflow = e;
     };
-  }, [t]), (0, import_react38.useEffect)(() => {
+  }, [t]), (0, import_react39.useEffect)(() => {
     if (!o) return;
     const e = (n) => {
       t && n.touches.length === 1 && n.preventDefault();
@@ -17002,7 +17453,7 @@ function A(t, o) {
   }, [t, o]);
 }
 function F(t, o, e, n) {
-  return (0, import_react38.useMemo)(() => {
+  return (0, import_react39.useMemo)(() => {
     if (!o || !e) return `${t}%`;
     const r2 = (n == null ? void 0 : n.clientWidth) || 0;
     if (!r2) return `${t}%`;
@@ -17011,7 +17462,7 @@ function F(t, o, e, n) {
   }, [t, o, e, n]);
 }
 function G(t) {
-  return (0, import_react38.useCallback)((o) => {
+  return (0, import_react39.useCallback)((o) => {
     if (!t) return;
     const e = t.getBoundingClientRect();
     let n, r2;
@@ -17027,13 +17478,13 @@ function G(t) {
   }, [t]);
 }
 function J(t, o) {
-  const [e, n] = (0, import_react38.useState)({
+  const [e, n] = (0, import_react39.useState)({
     imgData: null,
     error: false,
     naturalWidth: 0,
     naturalHeight: 0
   });
-  return (0, import_react38.useEffect)(() => {
+  return (0, import_react39.useEffect)(() => {
     if (n({ imgData: null, error: false, naturalWidth: 0, naturalHeight: 0 }), !t) {
       n((h) => ({ ...h, error: true }));
       return;
@@ -17065,7 +17516,7 @@ function U({
   onError: y,
   errorContent: x
 }) {
-  const [i, b] = (0, import_react38.useState)(false), [E, f] = (0, import_react38.useState)("50% 50%"), g = (0, import_react38.useRef)(null), l = G(g.current), m = (0, import_react38.useRef)(false);
+  const [i, b] = (0, import_react39.useState)(false), [E, f] = (0, import_react39.useState)("50% 50%"), g = (0, import_react39.useRef)(null), l = G(g.current), m = (0, import_react39.useRef)(false);
   A(i, g.current);
   const { imgData: c, error: W, naturalWidth: B } = J(u, y), I = F(
     t,
@@ -17083,7 +17534,7 @@ function U({
       const v = L(a);
       v && M(v);
     }
-  }, j = (0, import_react38.useCallback)(
+  }, j = (0, import_react39.useCallback)(
     (a) => {
       if (m.current) {
         m.current = false;
@@ -17092,24 +17543,24 @@ function U({
       Z(a, false, i, b, f, l);
     },
     [i, l]
-  ), w = (0, import_react38.useCallback)(
+  ), w = (0, import_react39.useCallback)(
     (a) => {
       a.touches.length === 1 && Z(a, true, i, b, f, l);
     },
     [i, l]
-  ), N = (0, import_react38.useCallback)(
+  ), N = (0, import_react39.useCallback)(
     (a) => {
       $(a, i, f, l);
     },
     [i, l]
-  ), V = (0, import_react38.useCallback)(
+  ), V = (0, import_react39.useCallback)(
     (a) => {
       a.touches.length === 1 && (a.preventDefault(), m.current = true, i ? $(a, i, f, l) : w(a));
     },
     [w, i, l]
-  ), k = (0, import_react38.useCallback)(() => {
+  ), k = (0, import_react39.useCallback)(() => {
     m.current = false, b(false), f("50% 50%");
-  }, []), X2 = (0, import_react38.useMemo)(
+  }, []), X2 = (0, import_react39.useMemo)(
     () => ({
       backgroundImage: `url(${i && c ? c : ""})`,
       backgroundSize: I,
@@ -17118,7 +17569,7 @@ function U({
     [i, c, I, E]
   );
   if (W)
-    return (0, import_react38.isValidElement)(x) ? x : /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "image-zooom-error", children: "There was a problem loading your image" });
+    return (0, import_react39.isValidElement)(x) ? x : /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("p", { className: "image-zooom-error", children: "There was a problem loading your image" });
   const Y = [
     c ? "loaded" : "loading",
     i ? "zoomed" : "fullView",
@@ -17154,123 +17605,6 @@ function U({
       )
     }
   );
-}
-
-// src/hooks/useSquareExpressPay.js
-var import_react39 = require("react");
-var import_meta7 = {};
-var readConfig = () => {
-  if (typeof window === "undefined") return { appId: null, locationId: null };
-  return {
-    appId: window.__SQUARE_APP_ID__ || import_meta7?.env?.VITE_SQUARE_APP_ID || null,
-    locationId: window.__SQUARE_LOCATION_ID__ || import_meta7?.env?.VITE_SQUARE_LOCATION_ID || null
-  };
-};
-var waitForSquare = (signal) => new Promise((resolve, reject) => {
-  if (window.Square) return resolve();
-  const start = Date.now();
-  const iv = setInterval(() => {
-    if (signal?.aborted) {
-      clearInterval(iv);
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    if (window.Square) {
-      clearInterval(iv);
-      resolve();
-      return;
-    }
-    if (Date.now() - start > 15e3) {
-      clearInterval(iv);
-      reject(new Error("Square SDK not ready"));
-    }
-  }, 150);
-});
-function useSquareExpressPay({ amountCents, containerId, enabled, onToken }) {
-  const [googlePayAvailable, setGooglePayAvailable] = (0, import_react39.useState)(false);
-  const [applePayAvailable, setApplePayAvailable] = (0, import_react39.useState)(false);
-  const [loading, setLoading] = (0, import_react39.useState)(false);
-  const [error, setError] = (0, import_react39.useState)("");
-  const paymentsRef = (0, import_react39.useRef)(null);
-  const googlePayRef = (0, import_react39.useRef)(null);
-  const applePayRef = (0, import_react39.useRef)(null);
-  const destroy = (0, import_react39.useCallback)(() => {
-    [googlePayRef, applePayRef].forEach((ref) => {
-      if (ref.current) {
-        try {
-          ref.current.destroy?.();
-        } catch (_) {
-        }
-        ref.current = null;
-      }
-    });
-    setGooglePayAvailable(false);
-    setApplePayAvailable(false);
-  }, []);
-  (0, import_react39.useEffect)(() => {
-    if (!enabled || !amountCents || amountCents <= 0) return;
-    const controller = new AbortController();
-    const { signal } = controller;
-    const init = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const { appId, locationId } = readConfig();
-        if (!appId || !locationId) throw new Error("Square not configured");
-        await waitForSquare(signal);
-        if (signal.aborted) return;
-        const payments = window.Square.payments(appId, locationId);
-        paymentsRef.current = payments;
-        const paymentRequest = payments.paymentRequest({
-          countryCode: "US",
-          currencyCode: "USD",
-          total: {
-            amount: (amountCents / 100).toFixed(2),
-            label: "Local Effort"
-          }
-        });
-        const container2 = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
-        if (!container2) throw new Error("Express pay container not found");
-        container2.innerHTML = "";
-        try {
-          const gPay = await payments.googlePay(paymentRequest);
-          await gPay.attach(container2);
-          googlePayRef.current = gPay;
-          if (!signal.aborted) setGooglePayAvailable(true);
-        } catch (_) {
-        }
-        try {
-          const aPay = await payments.applePay(paymentRequest);
-          await aPay.attach(container2);
-          applePayRef.current = aPay;
-          if (!signal.aborted) setApplePayAvailable(true);
-        } catch (_) {
-        }
-      } catch (err) {
-        if (!signal.aborted) setError(err?.message || "Express pay unavailable");
-      } finally {
-        if (!signal.aborted) setLoading(false);
-      }
-    };
-    const handleToken = async (event) => {
-      const token = event?.detail?.token || event?.token;
-      if (token && onToken) {
-        try {
-          await onToken(token);
-        } catch (_) {
-        }
-      }
-    };
-    const container = typeof containerId === "string" ? document.querySelector(containerId) : containerId;
-    container?.addEventListener("paymentMethodRequestUpdate", handleToken);
-    init();
-    return () => {
-      controller.abort();
-      destroy();
-      container?.removeEventListener("paymentMethodRequestUpdate", handleToken);
-    };
-  }, [enabled, amountCents, containerId]);
-  return { googlePayAvailable, applePayAvailable, loading, error };
 }
 
 // src/pages/PsychePage.jsx
@@ -17361,10 +17695,10 @@ var buildProductJsonLd = () => ({
   ]
 });
 var formatMoney = (cents) => (cents / 100).toFixed(2);
-var isValidEmail2 = (value) => /.+@.+\..+/.test(value.trim());
-var normalizePhone2 = (value) => value.replace(/\D/g, "").slice(0, 10);
-var formatPhone2 = (value) => {
-  const digits = normalizePhone2(value);
+var isValidEmail3 = (value) => /.+@.+\..+/.test(value.trim());
+var normalizePhone3 = (value) => value.replace(/\D/g, "").slice(0, 10);
+var formatPhone3 = (value) => {
+  const digits = normalizePhone3(value);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -17461,8 +17795,8 @@ var PsychePage = () => {
   };
   const canSubmit = () => {
     if (!customer.name.trim()) return false;
-    if (!isValidEmail2(customer.email)) return false;
-    if (normalizePhone2(customer.phone).length !== 10) return false;
+    if (!isValidEmail3(customer.email)) return false;
+    if (normalizePhone3(customer.phone).length !== 10) return false;
     if (!address.line1.trim() || !address.city.trim() || address.postal.trim().length < 5) return false;
     if (!cardLoaded) return false;
     return true;
@@ -17769,7 +18103,7 @@ var PsychePage = () => {
                 className: "le-checkout-input",
                 value: customer.phone,
                 onChange: (e) => {
-                  setCustomer((prev) => ({ ...prev, phone: formatPhone2(e.target.value) }));
+                  setCustomer((prev) => ({ ...prev, phone: formatPhone3(e.target.value) }));
                   resetStatus();
                 },
                 autoComplete: "tel",
@@ -28541,10 +28875,10 @@ var clampGuests = (value) => {
   if (Number.isNaN(parsed)) return MIN_GUESTS;
   return Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, parsed));
 };
-var isValidEmail3 = (value) => /.+@.+\..+/.test(value.trim());
-var normalizePhone3 = (value) => value.replace(/\D/g, "").slice(0, 10);
-var formatPhone3 = (value) => {
-  const digits = normalizePhone3(value);
+var isValidEmail4 = (value) => /.+@.+\..+/.test(value.trim());
+var normalizePhone4 = (value) => value.replace(/\D/g, "").slice(0, 10);
+var formatPhone4 = (value) => {
+  const digits = normalizePhone4(value);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -28671,8 +29005,8 @@ var FebruaryPage = () => {
   const canSubmit = () => {
     if (!selectedDate) return false;
     if (!customer.name.trim()) return false;
-    if (!isValidEmail3(customer.email)) return false;
-    if (normalizePhone3(customer.phone).length !== 10) return false;
+    if (!isValidEmail4(customer.email)) return false;
+    if (normalizePhone4(customer.phone).length !== 10) return false;
     if (!address.line1.trim() || !address.city.trim() || address.postal.trim().length < 5) return false;
     if (!cardLoaded) return false;
     return true;
@@ -28982,7 +29316,7 @@ var FebruaryPage = () => {
                       className: "input",
                       value: customer.phone,
                       onChange: (e) => {
-                        setCustomer((prev) => ({ ...prev, phone: formatPhone3(e.target.value) }));
+                        setCustomer((prev) => ({ ...prev, phone: formatPhone4(e.target.value) }));
                         resetStatus();
                       },
                       required: true

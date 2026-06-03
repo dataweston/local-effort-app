@@ -1,26 +1,9 @@
 /**
  * useSquareExpressPay
  *
- * Initializes Square's Apple Pay and Google Pay buttons alongside the manual
- * card form. Call this hook once on a page that already has useSquareCard
- * running (they share the same payments instance via the same Square SDK load).
- *
- * Usage:
- *   const { googlePayAvailable, applePayAvailable, requestExpressPayment } =
- *     useSquareExpressPay({ amountCents, containerId, enabled, onToken });
- *
- * Props:
- *   amountCents  – number – the authoritative server total (cents)
- *   containerId  – string – CSS selector for the container div, e.g. '#express-pay-container'
- *   enabled      – boolean – skip init when false (e.g. Square not yet loaded)
- *   onToken      – async (token) => void – called with the nonce after user approves
- *
- * The hook mounts a Google Pay or Apple Pay button inside containerId. Each
- * button handles its own click internally; onToken fires when the wallet
- * returns a payment nonce.
- *
- * Implementation note: Square's googlePay() / applePay() methods return a button
- * element via .attach(). We unmount on cleanup.
+ * Mounts Square Google Pay and Apple Pay buttons into a provided container.
+ * The Square SDK owns the wallet UI; this hook attaches each button and calls
+ * tokenize() from that button's click handler.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -43,12 +26,28 @@ const waitForSquare = (signal) =>
   new Promise((resolve, reject) => {
     if (window.Square) return resolve();
     const start = Date.now();
-    const iv = setInterval(() => {
-      if (signal?.aborted) { clearInterval(iv); reject(new DOMException('Aborted', 'AbortError')); return; }
-      if (window.Square) { clearInterval(iv); resolve(); return; }
-      if (Date.now() - start > 15000) { clearInterval(iv); reject(new Error('Square SDK not ready')); }
+    const interval = setInterval(() => {
+      if (signal?.aborted) {
+        clearInterval(interval);
+        reject(new DOMException('Aborted', 'AbortError'));
+        return;
+      }
+      if (window.Square) {
+        clearInterval(interval);
+        resolve();
+        return;
+      }
+      if (Date.now() - start > 15000) {
+        clearInterval(interval);
+        reject(new Error('Square SDK not ready'));
+      }
     }, 150);
   });
+
+const buildWalletError = (walletName, tokenResult) => {
+  const first = tokenResult?.errors?.[0];
+  return new Error(first?.message || first?.code || tokenResult?.status || `${walletName} was not approved.`);
+};
 
 export function useSquareExpressPay({ amountCents, containerId, enabled, onToken }) {
   const [googlePayAvailable, setGooglePayAvailable] = useState(false);
@@ -56,7 +55,6 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const paymentsRef = useRef(null);
   const googlePayRef = useRef(null);
   const applePayRef = useRef(null);
 
@@ -72,10 +70,40 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
   }, []);
 
   useEffect(() => {
-    if (!enabled || !amountCents || amountCents <= 0) return;
+    if (!enabled || !amountCents || amountCents <= 0) return undefined;
 
     const controller = new AbortController();
     const { signal } = controller;
+
+    const handleWalletToken = async (walletName, tokenResult) => {
+      if (tokenResult?.status !== 'OK' || !tokenResult?.token) {
+        throw buildWalletError(walletName, tokenResult);
+      }
+      await onToken?.(tokenResult.token, tokenResult);
+    };
+
+    const mountWalletButton = async ({ walletName, create, attachOptions, ref, setAvailable }) => {
+      const container = typeof containerId === 'string'
+        ? document.querySelector(containerId)
+        : containerId;
+      if (!container) throw new Error('Express pay container not found');
+
+      const wallet = await create();
+      const buttonHost = document.createElement('div');
+      buttonHost.className = 'le-checkout-wallet-button';
+      container.appendChild(buttonHost);
+      await wallet.attach(buttonHost, attachOptions);
+      ref.current = wallet;
+      buttonHost.onclick = async () => {
+        try {
+          setError('');
+          await handleWalletToken(walletName, await wallet.tokenize());
+        } catch (err) {
+          setError(err?.message || `${walletName} failed.`);
+        }
+      };
+      if (!signal.aborted) setAvailable(true);
+    };
 
     const init = async () => {
       setLoading(true);
@@ -88,8 +116,6 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
         if (signal.aborted) return;
 
         const payments = window.Square.payments(appId, locationId);
-        paymentsRef.current = payments;
-
         const paymentRequest = payments.paymentRequest({
           countryCode: 'US',
           currencyCode: 'USD',
@@ -103,28 +129,30 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
           ? document.querySelector(containerId)
           : containerId;
         if (!container) throw new Error('Express pay container not found');
-
-        // Clear any previous buttons
         container.innerHTML = '';
 
-        // Try Google Pay
         try {
-          const gPay = await payments.googlePay(paymentRequest);
-          await gPay.attach(container);
-          googlePayRef.current = gPay;
-          if (!signal.aborted) setGooglePayAvailable(true);
+          await mountWalletButton({
+            walletName: 'Google Pay',
+            create: () => payments.googlePay(paymentRequest),
+            attachOptions: { buttonType: 'long' },
+            ref: googlePayRef,
+            setAvailable: setGooglePayAvailable,
+          });
         } catch (_) {
-          // Google Pay not available in this browser / context — silent
+          // Wallet unavailable in this browser or seller configuration.
         }
 
-        // Try Apple Pay
         try {
-          const aPay = await payments.applePay(paymentRequest);
-          await aPay.attach(container);
-          applePayRef.current = aPay;
-          if (!signal.aborted) setApplePayAvailable(true);
+          await mountWalletButton({
+            walletName: 'Apple Pay',
+            create: () => payments.applePay(paymentRequest),
+            attachOptions: undefined,
+            ref: applePayRef,
+            setAvailable: setApplePayAvailable,
+          });
         } catch (_) {
-          // Apple Pay not available — silent
+          // Wallet unavailable in this browser or seller configuration.
         }
       } catch (err) {
         if (!signal.aborted) setError(err?.message || 'Express pay unavailable');
@@ -133,27 +161,12 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
       }
     };
 
-    // Wire tokenize callbacks on button click
-    const handleToken = async (event) => {
-      const token = event?.detail?.token || event?.token;
-      if (token && onToken) {
-        try { await onToken(token); } catch (_) { /* caller handles errors */ }
-      }
-    };
-
-    const container = typeof containerId === 'string'
-      ? document.querySelector(containerId)
-      : containerId;
-    container?.addEventListener('paymentMethodRequestUpdate', handleToken);
-
     init();
     return () => {
       controller.abort();
       destroy();
-      container?.removeEventListener('paymentMethodRequestUpdate', handleToken);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, amountCents, containerId]);
+  }, [enabled, amountCents, containerId, onToken, destroy]);
 
   return { googlePayAvailable, applePayAvailable, loading, error };
 }

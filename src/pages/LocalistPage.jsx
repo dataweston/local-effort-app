@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
+import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
+import '../styles/fullpage-demo-theme.css';
+import '../styles/le-checkout.css';
+
+const normalizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
+const formatPhone = (value) => {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+const LocalistPage = () => {
+  const [phone, setPhone] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const res = await fetch('/api/localist/images');
+        const data = await res.json();
+        setImages(data.images || []);
+      } catch (err) {
+        console.error('Failed to fetch gallery:', err);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const canSubmit = normalizePhone(phone).length === 10 && status !== 'submitting';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setStatus('submitting');
+    setError('');
+
+    try {
+      const response = await fetch('/api/localist/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Subscription failed.');
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Something went wrong. Please try again.');
+    }
+  };
+
+  return (
+    <div className="le-checkout-page localist-page">
+      <Helmet>
+        <title>Localist — Weekly Meals Text List | {SITE_NAME}</title>
+        <meta
+          name="description"
+          content="Sign up for the Localist text list. Every Monday we'll text you a limited menu of salads and hot bowls for Tuesday and Wednesday pickup in North Minneapolis."
+        />
+        <link rel="canonical" href={`${SITE_URL}/localist`} />
+      </Helmet>
+
+      <nav className="le-checkout-nav">
+        <a className="le-checkout-back" href="/">← Home</a>
+      </nav>
+
+      <div className="le-checkout-layout">
+
+        {/* Left: context */}
+        <div className="le-checkout-context">
+          <div>
+            <h1 className="le-checkout-product-title">Localist</h1>
+          </div>
+
+          <div className="le-checkout-product-meta">
+            <p>
+              A direct line for people who want fresh, local food without the noise.
+              No app, no account — just a text on Monday with what's available that week.
+            </p>
+            <p>
+              Menus are built around what's in season and what our cooks are excited about.
+              Quantities are limited. First come, first served.
+            </p>
+            <blockquote className="le-checkout-product-quote">
+              Every Monday — we'll text you a limited menu of salads and hot bowls.
+              You'll pick up on Tuesday and Wednesday in North Minneapolis.
+            </blockquote>
+          </div>
+        </div>
+
+        {/* Right: form */}
+        <div className="le-checkout-form-panel">
+          {status === 'success' ? (
+            <div className="le-checkout-success">
+              <div className="le-checkout-success-title">You're on the list</div>
+              <p className="le-checkout-success-copy">
+                Expect your first text on Monday. Reply STOP anytime to unsubscribe.
+              </p>
+            </div>
+          ) : (
+            <form className="le-checkout-form" onSubmit={handleSubmit} noValidate>
+              <div className="le-checkout-section">
+                <p className="le-checkout-section-title">Subscribe</p>
+
+                <div className="le-checkout-field">
+                  <label className="le-checkout-label" htmlFor="localist-phone">
+                    Phone number
+                  </label>
+                  <input
+                    id="localist-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    className="le-checkout-input"
+                    placeholder="(612) 555-0100"
+                    value={formatPhone(phone)}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={status === 'submitting'}
+                  />
+                </div>
+
+                {error && (
+                  <div className="le-checkout-error">{error}</div>
+                )}
+
+                <button
+                  type="submit"
+                  className="le-checkout-submit"
+                  disabled={!canSubmit}
+                >
+                  {status === 'submitting' ? 'Saving...' : 'Text me the menu'}
+                </button>
+
+                <p className="le-checkout-footnote">
+                  US numbers only. Reply STOP to unsubscribe at any time.
+                </p>
+              </div>
+            </form>
+          )}
+        </div>
+
+      </div>
+
+      {images.length > 0 && (
+        <div className="px-6 py-12 lg:px-8 lg:py-16 max-w-6xl mx-auto">
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
+            {images.map((img, idx) => (
+              <motion.figure
+                key={img.asset_id || img.public_id}
+                className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <img
+                  src={img.thumbnail_url}
+                  alt={`Localist menu item ${idx + 1}`}
+                  loading="lazy"
+                  className="w-full h-auto block"
+                  decoding="async"
+                  fetchPriority={idx < 2 ? 'high' : 'auto'}
+                />
+              </motion.figure>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LocalistPage;

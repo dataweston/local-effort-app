@@ -11,7 +11,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PortableText } from '@portabletext/react';
 import { portableTextComponents } from '../../utils/portableTextComponents';
-import { useCart } from '../cart/CartContext';
+import { buildCartKey, useCart } from '../cart/CartContext';
 import { useToast } from '../../components/common/ToastProvider';
 import { ptToHtml } from '../data/ptToHtml';
 
@@ -61,7 +61,21 @@ export default function ProductDetail({ product, sku, onClose }) {
     : fmt(unitPrice);
 
   const variationId = chosen?.squareVariationId || product.squareVariationId || null;
-  const cartKey = `${product.id}:${variationId || ''}`;
+  const selectedAddOnIndices = useMemo(
+    () => Object.keys(selectedAddOns).filter((k) => selectedAddOns[k]).map(Number),
+    [selectedAddOns]
+  );
+  const optionSummary = useMemo(() => {
+    const labels = [];
+    if (chosen?.name) labels.push(chosen.name);
+    selectedAddOnIndices.forEach((idx) => {
+      const name = product.addOns?.[idx]?.name;
+      if (name) labels.push(name);
+    });
+    if (isDairyFree && product.offerDairyFree) labels.push('Dairy-free');
+    return labels.join(', ');
+  }, [chosen, selectedAddOnIndices, product.addOns, isDairyFree, product.offerDairyFree]);
+  const cartKey = buildCartKey(product.id, variationId, selectedAddOnIndices, isDairyFree);
   const inCartQty = map?.[cartKey]?.qty || 0;
   const isOutOfStock = product.inventoryManaged && (product.inventory ?? 0) <= inCartQty;
   const leadText = useMemo(() => {
@@ -86,14 +100,15 @@ export default function ProductDetail({ product, sku, onClose }) {
       qty: 1,
       title: product.title,
       image: images[0] || null,
-      addOnIndices: Object.keys(selectedAddOns).filter((k) => selectedAddOns[k]).map(Number),
+      addOnIndices: selectedAddOnIndices,
       dairyFree: isDairyFree,
+      optionSummary,
     });
     notify(`${product.title} added`, {
       actionLabel: 'View bag',
       onAction: () => { onClose(); openCart(); },
     });
-  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOns, isDairyFree, notify, onClose, openCart]);
+  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOnIndices, isDairyFree, optionSummary, notify, onClose, openCart]);
 
   // Focus trap + Escape
   useEffect(() => {

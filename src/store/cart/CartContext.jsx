@@ -2,19 +2,96 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 
 const CartContext = createContext(null);
 
+const normalizeAddOnIndices = (value) => {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(
+    value
+      .map((idx) => Number(idx))
+      .filter((idx) => Number.isInteger(idx) && idx >= 0)
+  )].sort((a, b) => a - b);
+};
+
+export const buildCartKey = (productId, variationId = null, addOnIndices = [], dairyFree = false) => {
+  const addOns = normalizeAddOnIndices(addOnIndices);
+  const optionKey = [
+    addOns.length ? `addons=${addOns.join('.')}` : '',
+    dairyFree ? 'df=1' : '',
+  ].filter(Boolean).join('&');
+  return `${productId}:${variationId || ''}${optionKey ? `:${optionKey}` : ''}`;
+};
+
+const normalizeStoredState = (rawState) => {
+  if (!rawState || typeof rawState !== 'object') return initial;
+  const rawItems = rawState.items && typeof rawState.items === 'object' ? rawState.items : {};
+  const items = {};
+
+  Object.values(rawItems).forEach((item) => {
+    if (!item || typeof item !== 'object' || !item.productId) return;
+    const qty = Math.max(1, Number(item.qty) || 1);
+    const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
+    const dairyFree = !!item.dairyFree;
+    const key = buildCartKey(item.productId, item.variationId || null, addOnIndices, dairyFree);
+    const normalized = {
+      ...item,
+      key,
+      variationId: item.variationId || null,
+      addOnIndices,
+      dairyFree,
+      qty,
+      unitPrice: Number(item.unitPrice) || 0,
+    };
+
+    if (items[key]) {
+      items[key] = {
+        ...items[key],
+        qty: items[key].qty + qty,
+      };
+    } else {
+      items[key] = normalized;
+    }
+  });
+
+  return {
+    items,
+    updatedAt: Number(rawState.updatedAt) || Date.now(),
+  };
+};
+
 function reducer(state, action) {
   switch (action.type) {
     case 'init':
-      return action.payload || state;
+      return normalizeStoredState(action.payload);
     case 'add': {
-      const { productId, variationId, unitPrice, title, image } = action.payload;
-      const key = `${productId}:${variationId||''}`;
+      const {
+        productId,
+        variationId,
+        unitPrice,
+        title,
+        image,
+        addOnIndices: rawAddOnIndices,
+        dairyFree: rawDairyFree,
+        optionSummary,
+      } = action.payload;
+      const addOnIndices = normalizeAddOnIndices(rawAddOnIndices);
+      const dairyFree = !!rawDairyFree;
+      const key = buildCartKey(productId, variationId || null, addOnIndices, dairyFree);
       const qty = Math.max(1, action.payload.qty || 1);
       const next = { ...state, items: { ...(state.items || {}) } };
       const existing = next.items[key];
       next.items[key] = existing
         ? { ...existing, qty: existing.qty + qty }
-        : { key, productId, variationId, unitPrice, qty, title, image };
+        : {
+            key,
+            productId,
+            variationId: variationId || null,
+            unitPrice: Number(unitPrice) || 0,
+            qty,
+            title,
+            image,
+            addOnIndices,
+            dairyFree,
+            optionSummary: optionSummary || '',
+          };
       next.updatedAt = Date.now();
       return next;
     }

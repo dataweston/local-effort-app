@@ -34,16 +34,19 @@ function summarizeIntake(formData) {
   const priorityKeys = [
     'meals_per_week',
     'meal_mix',
+    'meal_requests_selected',
+    'meal_requests_details',
     'proteins_selected',
     'proteins_everyday',
     'allergies',
     'dislikes',
     'dietary_notes',
+    'nutritional_goals',
     'meal_priorities',
-    'cuisines',
-    'spice_level',
-    'budget_range',
-    'preferred_delivery_day',
+    'specific_needs_to_detail',
+    'spice_heat_tolerance',
+    'flavor_adventurousness',
+    'delivery_preference',
   ];
 
   return priorityKeys
@@ -168,6 +171,7 @@ async function ingestMealPrepIntake(formData, { logger } = {}) {
     householdSize: formData.household_size || null,
     preferredStartDate: formData.preferred_start_date || null,
     preferredDeliveryDay: formData.preferred_delivery_day || null,
+    deliveryPreference: formData.delivery_preference || null,
     latestMealPrepIntakeAt: submittedAt.toISOString(),
     latestMealPrepIntakeLedgerEventId: ledgerEvent.id,
     latestMealPrepIntakeSummary: summary || null,

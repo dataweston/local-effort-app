@@ -1,1 +1,0 @@
-function r(e,t={}){if(typeof window>"u")return;const{store:n,sessionId:o,...s}=t;try{fetch("/api/store/events",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event:e,store:n||"unknown",sessionId:o||null,meta:s}),keepalive:!0}).catch(()=>{})}catch{}}export{r as t};

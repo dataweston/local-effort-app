@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MEAL_PREP_INTAKE_QUESTIONS as QUESTIONS } from '../data/mealPrepIntakeQuestions';
 import '../styles/meal-prep-intake.css';
@@ -30,10 +30,12 @@ const MealPrepIntakePage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [validationMessage, setValidationMessage] = useState('');
+  const addressInputRef = useRef(null);
 
   const currentQuestion = QUESTIONS[stepIndex];
   const totalSteps = QUESTIONS.length - 1;
   const progress = Math.max(0, Math.min(1, stepIndex / totalSteps));
+  const hasAddressField = currentQuestion?.fields?.some((field) => field.type === 'address') || false;
 
   const answeredEntries = useMemo(
     () => Object.entries(answers).filter(([, value]) => {
@@ -50,6 +52,79 @@ const MealPrepIntakePage = () => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
     setValidationMessage('');
   };
+
+  useEffect(() => {
+    if (!hasAddressField) return undefined;
+
+    let autocomplete = null;
+    let existingScript = null;
+    let cancelled = false;
+
+    const setAddressFromPlace = (place) => {
+      if (!place) return;
+      const formatted = place.formatted_address || place.name || '';
+      if (formatted) {
+        setAnswers((prev) => ({ ...prev, address: formatted }));
+        return;
+      }
+      if (!Array.isArray(place.address_components)) return;
+      const component = (type) => place.address_components.find((entry) => entry.types.includes(type))?.long_name || '';
+      const streetNumber = component('street_number');
+      const route = component('route');
+      const city = component('locality') || component('sublocality') || '';
+      const state = component('administrative_area_level_1') || '';
+      const postal = component('postal_code') || '';
+      const fullAddress = [
+        [streetNumber, route].filter(Boolean).join(' '),
+        city,
+        [state, postal].filter(Boolean).join(' '),
+      ].filter(Boolean).join(', ');
+      if (fullAddress) setAnswers((prev) => ({ ...prev, address: fullAddress }));
+    };
+
+    const initAutocomplete = () => {
+      if (cancelled || !addressInputRef.current || !window.google?.maps?.places) return;
+      autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        types: ['address'],
+        componentRestrictions: { country: 'us' },
+        fields: ['address_components', 'formatted_address', 'name'],
+      });
+      autocomplete.addListener('place_changed', () => setAddressFromPlace(autocomplete.getPlace()));
+    };
+
+    if (window.google?.maps?.places) {
+      initAutocomplete();
+    } else {
+      const apiKey = window.GOOGLE_PLACES_KEY || import.meta?.env?.VITE_GOOGLE_PLACES_KEY;
+      if (!apiKey) return undefined;
+      existingScript = document.querySelector('script[data-gplaces]');
+      if (existingScript) {
+        existingScript.addEventListener('load', initAutocomplete);
+      } else {
+        window.__mealPrepPlacesInit = initAutocomplete;
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__mealPrepPlacesInit`;
+        script.async = true;
+        script.dataset.gplaces = 'true';
+        document.head.appendChild(script);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      if (existingScript) existingScript.removeEventListener('load', initAutocomplete);
+      if (autocomplete && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(autocomplete);
+      }
+      if (window.__mealPrepPlacesInit === initAutocomplete) {
+        try {
+          delete window.__mealPrepPlacesInit;
+        } catch {
+          window.__mealPrepPlacesInit = undefined;
+        }
+      }
+    };
+  }, [hasAddressField]);
 
   const toggleAnswer = (id, option) => {
     setAnswers((prev) => {
@@ -102,6 +177,61 @@ const MealPrepIntakePage = () => {
         ? current.filter((item) => item !== subOption)
         : [...current, subOption];
       return { ...prev, [subKey]: next };
+    });
+  };
+
+  const updateDeliveryPreference = (id, patch) => {
+    setAnswers((prev) => {
+      const current = prev[id] && typeof prev[id] === 'object' && !Array.isArray(prev[id])
+        ? prev[id]
+        : {};
+      const next = { ...current, ...patch };
+      if (patch.preference === 'No preference') {
+        next.day = 'No preference';
+        next.time = 'no preference';
+      } else if (next.preference === 'No preference' && (patch.day || patch.time)) {
+        next.preference = 'Specific';
+      } else if (!next.preference) {
+        next.preference = 'Specific';
+      }
+      return { ...prev, [id]: next };
+    });
+    setValidationMessage('');
+  };
+
+  const toggleMealRequest = (id, option) => {
+    const selectedKey = `${id}_selected`;
+    const detailsKey = `${id}_details`;
+    setAnswers((prev) => {
+      const selected = Array.isArray(prev[selectedKey]) ? prev[selectedKey] : [];
+      const details = prev[detailsKey] && typeof prev[detailsKey] === 'object' ? prev[detailsKey] : {};
+      const isSelected = selected.includes(option);
+      if (isSelected) {
+        const nextDetails = { ...details };
+        delete nextDetails[option];
+        return {
+          ...prev,
+          [selectedKey]: selected.filter((item) => item !== option),
+          [detailsKey]: nextDetails,
+        };
+      }
+      return {
+        ...prev,
+        [selectedKey]: [...selected, option],
+        [detailsKey]: { ...details, [option]: details[option] || '' },
+      };
+    });
+    setValidationMessage('');
+  };
+
+  const updateMealRequestDetail = (id, option, value) => {
+    const detailsKey = `${id}_details`;
+    setAnswers((prev) => {
+      const details = prev[detailsKey] && typeof prev[detailsKey] === 'object' ? prev[detailsKey] : {};
+      return {
+        ...prev,
+        [detailsKey]: { ...details, [option]: value },
+      };
     });
   };
 
@@ -187,6 +317,23 @@ const MealPrepIntakePage = () => {
             />
           </div>
         );
+      case 'address':
+        return (
+          <div key={field.id} className="meal-prep-intake-field">
+            <label className="meal-prep-intake-label" htmlFor={field.id}>
+              {field.label}{field.required ? ' *' : ''}
+            </label>
+            <input
+              id={field.id}
+              ref={addressInputRef}
+              className="meal-prep-intake-input"
+              value={value}
+              placeholder={field.placeholder || ''}
+              autoComplete="street-address"
+              onChange={(event) => updateAnswer(field.id, event.target.value)}
+            />
+          </div>
+        );
       case 'date':
         return (
           <div key={field.id} className="meal-prep-intake-field">
@@ -257,6 +404,90 @@ const MealPrepIntakePage = () => {
             </div>
           </div>
         );
+      case 'delivery-window': {
+        const preference = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+        return (
+          <div key={field.id} className="meal-prep-intake-field">
+            <div className="meal-prep-intake-label">{field.label}{field.required ? ' *' : ''}</div>
+            <div className="meal-prep-intake-choices compact">
+              <button
+                type="button"
+                className={`meal-prep-intake-choice ${preference.preference === 'No preference' ? 'is-selected' : ''}`}
+                onClick={() => updateDeliveryPreference(field.id, { preference: 'No preference' })}
+              >
+                No preference
+              </button>
+            </div>
+            <div className="meal-prep-intake-split-field">
+              <div>
+                <div className="meal-prep-intake-sub-label">Day of week</div>
+                <div className="meal-prep-intake-choices compact">
+                  {field.dayOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`meal-prep-intake-choice ${preference.day === option ? 'is-selected' : ''}`}
+                      onClick={() => updateDeliveryPreference(field.id, { day: option })}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="meal-prep-intake-sub-label">Time of day</div>
+                <div className="meal-prep-intake-choices compact">
+                  {field.timeOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`meal-prep-intake-choice ${preference.time === option ? 'is-selected' : ''}`}
+                      onClick={() => updateDeliveryPreference(field.id, { time: option })}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case 'meal-request-picker': {
+        const selected = getAnswer(`${field.id}_selected`, []);
+        const details = getAnswer(`${field.id}_details`, {});
+        return (
+          <div key={field.id} className="meal-prep-intake-field">
+            <div className="meal-prep-intake-label">{field.label}{field.required ? ' *' : ''}</div>
+            <div className="meal-prep-intake-meals">
+              {field.options.map((option) => {
+                const isSelected = Array.isArray(selected) && selected.includes(option);
+                return (
+                  <div key={option} className={`meal-prep-intake-meal ${isSelected ? 'is-selected' : ''}`}>
+                    <button
+                      type="button"
+                      className={`meal-prep-intake-protein-check ${isSelected ? 'is-checked' : ''}`}
+                      onClick={() => toggleMealRequest(field.id, option)}
+                      aria-pressed={isSelected}
+                    >
+                      <span className="meal-prep-intake-checkbox">{isSelected ? 'x' : ''}</span>
+                      <span>{option}</span>
+                    </button>
+                    {isSelected && (
+                      <input
+                        className="meal-prep-intake-input meal-detail-input"
+                        value={details?.[option] || ''}
+                        placeholder="e.g., 4 days"
+                        onChange={(event) => updateMealRequestDetail(field.id, option, event.target.value)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
       default:
         return null;
     }
@@ -290,10 +521,10 @@ const MealPrepIntakePage = () => {
                   <button
                     type="button"
                     className={`meal-prep-intake-everyday ${isEveryday ? 'is-selected' : ''}`}
-                    onClick={() => toggleEverydayProtein(question.id, protein)}
-                    aria-pressed={isEveryday}
-                  >
-                    {isEveryday ? 'Everyday staple' : 'Mark as staple'}
+                  onClick={() => toggleEverydayProtein(question.id, protein)}
+                  aria-pressed={isEveryday}
+                >
+                    {isEveryday ? 'Would eat every day' : 'Would eat every day?'}
                   </button>
                 )}
               </div>
@@ -398,7 +629,6 @@ const MealPrepIntakePage = () => {
               <div className="meal-prep-intake-progress-fill" style={{ width: `${progress * 100}%` }} />
             </div>
           </div>
-          <div className="meal-prep-intake-note">Required fields are marked with an asterisk.</div>
         </aside>
 
         <main className="meal-prep-intake-main">
@@ -415,10 +645,14 @@ const MealPrepIntakePage = () => {
               </>
             ) : (
               <>
-                <div className="meal-prep-intake-tag">{currentQuestion.category}</div>
-                <div className="meal-prep-intake-question">{currentQuestion.prompt}</div>
-                {currentQuestion.helper && (
-                  <div className="meal-prep-intake-helper">{currentQuestion.helper}</div>
+                {!currentQuestion.hidePrompt && (
+                  <>
+                    <div className="meal-prep-intake-tag">{currentQuestion.category}</div>
+                    <div className="meal-prep-intake-question">{currentQuestion.prompt}</div>
+                    {currentQuestion.helper && (
+                      <div className="meal-prep-intake-helper">{currentQuestion.helper}</div>
+                    )}
+                  </>
                 )}
                 {renderInput()}
                 {validationMessage && <div className="meal-prep-intake-validation">{validationMessage}</div>}

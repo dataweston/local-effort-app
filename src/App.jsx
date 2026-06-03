@@ -50,6 +50,7 @@ const BookPage = lazy(() => import('./pages/BookPage'));
 const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
 const BrainBrowserPage = lazy(() => import('./pages/BrainBrowserPage'));
 const HubPage = lazy(() => import('./pages/HubPage'));
+const LocalistPage = lazy(() => import('./pages/LocalistPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -304,6 +305,14 @@ const AppContent = () => {
                 <Route
                   path="/hub"
                   element={<HubPage />}
+                />
+                <Route
+                  path="/localist"
+                  element={
+                    <AnimatedPage>
+                      <LocalistPage />
+                    </AnimatedPage>
+                  }
                 />
                 <Route
                   path="/catherine-schedule"

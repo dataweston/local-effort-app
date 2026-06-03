@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FULLPAGE_PAGES } from '../../config/fullPageNav';
 
@@ -9,6 +9,7 @@ export const Header = () => {
   const location = useLocation();
   const navItems = FULLPAGE_PAGES.slice(1);
   const isBlogRoute = location.pathname === '/blog' || location.pathname.startsWith('/blog/');
+  const isLocalistRoute = location.pathname === '/localist';
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
@@ -143,6 +144,21 @@ export const Header = () => {
           >
             Blog
           </a>
+          <Link
+            to="/localist"
+            data-active={isLocalistRoute ? 'true' : 'false'}
+            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
+            style={{
+              backgroundColor: isLocalistRoute ? 'var(--color-bg-secondary)' : 'transparent',
+              color: 'var(--color-text-primary)',
+              fontFamily: "'Office Code Pro', monospace",
+              textDecoration: 'none',
+            }}
+            onMouseEnter={handleHoverOn}
+            onMouseLeave={handleHoverOff}
+          >
+            Localist
+          </Link>
         </nav>
 
         <button
@@ -203,6 +219,15 @@ export const Header = () => {
                 variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
                 Blog
+              </motion.a>
+              <motion.a
+                href="/localist"
+                onClick={(e) => { e.preventDefault(); navigate('/localist'); setIsOpen(false); }}
+                className="text-3xl uppercase text-center text-slate-900"
+                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
+                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+              >
+                Localist
               </motion.a>
             </motion.nav>
           </motion.div>

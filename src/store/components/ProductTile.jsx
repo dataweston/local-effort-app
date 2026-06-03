@@ -47,7 +47,7 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
   }, [product]);
 
   // Check if anything from this product is in the cart
-  const inCart = Object.keys(map || {}).some((k) => k.startsWith(product.id));
+  const inCart = Object.keys(map || {}).some((k) => k === product.id || k.startsWith(`${product.id}:`));
 
   return (
     <button

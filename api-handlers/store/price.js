@@ -13,6 +13,7 @@
 // }
 
 const sanity = require('@sanity/client');
+const { getGeneratedSaleProductMap } = require('./_saleCatalog');
 
 const projectId =
   process.env.VITE_APP_SANITY_PROJECT_ID ||
@@ -30,7 +31,8 @@ const client =
 
 // Fetch canonical product data keyed by Sanity _id.
 const fetchProducts = async (ids) => {
-  if (!client || !ids.length) return {};
+  const fallback = getGeneratedSaleProductMap(ids);
+  if (!client || !ids.length) return fallback;
   const query = `*[_type == "product" && _id in $ids]{
     _id,
     title,
@@ -44,7 +46,10 @@ const fetchProducts = async (ids) => {
     inventory
   }`;
   const docs = await client.fetch(query, { ids });
-  return Object.fromEntries((docs || []).map((d) => [d._id, d]));
+  return {
+    ...fallback,
+    ...Object.fromEntries((docs || []).map((d) => [d._id, d])),
+  };
 };
 
 // Resolve the canonical unit price for one item in cents.
