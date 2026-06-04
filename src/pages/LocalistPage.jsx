@@ -141,24 +141,22 @@ const LocalistPage = () => {
 
       {images.length > 0 && (
         <div className="px-6 py-12 lg:px-8 lg:py-16 max-w-6xl mx-auto">
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
             {images.map((img, idx) => (
-              <motion.figure
+              <motion.div
                 key={img.asset_id || img.public_id}
-                className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ delay: idx * 0.05 }}
+                className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                whileHover={{ scale: 1.02 }}
               >
                 <img
                   src={img.thumbnail_url}
-                  alt={`Localist menu item ${idx + 1}`}
+                  alt={img.context?.alt || `Localist menu item ${idx + 1}`}
                   loading="lazy"
-                  className="w-full h-auto block"
+                  className="rounded-lg w-full h-auto"
                   decoding="async"
                   fetchPriority={idx < 2 ? 'high' : 'auto'}
                 />
-              </motion.figure>
+              </motion.div>
             ))}
           </div>
         </div>
