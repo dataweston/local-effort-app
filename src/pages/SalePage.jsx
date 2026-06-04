@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useCart } from '../store/cart/CartContext';
 import ProductGrid from '../store/components/ProductGrid';
 import CartDrawer from '../store/components/CartDrawer';
 import { SITE_URL } from '../config/siteMetadata';
@@ -23,6 +24,7 @@ const getProductSummary = (product) => {
 };
 
 const SalePage = () => {
+  const { totalQty, openCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const openSlug = location.hash ? location.hash.slice(1) : null;
@@ -156,6 +158,14 @@ const SalePage = () => {
 
       <nav className="le-sale-breadcrumb" aria-label="Breadcrumb">
         <Link to="/" className="le-sale-breadcrumb-link">← Home</Link>
+        <button
+          type="button"
+          className="le-sale-bag-btn"
+          onClick={openCart}
+          aria-label={`Open bag, ${totalQty} item${totalQty !== 1 ? 's' : ''}`}
+        >
+          Bag{totalQty > 0 ? ` (${totalQty})` : ''}
+        </button>
       </nav>
 
       <main id="products" className="le-sale-main">
