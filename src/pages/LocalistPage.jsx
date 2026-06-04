@@ -79,10 +79,6 @@ const LocalistPage = () => {
           </div>
 
           <div className="le-checkout-product-meta">
-            <p>
-              Menus are built around what's in season and what our cooks are excited about.
-              Quantities are limited. First come, first served.
-            </p>
             <h2 style={{ fontSize: '1.25rem', lineHeight: 1.3, marginTop: '1.5rem', marginBottom: '1rem', color: '#111', fontWeight: 600 }}>
               Every Monday — we'll text you a limited menu of salads and hot bowls.
               You'll pick up on Tuesday and Wednesday in North Minneapolis.

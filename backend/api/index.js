@@ -47,6 +47,8 @@ const storePriceHandler = require('../../api-handlers/store/price');
 const storeEventsHandler = require('../../api-handlers/store/events');
 const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
 const giftCardLinkHandler = require('../../api-handlers/store/gift-card-link');
+const localistImagesHandler = require('../../api-handlers/localist/images');
+const localistSubscribeHandler = require('../../api-handlers/localist/subscribe');
 const salesProxyHandler = require('../../api-handlers/sales-proxy');
 const winterDinnerCheckoutHandler = require('../../api-handlers/winter-dinner/checkout');
 const winterDinnerPaymentLinkHandler = require('../../api-handlers/winter-dinner/payment-link');
@@ -1117,6 +1119,24 @@ app.all('/api/store/products', async (req, res, next) => {
     await storeProductsHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'store products handler failed');
+    next(err);
+  }
+});
+
+app.get('/api/localist/images', async (req, res, next) => {
+  try {
+    await localistImagesHandler(req, res);
+  } catch (err) {
+    logger.error({ err }, 'localist images handler failed');
+    next(err);
+  }
+});
+
+app.post('/api/localist/subscribe', async (req, res, next) => {
+  try {
+    await localistSubscribeHandler(req, res);
+  } catch (err) {
+    logger.error({ err }, 'localist subscribe handler failed');
     next(err);
   }
 });
