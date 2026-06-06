@@ -1,6 +1,6 @@
 export default {
   name: 'hubLocalistItem',
-  title: 'Hub Localist Item',
+  title: 'Localist Menu Item',
   type: 'document',
   fields: [
     {

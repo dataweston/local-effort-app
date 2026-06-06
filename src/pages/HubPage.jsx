@@ -949,12 +949,18 @@ export default function HubPage() {
 
   const isPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
   const isLocalist = !!profile && profile.accessLevel === 'localist';
+  const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const navTabs = isLocalist
     ? [localistTab]
     : isPrivileged
-    ? [...tabs, { id: 'admin', label: 'Admin', icon: ShieldCheck }, localistTab]
+    ? [...tabs, adminTab, localistTab]
     : [...tabs, localistTab];
+  const mobileNavTabs = isLocalist
+    ? [localistTab]
+    : isPrivileged
+    ? [tabs[0], tabs[1], tabs[3], tabs[5], adminTab, localistTab]
+    : [tabs[0], tabs[1], tabs[2], tabs[3], tabs[5], localistTab];
   const activeTab = isLocalist ? 'localist' : tab;
 
   if (localistToken) {
@@ -1045,7 +1051,7 @@ export default function HubPage() {
       </main>
 
       <nav className="hub-mobile-nav">
-        {navTabs.slice(0, 6).map(({ id, label, icon: Icon }) => (
+        {mobileNavTabs.map(({ id, label, icon: Icon }) => (
           <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
             <Icon size={18} />
             <span>{label}</span>

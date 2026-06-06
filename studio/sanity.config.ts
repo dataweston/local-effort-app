@@ -21,6 +21,7 @@ const GROUPED_TYPES = [
   // Content
   'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner',
   'menu', 'menuSection', 'menuItems', 'mealPrepMenu',
+  'hubLocalistItem',
   // People & Community
   'person', 'contact', 'message', 'referralParticipant',
   'membershipTier', 'crowdfundingCampaign', 'campaignUpdate', 'rewardTier',
@@ -94,6 +95,7 @@ export default defineConfig({
                   S.documentTypeListItem('menuSection').title('Menu Sections'),
                   S.documentTypeListItem('menuItems').title('Menu Items'),
                   S.documentTypeListItem('mealPrepMenu').title('Meal Prep Menus'),
+                  S.documentTypeListItem('hubLocalistItem').title('Localist Menu Items'),
                 ]),
               ),
 
