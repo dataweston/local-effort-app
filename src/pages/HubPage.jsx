@@ -85,7 +85,7 @@ function Panel({ title, icon: Icon, action, children }) {
     <section className="hub-panel">
       <div className="hub-panel-head">
         <div className="hub-panel-title">
-          {Icon && <Icon size={22} aria-hidden="true" />}
+          {Icon && <Icon size={15} aria-hidden="true" />}
           <h2>{title}</h2>
         </div>
         {action}
@@ -336,7 +336,7 @@ function CalendarView({ accessToken }) {
           <button onClick={() => setAnchor(addDays(anchor, -7))}>Previous</button>
           <button onClick={() => setAnchor(todayIso())}>Today</button>
           <button onClick={() => setAnchor(addDays(anchor, 7))}>Next</button>
-          <button onClick={load}><RefreshCw size={18} /></button>
+          <button onClick={load}><RefreshCw size={13} /></button>
         </div>
       )}
     >
@@ -446,7 +446,7 @@ function ChatView({ accessToken, people, currentUserId }) {
         </div>
         <form className="hub-compose" onSubmit={send}>
           <input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a clear update..." />
-          <button type="submit"><Send size={21} aria-hidden="true" /> Send</button>
+          <button type="submit"><Send size={13} aria-hidden="true" /> Send</button>
         </form>
       </Panel>
     </div>
@@ -516,7 +516,7 @@ function DocsView({ accessToken, docs, reloadDocs, isPrivileged }) {
               </select>
             </Field>
             <Field label="Body"><textarea value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} rows={8} required /></Field>
-            <button className="hub-primary-button" type="submit"><Plus size={20} /> Publish</button>
+            <button className="hub-primary-button" type="submit"><Plus size={13} /> Publish</button>
           </form>
         </Panel>
       )}
@@ -533,7 +533,7 @@ function PeopleView({ people, onMessage }) {
             <strong>{person.displayName}</strong>
             <span>{person.title || person.accessLevel}</span>
             <small>{person.email}</small>
-            <button onClick={() => onMessage(person)}><MessageSquare size={18} /> Message</button>
+            <button onClick={() => onMessage(person)}><MessageSquare size={13} /> Message</button>
           </div>
         ))}
       </div>
@@ -584,7 +584,7 @@ function ShiftsView({ accessToken, isPrivileged }) {
                 <small>{shift.people.length ? `Assigned: ${shift.people.join(', ')}` : 'No one assigned yet'}</small>
               </div>
               {shift.open ? (
-                <button onClick={() => claim(shift)}><CheckCircle2 size={19} /> Pick up</button>
+                <button className="hub-shift-action" onClick={() => claim(shift)}><CheckCircle2 size={14} /> Pick up</button>
               ) : (
                 <span className="hub-pill">Covered</span>
               )}
@@ -599,7 +599,7 @@ function ShiftsView({ accessToken, isPrivileged }) {
             <Field label="Date"><input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} required /></Field>
             <Field label="Start"><input type="time" value={draft.startTime} onChange={(e) => setDraft({ ...draft, startTime: e.target.value })} required /></Field>
             <Field label="End"><input type="time" value={draft.endTime} onChange={(e) => setDraft({ ...draft, endTime: e.target.value })} /></Field>
-            <button className="hub-primary-button" type="submit"><Plus size={20} /> Add shift</button>
+            <button className="hub-primary-button" type="submit"><Plus size={13} /> Add shift</button>
           </form>
         </Panel>
       )}
@@ -637,7 +637,7 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
             </select>
           </Field>
           <Field label="Name hint"><input value={invite.displayNameHint} onChange={(e) => setInvite({ ...invite, displayNameHint: e.target.value })} /></Field>
-          <button className="hub-primary-button" type="submit"><UserPlus size={20} /> Create invite</button>
+          <button className="hub-primary-button" type="submit"><UserPlus size={13} /> Create invite</button>
         </form>
         {created && (
           <div className="hub-copy-box">
@@ -662,7 +662,7 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
               <option value="privileged">Privileged</option>
             </select>
           </Field>
-          <button className="hub-primary-button" type="submit"><FileText size={20} /> Publish as doc</button>
+          <button className="hub-primary-button" type="submit"><FileText size={13} /> Publish as doc</button>
         </form>
       </Panel>
     </div>
@@ -751,7 +751,7 @@ function LocalistView() {
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
         </Field>
         <button className="hub-primary-button" type="submit" disabled={!anySelected}>
-          <ShoppingCart size={20} /> Submit order
+          <ShoppingCart size={13} /> Submit order
         </button>
       </form>
     </Panel>
@@ -819,11 +819,12 @@ export default function HubPage() {
 
   const isPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
   const isLocalist = !!profile && profile.accessLevel === 'localist';
+  const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const navTabs = isLocalist
-    ? [{ id: 'localist', label: 'Localist', icon: ShoppingCart }]
+    ? [localistTab]
     : isPrivileged
-    ? [...tabs, { id: 'admin', label: 'Admin', icon: ShieldCheck }]
-    : tabs;
+    ? [...tabs, { id: 'admin', label: 'Admin', icon: ShieldCheck }, localistTab]
+    : [...tabs, localistTab];
   const activeTab = isLocalist ? 'localist' : tab;
 
   if (auth.loading) {
@@ -844,7 +845,7 @@ export default function HubPage() {
       <style>{hubCss}</style>
       <aside className="hub-sidebar">
         <div className="hub-logo">
-          <ShieldCheck size={30} />
+          <ShieldCheck size={18} />
           <div>
             <strong>Hub</strong>
             <span>{profile.displayName}</span>
@@ -853,12 +854,12 @@ export default function HubPage() {
         <nav>
           {navTabs.map(({ id, label, icon: Icon }) => (
             <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
-              <Icon size={23} aria-hidden="true" />
+              <Icon size={15} aria-hidden="true" />
               {label}
             </button>
           ))}
         </nav>
-        <button className="hub-signout" onClick={auth.signOut}><LogOut size={20} /> Sign out</button>
+        <button className="hub-signout" onClick={auth.signOut}><LogOut size={13} /> Sign out</button>
       </aside>
 
       <main className="hub-main">
@@ -867,7 +868,7 @@ export default function HubPage() {
             <h1>{navTabs.find((item) => item.id === activeTab)?.label || 'Hub'}</h1>
             <p>{isLocalist ? 'Localist view' : isPrivileged ? 'Privileged view' : 'Staff view'}</p>
           </div>
-          <button onClick={loadShellData}><RefreshCw size={21} /> Refresh</button>
+          <button onClick={loadShellData}><RefreshCw size={13} /> Refresh</button>
         </header>
 
         {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
@@ -882,8 +883,8 @@ export default function HubPage() {
 
       <nav className="hub-mobile-nav">
         {navTabs.slice(0, 6).map(({ id, label, icon: Icon }) => (
-          <button key={id} className={tab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
-            <Icon size={21} />
+          <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
+            <Icon size={18} />
             <span>{label}</span>
           </button>
         ))}
@@ -894,187 +895,332 @@ export default function HubPage() {
 
 const hubCss = `
 .hub-app {
-  --hub-bg: #f7f5ef;
-  --hub-panel: #fffdf8;
-  --hub-ink: #1f2520;
-  --hub-muted: #687064;
-  --hub-border: #d8d2c4;
+  --hub-bg: #f5f3ee;
+  --hub-panel: #ffffff;
+  --hub-ink: #1a1d1b;
+  --hub-muted: #6b7068;
+  --hub-border: #e0dbd0;
+  --hub-border-light: #ece8e0;
   --hub-accent: #345c51;
+  --hub-accent-bg: #eaf1ee;
   --hub-accent-text: #ffffff;
+  --hub-row-hover: #f8f6f1;
   min-height: 100vh;
   display: flex;
   background: var(--hub-bg);
   color: var(--hub-ink);
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
+/* ── Sidebar ── */
 .hub-sidebar {
-  width: 260px;
-  background: #ebe6d9;
+  width: 216px;
+  min-width: 216px;
+  background: #eee9df;
   border-right: 1px solid var(--hub-border);
-  padding: 18px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 4px;
+  overflow-y: auto;
 }
-.hub-logo { display: flex; align-items: center; gap: 12px; padding: 8px; }
-.hub-logo strong { display: block; font-size: 28px; line-height: 1; }
-.hub-logo span { display: block; font-size: 15px; color: var(--hub-muted); margin-top: 4px; }
-.hub-sidebar nav { display: grid; gap: 8px; }
-.hub-sidebar nav button, .hub-signout, .hub-topbar button, .hub-panel-head button, .hub-button-row button, .hub-person button, .hub-shift button {
-  min-height: 52px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+.hub-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 10px;
+  border-bottom: 1px solid var(--hub-border);
+  margin-bottom: 4px;
+}
+.hub-logo strong { display: block; font-size: 14px; font-weight: 700; line-height: 1; }
+.hub-logo span { display: block; font-size: 11px; color: var(--hub-muted); margin-top: 2px; }
+.hub-sidebar nav { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+.hub-sidebar nav button {
+  height: 32px;
+  border: none;
+  border-radius: 6px;
   background: transparent;
+  color: var(--hub-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.hub-sidebar nav button:hover { background: rgba(0,0,0,0.05); }
+.hub-sidebar nav button.is-active {
+  background: var(--hub-accent);
+  color: var(--hub-accent-text);
+  font-weight: 600;
+}
+.hub-signout {
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--hub-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--hub-border);
+}
+.hub-signout:hover { color: #7a2f2f; }
+
+/* ── Main area ── */
+.hub-main { flex: 1; min-width: 0; padding: 16px 20px 72px; overflow: auto; }
+.hub-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hub-border);
+}
+.hub-topbar h1 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.2; }
+.hub-topbar p { margin: 2px 0 0; font-size: 11px; color: var(--hub-muted); }
+.hub-topbar button,
+.hub-panel-head button,
+.hub-button-row button,
+.hub-person button,
+.hub-shift-action {
+  height: 28px;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
   color: var(--hub-ink);
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  font-size: 18px;
-  font-weight: 700;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
 }
-.hub-sidebar nav button.is-active, .hub-mobile-nav button.is-active {
-  background: var(--hub-accent);
-  color: var(--hub-accent-text);
-}
-.hub-signout { margin-top: auto; color: #7a2f2f; }
-.hub-main { flex: 1; min-width: 0; padding: 22px; padding-bottom: 88px; overflow: auto; }
-.hub-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.hub-topbar h1 { margin: 0; font-size: 34px; line-height: 1.05; }
-.hub-topbar p { margin: 6px 0 0; font-size: 17px; color: var(--hub-muted); }
-.hub-topbar button, .hub-panel-head button, .hub-button-row button, .hub-person button, .hub-shift button { background: var(--hub-panel); border-color: var(--hub-border); }
-.hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.hub-topbar button:hover,
+.hub-panel-head button:hover,
+.hub-button-row button:hover,
+.hub-person button:hover,
+.hub-shift-action:hover { background: var(--hub-row-hover); }
+.hub-button-row { display: flex; gap: 4px; }
+
+/* ── Grid & panels ── */
+.hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .hub-panel {
   background: var(--hub-panel);
   border: 1px solid var(--hub-border);
-  border-radius: 8px;
-  padding: 18px;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  border-radius: 7px;
+  overflow: hidden;
 }
-.hub-panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
-.hub-panel-title { display: flex; align-items: center; gap: 10px; }
-.hub-panel h2 { margin: 0; font-size: 26px; }
-.hub-subhead { font-size: 18px; margin: 20px 0 10px; }
-.hub-list { display: grid; gap: 9px; }
-.hub-row, .hub-shift {
-  border: 1px solid var(--hub-border);
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 14px;
+.hub-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hub-border-light);
+}
+.hub-panel-title { display: flex; align-items: center; gap: 7px; }
+.hub-panel h2 { margin: 0; font-size: 13px; font-weight: 600; }
+.hub-subhead { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hub-muted); margin: 12px 14px 4px; }
+
+/* ── Lists & rows ── */
+.hub-list { display: flex; flex-direction: column; }
+.hub-row {
+  border-bottom: 1px solid var(--hub-border-light);
+  background: transparent;
+  padding: 8px 14px;
   text-align: left;
 }
-.hub-row strong, .hub-shift strong { display: block; font-size: 20px; line-height: 1.25; }
-.hub-row span, .hub-shift span, .hub-shift small { display: block; color: var(--hub-muted); font-size: 16px; margin-top: 4px; }
-.hub-row-button { width: 100%; cursor: pointer; }
-.hub-row-button.is-active { outline: 3px solid rgba(52, 92, 81, 0.25); border-color: var(--hub-accent); }
-.hub-empty { color: var(--hub-muted); font-size: 18px; margin: 0; }
-.hub-calendar-list { display: grid; gap: 14px; }
-.hub-day h3 { font-size: 21px; margin: 0 0 8px; }
+.hub-row:last-child { border-bottom: none; }
+.hub-row strong { display: block; font-size: 13px; font-weight: 600; line-height: 1.35; }
+.hub-row span { display: block; color: var(--hub-muted); font-size: 11px; margin-top: 1px; }
+.hub-row-button { width: 100%; cursor: pointer; background: transparent; border: none; }
+.hub-row-button:hover { background: var(--hub-row-hover); }
+.hub-row-button.is-active { background: var(--hub-accent-bg); }
+.hub-row-button.is-active strong { color: var(--hub-accent); }
+.hub-empty { color: var(--hub-muted); font-size: 12px; margin: 0; padding: 10px 14px; }
+
+/* ── Calendar ── */
+.hub-calendar-list { display: flex; flex-direction: column; gap: 16px; padding: 12px 14px; }
+.hub-day h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hub-muted); margin: 0 0 6px; }
 .hub-calendar-item {
   display: grid;
-  grid-template-columns: 96px 1fr;
-  gap: 6px 14px;
-  padding: 13px;
+  grid-template-columns: 72px 1fr;
+  gap: 2px 10px;
+  padding: 7px 10px;
   border: 1px solid var(--hub-border);
-  border-radius: 8px;
-  background: #fff;
-  margin-bottom: 8px;
+  border-radius: 5px;
+  background: var(--hub-panel);
+  margin-bottom: 4px;
 }
-.hub-calendar-item span { font-size: 17px; font-weight: 800; color: var(--hub-accent); }
-.hub-calendar-item strong { font-size: 19px; }
-.hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 15px; }
-.hub-chat-layout { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 18px; }
-.hub-doc-layout { display: grid; grid-template-columns: minmax(260px, 360px) 1fr minmax(260px, 360px); gap: 18px; }
-.hub-message-list { min-height: 48vh; max-height: 58vh; overflow: auto; display: grid; align-content: start; gap: 10px; }
-.hub-message { border: 1px solid var(--hub-border); background: #fff; border-radius: 8px; padding: 12px; }
-.hub-message strong { color: var(--hub-muted); font-size: 14px; }
-.hub-message p { margin: 6px 0 0; font-size: 18px; line-height: 1.45; }
-.hub-compose { display: flex; gap: 10px; margin-top: 14px; }
-.hub-compose input, .hub-field input, .hub-field select, .hub-field textarea, .hub-copy-box input {
+.hub-calendar-item span { font-size: 11px; font-weight: 700; color: var(--hub-accent); }
+.hub-calendar-item strong { font-size: 13px; font-weight: 600; }
+.hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 11px; }
+
+/* ── Chat ── */
+.hub-chat-layout { display: grid; grid-template-columns: minmax(220px, 280px) 1fr; gap: 12px; }
+.hub-doc-layout { display: grid; grid-template-columns: minmax(200px, 260px) 1fr minmax(200px, 280px); gap: 12px; }
+.hub-message-list {
+  min-height: 50vh;
+  max-height: 60vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+}
+.hub-message { padding: 8px 10px; background: var(--hub-bg); border-radius: 5px; }
+.hub-message strong { color: var(--hub-muted); font-size: 11px; display: block; margin-bottom: 3px; }
+.hub-message p { margin: 0; font-size: 13px; line-height: 1.45; }
+.hub-compose { display: flex; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--hub-border-light); }
+
+/* ── Inputs & forms ── */
+.hub-compose input,
+.hub-field input,
+.hub-field select,
+.hub-field textarea,
+.hub-copy-box input {
   width: 100%;
   border: 1px solid var(--hub-border);
-  border-radius: 8px;
-  padding: 13px 14px;
-  font-size: 18px;
-  background: #fff;
+  border-radius: 5px;
+  padding: 0 10px;
+  height: 32px;
+  font-size: 13px;
+  background: var(--hub-panel);
   color: var(--hub-ink);
 }
+.hub-field textarea { height: auto; padding: 8px 10px; }
 .hub-compose button, .hub-primary-button {
-  min-height: 52px;
+  height: 32px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 5px;
   background: var(--hub-accent);
   color: #fff;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 0 18px;
+  gap: 6px;
+  padding: 0 14px;
+  cursor: pointer;
+  white-space: nowrap;
 }
-.hub-doc-body pre {
-  white-space: pre-wrap;
-  font-family: inherit;
-  font-size: 18px;
-  line-height: 1.55;
+.hub-primary-button:disabled { opacity: 0.45; cursor: not-allowed; }
+.hub-form { display: grid; gap: 10px; padding: 12px 14px; }
+.hub-field span { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: var(--hub-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* ── Docs ── */
+.hub-doc-body { padding: 12px 14px; }
+.hub-doc-body pre { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.6; }
+.hub-doc-summary { color: var(--hub-muted); font-size: 12px; margin: 0 0 10px; }
+
+/* ── People ── */
+.hub-people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; padding: 12px 14px; }
+.hub-person {
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+  background: var(--hub-bg);
+  padding: 10px 12px;
+  display: grid;
+  gap: 3px;
 }
-.hub-doc-summary { color: var(--hub-muted); font-size: 18px; }
-.hub-people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-.hub-person { border: 1px solid var(--hub-border); border-radius: 8px; background: #fff; padding: 15px; display: grid; gap: 6px; }
-.hub-person strong { font-size: 21px; }
-.hub-person span, .hub-person small { color: var(--hub-muted); font-size: 15px; overflow-wrap: anywhere; }
-.hub-shift { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
-.hub-pill { border: 1px solid var(--hub-border); border-radius: 999px; padding: 8px 12px; font-weight: 800; color: var(--hub-accent); }
-.hub-form { display: grid; gap: 13px; }
-.hub-field span { display: block; margin-bottom: 6px; font-size: 15px; font-weight: 800; color: var(--hub-muted); }
-.hub-copy-box { margin-top: 14px; display: grid; gap: 8px; }
-.hub-localist-item { cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
-.hub-localist-item input[type="checkbox"] { margin-top: 4px; flex-shrink: 0; width: 20px; height: 20px; accent-color: var(--hub-accent); }
-.hub-localist-price { color: var(--hub-accent); font-weight: 800; }
-.hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f7f5ef); padding: 18px; }
-.hub-auth-card { width: min(520px, 100%); background: #fffdf8; border: 1px solid #d8d2c4; border-radius: 8px; padding: 24px; }
-.hub-brand { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
-.hub-brand h1, .hub-auth-card h1 { font-size: 32px; margin: 0; }
-.hub-brand p, .hub-help { color: #687064; font-size: 17px; line-height: 1.45; }
-.hub-notice { background: #edf5f1; border: 1px solid #b9d1c8; padding: 12px; border-radius: 8px; margin-bottom: 14px; font-weight: 800; }
-.hub-error { color: #9b2f2f; font-weight: 800; margin: 0; }
-.hub-text-button { border: 0; background: transparent; color: #345c51; font-weight: 800; font-size: 17px; margin-top: 14px; }
+.hub-person strong { font-size: 13px; font-weight: 600; }
+.hub-person span, .hub-person small { color: var(--hub-muted); font-size: 11px; overflow-wrap: anywhere; }
+.hub-person button { margin-top: 6px; }
+
+/* ── Shifts ── */
+.hub-shift {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--hub-border-light);
+}
+.hub-shift:last-child { border-bottom: none; }
+.hub-shift strong { display: block; font-size: 13px; font-weight: 600; }
+.hub-shift span, .hub-shift small { display: block; color: var(--hub-muted); font-size: 11px; margin-top: 1px; }
+.hub-pill {
+  border: 1px solid var(--hub-border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hub-accent);
+  white-space: nowrap;
+}
+
+/* ── Misc ── */
+.hub-copy-box { padding: 0 14px 12px; display: grid; gap: 6px; }
+.hub-copy-box strong { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hub-muted); }
+.hub-localist-item { cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
+.hub-localist-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; width: 14px; height: 14px; accent-color: var(--hub-accent); }
+.hub-localist-price { color: var(--hub-accent); font-weight: 700; }
+
+/* ── Auth screens ── */
+.hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f5f3ee); padding: 18px; }
+.hub-auth-card { width: min(440px, 100%); background: #fff; border: 1px solid var(--hub-border); border-radius: 8px; padding: 24px; }
+.hub-auth-card .hub-form { padding: 0; }
+.hub-brand { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.hub-brand h1, .hub-auth-card h1 { font-size: 20px; font-weight: 700; margin: 0; }
+.hub-brand p, .hub-help { color: var(--hub-muted); font-size: 13px; line-height: 1.5; }
+.hub-notice { background: #edf5f1; border: 1px solid #b9d1c8; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+.hub-error { color: #9b2f2f; font-weight: 600; font-size: 13px; margin: 0; }
+.hub-text-button { border: 0; background: transparent; color: var(--hub-accent); font-weight: 600; font-size: 13px; margin-top: 10px; cursor: pointer; }
+
+/* ── Mobile nav ── */
 .hub-mobile-nav { display: none; }
 @media (max-width: 900px) {
   .hub-app { display: block; }
   .hub-sidebar { display: none; }
-  .hub-main { padding: 14px; padding-bottom: 88px; }
-  .hub-topbar h1 { font-size: 28px; }
+  .hub-main { padding: 12px 12px 68px; }
+  .hub-topbar { margin-bottom: 12px; }
   .hub-grid, .hub-chat-layout, .hub-doc-layout { grid-template-columns: 1fr; }
-  .hub-panel { padding: 14px; }
-  .hub-panel h2 { font-size: 23px; }
   .hub-calendar-item { grid-template-columns: 1fr; }
   .hub-calendar-item small { grid-column: auto; }
-  .hub-shift { align-items: stretch; flex-direction: column; }
+  .hub-shift { flex-wrap: wrap; }
   .hub-compose { flex-direction: column; }
   .hub-mobile-nav {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 0; right: 0; bottom: 0;
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    background: #ebe6d9;
+    background: #eee9df;
     border-top: 1px solid var(--hub-border);
-    padding: 6px;
+    padding: 4px 4px 4px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
   }
   .hub-mobile-nav button {
-    min-height: 58px;
-    border: 0;
-    border-radius: 8px;
+    height: 48px;
+    border: none;
+    border-radius: 6px;
     background: transparent;
     color: var(--hub-ink);
-    display: grid;
-    place-items: center;
-    font-size: 11px;
-    font-weight: 800;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
   }
+  .hub-mobile-nav button.is-active { color: var(--hub-accent); }
 }
 `;
