@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Send,
   ShieldCheck,
+  ShoppingCart,
   UserPlus,
   UsersRound,
 } from 'lucide-react';
@@ -668,6 +669,95 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   );
 }
 
+const LOCALIST_MENU = [
+  {
+    id: 'produce',
+    name: 'Local Produce Box',
+    description: 'Fresh seasonal vegetables and fruit from farms within 50 miles. Weekly selection changes with the harvest.',
+    price: '$28',
+  },
+  {
+    id: 'bread',
+    name: 'Bread & Dairy Bundle',
+    description: 'Stone-milled sourdough, farmhouse butter, and a seasonal cheese from producers in the region.',
+    price: '$18',
+  },
+  {
+    id: 'meal-kit',
+    name: 'Community Meal Kit',
+    description: 'All ingredients for a two-person dinner, sourced entirely from local farms and makers. Includes a printed recipe card.',
+    price: '$34',
+  },
+];
+
+function LocalistView() {
+  const [order, setOrder] = useState({});
+  const [name, setName] = useState('');
+  const [note, setNote] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const toggle = (id) => setOrder((prev) => ({ ...prev, [id]: !prev[id] }));
+  const anySelected = Object.values(order).some(Boolean);
+
+  const submit = (event) => {
+    event.preventDefault();
+    if (!anySelected) return;
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <Panel title="Order Received" icon={CheckCircle2}>
+        <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
+          Thanks{name ? `, ${name}` : ''}! Your order has been noted. Someone will follow up shortly.
+        </p>
+        <button
+          className="hub-primary-button"
+          style={{ marginTop: 16 }}
+          type="button"
+          onClick={() => { setSubmitted(false); setOrder({}); setName(''); setNote(''); }}
+        >
+          Place another order
+        </button>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel title="Place an Order" icon={ShoppingCart}>
+      <form className="hub-form" onSubmit={submit}>
+        <div className="hub-list">
+          {LOCALIST_MENU.map((item) => (
+            <label key={item.id} className="hub-row hub-localist-item">
+              <input
+                type="checkbox"
+                checked={!!order[item.id]}
+                onChange={() => toggle(item.id)}
+              />
+              <div>
+                <strong>
+                  {item.name}{' '}
+                  <span className="hub-localist-price">{item.price}</span>
+                </strong>
+                <span>{item.description}</span>
+              </div>
+            </label>
+          ))}
+        </div>
+        <Field label="Your name">
+          <input value={name} onChange={(e) => setName(e.target.value)} required />
+        </Field>
+        <Field label="Notes (optional)">
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
+        </Field>
+        <button className="hub-primary-button" type="submit" disabled={!anySelected}>
+          <ShoppingCart size={20} /> Submit order
+        </button>
+      </form>
+    </Panel>
+  );
+}
+
 export default function HubPage() {
   const auth = useSupabaseAuth();
   const inviteToken = new URLSearchParams(window.location.search).get('invite') || '';
@@ -728,7 +818,13 @@ export default function HubPage() {
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
 
   const isPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
-  const navTabs = isPrivileged ? [...tabs, { id: 'admin', label: 'Admin', icon: ShieldCheck }] : tabs;
+  const isLocalist = !!profile && profile.accessLevel === 'localist';
+  const navTabs = isLocalist
+    ? [{ id: 'localist', label: 'Localist', icon: ShoppingCart }]
+    : isPrivileged
+    ? [...tabs, { id: 'admin', label: 'Admin', icon: ShieldCheck }]
+    : tabs;
+  const activeTab = isLocalist ? 'localist' : tab;
 
   if (auth.loading) {
     return <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>;
@@ -756,7 +852,7 @@ export default function HubPage() {
         </div>
         <nav>
           {navTabs.map(({ id, label, icon: Icon }) => (
-            <button key={id} className={tab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
+            <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
               <Icon size={23} aria-hidden="true" />
               {label}
             </button>
@@ -768,19 +864,20 @@ export default function HubPage() {
       <main className="hub-main">
         <header className="hub-topbar">
           <div>
-            <h1>{navTabs.find((item) => item.id === tab)?.label || 'Hub'}</h1>
-            <p>{isPrivileged ? 'Privileged view' : 'Staff view'}</p>
+            <h1>{navTabs.find((item) => item.id === activeTab)?.label || 'Hub'}</h1>
+            <p>{isLocalist ? 'Localist view' : isPrivileged ? 'Privileged view' : 'Staff view'}</p>
           </div>
           <button onClick={loadShellData}><RefreshCw size={21} /> Refresh</button>
         </header>
 
-        {tab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
-        {tab === 'calendar' && <CalendarView accessToken={auth.accessToken} />}
-        {tab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
-        {tab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
-        {tab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
-        {tab === 'shifts' && <ShiftsView accessToken={auth.accessToken} isPrivileged={isPrivileged} />}
-        {tab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
+        {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
+        {activeTab === 'calendar' && <CalendarView accessToken={auth.accessToken} />}
+        {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
+        {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
+        {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
+        {activeTab === 'shifts' && <ShiftsView accessToken={auth.accessToken} isPrivileged={isPrivileged} />}
+        {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
+        {activeTab === 'localist' && <LocalistView />}
       </main>
 
       <nav className="hub-mobile-nav">
@@ -932,6 +1029,9 @@ const hubCss = `
 .hub-form { display: grid; gap: 13px; }
 .hub-field span { display: block; margin-bottom: 6px; font-size: 15px; font-weight: 800; color: var(--hub-muted); }
 .hub-copy-box { margin-top: 14px; display: grid; gap: 8px; }
+.hub-localist-item { cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
+.hub-localist-item input[type="checkbox"] { margin-top: 4px; flex-shrink: 0; width: 20px; height: 20px; accent-color: var(--hub-accent); }
+.hub-localist-price { color: var(--hub-accent); font-weight: 800; }
 .hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f7f5ef); padding: 18px; }
 .hub-auth-card { width: min(520px, 100%); background: #fffdf8; border: 1px solid #d8d2c4; border-radius: 8px; padding: 24px; }
 .hub-brand { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
