@@ -3,6 +3,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
+  Copy,
   FileText,
   Home,
   Inbox,
@@ -611,6 +612,10 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   const [invite, setInvite] = useState({ email: '', accessLevel: 'staff', displayNameHint: '' });
   const [created, setCreated] = useState(null);
   const [brain, setBrain] = useState({ sourceType: 'brain_inbox', sourceId: '', title: '', visibility: 'staff' });
+  const [localistWindow, setLocalistWindow] = useState(null);
+  const [localistMessage, setLocalistMessage] = useState('');
+  const [localistStatus, setLocalistStatus] = useState('');
+  const [localistBusy, setLocalistBusy] = useState(false);
 
   const createInvite = async (event) => {
     event.preventDefault();
@@ -623,6 +628,52 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
     await api('/api/hub/brain-publish', accessToken, { method: 'POST', body: JSON.stringify(brain) });
     setBrain({ sourceType: 'brain_inbox', sourceId: '', title: '', visibility: 'staff' });
     await reloadDocs();
+  };
+
+  const createLocalistWindow = async () => {
+    setLocalistStatus('');
+    setLocalistBusy(true);
+    try {
+      const data = await api('/api/hub/localist-window', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'create', hoursValid: 48 }),
+      });
+      setLocalistWindow(data.window);
+      setLocalistMessage(`Local Effort Localist menu is live for 48 hours: ${data.window.url} Reply STOP to opt out.`);
+      setLocalistStatus('Link ready.');
+    } catch (err) {
+      setLocalistStatus(err.message || 'Unable to create link.');
+    } finally {
+      setLocalistBusy(false);
+    }
+  };
+
+  const sendLocalistSms = async () => {
+    if (!localistWindow?.url) return;
+    setLocalistStatus('');
+    setLocalistBusy(true);
+    try {
+      const data = await api('/api/hub/localist-window', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'sendSms',
+          token: new URL(localistWindow.url).searchParams.get('localist'),
+          message: localistMessage,
+        }),
+      });
+      setLocalistWindow(data.window);
+      setLocalistStatus('SMS sent.');
+    } catch (err) {
+      setLocalistStatus(err.message || 'Unable to send SMS.');
+    } finally {
+      setLocalistBusy(false);
+    }
+  };
+
+  const copyLocalistLink = async () => {
+    if (!localistWindow?.url || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(localistWindow.url);
+    setLocalistStatus('Link copied.');
   };
 
   return (
@@ -665,36 +716,60 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
           <button className="hub-primary-button" type="submit"><FileText size={13} /> Publish as doc</button>
         </form>
       </Panel>
+      <Panel title="Localist Window" icon={ShoppingCart}>
+        <div className="hub-form">
+          <div className="hub-button-row">
+            <button type="button" onClick={createLocalistWindow} disabled={localistBusy}>
+              <Plus size={13} /> Generate link
+            </button>
+            <button type="button" onClick={sendLocalistSms} disabled={localistBusy || !localistWindow?.url}>
+              <Send size={13} /> Send SMS
+            </button>
+          </div>
+          {localistWindow?.url && (
+            <>
+              <Field label="Link">
+                <input readOnly value={localistWindow.url} onFocus={(e) => e.target.select()} />
+              </Field>
+              <Field label="Message">
+                <textarea
+                  rows={4}
+                  value={localistMessage}
+                  onChange={(e) => setLocalistMessage(e.target.value)}
+                />
+              </Field>
+              <div className="hub-button-row">
+                <button type="button" onClick={copyLocalistLink}>
+                  <Copy size={13} /> Copy link
+                </button>
+                {localistWindow.smsSentAt && <span className="hub-pill">Sent</span>}
+              </div>
+            </>
+          )}
+          {localistStatus && <p className="hub-empty">{localistStatus}</p>}
+        </div>
+      </Panel>
     </div>
   );
 }
 
-const LOCALIST_MENU = [
-  {
-    id: 'produce',
-    name: 'Local Produce Box',
-    description: 'Fresh seasonal vegetables and fruit from farms within 50 miles. Weekly selection changes with the harvest.',
-    price: '$28',
-  },
-  {
-    id: 'bread',
-    name: 'Bread & Dairy Bundle',
-    description: 'Stone-milled sourdough, farmhouse butter, and a seasonal cheese from producers in the region.',
-    price: '$18',
-  },
-  {
-    id: 'meal-kit',
-    name: 'Community Meal Kit',
-    description: 'All ingredients for a two-person dinner, sourced entirely from local farms and makers. Includes a printed recipe card.',
-    price: '$34',
-  },
-];
+const LOCALIST_MENU_QUERY = `*[_type == "hubLocalistItem" && active != false] | order(order asc) { _id, name, description, price }`;
 
 function LocalistView() {
+  const [items, setItems] = useState(null);
   const [order, setOrder] = useState({});
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    api('/api/sanity-query', null, {
+      method: 'POST',
+      body: JSON.stringify({ query: LOCALIST_MENU_QUERY }),
+    })
+      .then((data) => setItems(data.result || []))
+      .catch(() => setItems([]));
+  }, []);
 
   const toggle = (id) => setOrder((prev) => ({ ...prev, [id]: !prev[id] }));
   const anySelected = Object.values(order).some(Boolean);
@@ -725,44 +800,91 @@ function LocalistView() {
 
   return (
     <Panel title="Place an Order" icon={ShoppingCart}>
-      <form className="hub-form" onSubmit={submit}>
-        <div className="hub-list">
-          {LOCALIST_MENU.map((item) => (
-            <label key={item.id} className="hub-row hub-localist-item">
-              <input
-                type="checkbox"
-                checked={!!order[item.id]}
-                onChange={() => toggle(item.id)}
-              />
-              <div>
-                <strong>
-                  {item.name}{' '}
-                  <span className="hub-localist-price">{item.price}</span>
-                </strong>
-                <span>{item.description}</span>
-              </div>
-            </label>
-          ))}
-        </div>
-        <Field label="Your name">
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
-        </Field>
-        <Field label="Notes (optional)">
-          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
-        </Field>
-        <button className="hub-primary-button" type="submit" disabled={!anySelected}>
-          <ShoppingCart size={13} /> Submit order
-        </button>
-      </form>
+      {items === null && <p className="hub-empty">Loading menu...</p>}
+      {items !== null && items.length === 0 && <p className="hub-empty">No items available.</p>}
+      {items !== null && items.length > 0 && (
+        <form className="hub-form" onSubmit={submit}>
+          <div className="hub-list">
+            {items.map((item) => (
+              <label key={item._id} className="hub-row hub-localist-item">
+                <input
+                  type="checkbox"
+                  checked={!!order[item._id]}
+                  onChange={() => toggle(item._id)}
+                />
+                <div>
+                  <strong>
+                    {item.name}{item.price && <> <span className="hub-localist-price">{item.price}</span></>}
+                  </strong>
+                  {item.description && <span>{item.description}</span>}
+                </div>
+              </label>
+            ))}
+          </div>
+          <Field label="Your name">
+            <input value={name} onChange={(e) => setName(e.target.value)} required />
+          </Field>
+          <Field label="Notes (optional)">
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
+          </Field>
+          <button className="hub-primary-button" type="submit" disabled={!anySelected}>
+            <ShoppingCart size={13} /> Submit order
+          </button>
+        </form>
+      )}
     </Panel>
+  );
+}
+
+function LocalistClosedScreen() {
+  return (
+    <>
+      <style>{hubCss}</style>
+      <main className="hub-auth-screen">
+        <section className="hub-auth-card">
+          <div className="hub-brand">
+            <ShieldCheck size={24} />
+            <div>
+              <h1>This menu has closed</h1>
+              <p>The Localist link is no longer live.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+function LocalistGuestShell({ localistWindow }) {
+  const expiresAt = localistWindow?.expiresAt
+    ? new Date(localistWindow.expiresAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    : '';
+
+  return (
+    <div className="hub-app hub-app-guest">
+      <style>{hubCss}</style>
+      <main className="hub-main">
+        <header className="hub-topbar">
+          <div>
+            <h1>Localist</h1>
+            <p>{expiresAt ? `Open until ${expiresAt}` : 'Localist view'}</p>
+          </div>
+        </header>
+        <div className="hub-guest-content">
+          <LocalistView />
+        </div>
+      </main>
+    </div>
   );
 }
 
 export default function HubPage() {
   const auth = useSupabaseAuth();
   const inviteToken = new URLSearchParams(window.location.search).get('invite') || '';
+  const localistToken = new URLSearchParams(window.location.search).get('localist') || '';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
   const [tab, setTab] = useState('today');
   const [people, setPeople] = useState([]);
   const [docs, setDocs] = useState([]);
@@ -780,6 +902,14 @@ export default function HubPage() {
     meta.setAttribute('content', 'noindex, nofollow');
     return () => { meta.setAttribute('content', ''); };
   }, []);
+
+  useEffect(() => {
+    if (!localistToken) return;
+    setLocalistAccess({ loaded: false, window: null });
+    api(`/api/hub/localist-window?token=${encodeURIComponent(localistToken)}`)
+      .then((data) => setLocalistAccess({ loaded: true, window: data.window || null }))
+      .catch(() => setLocalistAccess({ loaded: true, window: null }));
+  }, [localistToken]);
 
   const loadProfile = useCallback(async () => {
     if (!auth.accessToken) return;
@@ -827,17 +957,50 @@ export default function HubPage() {
     : [...tabs, localistTab];
   const activeTab = isLocalist ? 'localist' : tab;
 
+  if (localistToken) {
+    if (!localistAccess.loaded) {
+      return (
+        <>
+          <style>{hubCss}</style>
+          <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>
+        </>
+      );
+    }
+    if (!localistAccess.window?.valid) return <LocalistClosedScreen />;
+    return <LocalistGuestShell localistWindow={localistAccess.window} />;
+  }
+
   if (auth.loading) {
-    return <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>;
+    return (
+      <>
+        <style>{hubCss}</style>
+        <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>
+      </>
+    );
   }
   if (!auth.user) {
-    return <HubAuthScreen auth={auth} inviteToken={inviteToken} />;
+    return (
+      <>
+        <style>{hubCss}</style>
+        <HubAuthScreen auth={auth} inviteToken={inviteToken} />
+      </>
+    );
   }
   if (profileLoaded && !profile) {
-    return <ProfileSetup accessToken={auth.accessToken} inviteToken={inviteToken} onDone={loadProfile} />;
+    return (
+      <>
+        <style>{hubCss}</style>
+        <ProfileSetup accessToken={auth.accessToken} inviteToken={inviteToken} onDone={loadProfile} />
+      </>
+    );
   }
   if (!profileLoaded) {
-    return <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>;
+    return (
+      <>
+        <style>{hubCss}</style>
+        <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>
+      </>
+    );
   }
 
   return (
@@ -980,6 +1143,8 @@ const hubCss = `
 
 /* ── Main area ── */
 .hub-main { flex: 1; min-width: 0; padding: 16px 20px 72px; overflow: auto; }
+.hub-app-guest .hub-main { max-width: 760px; margin: 0 auto; width: 100%; }
+.hub-guest-content { display: grid; gap: 12px; }
 .hub-topbar {
   display: flex;
   align-items: center;

@@ -1355,6 +1355,15 @@ app.all('/api/hub/invites', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/localist-window', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/localist-window')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub localist window handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/shifts', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/shifts')(req, res);

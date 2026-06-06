@@ -542,6 +542,22 @@ model HubInvite {
   @@index([accessLevel])
 }
 
+model HubLocalistWindow {
+  id             String    @id @default(uuid())
+  token          String    @unique
+  active         Boolean   @default(true)
+  expiresAt      DateTime
+  createdByUserId String?
+  smsCampaignId  Int?
+  smsSentAt      DateTime?
+  smsMessage     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([active, expiresAt])
+  @@index([createdAt])
+}
+
 model HubDocument {
   id          String   @id @default(uuid())
   title       String

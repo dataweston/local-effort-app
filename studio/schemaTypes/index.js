@@ -35,6 +35,7 @@ import membershipTier from './membershipTier'
 import activityPubFollower from './activityPubFollower'
 import activityPubDelivery from './activityPubDelivery'
 import decisionPriority from './decisionPriority'
+import hubLocalistItem from './hubLocalistItem'
 
 export const schemaTypes = [
   page,
@@ -74,6 +75,7 @@ export const schemaTypes = [
   emailSubscriber,
   cloudinaryImage,
   decisionPriority,
+  hubLocalistItem,
 ]
 
 export default schemaTypes
