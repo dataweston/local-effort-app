@@ -22,6 +22,13 @@ export default {
       description: 'Display price, e.g. "$28" or "Market price".',
     },
     {
+      name: 'priceCents',
+      title: 'Checkout price in cents',
+      type: 'number',
+      description: 'Exact Square checkout price, e.g. 1200 for $12. Leave blank only when the display price is a simple dollar amount.',
+      validation: (Rule) => Rule.min(1).integer(),
+    },
+    {
       name: 'order',
       title: 'Sort order',
       type: 'number',

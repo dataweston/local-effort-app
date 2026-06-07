@@ -11,6 +11,7 @@ const LOCALIST_MENU_QUERY = `
   "name": coalesce(name, title),
   description,
   "price": coalesce(price, displayPrice, priceLabel),
+  priceCents,
   order
 }`;
 
@@ -41,11 +42,13 @@ function publicContent(content) {
 }
 
 function publicItem(item) {
+  const parsedPriceCents = Number(item.priceCents);
   return {
     _id: item._id,
     name: item.name || '',
     description: typeof item.description === 'string' ? item.description : '',
     price: item.price || '',
+    priceCents: Number.isFinite(parsedPriceCents) && parsedPriceCents > 0 ? Math.round(parsedPriceCents) : null,
     order: Number.isFinite(Number(item.order)) ? Number(item.order) : null,
   };
 }

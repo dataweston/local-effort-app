@@ -4,12 +4,14 @@ import {
   CheckCircle2,
   ClipboardList,
   Copy,
+  CreditCard,
   FileText,
   Home,
   Inbox,
   LogIn,
   LogOut,
   MessageSquare,
+  Minus,
   Plus,
   RefreshCw,
   Send,
@@ -753,13 +755,41 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   );
 }
 
+function formatCurrency(cents) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(cents) || 0) / 100);
+}
+
+function parseLocalistPriceCents(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const match = raw.match(/\$?\s*(\d+(?:\.\d{1,2})?)/);
+  if (!match) return null;
+  const dollars = Number(match[1]);
+  return Number.isFinite(dollars) && dollars > 0 ? Math.round(dollars * 100) : null;
+}
+
+function normalizePhone(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 10);
+}
+
+function formatPhone(value) {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 function LocalistView() {
   const [items, setItems] = useState(null);
   const [content, setContent] = useState(null);
   const [order, setOrder] = useState({});
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [checkoutStatus, setCheckoutStatus] = useState(() => (
+    new URLSearchParams(window.location.search).get('checkout') === 'localist-success' ? 'success' : 'idle'
+  ));
+  const [checkoutError, setCheckoutError] = useState('');
 
   useEffect(() => {
     api('/api/hub/localist-menu')
@@ -773,26 +803,70 @@ function LocalistView() {
       });
   }, []);
 
-  const toggle = (id) => setOrder((prev) => ({ ...prev, [id]: !prev[id] }));
-  const anySelected = Object.values(order).some(Boolean);
+  const pricedItems = useMemo(() => (items || []).map((item) => {
+    const exactPrice = Number(item.priceCents);
+    const priceCents = Number.isFinite(exactPrice) && exactPrice > 0
+      ? Math.round(exactPrice)
+      : parseLocalistPriceCents(item.price);
+    return { ...item, priceCents };
+  }), [items]);
 
-  const submit = (event) => {
-    event.preventDefault();
-    if (!anySelected) return;
-    setSubmitted(true);
+  const selectedItems = useMemo(() => pricedItems
+    .map((item) => ({ ...item, quantity: Number(order[item._id]) || 0 }))
+    .filter((item) => item.quantity > 0), [pricedItems, order]);
+
+  const totalCents = selectedItems.reduce((sum, item) => sum + (item.priceCents || 0) * item.quantity, 0);
+  const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const checkoutBusy = checkoutStatus === 'loading';
+  const canCheckout = totalQuantity > 0 && totalCents > 0 && name.trim() && !checkoutBusy;
+
+  const setQuantity = (id, quantity) => {
+    const nextQuantity = Math.max(0, Math.min(Number(quantity) || 0, 20));
+    setOrder((prev) => {
+      const next = { ...prev };
+      if (nextQuantity) next[id] = nextQuantity;
+      else delete next[id];
+      return next;
+    });
   };
 
-  if (submitted) {
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!canCheckout) return;
+    setCheckoutStatus('loading');
+    setCheckoutError('');
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const data = await api('/api/hub/localist-checkout', null, {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          phone: formatPhone(phone),
+          note,
+          localistToken: params.get('localist') || '',
+          items: selectedItems.map((item) => ({ id: item._id, quantity: item.quantity })),
+        }),
+      });
+      if (!data.url) throw new Error('Square did not return a checkout link.');
+      window.location.href = data.url;
+    } catch (err) {
+      setCheckoutError(err.message || 'Unable to start checkout.');
+      setCheckoutStatus('idle');
+    }
+  };
+
+  if (checkoutStatus === 'success') {
     return (
-      <Panel title="Order Received" icon={CheckCircle2}>
+      <Panel title="Payment Received" icon={CheckCircle2}>
         <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
-          Thanks{name ? `, ${name}` : ''}! Your order has been noted. Someone will follow up shortly.
+          Thanks{name ? `, ${name}` : ''}! Square has processed your Localist checkout.
         </p>
         <button
           className="hub-primary-button"
           style={{ marginTop: 16 }}
           type="button"
-          onClick={() => { setSubmitted(false); setOrder({}); setName(''); setNote(''); }}
+          onClick={() => { setCheckoutStatus('idle'); setOrder({}); setName(''); setPhone(''); setNote(''); }}
         >
           Place another order
         </button>
@@ -813,33 +887,71 @@ function LocalistView() {
       {items === null && <p className="hub-empty">Loading menu...</p>}
       {items !== null && items.length === 0 && <p className="hub-empty">No items available.</p>}
       {items !== null && items.length > 0 && (
-        <form className="hub-form" onSubmit={submit}>
-          <div className="hub-list">
-            {items.map((item) => (
-              <label key={item._id} className="hub-row hub-localist-item">
-                <input
-                  type="checkbox"
-                  checked={!!order[item._id]}
-                  onChange={() => toggle(item._id)}
-                />
-                <div>
-                  <strong>
-                    {item.name}{item.price && <> <span className="hub-localist-price">{item.price}</span></>}
-                  </strong>
-                  {item.description && <span>{item.description}</span>}
+        <form className="hub-form hub-localist-form" onSubmit={submit}>
+          <div className="hub-localist-list">
+            {pricedItems.map((item) => {
+              const quantity = Number(order[item._id]) || 0;
+              const disabled = !item.priceCents;
+              return (
+                <div key={item._id} className="hub-row hub-localist-item">
+                  <div className="hub-localist-item-copy">
+                    <strong>
+                      {item.name}
+                      <span className="hub-localist-price">
+                        {item.price || (item.priceCents ? formatCurrency(item.priceCents) : 'No checkout price')}
+                      </span>
+                    </strong>
+                    {item.description && <span>{item.description}</span>}
+                  </div>
+                  <div className="hub-localist-quantity" aria-label={`${item.name} quantity`}>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(item._id, quantity - 1)}
+                      disabled={disabled || quantity === 0}
+                      aria-label={`Remove ${item.name}`}
+                    >
+                      <Minus size={13} />
+                    </button>
+                    <input
+                      value={quantity}
+                      inputMode="numeric"
+                      aria-label={`${item.name} quantity`}
+                      onChange={(event) => setQuantity(item._id, Number(event.target.value))}
+                      disabled={disabled}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(item._id, quantity + 1)}
+                      disabled={disabled || quantity >= 20}
+                      aria-label={`Add ${item.name}`}
+                    >
+                      <Plus size={13} />
+                    </button>
+                  </div>
                 </div>
-              </label>
-            ))}
+              );
+            })}
           </div>
           <Field label="Your name">
-            <input value={name} onChange={(e) => setName(e.target.value)} required />
+            <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+          </Field>
+          <Field label="Phone (optional)">
+            <input value={formatPhone(phone)} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" autoComplete="tel" />
           </Field>
           <Field label="Notes (optional)">
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
           </Field>
-          <button className="hub-primary-button" type="submit" disabled={!anySelected}>
-            <ShoppingCart size={13} /> Submit order
-          </button>
+          <div className="hub-localist-checkout">
+            <div>
+              <span>Total</span>
+              <strong>{formatCurrency(totalCents)}</strong>
+              <small>{totalQuantity ? `${totalQuantity} item${totalQuantity === 1 ? '' : 's'}` : 'Choose items above'}</small>
+            </div>
+            <button className="hub-primary-button" type="submit" disabled={!canCheckout}>
+              <CreditCard size={13} /> {checkoutBusy ? 'Opening Square...' : 'Checkout with Square'}
+            </button>
+          </div>
+          {checkoutError && <p className="hub-error">{checkoutError}</p>}
         </form>
       )}
     </Panel>
@@ -1354,9 +1466,84 @@ const hubCss = `
 .hub-localist-intro h3 { margin: 0; font-size: 16px; line-height: 1.25; font-weight: 700; color: var(--hub-ink); }
 .hub-localist-intro p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--hub-ink); white-space: pre-wrap; }
 .hub-localist-intro span { display: block; margin-top: 6px; color: var(--hub-muted); font-size: 11px; }
-.hub-localist-item { cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
-.hub-localist-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; width: 14px; height: 14px; accent-color: var(--hub-accent); }
-.hub-localist-price { color: var(--hub-accent); font-weight: 700; }
+.hub-localist-form { gap: 12px; }
+.hub-localist-list {
+  display: grid;
+  gap: 8px;
+}
+.hub-localist-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--hub-border-light);
+  border-radius: 6px;
+}
+.hub-localist-item-copy { min-width: 0; }
+.hub-localist-item-copy strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+}
+.hub-localist-price { color: var(--hub-accent); font-weight: 700; white-space: nowrap; }
+.hub-localist-quantity {
+  width: 112px;
+  height: 30px;
+  display: grid;
+  grid-template-columns: 30px 1fr 30px;
+  align-items: stretch;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--hub-panel);
+}
+.hub-localist-quantity button {
+  border: 0;
+  background: var(--hub-row-hover);
+  color: var(--hub-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.hub-localist-quantity button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.hub-localist-quantity input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  border-left: 1px solid var(--hub-border);
+  border-right: 1px solid var(--hub-border);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hub-ink);
+  background: #fff;
+}
+.hub-localist-checkout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--hub-accent-bg);
+}
+.hub-localist-checkout span,
+.hub-localist-checkout small {
+  display: block;
+  color: var(--hub-muted);
+  font-size: 11px;
+}
+.hub-localist-checkout strong {
+  display: block;
+  color: var(--hub-ink);
+  font-size: 18px;
+  line-height: 1.2;
+}
 
 /* ── Auth screens ── */
 .hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f5f3ee); padding: 18px; }
@@ -1381,6 +1568,10 @@ const hubCss = `
   .hub-calendar-item small { grid-column: auto; }
   .hub-shift { flex-wrap: wrap; }
   .hub-compose { flex-direction: column; }
+  .hub-localist-item { grid-template-columns: 1fr; align-items: stretch; }
+  .hub-localist-quantity { width: 100%; grid-template-columns: 38px 1fr 38px; }
+  .hub-localist-checkout { align-items: stretch; flex-direction: column; }
+  .hub-localist-checkout .hub-primary-button { width: 100%; }
   .hub-mobile-nav {
     position: fixed;
     left: 0; right: 0; bottom: 0;
