@@ -753,22 +753,24 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   );
 }
 
-const LOCALIST_MENU_QUERY = `*[_type == "hubLocalistItem" && active != false] | order(order asc) { _id, name, description, price }`;
-
 function LocalistView() {
   const [items, setItems] = useState(null);
+  const [content, setContent] = useState(null);
   const [order, setOrder] = useState({});
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    api('/api/sanity-query', null, {
-      method: 'POST',
-      body: JSON.stringify({ query: LOCALIST_MENU_QUERY }),
-    })
-      .then((data) => setItems(data.result || []))
-      .catch(() => setItems([]));
+    api('/api/hub/localist-menu')
+      .then((data) => {
+        setContent(data.content || null);
+        setItems(data.items || []);
+      })
+      .catch(() => {
+        setContent(null);
+        setItems([]);
+      });
   }, []);
 
   const toggle = (id) => setOrder((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -800,6 +802,14 @@ function LocalistView() {
 
   return (
     <Panel title="Place an Order" icon={ShoppingCart}>
+      {content && (
+        <section className="hub-localist-intro">
+          {content.eyebrow && <small>{content.eyebrow}</small>}
+          {content.headline && <h3>{content.headline}</h3>}
+          {content.body && <p>{content.body}</p>}
+          {content.note && <span>{content.note}</span>}
+        </section>
+      )}
       {items === null && <p className="hub-empty">Loading menu...</p>}
       {items !== null && items.length === 0 && <p className="hub-empty">No items available.</p>}
       {items !== null && items.length > 0 && (
@@ -1339,6 +1349,11 @@ const hubCss = `
 /* ── Misc ── */
 .hub-copy-box { padding: 0 14px 12px; display: grid; gap: 6px; }
 .hub-copy-box strong { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hub-muted); }
+.hub-localist-intro { padding: 12px 14px; border-bottom: 1px solid var(--hub-border-light); background: var(--hub-accent-bg); }
+.hub-localist-intro small { display: block; color: var(--hub-accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.hub-localist-intro h3 { margin: 0; font-size: 16px; line-height: 1.25; font-weight: 700; color: var(--hub-ink); }
+.hub-localist-intro p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--hub-ink); white-space: pre-wrap; }
+.hub-localist-intro span { display: block; margin-top: 6px; color: var(--hub-muted); font-size: 11px; }
 .hub-localist-item { cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
 .hub-localist-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; width: 14px; height: 14px; accent-color: var(--hub-accent); }
 .hub-localist-price { color: var(--hub-accent); font-weight: 700; }

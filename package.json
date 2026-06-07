@@ -144,6 +144,10 @@
   "scripts": {
     "start": "vite",
     "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && pnpm run build:prerender:copy",
+    "studio:dev": "npm --prefix studio run dev",
+    "studio:build": "npm --prefix studio run build",
+    "studio:deploy": "npm --prefix studio run deploy",
+    "studio:deploy-graphql": "npm --prefix studio run deploy-graphql",
     "build:analyze": "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN vite build --mode production",
     "build:prerender:copy": "node tools/copy-prerender.js",
     "postinstall": "prisma generate",

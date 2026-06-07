@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
-const { methodNotAllowed, asIso, cleanString } = require('./_http');
+const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
@@ -176,6 +176,9 @@ module.exports = async (req, res) => {
     return res.status(201).json({ ok: true, window: publicWindow(req, window) });
   } catch (err) {
     console.error('[hub/localist-window] error', err);
+    if (tableMissing(err)) {
+      return res.status(503).json({ error: 'Localist window storage is not ready. Run Prisma migrations.' });
+    }
     return res.status(err.status || 500).json({ error: err.message || 'Unable to manage Localist window' });
   }
 };
