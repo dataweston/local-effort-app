@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarDays,
   CheckCircle2,
@@ -103,6 +103,60 @@ async function api(path, accessToken, options = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
+}
+
+function localistId(prefix) {
+  const random = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}:${random}`;
+}
+
+function localistIdentity() {
+  if (typeof window === 'undefined') return { visitorId: localistId('visitor'), sessionId: localistId('session') };
+  const storage = window.localStorage;
+  let visitorId = storage.getItem('le:localistVisitorId');
+  let sessionId = storage.getItem('le:localistSessionId');
+  if (!visitorId) {
+    visitorId = localistId('visitor');
+    storage.setItem('le:localistVisitorId', visitorId);
+  }
+  if (!sessionId) {
+    sessionId = localistId('session');
+    storage.setItem('le:localistSessionId', sessionId);
+  }
+  return { visitorId, sessionId };
+}
+
+function localistTrackingContext() {
+  if (typeof window === 'undefined') return { localistToken: '', entrySource: 'direct', path: '', referrer: '' };
+  const params = new URLSearchParams(window.location.search);
+  return {
+    localistToken: params.get('localist') || '',
+    entrySource: params.get('shared') === '1' ? 'shared' : 'direct',
+    path: `${window.location.pathname}${window.location.search}`,
+    referrer: document.referrer || '',
+  };
+}
+
+function trackLocalistActivity(eventType, data = {}) {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload = {
+      eventType,
+      occurredAt: new Date().toISOString(),
+      ...localistIdentity(),
+      ...localistTrackingContext(),
+      ...data,
+    };
+    api('/api/hub/localist-activity', null, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (_err) {
+    // Analytics must not block the ordering flow.
+  }
 }
 
 function Panel({ title, icon: Icon, action, children }) {
@@ -640,6 +694,8 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   const [localistMessage, setLocalistMessage] = useState('');
   const [localistStatus, setLocalistStatus] = useState('');
   const [localistBusy, setLocalistBusy] = useState(false);
+  const [localistAnalytics, setLocalistAnalytics] = useState(null);
+  const [localistAnalyticsStatus, setLocalistAnalyticsStatus] = useState('Loading activity...');
 
   const createInvite = async (event) => {
     event.preventDefault();
@@ -665,6 +721,7 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
       setLocalistWindow(data.window);
       setLocalistMessage(`Local Effort Localist menu is live for 48 hours: ${data.window.url} Reply STOP to opt out.`);
       setLocalistStatus('Link ready.');
+      loadLocalistAnalytics().catch(() => {});
     } catch (err) {
       setLocalistStatus(err.message || 'Unable to create link.');
     } finally {
@@ -674,21 +731,53 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
 
   const sendLocalistSms = async () => {
     if (!localistWindow?.url) return;
-    setLocalistStatus('');
+    setLocalistStatus('Sending SMS through Brevo...');
     setLocalistBusy(true);
     try {
+      const token = new URL(localistWindow.url, window.location.origin).searchParams.get('localist');
+      if (!token) throw new Error('Localist token missing from generated link.');
       const data = await api('/api/hub/localist-window', accessToken, {
         method: 'POST',
         body: JSON.stringify({
           action: 'sendSms',
-          token: new URL(localistWindow.url).searchParams.get('localist'),
+          token,
           message: localistMessage,
         }),
       });
       setLocalistWindow(data.window);
-      setLocalistStatus('SMS sent.');
+      const brevoStatus = data.brevo?.status ? ` Brevo status: ${data.brevo.status}.` : '';
+      const sentCount = Number(data.brevo?.statistics?.sent);
+      const sentText = Number.isFinite(sentCount) ? ` Sent count: ${sentCount}.` : '';
+      setLocalistStatus(`SMS submitted to Brevo as campaign ${data.brevo?.campaignId || data.window?.smsCampaignId || ''}.${brevoStatus}${sentText}`.trim());
+      loadLocalistAnalytics().catch(() => {});
     } catch (err) {
       setLocalistStatus(err.message || 'Unable to send SMS.');
+    } finally {
+      setLocalistBusy(false);
+    }
+  };
+
+  const checkLocalistSmsStatus = async () => {
+    setLocalistStatus('Checking SMS setup...');
+    setLocalistBusy(true);
+    try {
+      const data = await api('/api/hub/localist-window', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'smsStatus' }),
+      });
+      const sms = data.sms || {};
+      if (sms.ready) {
+        setLocalistStatus(`SMS setup ready. Sender: ${sms.sender}. Brevo list IDs: ${(sms.listIds || []).join(', ')}.`);
+      } else {
+        const missing = [
+          !sms.hasApiKey ? 'BREVO_API_KEY' : null,
+          !sms.listIds?.length ? 'BREVO_LOCALIST_LIST_ID' : null,
+          !sms.sender ? 'BREVO_LOCALIST_SMS_SENDER' : null,
+        ].filter(Boolean).join(', ');
+        setLocalistStatus(`SMS setup is incomplete. Missing: ${missing || 'unknown config'}.`);
+      }
+    } catch (err) {
+      setLocalistStatus(err.message || 'Unable to check SMS setup.');
     } finally {
       setLocalistBusy(false);
     }
@@ -699,6 +788,27 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
     await navigator.clipboard.writeText(localistWindow.url);
     setLocalistStatus('Link copied.');
   };
+
+  const loadLocalistAnalytics = useCallback(async () => {
+    setLocalistAnalyticsStatus('Loading activity...');
+    try {
+      const data = await api('/api/hub/localist-activity?limit=8', accessToken);
+      setLocalistAnalytics(data.windows || []);
+      setLocalistAnalyticsStatus('');
+    } catch (err) {
+      setLocalistAnalytics([]);
+      setLocalistAnalyticsStatus(err.message || 'Unable to load Localist activity.');
+    }
+  }, [accessToken]);
+
+  useEffect(() => {
+    loadLocalistAnalytics().catch(() => {});
+  }, [loadLocalistAnalytics]);
+
+  const percent = (value) => `${Math.round((Number(value) || 0) * 100)}%`;
+  const shortDateTime = (value) => (
+    value ? new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not yet'
+  );
 
   return (
     <div className="hub-grid">
@@ -749,6 +859,9 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
             <button type="button" onClick={sendLocalistSms} disabled={localistBusy || !localistWindow?.url}>
               <Send size={13} /> Send SMS
             </button>
+            <button type="button" onClick={checkLocalistSmsStatus} disabled={localistBusy}>
+              <RefreshCw size={13} /> Check SMS
+            </button>
           </div>
           {localistWindow?.url && (
             <>
@@ -771,6 +884,50 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
             </>
           )}
           {localistStatus && <p className="hub-empty">{localistStatus}</p>}
+        </div>
+      </Panel>
+      <Panel
+        title="Localist Activity"
+        icon={ClipboardList}
+        action={(
+          <button type="button" onClick={loadLocalistAnalytics}>
+            <RefreshCw size={13} />
+          </button>
+        )}
+      >
+        {localistAnalyticsStatus && <p className="hub-empty">{localistAnalyticsStatus}</p>}
+        {localistAnalytics && localistAnalytics.length === 0 && !localistAnalyticsStatus && (
+          <p className="hub-empty">No Localist activity has been recorded yet.</p>
+        )}
+        <div className="hub-localist-analytics">
+          {(localistAnalytics || []).map((windowEntry) => {
+            const metrics = windowEntry.metrics || {};
+            return (
+              <article className="hub-localist-window-card" key={windowEntry.id}>
+                <div className="hub-localist-window-head">
+                  <div>
+                    <strong>{windowEntry.valid ? 'Active window' : 'Closed window'}</strong>
+                    <span>Expires {shortDateTime(windowEntry.expiresAt)}</span>
+                  </div>
+                  {windowEntry.smsCampaignId && <span className="hub-pill">Brevo {windowEntry.smsCampaignId}</span>}
+                </div>
+                <div className="hub-metric-grid">
+                  <div className="hub-metric"><span>Visitors</span><strong>{metrics.uniqueVisitors || 0}</strong></div>
+                  <div className="hub-metric"><span>Shared visitors</span><strong>{metrics.sharedVisitors || 0}</strong></div>
+                  <div className="hub-metric"><span>Shares</span><strong>{metrics.shareEvents || 0}</strong></div>
+                  <div className="hub-metric"><span>Share rate</span><strong>{percent(metrics.shareRate)}</strong></div>
+                  <div className="hub-metric"><span>Carts</span><strong>{metrics.cartsStarted || 0}</strong></div>
+                  <div className="hub-metric"><span>Abandoned</span><strong>{metrics.abandonedCarts || 0}</strong></div>
+                  <div className="hub-metric"><span>Checkout starts</span><strong>{metrics.checkoutStarts || 0}</strong></div>
+                  <div className="hub-metric"><span>Paid</span><strong>{metrics.checkoutSuccesses || 0}</strong></div>
+                </div>
+                <small>
+                  Last activity {shortDateTime(metrics.lastActivityAt)}
+                  {windowEntry.smsSentAt ? ` / SMS sent ${shortDateTime(windowEntry.smsSentAt)}` : ''}
+                </small>
+              </article>
+            );
+          })}
         </div>
       </Panel>
     </div>
@@ -810,16 +967,21 @@ function LocalistView() {
   const [pickupWindow, setPickupWindow] = useState('');
   const [note, setNote] = useState('');
   const [customerOptions, setCustomerOptions] = useState({});
+  const [shareStatus, setShareStatus] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState(() => (
     new URLSearchParams(window.location.search).get('checkout') === 'localist-success' ? 'success' : 'idle'
   ));
   const [checkoutError, setCheckoutError] = useState('');
+  const successTrackedRef = useRef(false);
 
   useEffect(() => {
     api('/api/hub/localist-menu')
       .then((data) => {
         setContent(data.content || null);
         setItems(data.items || []);
+        trackLocalistActivity('localist.menu.loaded', {
+          metadata: { itemCount: data.items?.length || 0 },
+        });
       })
       .catch(() => {
         setContent(null);
@@ -847,6 +1009,33 @@ function LocalistView() {
   const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
   const checkoutBusy = checkoutStatus === 'loading';
   const canCheckout = totalQuantity > 0 && totalCents > 0 && name.trim() && pickupWindow && !checkoutBusy;
+  const cartPayload = useMemo(() => ({
+    totalQuantity,
+    totalCents,
+    items: selectedItems.map((item) => ({
+      id: item._id,
+      name: item.name,
+      quantity: item.quantity,
+      priceCents: item.priceCents || 0,
+      customerOptions: item.customerOptions,
+    })),
+  }), [selectedItems, totalCents, totalQuantity]);
+
+  useEffect(() => {
+    if (totalQuantity <= 0) return undefined;
+    const timer = window.setTimeout(() => {
+      trackLocalistActivity('localist.cart.updated', { cart: cartPayload });
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [cartPayload, totalQuantity]);
+
+  useEffect(() => {
+    if (checkoutStatus !== 'success' || successTrackedRef.current) return;
+    successTrackedRef.current = true;
+    trackLocalistActivity('localist.checkout.success', {
+      metadata: { returnedFromSquare: true },
+    });
+  }, [checkoutStatus]);
 
   const setQuantity = (id, quantity) => {
     const item = pricedItems.find((candidate) => candidate._id === id);
@@ -872,6 +1061,31 @@ function LocalistView() {
     });
   };
 
+  const shareLocalistLink = async () => {
+    const { localistToken } = localistTrackingContext();
+    if (!localistToken) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('localist', localistToken);
+    url.searchParams.set('shared', '1');
+    url.searchParams.delete('checkout');
+    const shareUrl = url.toString();
+    let shareMethod = 'clipboard';
+    try {
+      if (navigator.share) {
+        shareMethod = 'web_share';
+        await navigator.share({ title: 'Local Effort Localist menu', url: shareUrl });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        window.prompt('Copy Localist link', shareUrl);
+      }
+      trackLocalistActivity('localist.link.shared', { shareMethod });
+      setShareStatus(shareMethod === 'web_share' ? 'Share opened.' : 'Shared link copied.');
+    } catch (_err) {
+      setShareStatus('');
+    }
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     if (!canCheckout) return;
@@ -880,6 +1094,7 @@ function LocalistView() {
 
     try {
       const params = new URLSearchParams(window.location.search);
+      trackLocalistActivity('localist.checkout.started', { cart: cartPayload });
       const data = await api('/api/hub/localist-checkout', null, {
         method: 'POST',
         body: JSON.stringify({
@@ -942,6 +1157,14 @@ function LocalistView() {
           {content.body && <p>{content.body}</p>}
           {content.note && <span>{content.note}</span>}
         </section>
+      )}
+      {localistTrackingContext().localistToken && (
+        <div className="hub-localist-share">
+          <button type="button" onClick={shareLocalistLink}>
+            <Send size={13} /> Share menu
+          </button>
+          {shareStatus && <span>{shareStatus}</span>}
+        </div>
       )}
       {items === null && <p className="hub-empty">Loading menu...</p>}
       {items !== null && items.length === 0 && <p className="hub-empty">No items available.</p>}
@@ -1170,6 +1393,18 @@ function LocalistGuestShell({ localistWindow }) {
   const expiresAt = localistWindow?.expiresAt
     ? new Date(localistWindow.expiresAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : '';
+  const viewedRef = useRef(false);
+
+  useEffect(() => {
+    if (viewedRef.current) return;
+    viewedRef.current = true;
+    trackLocalistActivity('localist.window.viewed', {
+      metadata: {
+        windowId: localistWindow?.id || '',
+        expiresAt: localistWindow?.expiresAt || '',
+      },
+    });
+  }, [localistWindow]);
 
   return (
     <div className="hub-app hub-app-guest">
@@ -1650,11 +1885,85 @@ const hubCss = `
 /* ── Misc ── */
 .hub-copy-box { padding: 0 14px 12px; display: grid; gap: 6px; }
 .hub-copy-box strong { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hub-muted); }
+.hub-localist-analytics {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.hub-localist-window-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--hub-border-light);
+  border-radius: 6px;
+  padding: 10px;
+  background: var(--hub-bg);
+}
+.hub-localist-window-card small {
+  color: var(--hub-muted);
+  font-size: 11px;
+}
+.hub-localist-window-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.hub-localist-window-head strong,
+.hub-metric strong {
+  display: block;
+  color: var(--hub-ink);
+  font-size: 13px;
+}
+.hub-localist-window-head span,
+.hub-metric span {
+  display: block;
+  color: var(--hub-muted);
+  font-size: 11px;
+}
+.hub-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.hub-metric {
+  min-width: 0;
+  border: 1px solid var(--hub-border-light);
+  border-radius: 5px;
+  padding: 6px 7px;
+  background: #fff;
+}
 .hub-localist-intro { padding: 12px 14px; border-bottom: 1px solid var(--hub-border-light); background: var(--hub-accent-bg); }
 .hub-localist-intro small { display: block; color: var(--hub-accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 .hub-localist-intro h3 { margin: 0; font-size: 16px; line-height: 1.25; font-weight: 700; color: var(--hub-ink); }
 .hub-localist-intro p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--hub-ink); white-space: pre-wrap; }
 .hub-localist-intro span { display: block; margin-top: 6px; color: var(--hub-muted); font-size: 11px; }
+.hub-localist-share {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hub-border-light);
+}
+.hub-localist-share button {
+  height: 30px;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
+  color: var(--hub-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hub-localist-share span {
+  min-width: 0;
+  color: var(--hub-muted);
+  font-size: 11px;
+  text-align: right;
+}
 .hub-localist-form { gap: 12px; }
 .hub-localist-list {
   display: grid;
@@ -1850,6 +2159,11 @@ const hubCss = `
   .hub-calendar-item small { grid-column: auto; }
   .hub-shift { flex-wrap: wrap; }
   .hub-compose { flex-direction: column; }
+  .hub-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hub-localist-window-head { flex-direction: column; }
+  .hub-localist-share { align-items: stretch; flex-direction: column; }
+  .hub-localist-share button { justify-content: center; width: 100%; min-height: 44px; }
+  .hub-localist-share span { text-align: center; }
   .hub-localist-item { grid-template-columns: 1fr; align-items: stretch; }
   .hub-localist-quantity { width: 100%; grid-template-columns: 38px 1fr 38px; }
   .hub-localist-checkout { align-items: stretch; flex-direction: column; }

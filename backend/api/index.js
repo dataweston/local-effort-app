@@ -1391,6 +1391,15 @@ app.all('/api/hub/localist-chat', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/localist-activity', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/localist-activity')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub localist activity handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/shifts', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/shifts')(req, res);

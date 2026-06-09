@@ -4,6 +4,7 @@ const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
+const BREVO_SENDABLE_STATUSES = new Set(['sent', 'queued', 'inprocess', 'processing', 'scheduled']);
 
 let prisma = null;
 try {
@@ -35,6 +36,28 @@ function parseListIds(value) {
     .filter((id) => Number.isFinite(id));
 }
 
+function smsConfig() {
+  const apiKey = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || '';
+  const listIds = parseListIds(
+    process.env.BREVO_LOCALIST_LIST_ID
+    || process.env.BREVO_LOCALIST_LIST_IDS
+    || process.env.BREVO_LOCALIST_SMS_LIST_ID
+    || '',
+  );
+  const sender = normalizeSender(process.env.BREVO_LOCALIST_SMS_SENDER || process.env.BREVO_SMS_SENDER || 'LocalEffort');
+  return { apiKey, listIds, sender };
+}
+
+function publicSmsConfig() {
+  const config = smsConfig();
+  return {
+    hasApiKey: !!config.apiKey,
+    listIds: config.listIds,
+    sender: config.sender,
+    ready: !!config.apiKey && config.listIds.length > 0 && !!config.sender,
+  };
+}
+
 function publicWindow(req, window) {
   const now = Date.now();
   const expiresAtMs = window?.expiresAt ? new Date(window.expiresAt).getTime() : 0;
@@ -54,21 +77,26 @@ function publicWindow(req, window) {
 }
 
 async function brevoRequest(path, options) {
-  const apiKey = process.env.BREVO_API_KEY;
+  const { apiKey } = smsConfig();
   if (!apiKey) {
     const error = new Error('BREVO_API_KEY is not configured');
     error.status = 503;
     throw error;
   }
 
+  const timeoutSignal = typeof AbortSignal !== 'undefined' && AbortSignal.timeout
+    ? AbortSignal.timeout(15000)
+    : undefined;
+  const headers = {
+    accept: 'application/json',
+    'api-key': apiKey,
+    ...(options.body ? { 'content-type': 'application/json' } : {}),
+    ...(options.headers || {}),
+  };
   const response = await fetch(`${BREVO_API_BASE}${path}`, {
     ...options,
-    headers: {
-      accept: 'application/json',
-      'api-key': apiKey,
-      'content-type': 'application/json',
-      ...(options.headers || {}),
-    },
+    headers,
+    signal: options.signal || timeoutSignal,
   });
   const text = await response.text();
   let data = {};
@@ -80,7 +108,8 @@ async function brevoRequest(path, options) {
     }
   }
   if (!response.ok) {
-    const error = new Error(data.message || response.statusText || 'Brevo request failed');
+    const reason = data.message || data.error || data.code || response.statusText || 'Brevo request failed';
+    const error = new Error(`Brevo ${response.status}: ${reason}`);
     error.status = response.status;
     error.details = data;
     throw error;
@@ -89,14 +118,13 @@ async function brevoRequest(path, options) {
 }
 
 async function sendSmsCampaign(req, window, message) {
-  const listIds = parseListIds(process.env.BREVO_LOCALIST_LIST_ID);
+  const { listIds, sender } = smsConfig();
   if (!listIds.length) {
-    const error = new Error('BREVO_LOCALIST_LIST_ID is not configured');
+    const error = new Error('BREVO_LOCALIST_LIST_ID is not configured or has no numeric list IDs');
     error.status = 503;
     throw error;
   }
 
-  const sender = normalizeSender(process.env.BREVO_LOCALIST_SMS_SENDER || process.env.BREVO_SMS_SENDER || 'LocalEffort');
   if (!sender) {
     const error = new Error('BREVO_LOCALIST_SMS_SENDER is invalid');
     error.status = 503;
@@ -116,10 +144,23 @@ async function sendSmsCampaign(req, window, message) {
 
   await brevoRequest(`/smsCampaigns/${encodeURIComponent(created.id)}/sendNow`, {
     method: 'POST',
-    body: JSON.stringify({}),
   });
 
-  return { campaignId: Number(created.id), message: content };
+  const campaign = await brevoRequest(`/smsCampaigns/${encodeURIComponent(created.id)}`, { method: 'GET' });
+  const normalizedStatus = String(campaign.status || '').replace(/\s+/g, '').toLowerCase();
+  if (campaign.status && !BREVO_SENDABLE_STATUSES.has(normalizedStatus)) {
+    const error = new Error(`Brevo created campaign ${created.id}, but it was not queued. Current status: ${campaign.status}`);
+    error.status = 502;
+    error.details = campaign;
+    throw error;
+  }
+
+  return {
+    campaignId: Number(created.id),
+    message: content,
+    status: campaign.status || null,
+    statistics: campaign.statistics || null,
+  };
 }
 
 module.exports = async (req, res) => {
@@ -159,7 +200,19 @@ module.exports = async (req, res) => {
           smsMessage: sent.message,
         },
       });
-      return res.status(200).json({ ok: true, window: publicWindow(req, updated) });
+      return res.status(200).json({
+        ok: true,
+        window: publicWindow(req, updated),
+        brevo: {
+          campaignId: sent.campaignId,
+          status: sent.status,
+          statistics: sent.statistics,
+        },
+      });
+    }
+
+    if (action === 'smsStatus') {
+      return res.status(200).json({ ok: true, sms: publicSmsConfig() });
     }
 
     if (action !== 'create') return res.status(400).json({ error: 'unsupported-action' });
