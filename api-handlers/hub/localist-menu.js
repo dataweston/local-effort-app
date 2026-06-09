@@ -12,6 +12,12 @@ const LOCALIST_MENU_QUERY = `
   description,
   "price": coalesce(price, displayPrice, priceLabel),
   priceCents,
+  glutenFree,
+  dairyFree,
+  containsPork,
+  containsNuts,
+  containsDairy,
+  inventoryCount,
   order
 }`;
 
@@ -43,12 +49,21 @@ function publicContent(content) {
 
 function publicItem(item) {
   const parsedPriceCents = Number(item.priceCents);
+  const parsedInventoryCount = Number(item.inventoryCount);
   return {
     _id: item._id,
     name: item.name || '',
     description: typeof item.description === 'string' ? item.description : '',
     price: item.price || '',
     priceCents: Number.isFinite(parsedPriceCents) && parsedPriceCents > 0 ? Math.round(parsedPriceCents) : null,
+    inventoryCount: Number.isFinite(parsedInventoryCount) && parsedInventoryCount >= 0 ? Math.round(parsedInventoryCount) : null,
+    dietaryFlags: {
+      glutenFree: item.glutenFree === true,
+      dairyFree: item.dairyFree === true,
+      containsPork: item.containsPork === true,
+      containsNuts: item.containsNuts === true,
+      containsDairy: item.containsDairy === true,
+    },
     order: Number.isFinite(Number(item.order)) ? Number(item.order) : null,
   };
 }

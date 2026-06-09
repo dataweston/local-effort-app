@@ -7,6 +7,18 @@ const { methodNotAllowed, cleanString } = require('./_http');
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 const ENV_NAME = ((process.env.SQUARE_ENVIRONMENT || process.env.SQUARE_ENV || 'production').toLowerCase() === 'sandbox') ? 'Sandbox' : 'Production';
+const LOCALIST_CUSTOMER_OPTIONS = new Map([
+  ['glutenFree', 'Gluten free'],
+  ['nutAllergy', 'Nut allergy'],
+  ['vegetarian', 'Vegetarian'],
+  ['dairyFree', 'Dairy free'],
+]);
+const PICKUP_WINDOWS = new Set([
+  'Tuesday, 2pm-4pm',
+  'Tuesday, 4pm-6pm',
+  'Wednesday, 2pm-4pm',
+  'Wednesday, 4pm-6pm',
+]);
 
 let squareClient = null;
 try {
@@ -35,7 +47,8 @@ const LOCALIST_ITEMS_QUERY = `
   _id,
   "name": coalesce(name, title),
   "price": coalesce(price, displayPrice, priceLabel),
-  priceCents
+  priceCents,
+  inventoryCount
 }`;
 
 const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
@@ -68,6 +81,18 @@ function normalizeQuantity(value) {
   const qty = Number(value);
   if (!Number.isInteger(qty) || qty < 1) return 0;
   return Math.min(qty, 20);
+}
+
+function parseInventoryCount(value) {
+  const count = Number(value);
+  return Number.isFinite(count) && count >= 0 ? Math.round(count) : null;
+}
+
+function normalizeCustomerOptions(value) {
+  if (!value || typeof value !== 'object') return [];
+  return Array.from(LOCALIST_CUSTOMER_OPTIONS.entries())
+    .filter(([key]) => value[key] === true)
+    .map(([, label]) => label);
 }
 
 function checkoutRedirectUrl(req, token) {
@@ -104,10 +129,12 @@ module.exports = async function handler(req, res) {
   const name = cleanString(req.body?.name, 80);
   const phone = cleanString(req.body?.phone, 40);
   const note = cleanString(req.body?.note, 180);
+  const pickupWindow = cleanString(req.body?.pickupWindow, 40);
   const token = cleanString(req.body?.localistToken, 240);
   const submittedItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (!pickupWindow || !PICKUP_WINDOWS.has(pickupWindow)) return res.status(400).json({ error: 'Pickup window is required' });
   if (!submittedItems.length) return res.status(400).json({ error: 'No items selected' });
 
   try {
@@ -117,6 +144,7 @@ module.exports = async function handler(req, res) {
     const itemMap = new Map((Array.isArray(sanityItems) ? sanityItems : []).map((item) => [item._id, item]));
 
     const lineItems = [];
+    const itemNotes = [];
     for (const submitted of submittedItems) {
       const id = cleanString(submitted?.id, 160);
       const quantity = normalizeQuantity(submitted?.quantity);
@@ -124,6 +152,14 @@ module.exports = async function handler(req, res) {
 
       const item = itemMap.get(id);
       if (!item) return res.status(400).json({ error: 'Selected item is no longer available' });
+
+      const inventoryCount = parseInventoryCount(item.inventoryCount);
+      if (inventoryCount === 0) {
+        return res.status(400).json({ error: `${item.name || 'Item'} is sold out` });
+      }
+      if (inventoryCount !== null && quantity > inventoryCount) {
+        return res.status(400).json({ error: `Only ${inventoryCount} ${item.name || 'item'} available` });
+      }
 
       const priceCents = parseExactCents(item.priceCents) || parsePriceCents(item.price);
       if (!priceCents) {
@@ -135,14 +171,18 @@ module.exports = async function handler(req, res) {
         quantity: String(quantity),
         basePriceMoney: { amount: priceCents, currency: 'USD' },
       });
+      const customerOptions = normalizeCustomerOptions(submitted?.customerOptions);
+      itemNotes.push(`${quantity}x ${item.name || 'Localist item'}${customerOptions.length ? ` (${customerOptions.join(', ')})` : ''}`);
     }
 
     if (!lineItems.length) return res.status(400).json({ error: 'No payable items selected' });
 
     const noteParts = [
       `Localist order - ${name}`,
+      `Pickup: ${pickupWindow}`,
       phone ? `Phone: ${phone}` : null,
       note ? `Note: ${note}` : null,
+      itemNotes.length ? `Items: ${itemNotes.join('; ')}` : null,
     ].filter(Boolean);
 
     const response = await squareClient.checkoutApi.createPaymentLink({

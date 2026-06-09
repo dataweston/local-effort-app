@@ -2,6 +2,13 @@ export default {
   name: 'hubLocalistItem',
   title: 'Localist Menu Item',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'dietaryFlags',
+      title: 'Dietary and allergen flags',
+      options: { columns: 2 },
+    },
+  ],
   fields: [
     {
       name: 'name',
@@ -27,6 +34,48 @@ export default {
       type: 'number',
       description: 'Exact Square checkout price, e.g. 1200 for $12. Leave blank only when the display price is a simple dollar amount.',
       validation: (Rule) => Rule.min(1).integer(),
+    },
+    {
+      name: 'inventoryCount',
+      title: 'Inventory count',
+      type: 'number',
+      description: 'Optional number available for this Localist menu item. Set to 0 to mark the item sold out.',
+      validation: (Rule) => Rule.min(0).integer(),
+    },
+    {
+      name: 'glutenFree',
+      title: 'Gluten free',
+      type: 'boolean',
+      fieldset: 'dietaryFlags',
+      initialValue: false,
+    },
+    {
+      name: 'dairyFree',
+      title: 'Dairy free',
+      type: 'boolean',
+      fieldset: 'dietaryFlags',
+      initialValue: false,
+    },
+    {
+      name: 'containsPork',
+      title: 'Contains pork',
+      type: 'boolean',
+      fieldset: 'dietaryFlags',
+      initialValue: false,
+    },
+    {
+      name: 'containsNuts',
+      title: 'Contains nuts',
+      type: 'boolean',
+      fieldset: 'dietaryFlags',
+      initialValue: false,
+    },
+    {
+      name: 'containsDairy',
+      title: 'Contains dairy',
+      type: 'boolean',
+      fieldset: 'dietaryFlags',
+      initialValue: false,
     },
     {
       name: 'order',

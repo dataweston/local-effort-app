@@ -31,6 +31,28 @@ const tabs = [
   { id: 'shifts', label: 'Shifts', icon: ClipboardList },
 ];
 
+const LOCALIST_CUSTOMER_OPTIONS = [
+  { key: 'glutenFree', label: 'Gluten free' },
+  { key: 'nutAllergy', label: 'Nut allergy' },
+  { key: 'vegetarian', label: 'Vegetarian' },
+  { key: 'dairyFree', label: 'Dairy free' },
+];
+
+const LOCALIST_PICKUP_WINDOWS = [
+  'Tuesday, 2pm-4pm',
+  'Tuesday, 4pm-6pm',
+  'Wednesday, 2pm-4pm',
+  'Wednesday, 4pm-6pm',
+];
+
+const LOCALIST_ITEM_FLAG_LABELS = [
+  ['glutenFree', 'Gluten free'],
+  ['dairyFree', 'Dairy free'],
+  ['containsPork', 'Contains pork'],
+  ['containsNuts', 'Contains nuts'],
+  ['containsDairy', 'Contains dairy'],
+];
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -785,7 +807,9 @@ function LocalistView() {
   const [order, setOrder] = useState({});
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [pickupWindow, setPickupWindow] = useState('');
   const [note, setNote] = useState('');
+  const [customerOptions, setCustomerOptions] = useState({});
   const [checkoutStatus, setCheckoutStatus] = useState(() => (
     new URLSearchParams(window.location.search).get('checkout') === 'localist-success' ? 'success' : 'idle'
   ));
@@ -812,21 +836,39 @@ function LocalistView() {
   }), [items]);
 
   const selectedItems = useMemo(() => pricedItems
-    .map((item) => ({ ...item, quantity: Number(order[item._id]) || 0 }))
-    .filter((item) => item.quantity > 0), [pricedItems, order]);
+    .map((item) => ({
+      ...item,
+      quantity: Number(order[item._id]) || 0,
+      customerOptions: customerOptions[item._id] || {},
+    }))
+    .filter((item) => item.quantity > 0), [pricedItems, order, customerOptions]);
 
   const totalCents = selectedItems.reduce((sum, item) => sum + (item.priceCents || 0) * item.quantity, 0);
   const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
   const checkoutBusy = checkoutStatus === 'loading';
-  const canCheckout = totalQuantity > 0 && totalCents > 0 && name.trim() && !checkoutBusy;
+  const canCheckout = totalQuantity > 0 && totalCents > 0 && name.trim() && pickupWindow && !checkoutBusy;
 
   const setQuantity = (id, quantity) => {
-    const nextQuantity = Math.max(0, Math.min(Number(quantity) || 0, 20));
+    const item = pricedItems.find((candidate) => candidate._id === id);
+    const inventoryCount = Number(item?.inventoryCount);
+    const maxQuantity = Number.isFinite(inventoryCount) && inventoryCount >= 0
+      ? Math.min(20, Math.round(inventoryCount))
+      : 20;
+    const nextQuantity = Math.max(0, Math.min(Number(quantity) || 0, maxQuantity));
     setOrder((prev) => {
       const next = { ...prev };
       if (nextQuantity) next[id] = nextQuantity;
       else delete next[id];
       return next;
+    });
+  };
+
+  const setCustomerOption = (itemId, key, checked) => {
+    setCustomerOptions((prev) => {
+      const itemOptions = { ...(prev[itemId] || {}) };
+      if (checked) itemOptions[key] = true;
+      else delete itemOptions[key];
+      return { ...prev, [itemId]: itemOptions };
     });
   };
 
@@ -843,9 +885,14 @@ function LocalistView() {
         body: JSON.stringify({
           name,
           phone: formatPhone(phone),
+          pickupWindow,
           note,
           localistToken: params.get('localist') || '',
-          items: selectedItems.map((item) => ({ id: item._id, quantity: item.quantity })),
+          items: selectedItems.map((item) => ({
+            id: item._id,
+            quantity: item.quantity,
+            customerOptions: item.customerOptions,
+          })),
         }),
       });
       if (!data.url) throw new Error('Square did not return a checkout link.');
@@ -858,23 +905,35 @@ function LocalistView() {
 
   if (checkoutStatus === 'success') {
     return (
-      <Panel title="Payment Received" icon={CheckCircle2}>
-        <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
-          Thanks{name ? `, ${name}` : ''}! Square has processed your Localist checkout.
-        </p>
-        <button
-          className="hub-primary-button"
-          style={{ marginTop: 16 }}
-          type="button"
-          onClick={() => { setCheckoutStatus('idle'); setOrder({}); setName(''); setPhone(''); setNote(''); }}
-        >
-          Place another order
-        </button>
-      </Panel>
+      <>
+        <Panel title="Payment Received" icon={CheckCircle2}>
+          <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
+            Thanks{name ? `, ${name}` : ''}! Square has processed your Localist checkout.
+          </p>
+          <button
+            className="hub-primary-button"
+            style={{ marginTop: 16 }}
+            type="button"
+            onClick={() => {
+              setCheckoutStatus('idle');
+              setOrder({});
+              setName('');
+              setPhone('');
+              setPickupWindow('');
+              setNote('');
+              setCustomerOptions({});
+            }}
+          >
+            Place another order
+          </button>
+        </Panel>
+        <LocalistChat />
+      </>
     );
   }
 
   return (
+    <>
     <Panel title="Place an Order" icon={ShoppingCart}>
       {content && (
         <section className="hub-localist-intro">
@@ -891,9 +950,18 @@ function LocalistView() {
           <div className="hub-localist-list">
             {pricedItems.map((item) => {
               const quantity = Number(order[item._id]) || 0;
-              const disabled = !item.priceCents;
+              const inventoryCount = Number(item.inventoryCount);
+              const tracksInventory = Number.isFinite(inventoryCount) && inventoryCount >= 0;
+              const roundedInventoryCount = tracksInventory ? Math.round(inventoryCount) : null;
+              const soldOut = roundedInventoryCount === 0;
+              const maxQuantity = tracksInventory ? Math.min(20, roundedInventoryCount) : 20;
+              const disabled = !item.priceCents || soldOut;
+              const itemOptions = customerOptions[item._id] || {};
+              const activeFlags = LOCALIST_ITEM_FLAG_LABELS
+                .filter(([key]) => item.dietaryFlags?.[key])
+                .map(([, label]) => label);
               return (
-                <div key={item._id} className="hub-row hub-localist-item">
+                <div key={item._id} className={`hub-row hub-localist-item${soldOut ? ' is-sold-out' : ''}`}>
                   <div className="hub-localist-item-copy">
                     <strong>
                       {item.name}
@@ -901,13 +969,35 @@ function LocalistView() {
                         {item.price || (item.priceCents ? formatCurrency(item.priceCents) : 'No checkout price')}
                       </span>
                     </strong>
+                    {tracksInventory && (
+                      <span className={`hub-localist-inventory${soldOut ? ' is-sold-out' : ''}`}>
+                        {roundedInventoryCount} available{soldOut ? ' - sold out' : ''}
+                      </span>
+                    )}
                     {item.description && <span>{item.description}</span>}
+                    {activeFlags.length > 0 && (
+                      <div className="hub-localist-flags">
+                        {activeFlags.map((flag) => <span key={flag}>{flag}</span>)}
+                      </div>
+                    )}
+                    <div className="hub-localist-options" aria-label={`${item.name} dietary options`}>
+                      {LOCALIST_CUSTOMER_OPTIONS.map((option) => (
+                        <label key={option.key} className="hub-localist-option">
+                          <input
+                            type="checkbox"
+                            checked={itemOptions[option.key] === true}
+                            onChange={(e) => setCustomerOption(item._id, option.key, e.target.checked)}
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   <div className="hub-localist-quantity" aria-label={`${item.name} quantity`}>
                     <button
                       type="button"
                       onClick={() => setQuantity(item._id, quantity - 1)}
-                      disabled={disabled || quantity === 0}
+                      disabled={quantity === 0}
                       aria-label={`Remove ${item.name}`}
                     >
                       <Minus size={13} />
@@ -922,7 +1012,7 @@ function LocalistView() {
                     <button
                       type="button"
                       onClick={() => setQuantity(item._id, quantity + 1)}
-                      disabled={disabled || quantity >= 20}
+                      disabled={disabled || quantity >= maxQuantity}
                       aria-label={`Add ${item.name}`}
                     >
                       <Plus size={13} />
@@ -937,6 +1027,14 @@ function LocalistView() {
           </Field>
           <Field label="Phone (optional)">
             <input value={formatPhone(phone)} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" autoComplete="tel" />
+          </Field>
+          <Field label="Pickup window">
+            <select value={pickupWindow} onChange={(e) => setPickupWindow(e.target.value)} required>
+              <option value="">Select pickup window</option>
+              {LOCALIST_PICKUP_WINDOWS.map((windowLabel) => (
+                <option key={windowLabel} value={windowLabel}>{windowLabel}</option>
+              ))}
+            </select>
           </Field>
           <Field label="Notes (optional)">
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
@@ -954,6 +1052,97 @@ function LocalistView() {
           {checkoutError && <p className="hub-error">{checkoutError}</p>}
         </form>
       )}
+    </Panel>
+    <LocalistChat />
+    </>
+  );
+}
+
+function LocalistChat() {
+  const [messages, setMessages] = useState([]);
+  const [senderName, setSenderName] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('le:localistChatName') || '';
+  });
+  const [body, setBody] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const loadMessages = useCallback(async () => {
+    const data = await api('/api/hub/localist-chat');
+    setMessages(data.messages || []);
+  }, []);
+
+  useEffect(() => {
+    loadMessages().catch(() => {});
+    const timer = window.setInterval(() => loadMessages().catch(() => {}), 10000);
+    return () => window.clearInterval(timer);
+  }, [loadMessages]);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    const name = senderName.trim();
+    const text = body.trim();
+    const media = imageUrl.trim();
+    if (!name || (!text && !media)) return;
+
+    setBusy(true);
+    setError('');
+    try {
+      if (typeof window !== 'undefined') window.localStorage.setItem('le:localistChatName', name);
+      await api('/api/hub/localist-chat', null, {
+        method: 'POST',
+        body: JSON.stringify({ senderName: name, body: text, imageUrl: media }),
+      });
+      setBody('');
+      setImageUrl('');
+      await loadMessages();
+    } catch (err) {
+      setError(err.message || 'Unable to send message.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="Localist Chat" icon={MessageSquare}>
+      <div className="hub-message-list hub-localist-chat-list">
+        {messages.length === 0 && <p className="hub-empty">No messages yet.</p>}
+        {messages.map((message) => (
+          <div className="hub-message" key={message.id}>
+            <strong>{message.senderName || 'Guest'} / {age(message.createdAt)}</strong>
+            {message.body && <p>{message.body}</p>}
+            {message.attachments?.map((attachment) => (
+              attachment.type === 'image' && attachment.url ? (
+                <a className="hub-message-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
+                  <img src={attachment.url} alt="" loading="lazy" />
+                </a>
+              ) : null
+            ))}
+          </div>
+        ))}
+      </div>
+      <form className="hub-form hub-localist-chat-form" onSubmit={submit}>
+        <Field label="Name">
+          <input value={senderName} onChange={(e) => setSenderName(e.target.value)} autoComplete="name" required />
+        </Field>
+        <Field label="Message">
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Ask a question or share an update..."
+            rows={2}
+          />
+        </Field>
+        <Field label="Image/GIF URL">
+          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." inputMode="url" autoComplete="url" />
+        </Field>
+        <button className="hub-primary-button" type="submit" disabled={busy || !senderName.trim() || (!body.trim() && !imageUrl.trim())}>
+          <Send size={13} /> {busy ? 'Sending...' : 'Send'}
+        </button>
+        {error && <p className="hub-error">{error}</p>}
+      </form>
     </Panel>
   );
 }
@@ -1479,6 +1668,13 @@ const hubCss = `
   border: 1px solid var(--hub-border-light);
   border-radius: 6px;
 }
+.hub-localist-item.is-sold-out {
+  opacity: 0.68;
+}
+.hub-localist-item.is-sold-out .hub-localist-item-copy > strong,
+.hub-localist-item.is-sold-out .hub-localist-item-copy > span:not(.hub-localist-inventory) {
+  text-decoration: line-through;
+}
 .hub-localist-item-copy { min-width: 0; }
 .hub-localist-item-copy strong {
   display: flex;
@@ -1487,6 +1683,54 @@ const hubCss = `
   gap: 7px;
 }
 .hub-localist-price { color: var(--hub-accent); font-weight: 700; white-space: nowrap; }
+.hub-localist-inventory {
+  display: block;
+  margin-top: 4px;
+  color: var(--hub-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.hub-localist-inventory.is-sold-out {
+  color: #9b2f2f;
+}
+.hub-localist-flags,
+.hub-localist-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.hub-localist-flags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border: 1px solid var(--hub-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--hub-muted);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.hub-localist-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  border: 1px solid var(--hub-border-light);
+  border-radius: 5px;
+  padding: 3px 7px;
+  background: #fff;
+  color: var(--hub-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.hub-localist-option input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--hub-accent);
+}
 .hub-localist-quantity {
   width: 112px;
   height: 30px;
@@ -1544,6 +1788,44 @@ const hubCss = `
   font-size: 18px;
   line-height: 1.2;
 }
+.hub-localist-chat-list {
+  min-height: 240px;
+  max-height: min(460px, 52svh);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.hub-localist-chat-list .hub-message {
+  overflow-wrap: anywhere;
+}
+.hub-localist-chat-form {
+  border-top: 1px solid var(--hub-border-light);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+}
+.hub-localist-chat-form .hub-field:nth-of-type(2),
+.hub-localist-chat-form .hub-error {
+  grid-column: 1 / -1;
+}
+.hub-localist-chat-form .hub-primary-button {
+  justify-self: end;
+  min-width: 140px;
+}
+.hub-message-attachment {
+  display: block;
+  margin-top: 8px;
+  width: min(320px, 100%);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--hub-border-light);
+  background: #fff;
+}
+.hub-message-attachment img {
+  display: block;
+  width: 100%;
+  max-height: min(320px, 45svh);
+  object-fit: contain;
+  background: #fff;
+}
 
 /* ── Auth screens ── */
 .hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f5f3ee); padding: 18px; }
@@ -1572,6 +1854,48 @@ const hubCss = `
   .hub-localist-quantity { width: 100%; grid-template-columns: 38px 1fr 38px; }
   .hub-localist-checkout { align-items: stretch; flex-direction: column; }
   .hub-localist-checkout .hub-primary-button { width: 100%; }
+  .hub-localist-chat-list {
+    min-height: 240px;
+    max-height: min(430px, 52svh);
+    padding: 10px 12px;
+  }
+  .hub-localist-chat-list .hub-message {
+    padding: 10px 12px;
+  }
+  .hub-localist-chat-list .hub-message p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .hub-localist-chat-form {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 10px 12px 12px;
+  }
+  .hub-localist-chat-form .hub-field,
+  .hub-localist-chat-form .hub-field:nth-of-type(2),
+  .hub-localist-chat-form .hub-error {
+    grid-column: 1;
+  }
+  .hub-localist-chat-form .hub-field input,
+  .hub-localist-chat-form .hub-field textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .hub-localist-chat-form .hub-field textarea {
+    padding-top: 10px;
+    resize: vertical;
+  }
+  .hub-localist-chat-form .hub-primary-button {
+    justify-self: stretch;
+    width: 100%;
+    min-height: 44px;
+  }
+  .hub-message-attachment {
+    width: 100%;
+  }
+  .hub-message-attachment img {
+    max-height: min(320px, 42svh);
+  }
   .hub-mobile-nav {
     position: fixed;
     left: 0; right: 0; bottom: 0;

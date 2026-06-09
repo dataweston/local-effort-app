@@ -1382,6 +1382,15 @@ app.all('/api/hub/localist-checkout', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/localist-chat', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/localist-chat')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub localist chat handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/shifts', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/shifts')(req, res);

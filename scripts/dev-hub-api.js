@@ -32,6 +32,7 @@ mount('/api/hub/invites', '../api-handlers/hub/invites');
 mount('/api/hub/localist-menu', '../api-handlers/hub/localist-menu');
 mount('/api/hub/localist-window', '../api-handlers/hub/localist-window');
 mount('/api/hub/localist-checkout', '../api-handlers/hub/localist-checkout');
+mount('/api/hub/localist-chat', '../api-handlers/hub/localist-chat');
 mount('/api/hub/shifts', '../api-handlers/hub/shifts');
 mount('/api/hub/brain-publish', '../api-handlers/hub/brain-publish');
 mount('/api/hub/today', '../api-handlers/hub/today');
