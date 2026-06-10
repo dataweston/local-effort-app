@@ -558,6 +558,41 @@ model HubLocalistWindow {
   @@index([createdAt])
 }
 
+model HubLocalistOrder {
+  id                   String    @id @default(uuid())
+  status               String    @default("checkout_created")
+  customerName         String
+  customerEmail        String?
+  customerPhone        String?
+  pickupWindow         String
+  customerNote         String?
+  localistWindowId     String?
+  localistToken        String?
+  sourceVisitorId      String?
+  sourceSessionId      String?
+  entrySource          String?
+  squarePaymentLinkId  String?   @unique
+  squarePaymentLinkUrl String?
+  squareOrderId        String?   @unique
+  squarePaymentId      String?   @unique
+  squareCustomerId     String?
+  squareReceiptUrl     String?
+  totalCents           Int
+  totalQuantity        Int
+  items                Json
+  checkoutStartedAt    DateTime  @default(now())
+  paidAt               DateTime?
+  brainLedgerEventId   String?
+  brainInboxItemId     String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([status, checkoutStartedAt])
+  @@index([paidAt])
+  @@index([localistWindowId])
+  @@index([sourceSessionId])
+}
+
 model HubDocument {
   id          String   @id @default(uuid())
   title       String

@@ -57,6 +57,7 @@ const februaryCheckoutHandler = require('../../api-handlers/february/checkout');
 const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-link');
 const { ingestMealPrepIntake } = require('./brain/mealPrepIntakeIngest');
 const { ingestSquarePayment } = require('./brain/squareIngest');
+const { markLocalistOrderPaidFromSquare } = require('../../api-handlers/hub/_localistOrderBrain');
 const { registerGmailRoutes } = require('./brain/gmailRoutes');
 const { registerInboxRoutes } = require('./brain/inboxRoutes');
 const { registerInferenceRoutes } = require('./brain/inferenceRoutes');
@@ -504,6 +505,8 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
       return res.status(200).json({ ok: true, handled: 'small-events' });
     }
 
+    markLocalistOrderPaidFromSquare(db, payment)
+      .catch((localistErr) => logger.warn({ err: localistErr, paymentId: payment.id }, 'localist order payment update failed'));
     await applyCompletedPayment(payment, { db });
     // Brain ingestion — fire-and-forget, never blocks the payment response
     ingestSquarePayment(payment, { logger }).catch(() => {});
@@ -1378,6 +1381,15 @@ app.all('/api/hub/localist-checkout', async (req, res, next) => {
     await require('../../api-handlers/hub/localist-checkout')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub localist checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/localist-orders', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/localist-orders')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub localist orders handler failed');
     next(err);
   }
 });

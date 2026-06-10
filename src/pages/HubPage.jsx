@@ -698,6 +698,8 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
   const [localistBusy, setLocalistBusy] = useState(false);
   const [localistAnalytics, setLocalistAnalytics] = useState(null);
   const [localistAnalyticsStatus, setLocalistAnalyticsStatus] = useState('Loading activity...');
+  const [localistOrders, setLocalistOrders] = useState(null);
+  const [localistOrdersStatus, setLocalistOrdersStatus] = useState('Loading orders...');
 
   const createInvite = async (event) => {
     event.preventDefault();
@@ -803,9 +805,25 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
     }
   }, [accessToken]);
 
+  const loadLocalistOrders = useCallback(async () => {
+    setLocalistOrdersStatus('Loading orders...');
+    try {
+      const data = await api('/api/hub/localist-orders?hours=168&limit=50', accessToken);
+      setLocalistOrders(data);
+      setLocalistOrdersStatus('');
+    } catch (err) {
+      setLocalistOrders({ orders: [], summary: {} });
+      setLocalistOrdersStatus(err.message || 'Unable to load Localist orders.');
+    }
+  }, [accessToken]);
+
   useEffect(() => {
     loadLocalistAnalytics().catch(() => {});
   }, [loadLocalistAnalytics]);
+
+  useEffect(() => {
+    loadLocalistOrders().catch(() => {});
+  }, [loadLocalistOrders]);
 
   const percent = (value) => `${Math.round((Number(value) || 0) * 100)}%`;
   const shortDateTime = (value) => (
@@ -931,6 +949,60 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
             );
           })}
         </div>
+      </Panel>
+      <Panel
+        title="Localist Orders"
+        icon={CreditCard}
+        action={(
+          <button type="button" onClick={loadLocalistOrders}>
+            <RefreshCw size={13} />
+          </button>
+        )}
+      >
+        {localistOrdersStatus && <p className="hub-empty">{localistOrdersStatus}</p>}
+        {localistOrders && (
+          <div className="hub-localist-analytics">
+            <div className="hub-metric-grid">
+              <div className="hub-metric"><span>Paid</span><strong>{localistOrders.summary?.paidCount || 0}</strong></div>
+              <div className="hub-metric"><span>Paid total</span><strong>{formatCurrency(localistOrders.summary?.paidTotalCents || 0)}</strong></div>
+              <div className="hub-metric"><span>Pending</span><strong>{localistOrders.summary?.pendingCount || 0}</strong></div>
+              <div className="hub-metric"><span>All orders</span><strong>{localistOrders.summary?.orderCount || 0}</strong></div>
+            </div>
+            {(localistOrders.orders || []).length === 0 && !localistOrdersStatus && (
+              <p className="hub-empty">No Localist orders have been recorded yet.</p>
+            )}
+            {(localistOrders.orders || []).map((orderEntry) => (
+              <article className="hub-localist-window-card" key={orderEntry.id}>
+                <div className="hub-localist-window-head">
+                  <div>
+                    <strong>{orderEntry.customerName}</strong>
+                    <span>
+                      {orderEntry.status} / {formatCurrency(orderEntry.totalCents)}
+                      {orderEntry.paidAt ? ` / paid ${shortDateTime(orderEntry.paidAt)}` : ` / started ${shortDateTime(orderEntry.checkoutStartedAt)}`}
+                    </span>
+                  </div>
+                  <span className="hub-pill">{orderEntry.pickupWindow}</span>
+                </div>
+                <div className="hub-localist-order-detail">
+                  {orderEntry.customerEmail && <span>Email: {orderEntry.customerEmail}</span>}
+                  {orderEntry.customerPhone && <span>Phone: {orderEntry.customerPhone}</span>}
+                  {orderEntry.customerNote && <span>Notes/allergies: {orderEntry.customerNote}</span>}
+                  {orderEntry.squareOrderId && <span>Square order: {orderEntry.squareOrderId}</span>}
+                  {orderEntry.squareReceiptUrl && <span>Square receipt: {orderEntry.squareReceiptUrl}</span>}
+                  {orderEntry.brainInboxItemId && <span>Brain inbox: {orderEntry.brainInboxItemId}</span>}
+                </div>
+                <div className="hub-localist-order-items">
+                  {(orderEntry.items || []).map((item) => (
+                    <span key={`${orderEntry.id}-${item.id}`}>
+                      {item.quantity}x {item.name}
+                      {item.customerOptions?.length ? ` (${item.customerOptions.join(', ')})` : ''}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </Panel>
     </div>
   );
@@ -1096,6 +1168,8 @@ function LocalistView() {
 
     try {
       const params = new URLSearchParams(window.location.search);
+      const identity = localistIdentity();
+      const tracking = localistTrackingContext();
       trackLocalistActivity('localist.checkout.started', { cart: cartPayload });
       const data = await api('/api/hub/localist-checkout', null, {
         method: 'POST',
@@ -1105,6 +1179,9 @@ function LocalistView() {
           pickupWindow,
           note,
           localistToken: params.get('localist') || '',
+          visitorId: identity.visitorId,
+          sessionId: identity.sessionId,
+          entrySource: tracking.entrySource,
           items: selectedItems.map((item) => ({
             id: item._id,
             quantity: item.quantity,
@@ -2055,6 +2132,18 @@ const hubCss = `
   display: block;
   color: var(--hub-muted);
   font-size: 11px;
+}
+.hub-localist-order-detail,
+.hub-localist-order-items {
+  display: grid;
+  gap: 4px;
+  color: var(--hub-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.hub-localist-order-items {
+  color: var(--hub-ink);
+  font-weight: 600;
 }
 .hub-metric-grid {
   display: grid;

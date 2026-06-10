@@ -4692,7 +4692,8 @@ function reducer(state, action) {
         image,
         addOnIndices: rawAddOnIndices,
         dairyFree: rawDairyFree,
-        optionSummary
+        optionSummary,
+        allowsDelivery
       } = action.payload;
       const addOnIndices = normalizeAddOnIndices(rawAddOnIndices);
       const dairyFree = !!rawDairyFree;
@@ -4710,7 +4711,8 @@ function reducer(state, action) {
         image,
         addOnIndices,
         dairyFree,
-        optionSummary: optionSummary || ""
+        optionSummary: optionSummary || "",
+        allowsDelivery: !!allowsDelivery
       };
       next.updatedAt = Date.now();
       return next;
@@ -13831,7 +13833,7 @@ var import_react20 = require("@portabletext/react");
 
 // src/store/data/generatedReleasesPageData.json
 var generatedReleasesPageData_default = {
-  generatedAt: "2026-06-03T00:13:47.497Z",
+  generatedAt: "2026-06-10T19:00:02.101Z",
   releases: [
     {
       _id: "release-local-pizza-1000-2025-09-30",
@@ -14443,7 +14445,8 @@ function ProductDetail({ product, sku, onClose }) {
       image: images[0] || null,
       addOnIndices: selectedAddOnIndices,
       dairyFree: isDairyFree,
-      optionSummary
+      optionSummary,
+      allowsDelivery: !!product.allowsDelivery
     });
     notify(`${product.title} added`, {
       actionLabel: "View bag",
@@ -15520,6 +15523,7 @@ function CheckoutPanel({ store = "sale", onBack }) {
   const attemptStorageKey = `le:checkoutAttempt:store:${store}`;
   const pricing = useServerPricing(items, subtotal);
   const amountCents = pricing.subtotal;
+  const deliveryAvailable = (0, import_react28.useMemo)(() => items.every((item) => !!item.allowsDelivery), [items]);
   const enabled = open && items.length > 0 && status !== "success";
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
     "#store-card-container",
@@ -15583,6 +15587,9 @@ function CheckoutPanel({ store = "sale", onBack }) {
       reset();
     }
   }, [clearCheckoutAttempt, open, reset]);
+  (0, import_react28.useEffect)(() => {
+    if (!deliveryAvailable) setPickup(true);
+  }, [deliveryAvailable]);
   const verificationDetails = (0, import_react28.useMemo)(() => {
     const nameParts = customer.name.trim().split(/\s+/).filter(Boolean);
     return {
@@ -15822,7 +15829,7 @@ function CheckoutPanel({ store = "sale", onBack }) {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-section", children: [
           /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "le-checkout-section-title", children: "Fulfillment" }),
-          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-pickup-selector", role: "group", "aria-label": "Fulfillment method", children: [
+          deliveryAvailable ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-pickup-selector", role: "group", "aria-label": "Fulfillment method", children: [
             /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "button",
               {
@@ -15843,7 +15850,7 @@ function CheckoutPanel({ store = "sale", onBack }) {
                 children: "Local delivery"
               }
             )
-          ] }),
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "le-checkout-footnote", style: { margin: 0 }, children: "Pickup only" }),
           !pickup && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "le-checkout-field", children: [
               /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "le-checkout-label", htmlFor: "co-address-line1", children: "Street address" }),
@@ -16230,7 +16237,7 @@ function CartDrawer({ store = "sale" }) {
 
 // src/store/data/generatedSalePageData.json
 var generatedSalePageData_default = {
-  generatedAt: "2026-06-03T00:13:46.777Z",
+  generatedAt: "2026-06-10T19:00:01.294Z",
   page: {
     title: "local effort sales",
     subheading: "sale",
@@ -16343,23 +16350,11 @@ var INITIAL_PRODUCTS = Array.isArray(generatedSalePageData_default?.products) ? 
 var INITIAL_PAGE = generatedSalePageData_default?.page || {};
 var INITIAL_GENERATED_AT = generatedSalePageData_default?.generatedAt || "";
 var FALLBACK_TITLE = "Local Effort Sale";
-var FALLBACK_SUBHEADING = "Seasonal prepared foods, pantry goods, and limited preorders.";
-var FALLBACK_INTRO = "Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.";
 var getProductSummary2 = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
   const summary = (portableText || product?.longDescription || product?.shortDescription || "").replace(/\s+/g, " ").trim();
   if (!summary) return "";
   return summary.length > 170 ? `${summary.slice(0, 167).trim()}...` : summary;
-};
-var formatGeneratedDate = (value) => {
-  if (!value) return "";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "";
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
 };
 var SalePage = () => {
   const { totalQty, openCart } = useCart();
@@ -16389,9 +16384,6 @@ var SalePage = () => {
     };
   }, []);
   const pageTitle = livePage?.title || INITIAL_PAGE.title || FALLBACK_TITLE;
-  const pageSubheading = livePage?.subheading || INITIAL_PAGE.subheading || FALLBACK_SUBHEADING;
-  const introText = livePage?.introText || INITIAL_PAGE.introText || FALLBACK_INTRO;
-  const generatedLabel = formatGeneratedDate(INITIAL_GENERATED_AT);
   const metaDescription = (0, import_react30.useMemo)(() => {
     const names = products.slice(0, 3).map((product) => product.title).filter(Boolean);
     const namesLabel = names.length ? ` including ${names.join(", ")}` : "";
@@ -16485,8 +16477,8 @@ var SalePage = () => {
       /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("script", { type: "application/ld+json", children: JSON.stringify(schema) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("a", { href: "#products", className: "sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-white focus:px-3 focus:py-2 focus:text-xs focus:uppercase focus:tracking-widest focus:border focus:border-black", children: "Skip to products" }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("header", { className: "le-sale-header", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_react_router_dom6.Link, { to: "/", className: "le-sale-home-link", children: "Local Effort" }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("nav", { className: "le-sale-breadcrumb", "aria-label": "Breadcrumb", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_react_router_dom6.Link, { to: "/", className: "le-sale-breadcrumb-link", children: "\u2190 Home" }),
       /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         "button",
         {
@@ -16501,71 +16493,17 @@ var SalePage = () => {
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("main", { id: "products", className: "le-sale-main", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-hero", "aria-labelledby": "sale-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-hero-copy", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-eyebrow", children: "Minneapolis sale" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { id: "sale-title", className: "le-sale-title", children: pageTitle }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-subheading", children: pageSubheading }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-intro", children: introText.split(/\n{2,}/).filter(Boolean).map((paragraph) => /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { children: paragraph }, paragraph)) })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("aside", { className: "le-sale-summary", "aria-label": "Sale details", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Products live" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: products.length || "Updating" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Fulfillment" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Pickup + local delivery" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "How to shop" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: "Open any item for full details" })
-          ] }),
-          generatedLabel && /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-summary-label", children: "Catalog snapshot" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("strong", { className: "le-sale-summary-value", children: generatedLabel })
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-links", "aria-labelledby": "sale-links-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-links-title", className: "le-sale-section-title", children: "Looking for a specific event or drop?" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Some Local Effort offers live on dedicated landing pages with fuller booking and product context. These links help search engines and visitors move between the store, specialty drops, and private-event booking pages." })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "le-sale-link-grid", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/psyche", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Psyche olive oil" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Dedicated product page with provenance, pricing, and fulfillment details." })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/february", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "February chef dinner" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private in-home dinner booking flow with date, pricing, and guest information." })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_react_router_dom6.Link, { className: "le-sale-link-card", to: "/#small-events", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-title", children: "Small events" }),
-            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "le-sale-link-copy", children: "Private dinners, pizza parties, and other event windows from the main site." })
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("section", { className: "le-sale-products", "aria-labelledby": "sale-products-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "le-sale-products-header", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { id: "sale-products-title", className: "le-sale-section-title", children: "Current sale catalog" }),
-          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "le-sale-section-copy", children: "Product cards include visible names and summaries in the HTML so Google and AI crawlers can understand what the sale contains before JavaScript finishes loading." })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
-          ProductGrid,
-          {
-            products,
-            skuPrefix: "LE",
-            loading,
-            openSlug,
-            onOpen: (slug) => navigate(`/sale#${slug}`, { replace: false }),
-            onClose: () => navigate("/sale", { replace: false })
-          }
-        )
-      ] })
-    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("main", { id: "products", className: "le-sale-main", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("section", { className: "le-sale-products", "aria-labelledby": "sale-products-title", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+      ProductGrid,
+      {
+        products,
+        skuPrefix: "LE",
+        loading,
+        openSlug,
+        onOpen: (slug) => navigate(`/sale#${slug}`, { replace: false }),
+        onClose: () => navigate("/sale", { replace: false })
+      }
+    ) }) }),
     /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(CartDrawer, { store: "sale" })
   ] });
 };

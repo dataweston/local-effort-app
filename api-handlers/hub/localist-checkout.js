@@ -3,6 +3,7 @@ const { Client, Environment } = require('square');
 const { PrismaClient } = require('@prisma/client');
 const { getSanityClient, getSanityReadClient } = require('../../backend/api/sanityClient');
 const { methodNotAllowed, cleanString } = require('./_http');
+const { writeOrderBrainRecords } = require('./_localistOrderBrain');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -95,9 +96,10 @@ function normalizeCustomerOptions(value) {
     .map(([, label]) => label);
 }
 
-function checkoutRedirectUrl(req, token) {
+function checkoutRedirectUrl(req, token, orderId) {
   const params = new URLSearchParams({ checkout: 'localist-success' });
   if (token) params.set('localist', token);
+  if (orderId) params.set('localistOrder', orderId);
   return `${requestOrigin(req)}/hub?${params.toString()}`;
 }
 
@@ -115,6 +117,7 @@ async function validateWindow(token) {
     error.status = 410;
     throw error;
   }
+  return window;
 }
 
 module.exports = async function handler(req, res) {
@@ -131,20 +134,24 @@ module.exports = async function handler(req, res) {
   const note = cleanString(req.body?.note, 180);
   const pickupWindow = cleanString(req.body?.pickupWindow, 40);
   const token = cleanString(req.body?.localistToken, 240);
+  const sourceVisitorId = cleanString(req.body?.visitorId, 120);
+  const sourceSessionId = cleanString(req.body?.sessionId, 120);
+  const entrySource = req.body?.entrySource === 'shared' ? 'shared' : 'direct';
   const submittedItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
   if (!pickupWindow || !PICKUP_WINDOWS.has(pickupWindow)) return res.status(400).json({ error: 'Pickup window is required' });
   if (!submittedItems.length) return res.status(400).json({ error: 'No items selected' });
 
+  let localOrder = null;
   try {
-    await validateWindow(token);
+    const localistWindow = await validateWindow(token);
 
     const sanityItems = await client.fetch(LOCALIST_ITEMS_QUERY);
     const itemMap = new Map((Array.isArray(sanityItems) ? sanityItems : []).map((item) => [item._id, item]));
 
     const lineItems = [];
-    const itemNotes = [];
+    const orderItems = [];
     for (const submitted of submittedItems) {
       const id = cleanString(submitted?.id, 160);
       const quantity = normalizeQuantity(submitted?.quantity);
@@ -172,17 +179,47 @@ module.exports = async function handler(req, res) {
         basePriceMoney: { amount: priceCents, currency: 'USD' },
       });
       const customerOptions = normalizeCustomerOptions(submitted?.customerOptions);
-      itemNotes.push(`${quantity}x ${item.name || 'Localist item'}${customerOptions.length ? ` (${customerOptions.join(', ')})` : ''}`);
+      orderItems.push({
+        id,
+        name: String(item.name || 'Localist item').slice(0, 160),
+        quantity,
+        unitPriceCents: priceCents,
+        totalCents: priceCents * quantity,
+        customerOptions,
+      });
     }
 
     if (!lineItems.length) return res.status(400).json({ error: 'No payable items selected' });
+
+    const totalCents = orderItems.reduce((sum, item) => sum + item.totalCents, 0);
+    const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+    localOrder = await prisma.hubLocalistOrder.create({
+      data: {
+        status: 'checkout_created',
+        customerName: name,
+        customerPhone: phone || null,
+        pickupWindow,
+        customerNote: note || null,
+        localistWindowId: localistWindow?.id || null,
+        localistToken: token || null,
+        sourceVisitorId: sourceVisitorId || null,
+        sourceSessionId: sourceSessionId || null,
+        entrySource,
+        totalCents,
+        totalQuantity,
+        items: orderItems,
+        checkoutStartedAt: new Date(),
+      },
+    });
 
     const noteParts = [
       `Localist order - ${name}`,
       `Pickup: ${pickupWindow}`,
       phone ? `Phone: ${phone}` : null,
       note ? `Note: ${note}` : null,
-      itemNotes.length ? `Items: ${itemNotes.join('; ')}` : null,
+      orderItems.length ? `Items: ${orderItems.map((item) => (
+        `${item.quantity}x ${item.name}${item.customerOptions.length ? ` (${item.customerOptions.join(', ')})` : ''}`
+      )).join('; ')}` : null,
     ].filter(Boolean);
 
     const response = await squareClient.checkoutApi.createPaymentLink({
@@ -193,14 +230,32 @@ module.exports = async function handler(req, res) {
         note: noteParts.join(' | ').slice(0, 500),
       },
       checkoutOptions: {
-        redirectUrl: checkoutRedirectUrl(req, token),
+        redirectUrl: checkoutRedirectUrl(req, token, localOrder.id),
       },
     });
 
-    const url = response?.result?.paymentLink?.url;
+    const paymentLink = response?.result?.paymentLink || {};
+    const url = paymentLink.url;
     if (!url) return res.status(500).json({ error: 'Failed to create Square checkout' });
-    return res.status(200).json({ ok: true, url });
+    const updatedOrder = await prisma.hubLocalistOrder.update({
+      where: { id: localOrder.id },
+      data: {
+        squarePaymentLinkId: paymentLink.id || null,
+        squarePaymentLinkUrl: url,
+        squareOrderId: paymentLink.orderId || paymentLink.order_id || null,
+      },
+    });
+    await writeOrderBrainRecords(prisma, updatedOrder).catch((brainErr) => {
+      console.warn('[hub/localist-checkout] brain record failed', brainErr?.message);
+    });
+    return res.status(200).json({ ok: true, url, orderId: updatedOrder.id });
   } catch (err) {
+    if (localOrder?.id) {
+      await prisma.hubLocalistOrder.update({
+        where: { id: localOrder.id },
+        data: { status: 'checkout_failed' },
+      }).catch(() => {});
+    }
     const squareMessage = err?.errors ? JSON.stringify(err.errors) : null;
     console.error('[hub/localist-checkout] error', squareMessage || err);
     return res.status(err.status || 500).json({ error: squareMessage || err.message || 'Unable to create checkout' });

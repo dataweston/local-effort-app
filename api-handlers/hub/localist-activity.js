@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
+const { writeOrderBrainRecords } = require('./_localistOrderBrain');
 
 let prisma = null;
 try {
@@ -49,6 +50,44 @@ function cleanObject(value, depth = 0) {
     if (typeof entry === 'object') return [key, cleanObject(entry, depth + 1)];
     return [key, null];
   }));
+}
+
+function paramsFromPath(path) {
+  try {
+    return new URL(String(path || ''), 'https://www.localeffortfood.com').searchParams;
+  } catch (_err) {
+    return new URLSearchParams();
+  }
+}
+
+async function markLocalistOrderPaid(payload, occurredAt) {
+  if (payload?.metadata?.returnedFromSquare !== true) return;
+  const params = paramsFromPath(payload.path);
+  const localistOrderId = cleanString(params.get('localistOrder'), 120);
+  const squareOrderId = cleanString(params.get('orderId'), 120);
+  const transactionId = cleanString(params.get('transactionId'), 120);
+  const squarePaymentId = transactionId && transactionId !== squareOrderId ? transactionId : null;
+
+  const where = localistOrderId
+    ? { id: localistOrderId }
+    : squareOrderId
+      ? { squareOrderId }
+      : null;
+  if (!where || !prisma?.hubLocalistOrder?.findUnique) return;
+
+  const existing = await prisma.hubLocalistOrder.findUnique({ where });
+  if (!existing) return;
+
+  const updated = await prisma.hubLocalistOrder.update({
+    where: { id: existing.id },
+    data: {
+      status: 'paid',
+      paidAt: existing.paidAt || occurredAt,
+      squareOrderId: existing.squareOrderId || squareOrderId || null,
+      squarePaymentId: existing.squarePaymentId || squarePaymentId || null,
+    },
+  });
+  await writeOrderBrainRecords(prisma, updated, { paid: true });
 }
 
 async function findWindowByToken(token) {
@@ -189,6 +228,11 @@ async function handlePost(req, res) {
         payload,
       },
     });
+    if (eventType === 'localist.checkout.success') {
+      await markLocalistOrderPaid(payload, safeOccurredAt).catch((paidErr) => {
+        console.warn('[hub/localist-activity] paid order update failed', paidErr?.message);
+      });
+    }
     return res.status(204).end();
   } catch (err) {
     console.warn('[hub/localist-activity] log failed', err?.message);
