@@ -11,6 +11,8 @@ try {
 const THREAD_TYPE = 'hub_localist';
 const THREAD_ID = 'public-localist';
 const IMAGE_HOST_HINTS = ['giphy.com', 'tenor.com', 'media.tenor.com'];
+const DATA_IMAGE_PATTERN = /^data:image\/(gif|png|jpe?g|webp);base64,[a-z0-9+/=\s]+$/i;
+const MAX_DATA_IMAGE_LENGTH = 1_500_000;
 
 async function getLocalistThread() {
   let thread = await prisma.objectThread.findFirst({
@@ -54,6 +56,21 @@ function normalizeImageUrl(value) {
   }
 }
 
+function normalizeImageUpload(value) {
+  if (!value || typeof value !== 'object') return null;
+  const dataUrl = cleanString(value.dataUrl, MAX_DATA_IMAGE_LENGTH + 200);
+  if (!dataUrl || dataUrl.length > MAX_DATA_IMAGE_LENGTH || !DATA_IMAGE_PATTERN.test(dataUrl)) return null;
+  const mimeType = cleanString(value.mimeType, 40).toLowerCase();
+  if (mimeType && !['image/gif', 'image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(mimeType)) return null;
+  return {
+    type: 'image',
+    url: dataUrl.replace(/\s/g, ''),
+    source: 'upload',
+    name: cleanString(value.name, 120) || 'upload',
+    mimeType: mimeType || dataUrl.slice(5, dataUrl.indexOf(';')).toLowerCase(),
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST']);
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
@@ -67,17 +84,23 @@ module.exports = async function handler(req, res) {
       const senderName = cleanString(req.body?.senderName, 60);
       const body = cleanString(req.body?.body, 1000) || '';
       const imageUrl = normalizeImageUrl(req.body?.imageUrl);
+      const uploadedImage = normalizeImageUpload(req.body?.imageUpload);
 
       if (!senderName) return res.status(400).json({ error: 'Name is required' });
-      if (!body && !imageUrl) return res.status(400).json({ error: 'Message or image/GIF URL is required' });
+      if (!body && !imageUrl && !uploadedImage) {
+        return res.status(400).json({ error: 'Message, image/GIF URL, or upload is required' });
+      }
 
-      const attachments = imageUrl ? [{ type: 'image', url: imageUrl }] : undefined;
+      const attachments = [
+        imageUrl ? { type: 'image', url: imageUrl, source: 'link' } : null,
+        uploadedImage,
+      ].filter(Boolean);
       const message = await prisma.objectThreadMessage.create({
         data: {
           threadId: thread.id,
           senderRole: senderName,
           body,
-          attachments,
+          attachments: attachments.length ? attachments : undefined,
         },
       });
 

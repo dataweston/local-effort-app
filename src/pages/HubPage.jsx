@@ -17,8 +17,10 @@ import {
   Send,
   ShieldCheck,
   ShoppingCart,
+  Upload,
   UserPlus,
   UsersRound,
+  X,
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 
@@ -1281,16 +1283,58 @@ function LocalistView() {
   );
 }
 
+const CHAT_UPLOAD_MIME_TYPES = ['image/gif', 'image/png', 'image/jpeg', 'image/webp'];
+const CHAT_UPLOAD_MAX_BYTES = 1 * 1024 * 1024;
+const URL_PATTERN = /(https?:\/\/[^\s<]+)/gi;
+
+function isEmbeddableGifPage(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const href = parsed.href.toLowerCase();
+    const directImage = /\.(gif|png|jpe?g|webp)(\?|#|$)/.test(href) || href.startsWith('data:image/');
+    return !directImage && (host.includes('giphy.com') || host.includes('tenor.com'));
+  } catch (_err) {
+    return false;
+  }
+}
+
+function MessageText({ text }) {
+  if (!text) return null;
+  const parts = String(text).split(URL_PATTERN);
+  return (
+    <p>
+      {parts.map((part, index) => (
+        /^https?:\/\//i.test(part) ? (
+          <a href={part} target="_blank" rel="noreferrer" key={`${part}-${index}`}>
+            {part}
+          </a>
+        ) : part
+      ))}
+    </p>
+  );
+}
+
 function LocalistChat() {
   const [messages, setMessages] = useState([]);
   const [senderName, setSenderName] = useState(() => {
     if (typeof window === 'undefined') return '';
     return window.localStorage.getItem('le:localistChatName') || '';
   });
+  const [draftName, setDraftName] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('le:localistChatName') || '';
+  });
+  const [joined, setJoined] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!window.localStorage.getItem('le:localistChatName');
+  });
   const [body, setBody] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageUpload, setImageUpload] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const uploadInputRef = useRef(null);
 
   const loadMessages = useCallback(async () => {
     const data = await api('/api/hub/localist-chat');
@@ -1303,23 +1347,75 @@ function LocalistChat() {
     return () => window.clearInterval(timer);
   }, [loadMessages]);
 
+  const joinChat = (event) => {
+    event.preventDefault();
+    const name = draftName.trim();
+    if (!name) return;
+    setSenderName(name);
+    setJoined(true);
+    setError('');
+    if (typeof window !== 'undefined') window.localStorage.setItem('le:localistChatName', name);
+  };
+
+  const leaveChatName = () => {
+    setJoined(false);
+    setDraftName(senderName);
+  };
+
+  const attachUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError('');
+    if (!CHAT_UPLOAD_MIME_TYPES.includes(file.type)) {
+      setError('Upload a GIF, PNG, JPG, or WebP image.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > CHAT_UPLOAD_MAX_BYTES) {
+      setError('Upload must be 1 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageUpload({
+        dataUrl: String(reader.result || ''),
+        name: file.name,
+        mimeType: file.type,
+      });
+    };
+    reader.onerror = () => setError('Unable to read that upload.');
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const clearUpload = () => {
+    setImageUpload(null);
+    if (uploadInputRef.current) uploadInputRef.current.value = '';
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     const name = senderName.trim();
     const text = body.trim();
     const media = imageUrl.trim();
-    if (!name || (!text && !media)) return;
+    if (!joined || !name || (!text && !media && !imageUpload)) return;
 
     setBusy(true);
     setError('');
     try {
-      if (typeof window !== 'undefined') window.localStorage.setItem('le:localistChatName', name);
       await api('/api/hub/localist-chat', null, {
         method: 'POST',
-        body: JSON.stringify({ senderName: name, body: text, imageUrl: media }),
+        body: JSON.stringify({
+          senderName: name,
+          body: text,
+          imageUrl: media,
+          imageUpload,
+        }),
       });
       setBody('');
       setImageUrl('');
+      clearUpload();
       await loadMessages();
     } catch (err) {
       setError(err.message || 'Unable to send message.');
@@ -1335,37 +1431,77 @@ function LocalistChat() {
         {messages.map((message) => (
           <div className="hub-message" key={message.id}>
             <strong>{message.senderName || 'Guest'} / {age(message.createdAt)}</strong>
-            {message.body && <p>{message.body}</p>}
+            <MessageText text={message.body} />
             {message.attachments?.map((attachment) => (
               attachment.type === 'image' && attachment.url ? (
-                <a className="hub-message-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
-                  <img src={attachment.url} alt="" loading="lazy" />
-                </a>
+                isEmbeddableGifPage(attachment.url) ? (
+                  <div className="hub-message-attachment" key={attachment.url}>
+                    <iframe src={attachment.url} title="GIF" loading="lazy" />
+                    <a className="hub-message-attachment-source" href={attachment.url} target="_blank" rel="noreferrer">Open GIF</a>
+                  </div>
+                ) : (
+                  <a className="hub-message-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
+                    <img src={attachment.url} alt={attachment.name || ''} loading="lazy" />
+                  </a>
+                )
               ) : null
             ))}
           </div>
         ))}
       </div>
-      <form className="hub-form hub-localist-chat-form" onSubmit={submit}>
-        <Field label="Name">
-          <input value={senderName} onChange={(e) => setSenderName(e.target.value)} autoComplete="name" required />
-        </Field>
-        <Field label="Message">
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Ask a question or share an update..."
-            rows={2}
-          />
-        </Field>
-        <Field label="Image/GIF URL">
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." inputMode="url" autoComplete="url" />
-        </Field>
-        <button className="hub-primary-button" type="submit" disabled={busy || !senderName.trim() || (!body.trim() && !imageUrl.trim())}>
-          <Send size={13} /> {busy ? 'Sending...' : 'Send'}
-        </button>
-        {error && <p className="hub-error">{error}</p>}
-      </form>
+      {!joined ? (
+        <form className="hub-form hub-localist-chat-join" onSubmit={joinChat}>
+          <Field label="Name">
+            <input value={draftName} onChange={(e) => setDraftName(e.target.value)} autoComplete="name" required />
+          </Field>
+          <button className="hub-primary-button" type="submit" disabled={!draftName.trim()}>
+            <MessageSquare size={13} /> Join chat
+          </button>
+          {error && <p className="hub-error">{error}</p>}
+        </form>
+      ) : (
+        <form className="hub-form hub-localist-chat-form" onSubmit={submit}>
+          <div className="hub-localist-chat-identity">
+            <span>{senderName}</span>
+            <button type="button" onClick={leaveChatName}>Change</button>
+          </div>
+          <Field label="Message">
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Ask a question or share an update..."
+              rows={2}
+            />
+          </Field>
+          <Field label="Image/GIF link">
+            <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." inputMode="url" autoComplete="url" />
+          </Field>
+          <div className="hub-localist-chat-upload">
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/gif,image/png,image/jpeg,image/webp"
+              onChange={attachUpload}
+            />
+            <button type="button" onClick={() => uploadInputRef.current?.click()}>
+              <Upload size={13} /> Upload
+            </button>
+            {imageUpload && (
+              <div className="hub-localist-upload-preview">
+                <img src={imageUpload.dataUrl} alt="" />
+                <span>{imageUpload.name}</span>
+                <button type="button" onClick={clearUpload} aria-label="Remove upload">
+                  <X size={13} />
+                </button>
+              </div>
+            )}
+          </div>
+          <button className="hub-primary-button" type="submit" disabled={busy || (!body.trim() && !imageUrl.trim() && !imageUpload)}>
+            <Send size={13} /> {busy ? 'Sending...' : 'Send'}
+          </button>
+          {error && <p className="hub-error">{error}</p>}
+        </form>
+      )}
     </Panel>
   );
 }
@@ -2106,14 +2242,94 @@ const hubCss = `
 .hub-localist-chat-list .hub-message {
   overflow-wrap: anywhere;
 }
+.hub-localist-chat-list .hub-message a {
+  color: var(--hub-accent);
+  font-weight: 600;
+}
+.hub-localist-chat-join {
+  border-top: 1px solid var(--hub-border-light);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
 .hub-localist-chat-form {
   border-top: 1px solid var(--hub-border-light);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
 }
-.hub-localist-chat-form .hub-field:nth-of-type(2),
+.hub-localist-chat-identity,
+.hub-localist-chat-form .hub-field:nth-of-type(1),
+.hub-localist-chat-upload,
 .hub-localist-chat-form .hub-error {
   grid-column: 1 / -1;
+}
+.hub-localist-chat-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  color: var(--hub-muted);
+  font-size: 12px;
+}
+.hub-localist-chat-identity span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--hub-ink);
+  font-weight: 700;
+}
+.hub-localist-chat-identity button,
+.hub-localist-chat-upload > button,
+.hub-localist-upload-preview button {
+  height: 28px;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
+  color: var(--hub-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hub-localist-chat-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.hub-localist-chat-upload > input {
+  display: none;
+}
+.hub-localist-upload-preview {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--hub-border-light);
+  border-radius: 6px;
+  padding: 5px;
+  background: var(--hub-bg);
+}
+.hub-localist-upload-preview img {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #fff;
+}
+.hub-localist-upload-preview span {
+  min-width: 0;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--hub-muted);
+  font-size: 11px;
+  font-weight: 600;
 }
 .hub-localist-chat-form .hub-primary-button {
   justify-self: end;
@@ -2134,6 +2350,24 @@ const hubCss = `
   max-height: min(320px, 45svh);
   object-fit: contain;
   background: #fff;
+}
+.hub-message-attachment iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: min(360px, 45svh);
+  border: 0;
+  background: #fff;
+}
+.hub-message-attachment-source {
+  display: block;
+  border-top: 1px solid var(--hub-border-light);
+  padding: 7px 8px;
+  background: var(--hub-bg);
+  color: var(--hub-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 /* ── Auth screens ── */
@@ -2180,15 +2414,29 @@ const hubCss = `
     font-size: 14px;
     line-height: 1.5;
   }
+  .hub-localist-chat-join,
   .hub-localist-chat-form {
     grid-template-columns: 1fr;
     gap: 9px;
     padding: 10px 12px 12px;
   }
+  .hub-localist-chat-join .hub-primary-button {
+    width: 100%;
+    min-height: 44px;
+  }
   .hub-localist-chat-form .hub-field,
-  .hub-localist-chat-form .hub-field:nth-of-type(2),
+  .hub-localist-chat-form .hub-field:nth-of-type(1),
+  .hub-localist-chat-upload,
   .hub-localist-chat-form .hub-error {
     grid-column: 1;
+  }
+  .hub-localist-chat-identity {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .hub-localist-chat-identity button {
+    justify-content: center;
+    min-height: 40px;
   }
   .hub-localist-chat-form .hub-field input,
   .hub-localist-chat-form .hub-field textarea {
@@ -2204,11 +2452,28 @@ const hubCss = `
     width: 100%;
     min-height: 44px;
   }
+  .hub-localist-chat-upload {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .hub-localist-chat-upload > button {
+    justify-content: center;
+    min-height: 44px;
+  }
+  .hub-localist-upload-preview {
+    width: 100%;
+  }
+  .hub-localist-upload-preview span {
+    max-width: none;
+  }
   .hub-message-attachment {
     width: 100%;
   }
   .hub-message-attachment img {
     max-height: min(320px, 42svh);
+  }
+  .hub-message-attachment iframe {
+    max-height: min(360px, 42svh);
   }
   .hub-mobile-nav {
     position: fixed;
