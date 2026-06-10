@@ -44,7 +44,10 @@
       "Bash(ls -la /c/Users/user/local-effort-app/public/checkout*)",
       "Bash(ls -la /c/Users/user/local-effort-app/*.html)",
       "Bash(pnpm run:*)",
-      "WebSearch"
+      "WebSearch",
+      "PowerShell(Get-ChildItem c:\\\\Users\\\\user\\\\local-effort-app\\\\brain-sidecar -Recurse -File | Where-Object { $_.FullName -notmatch 'node_modules' } | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize | Out-String -Width 250)",
+      "PowerShell(Get-ChildItem c:\\\\Users\\\\user\\\\local-effort-app\\\\api -Recurse -File | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\('c:\\\\Users\\\\user\\\\local-effort-app\\\\',''\\) })",
+      "PowerShell(git -C c:\\\\Users\\\\user\\\\local-effort-app log --oneline -20 -- backend/api/brain brain-sidecar src/pages/BrainBrowserPage.jsx src/components/brain)"
     ],
     "deny": [],
     "ask": []

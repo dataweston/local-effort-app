@@ -20,6 +20,7 @@ const PICKUP_WINDOWS = new Set([
   'Wednesday, 2pm-4pm',
   'Wednesday, 4pm-6pm',
 ]);
+const HUB_MENU_AREAS = new Set(['localist', 'security']);
 
 let squareClient = null;
 try {
@@ -43,7 +44,11 @@ const LOCALIST_ITEMS_QUERY = `
   _type == "hubLocalistItem" &&
   active != false &&
   defined(_id) &&
-  (defined(name) || defined(title))
+  (defined(name) || defined(title)) &&
+  (
+    $area in areas ||
+    ($area == "localist" && (!defined(areas) || count(areas) == 0))
+  )
 ] {
   _id,
   "name": coalesce(name, title),
@@ -53,6 +58,11 @@ const LOCALIST_ITEMS_QUERY = `
 }`;
 
 const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+
+function normalizeArea(value) {
+  const area = String(value || 'localist').trim().toLowerCase();
+  return HUB_MENU_AREAS.has(area) ? area : 'localist';
+}
 
 function requestOrigin(req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
@@ -96,11 +106,12 @@ function normalizeCustomerOptions(value) {
     .map(([, label]) => label);
 }
 
-function checkoutRedirectUrl(req, token, orderId) {
-  const params = new URLSearchParams({ checkout: 'localist-success' });
+function checkoutRedirectUrl(req, token, orderId, area) {
+  const params = new URLSearchParams({ checkout: `${area}-success` });
   if (token) params.set('localist', token);
   if (orderId) params.set('localistOrder', orderId);
-  return `${requestOrigin(req)}/hub?${params.toString()}`;
+  const path = area === 'security' ? '/hub/security' : '/hub';
+  return `${requestOrigin(req)}${path}?${params.toString()}`;
 }
 
 async function validateWindow(token) {
@@ -137,6 +148,7 @@ module.exports = async function handler(req, res) {
   const sourceVisitorId = cleanString(req.body?.visitorId, 120);
   const sourceSessionId = cleanString(req.body?.sessionId, 120);
   const entrySource = req.body?.entrySource === 'shared' ? 'shared' : 'direct';
+  const sourceArea = normalizeArea(req.body?.sourceArea);
   const submittedItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -147,7 +159,7 @@ module.exports = async function handler(req, res) {
   try {
     const localistWindow = await validateWindow(token);
 
-    const sanityItems = await client.fetch(LOCALIST_ITEMS_QUERY);
+    const sanityItems = await client.fetch(LOCALIST_ITEMS_QUERY, { area: sourceArea });
     const itemMap = new Map((Array.isArray(sanityItems) ? sanityItems : []).map((item) => [item._id, item]));
 
     const lineItems = [];
@@ -174,7 +186,7 @@ module.exports = async function handler(req, res) {
       }
 
       lineItems.push({
-        name: String(item.name || 'Localist item').slice(0, 120),
+        name: String(item.name || 'Menu item').slice(0, 120),
         quantity: String(quantity),
         basePriceMoney: { amount: priceCents, currency: 'USD' },
       });
@@ -213,7 +225,7 @@ module.exports = async function handler(req, res) {
     });
 
     const noteParts = [
-      `Localist order - ${name}`,
+      `${sourceArea === 'security' ? 'Security at Neon' : 'Localist'} order - ${name}`,
       `Pickup: ${pickupWindow}`,
       phone ? `Phone: ${phone}` : null,
       note ? `Note: ${note}` : null,
@@ -230,7 +242,7 @@ module.exports = async function handler(req, res) {
         note: noteParts.join(' | ').slice(0, 500),
       },
       checkoutOptions: {
-        redirectUrl: checkoutRedirectUrl(req, token, localOrder.id),
+        redirectUrl: checkoutRedirectUrl(req, token, localOrder.id, sourceArea),
       },
     });
 

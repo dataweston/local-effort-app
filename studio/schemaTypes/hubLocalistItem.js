@@ -1,3 +1,8 @@
+const HUB_SALES_AREA_OPTIONS = [
+  { title: 'Localist', value: 'localist' },
+  { title: 'Security at Neon', value: 'security' },
+]
+
 export default {
   name: 'hubLocalistItem',
   title: 'Localist Menu Item',
@@ -39,8 +44,21 @@ export default {
       name: 'inventoryCount',
       title: 'Inventory count',
       type: 'number',
-      description: 'Optional number available for this Localist menu item. Set to 0 to mark the item sold out.',
+      description: 'Optional number available for this menu item. Set to 0 to mark the item sold out.',
       validation: (Rule) => Rule.min(0).integer(),
+    },
+    {
+      name: 'areas',
+      title: 'Hub sales areas',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: HUB_SALES_AREA_OPTIONS,
+        layout: 'grid',
+      },
+      description: 'Choose where this item appears on Hub sales pages. Existing blank items still appear on Localist.',
+      initialValue: ['localist'],
+      validation: (Rule) => Rule.unique(),
     },
     {
       name: 'glutenFree',
@@ -100,11 +118,14 @@ export default {
     },
   ],
   preview: {
-    select: { title: 'name', subtitle: 'price', active: 'active' },
-    prepare({ title, subtitle, active }) {
+    select: { title: 'name', subtitle: 'price', active: 'active', areas: 'areas' },
+    prepare({ title, subtitle, active, areas }) {
+      const areaLabels = (areas || [])
+        .map((area) => HUB_SALES_AREA_OPTIONS.find((option) => option.value === area)?.title || area)
+        .join(', ')
       return {
         title: title || 'Untitled item',
-        subtitle: [subtitle, active === false ? '(hidden)' : null].filter(Boolean).join(' · '),
+        subtitle: [subtitle, areaLabels, active === false ? '(hidden)' : null].filter(Boolean).join(' / '),
       }
     },
   },

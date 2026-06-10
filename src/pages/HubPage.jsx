@@ -55,6 +55,10 @@ const LOCALIST_ITEM_FLAG_LABELS = [
   ['containsDairy', 'Contains dairy'],
 ];
 
+const SECURITY_MENU_PASSWORD = 'noodleboy.';
+const SECURITY_MENU_STORAGE_KEY = 'le:securityMenuAccess';
+const SECURITY_MENU_PROMPT = 'this menu is designed especially for the security team at Neon Kitchen. Please enter your password to order.';
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -1032,7 +1036,12 @@ function formatPhone(value) {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-function LocalistView() {
+function LocalistView({
+  area = 'localist',
+  menuName = 'Localist',
+  successName = 'Localist',
+  showChat = true,
+}) {
   const [items, setItems] = useState(null);
   const [content, setContent] = useState(null);
   const [order, setOrder] = useState({});
@@ -1043,25 +1052,27 @@ function LocalistView() {
   const [customerOptions, setCustomerOptions] = useState({});
   const [shareStatus, setShareStatus] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState(() => (
-    new URLSearchParams(window.location.search).get('checkout') === 'localist-success' ? 'success' : 'idle'
+    new URLSearchParams(window.location.search).get('checkout') === `${area}-success` ? 'success' : 'idle'
   ));
   const [checkoutError, setCheckoutError] = useState('');
   const successTrackedRef = useRef(false);
 
   useEffect(() => {
-    api('/api/hub/localist-menu')
+    api(`/api/hub/localist-menu?area=${encodeURIComponent(area)}`)
       .then((data) => {
         setContent(data.content || null);
         setItems(data.items || []);
-        trackLocalistActivity('localist.menu.loaded', {
-          metadata: { itemCount: data.items?.length || 0 },
-        });
+        if (area === 'localist') {
+          trackLocalistActivity('localist.menu.loaded', {
+            metadata: { itemCount: data.items?.length || 0 },
+          });
+        }
       })
       .catch(() => {
         setContent(null);
         setItems([]);
       });
-  }, []);
+  }, [area]);
 
   const pricedItems = useMemo(() => (items || []).map((item) => {
     const exactPrice = Number(item.priceCents);
@@ -1098,18 +1109,20 @@ function LocalistView() {
   useEffect(() => {
     if (totalQuantity <= 0) return undefined;
     const timer = window.setTimeout(() => {
-      trackLocalistActivity('localist.cart.updated', { cart: cartPayload });
+      if (area === 'localist') trackLocalistActivity('localist.cart.updated', { cart: cartPayload });
     }, 600);
     return () => window.clearTimeout(timer);
-  }, [cartPayload, totalQuantity]);
+  }, [area, cartPayload, totalQuantity]);
 
   useEffect(() => {
     if (checkoutStatus !== 'success' || successTrackedRef.current) return;
     successTrackedRef.current = true;
-    trackLocalistActivity('localist.checkout.success', {
-      metadata: { returnedFromSquare: true },
-    });
-  }, [checkoutStatus]);
+    if (area === 'localist') {
+      trackLocalistActivity('localist.checkout.success', {
+        metadata: { returnedFromSquare: true },
+      });
+    }
+  }, [area, checkoutStatus]);
 
   const setQuantity = (id, quantity) => {
     const item = pricedItems.find((candidate) => candidate._id === id);
@@ -1170,7 +1183,7 @@ function LocalistView() {
       const params = new URLSearchParams(window.location.search);
       const identity = localistIdentity();
       const tracking = localistTrackingContext();
-      trackLocalistActivity('localist.checkout.started', { cart: cartPayload });
+      if (area === 'localist') trackLocalistActivity('localist.checkout.started', { cart: cartPayload });
       const data = await api('/api/hub/localist-checkout', null, {
         method: 'POST',
         body: JSON.stringify({
@@ -1182,6 +1195,7 @@ function LocalistView() {
           visitorId: identity.visitorId,
           sessionId: identity.sessionId,
           entrySource: tracking.entrySource,
+          sourceArea: area,
           items: selectedItems.map((item) => ({
             id: item._id,
             quantity: item.quantity,
@@ -1202,7 +1216,7 @@ function LocalistView() {
       <>
         <Panel title="Payment Received" icon={CheckCircle2}>
           <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
-            Thanks{name ? `, ${name}` : ''}! Square has processed your Localist checkout.
+            Thanks{name ? `, ${name}` : ''}! Square has processed your {successName} checkout.
           </p>
           <button
             className="hub-primary-button"
@@ -1221,7 +1235,7 @@ function LocalistView() {
             Place another order
           </button>
         </Panel>
-        <LocalistChat />
+        {showChat && <LocalistChat />}
       </>
     );
   }
@@ -1237,7 +1251,7 @@ function LocalistView() {
           {content.note && <span>{content.note}</span>}
         </section>
       )}
-      {localistTrackingContext().localistToken && (
+      {area === 'localist' && localistTrackingContext().localistToken && (
         <div className="hub-localist-share">
           <button type="button" onClick={shareLocalistLink}>
             <Send size={13} /> Share menu
@@ -1245,7 +1259,7 @@ function LocalistView() {
           {shareStatus && <span>{shareStatus}</span>}
         </div>
       )}
-      {items === null && <p className="hub-empty">Loading menu...</p>}
+      {items === null && <p className="hub-empty">Loading {menuName} menu...</p>}
       {items !== null && items.length === 0 && <p className="hub-empty">No items available.</p>}
       {items !== null && items.length > 0 && (
         <form className="hub-form hub-localist-form" onSubmit={submit}>
@@ -1355,7 +1369,7 @@ function LocalistView() {
         </form>
       )}
     </Panel>
-    <LocalistChat />
+    {showChat && <LocalistChat />}
     </>
   );
 }
@@ -1583,6 +1597,83 @@ function LocalistChat() {
   );
 }
 
+function SecurityPasswordGate({ children }) {
+  const [unlocked, setUnlocked] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.sessionStorage.getItem(SECURITY_MENU_STORAGE_KEY) === '1';
+  });
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const submit = (event) => {
+    event.preventDefault();
+    if (password === SECURITY_MENU_PASSWORD) {
+      if (typeof window !== 'undefined') window.sessionStorage.setItem(SECURITY_MENU_STORAGE_KEY, '1');
+      setUnlocked(true);
+      setPassword('');
+      setError('');
+      return;
+    }
+    setError('Incorrect password.');
+  };
+
+  if (unlocked) return children;
+
+  return (
+    <Panel title="Security at Neon" icon={ShieldCheck}>
+      <form className="hub-form hub-security-password-form" onSubmit={submit}>
+        <p className="hub-security-password-prompt">{SECURITY_MENU_PROMPT}</p>
+        <Field label="Password">
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            autoFocus
+            required
+          />
+        </Field>
+        <button className="hub-primary-button" type="submit" disabled={!password}>
+          <ShieldCheck size={13} /> Enter menu
+        </button>
+        {error && <p className="hub-error">{error}</p>}
+      </form>
+    </Panel>
+  );
+}
+
+function SecurityView() {
+  return (
+    <SecurityPasswordGate>
+      <LocalistView
+        area="security"
+        menuName="Security at Neon"
+        successName="Security at Neon"
+        showChat={false}
+      />
+    </SecurityPasswordGate>
+  );
+}
+
+function SecurityGuestShell() {
+  return (
+    <div className="hub-app hub-app-guest">
+      <style>{hubCss}</style>
+      <main className="hub-main">
+        <header className="hub-topbar">
+          <div>
+            <h1>Security at Neon</h1>
+            <p>Security menu</p>
+          </div>
+        </header>
+        <div className="hub-guest-content">
+          <SecurityView />
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function LocalistClosedScreen() {
   return (
     <>
@@ -1641,10 +1732,12 @@ export default function HubPage() {
   const auth = useSupabaseAuth();
   const inviteToken = new URLSearchParams(window.location.search).get('invite') || '';
   const localistToken = new URLSearchParams(window.location.search).get('localist') || '';
+  const hubPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+  const isSecurityRoute = hubPath === '/hub/security';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState('today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : 'today');
   const [people, setPeople] = useState([]);
   const [docs, setDocs] = useState([]);
   const [calendar, setCalendar] = useState([]);
@@ -1710,16 +1803,17 @@ export default function HubPage() {
   const isLocalist = !!profile && profile.accessLevel === 'localist';
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
+  const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
   const navTabs = isLocalist
     ? [localistTab]
     : isPrivileged
-    ? [...tabs, adminTab, localistTab]
-    : [...tabs, localistTab];
+    ? [...tabs, adminTab, localistTab, securityTab]
+    : [...tabs, localistTab, securityTab];
   const mobileNavTabs = isLocalist
     ? [localistTab]
     : isPrivileged
-    ? [tabs[0], tabs[1], tabs[3], tabs[5], adminTab, localistTab]
-    : [tabs[0], tabs[1], tabs[2], tabs[3], tabs[5], localistTab];
+    ? [tabs[0], tabs[1], tabs[3], tabs[5], adminTab, localistTab, securityTab]
+    : [tabs[0], tabs[1], tabs[2], tabs[3], tabs[5], localistTab, securityTab];
   const activeTab = isLocalist ? 'localist' : tab;
 
   if (localistToken) {
@@ -1734,6 +1828,8 @@ export default function HubPage() {
     if (!localistAccess.window?.valid) return <LocalistClosedScreen />;
     return <LocalistGuestShell localistWindow={localistAccess.window} />;
   }
+
+  if (isSecurityRoute) return <SecurityGuestShell />;
 
   if (auth.loading) {
     return (
@@ -1807,6 +1903,7 @@ export default function HubPage() {
         {activeTab === 'shifts' && <ShiftsView accessToken={auth.accessToken} isPrivileged={isPrivileged} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
+        {activeTab === 'security' && <SecurityView />}
       </main>
 
       <nav className="hub-mobile-nav">
@@ -2162,6 +2259,13 @@ const hubCss = `
 .hub-localist-intro h3 { margin: 0; font-size: 16px; line-height: 1.25; font-weight: 700; color: var(--hub-ink); }
 .hub-localist-intro p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--hub-ink); white-space: pre-wrap; }
 .hub-localist-intro span { display: block; margin-top: 6px; color: var(--hub-muted); font-size: 11px; }
+.hub-security-password-form { gap: 12px; }
+.hub-security-password-prompt {
+  margin: 0;
+  color: var(--hub-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
 .hub-localist-share {
   display: flex;
   align-items: center;

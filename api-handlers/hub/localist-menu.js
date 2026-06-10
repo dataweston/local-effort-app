@@ -5,7 +5,11 @@ const LOCALIST_MENU_QUERY = `
 *[
   _type == "hubLocalistItem" &&
   active != false &&
-  (defined(name) || defined(title))
+  (defined(name) || defined(title)) &&
+  (
+    $area in areas ||
+    ($area == "localist" && (!defined(areas) || count(areas) == 0))
+  )
 ] | order(order asc, name asc, title asc) {
   _id,
   "name": coalesce(name, title),
@@ -18,6 +22,7 @@ const LOCALIST_MENU_QUERY = `
   containsNuts,
   containsDairy,
   inventoryCount,
+  areas,
   order
 }`;
 
@@ -25,15 +30,27 @@ const LOCALIST_CONTENT_QUERY = `
 *[
   _type == "hubLocalistContent" &&
   active != false &&
-  (defined(headline) || defined(body))
+  (defined(headline) || defined(body)) &&
+  (
+    $area in areas ||
+    ($area == "localist" && (!defined(areas) || count(areas) == 0))
+  )
 ] | order(_updatedAt desc)[0] {
   _id,
   eyebrow,
   headline,
   body,
   note,
+  areas,
   _updatedAt
 }`;
+
+const HUB_MENU_AREAS = new Set(['localist', 'security']);
+
+function normalizeArea(value) {
+  const area = String(value || 'localist').trim().toLowerCase();
+  return HUB_MENU_AREAS.has(area) ? area : 'localist';
+}
 
 function publicContent(content) {
   if (!content) return null;
@@ -72,6 +89,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
 
   res.setHeader('Cache-Control', 'no-store');
+  const area = normalizeArea(req.query?.area);
 
   const client = getSanityClient() || getSanityReadClient();
   if (!client) {
@@ -80,12 +98,13 @@ module.exports = async function handler(req, res) {
 
   try {
     const [content, items] = await Promise.all([
-      client.fetch(LOCALIST_CONTENT_QUERY),
-      client.fetch(LOCALIST_MENU_QUERY),
+      client.fetch(LOCALIST_CONTENT_QUERY, { area }),
+      client.fetch(LOCALIST_MENU_QUERY, { area }),
     ]);
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
+      area,
       content: publicContent(content),
       items: Array.isArray(items) ? items.map(publicItem) : [],
     });

@@ -303,7 +303,7 @@ const AppContent = () => {
                   element={<BrainBrowserPage />}
                 />
                 <Route
-                  path="/hub"
+                  path="/hub/*"
                   element={<HubPage />}
                 />
                 <Route

@@ -95,8 +95,8 @@ export default defineConfig({
                   S.documentTypeListItem('menuSection').title('Menu Sections'),
                   S.documentTypeListItem('menuItems').title('Menu Items'),
                   S.documentTypeListItem('mealPrepMenu').title('Meal Prep Menus'),
-                  S.documentTypeListItem('hubLocalistContent').title('Localist Intro'),
-                  S.documentTypeListItem('hubLocalistItem').title('Localist Menu Items'),
+                  S.documentTypeListItem('hubLocalistContent').title('Hub Sales Intros'),
+                  S.documentTypeListItem('hubLocalistItem').title('Hub Sales Menu Items'),
                 ]),
               ),
 
