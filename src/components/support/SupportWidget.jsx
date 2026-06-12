@@ -190,6 +190,16 @@ export function SupportWidget() {
               <input name="name" className="w-full border p-2" placeholder="Your name" />
               <input name="email" type="email" required className="w-full border p-2" placeholder="Email" />
               <input name="subject" className="w-full border p-2" placeholder="Subject" />
+              <input
+                type="text"
+                name="website"
+                defaultValue=""
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="hidden"
+                style={{ display: 'none' }}
+              />
               <textarea name="message" required className="w-full border p-2 h-24" placeholder="How can we help?" />
               <button className="px-3 py-2 bg-emerald-600 text-white rounded" type="submit">Send</button>
             </form>

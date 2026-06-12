@@ -1,0 +1,33 @@
+# Local Effort Cooperative
+
+> Personal chef team in Minneapolis–St. Paul, Minnesota: in-home private dinners, weekly meal prep, wood-fired pizza parties, and small-event catering built around Minnesota-grown ingredients. Based in Roseville, MN; serving the Twin Cities metro and western Wisconsin.
+
+How to engage:
+- Book a private event (dinner party, pizza party, wedding, small event): https://www.localeffortfood.com/book — instant estimate, hold a date with a deposit.
+- General inquiries: POST https://www.localeffortfood.com/api/messages/submit (JSON: name, email, phone, subject, message; leave the "website" field empty — it is a spam honeypot).
+- Email: yum@localeffortfood.com
+
+## Services and pages
+
+- [Book a private event](https://www.localeffortfood.com/book): estimates and deposits for chef-led dinners, pizza parties, weddings, and small events
+- [Pizza party](https://www.localeffortfood.com/pizza-party): wood-fired pizza party booking with deposit
+- [Sale / shop](https://www.localeffortfood.com/sale): seasonal food drops, pantry goods, and preorders with Minneapolis pickup and local delivery
+- [Psyche olive oil](https://www.localeffortfood.com/psyche): 3L single-estate extra-virgin olive oil, $90 with free local delivery
+- [Happy Monday](https://www.localeffortfood.com/happymonday): weekly menu and ordering
+- [Localist](https://www.localeffortfood.com/localist): SMS list for weekly low-cost salads and hot bowls, North Minneapolis pickup
+- [Blog / Local Report](https://www.localeffortfood.com/blog): kitchen notes and updates
+- [Press & releases](https://www.localeffortfood.com/releases): press coverage and announcements
+
+## Machine-readable endpoints
+
+- [AI manifest](https://www.localeffortfood.com/ai/manifest.json): full machine manifest of routes, feeds, and APIs
+- [Business profile](https://www.localeffortfood.com/business.json): structured business data (service area, geo, social links)
+- [Site summary API](https://www.localeffortfood.com/api/public/site): JSON summary of routes, feeds, and APIs
+- [Support search](https://www.localeffortfood.com/api/support/search?q=pricing): semantic FAQ/support search
+- [Pricing FAQ](https://www.localeffortfood.com/api/public/pricing-faq): pricing questions and answers as JSON
+- [Sitemap](https://www.localeffortfood.com/sitemap.xml)
+
+## Agent commerce
+
+- [UCP profile](https://www.localeffortfood.com/.well-known/ucp): Universal Commerce Protocol profile; REST binding at /ucp/v1
+- [MCP server](https://www.localeffortfood.com/.well-known/mcp): streamable-HTTP MCP server with support search, content query, and authenticated checkout tools (metadata at /.well-known/mcp.json)

@@ -1,9 +1,44 @@
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
+// Per-IP rate limit: SMS list subscription is an abuse target.
+const rateBuckets = new Map();
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_MAX = 5;
+
+function isRateLimited(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = (typeof forwarded === 'string' && forwarded.split(',')[0].trim()) ||
+    req.ip || req.connection?.remoteAddress || 'unknown';
+  const now = Date.now();
+  const bucket = rateBuckets.get(ip);
+  if (!bucket || bucket.expiresAt <= now) {
+    rateBuckets.set(ip, { count: 1, expiresAt: now + RATE_WINDOW_MS });
+    if (rateBuckets.size > 5000) {
+      for (const [key, value] of rateBuckets.entries()) {
+        if (value.expiresAt <= now) rateBuckets.delete(key);
+      }
+    }
+    return false;
+  }
+  if (bucket.count >= RATE_MAX) return true;
+  bucket.count += 1;
+  return false;
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'method-not-allowed' });
+  }
+
+  // Honeypot: real users never fill the hidden "website" field.
+  if (typeof req.body?.website === 'string' && req.body.website.trim()) {
+    return res.status(200).json({ ok: true, suppressed: true });
+  }
+
+  if (isRateLimited(req)) {
+    res.setHeader('Retry-After', '600');
+    return res.status(429).json({ error: 'rate-limit-exceeded' });
   }
 
   const { phone } = req.body || {};

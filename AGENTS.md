@@ -1,0 +1,74 @@
+# AGENTS.md — orientation for AI agents working in this repo
+
+This file is the fastest accurate map of the repo. Prefer it over older docs; anything in `docs/archive/` is historical and may describe retired systems.
+
+## What this project is
+
+The production website and operations tooling for **Local Effort Cooperative** (https://www.localeffortfood.com), a Twin Cities personal chef / catering business. Goals, in priority order:
+
+1. **The public site must be fast, clean, and low-friction** — it is the business's storefront.
+2. **Be maximally legible to search engines and AI agents** — agents shopping or researching on behalf of customers should be able to find services, pricing, and booking paths without executing JS (see "Agent-facing surfaces" below).
+3. **Internal tools** (planner, hub, brain) support daily operations and must never leak into the public index.
+
+## Repo map (what matters)
+
+```
+src/                      React SPA (Vite). Homepage = src/pages/FullPageDemoPage.jsx (large file, ~4.6k lines)
+src/App.jsx               All client routes. Retired pages redirect to "/".
+src/config/routes.js      SINGLE SOURCE OF TRUTH for public routes → prerender + sitemap + vercel routing
+backend/api/index.js      Express app (~4.5k lines). ALL /api/* production traffic. Mounted routers in backend/api/routes/.
+backend/api/server.js     Thin serverless entry for the Express app.
+api-handlers/             Individual handlers required by backend/api/index.js (store, hub, weekly-order, checkout…)
+api/                      Legacy Vercel-function-style handlers — NOT routed in production (vercel.json sends /api/* to backend). Don't add here.
+tools/static-export.js    Prerender + sitemap generation, runs in `pnpm build`
+prisma/                   PlannerCard model (weekly planner)
+studio/                   Sanity CMS studio (separate npm project)
+public/                   Static assets incl. robots.txt, ai.txt, llms.txt, ai/manifest.json, business.json
+docs/                     Current docs. docs/archive/ = historical, do not trust as current.
+```
+
+## Key facts that are easy to get wrong
+
+- **Routing**: `vercel.json` `routes` send every `/api/*` and `/.well-known/*` request to the single Express function. The root `api/` directory is mostly dead in production — change `backend/api/` + `api-handlers/` instead.
+- **Retired pages** (about, services, pricing, menu, gallery, pizzafunder, paikka, crowdfunding, partner portals, city landing pages, `/calendar`) redirect to `/`. Don't resurrect them or add them to sitemaps.
+- **Firebase/Firestore is legacy.** Supabase is the auth + new-data store. See `docs/DO-NOT-REVERT-TO-FIREBASE.md`.
+- **Crons are GET requests** (Vercel crons): brain triage/inference/hypothesis, square-orders sync, meal-feedback digest — schedules in `vercel.json`.
+- **Internal surfaces** (`/weeklydemo`, `/hub`, `/admin/*`, `/portal/*`, `/inbox`, `/campaigns`, `/auth`, `/catherine-schedule`, `/weekly-order*`) are noindex via `vercel.json` headers + `robots.txt` + `INTERNAL_ROUTES` in `src/config/routes.js`. Keep all three in sync when adding routes.
+- **Public forms must keep their anti-bot guards**: honeypot field named `website` + server-side rate limiting in `backend/api/routes/messages.js`. Any new public form endpoint needs both.
+- **Brand theming**: CSS custom properties in `src/styles/brand-tokens.css`; pages opt into theme via `fullpage-demo-scope` class.
+- **Auth**: `useSupabaseAuth()` from `src/contexts/SupabaseAuthContext.jsx` (Google OAuth; returns `user, session, accessToken, isAdmin, …`).
+
+## Agent-facing surfaces (keep these accurate)
+
+| Surface | Purpose |
+| --- | --- |
+| `/robots.txt` | Allows all crawlers incl. GPTBot; disallows internal routes; points at sitemap |
+| `/sitemap.xml` | Generated at build from `PUBLIC_ROUTES` — never hand-edit |
+| `/ai.txt` + `/llms.txt` | Concise machine-readable site guide for LLM crawlers |
+| `/ai/manifest.json` | Detailed machine manifest: routes, feeds, APIs, MCP/UCP endpoints |
+| `/business.json` | Structured business profile (schema.org-flavored) |
+| `/.well-known/ucp` | Universal Commerce Protocol profile; REST at `/ucp/v1` |
+| `/.well-known/mcp` | MCP server (streamable HTTP): support search, Sanity query, UCP checkout tools |
+| `GET /api/public/site` | Machine-readable summary of routes/feeds/APIs |
+| `GET /api/support/search?q=` | Public semantic support search |
+| `POST /api/messages/submit` | Public contact endpoint (honeypot: include nothing in `website`) |
+
+When adding/retiring a public page: update `src/config/routes.js`, `App.jsx`, `public/ai.txt`, `public/llms.txt`, and `public/ai/manifest.json` together.
+
+## Commands
+
+```bash
+pnpm start              # dev frontend (proxy /api → :3001)
+pnpm backend:start      # dev API on :3001
+pnpm build              # full prod build incl. prerender + sitemap
+pnpm lint / lint:fix    # eslint on src/
+pnpm test:e2e           # Playwright
+```
+
+## Conventions
+
+- pnpm only; Node 20; React pinned to 18.2.0 via overrides.
+- API handlers: `module.exports = async (req, res) => {}`; mount in `backend/api/index.js`.
+- Escape all user input interpolated into email HTML (`escapeHtml` helpers exist in routers).
+- Webhooks verify secrets with timing-safe comparison — follow the existing patterns in `backend/api/index.js`.
+- Never commit secrets; `.env*` files are gitignored. Client-exposed config must be `VITE_*`/`NEXT_PUBLIC_*` only.

@@ -1,7 +1,7 @@
 {
   "site": "https://www.localeffortfood.com",
   "name": "Local Effort Cooperative",
-  "updated": "2026-03-10T00:00:00Z",
+  "updated": "2026-06-12T00:00:00Z",
   "description": "Twin Cities personal chef, small-event catering, and product checkout surfaces with public machine-readable APIs, feeds, and agent commerce endpoints.",
   "mcpServers": [
     {
@@ -54,18 +54,22 @@
   "llmNotes": [
     "Primary public machine-readable endpoints are /api/public/site, /api/support/search, /sitemap.xml, /api/sitemap.xml, /.well-known/ucp, and /.well-known/mcp.",
     "Home-page service sections live at /#small-events and /#for-businesses; those are anchors on the home document, not standalone pages.",
-    "Core commerce pages include /sale, /pizza-party, /psyche, /february, and /weekly-order.",
-    "Some checkout flows are JS-enhanced and may continue into hosted checkout after the public landing page."
+    "Core commerce pages include /sale, /book, /pizza-party, /psyche, /february, and /weekly-order.",
+    "Event booking with instant estimates and deposits lives at /book.",
+    "Some checkout flows are JS-enhanced and may continue into hosted checkout after the public landing page.",
+    "Form endpoints include a honeypot field named 'website'; leave it empty or omit it, otherwise the submission is silently discarded."
   ],
   "navigation": [
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
+    { "path": "/book", "title": "Book a Private Event", "summary": "Book a chef-led dinner party, pizza party, wedding, or small event; instant estimate and deposit." },
     { "path": "/sale", "title": "Sale", "summary": "Public sale catalog and checkout surface." },
     { "path": "/releases", "title": "Releases", "summary": "Press releases and media updates." },
     { "path": "/blog", "title": "Blog", "summary": "News, stories, and updates from Local Effort Cooperative" },
-    { "path": "/happymonday", "title": "Happy Monday", "summary": "Weekly post and newsletter page." },
+    { "path": "/happymonday", "title": "Happy Monday", "summary": "Weekly menu and ordering page." },
     { "path": "/pizza-party", "title": "Pizza Party", "summary": "Pizza party booking and deposit page." },
     { "path": "/psyche", "title": "Psyche Olive Oil", "summary": "Public product page for Psyche olive oil." },
     { "path": "/february", "title": "February Home Dinner", "summary": "Public booking page for the February dinner offering." },
+    { "path": "/localist", "title": "Localist", "summary": "SMS list signup for weekly low-cost meals with North Minneapolis pickup." },
     { "path": "/weekly-order", "title": "Weekly Order", "summary": "Weekly order checkout surface." }
   ],
   "apis": [
@@ -116,11 +120,12 @@
     { "type": "sitemap", "url": "https://www.localeffortfood.com/api/sitemap.xml" },
     { "type": "rss", "url": "https://www.localeffortfood.com/api/feeds/releases.rss" },
     { "type": "atom", "url": "https://www.localeffortfood.com/api/feeds/releases.atom" },
-    { "type": "text", "url": "https://www.localeffortfood.com/ai.txt" }
+    { "type": "text", "url": "https://www.localeffortfood.com/ai.txt" },
+    { "type": "text", "url": "https://www.localeffortfood.com/llms.txt" }
   ],
   "support": {
     "email": "yum@localeffortfood.com",
-    "eventRequest": "https://www.localeffortfood.com/#small-events",
+    "eventRequest": "https://www.localeffortfood.com/book",
     "press": "https://www.localeffortfood.com/releases"
   },
   "organization": {

@@ -69,16 +69,16 @@ export const PUBLIC_ROUTES = [
     prerender: false,
   },
   {
-    path: '/calendar',
-    title: 'Calendar - Local Effort Cooperative',
-    description: 'Event and booking calendar for Local Effort Cooperative',
-    prerender: false,
-  },
-  {
     path: '/book',
     title: 'Book a Private Event - Local Effort Cooperative',
     description: 'Book a chef-led dinner party, pizza party, wedding, or small event with Local Effort Cooperative in Minneapolis-St. Paul. Get an instant estimate and hold your date with a deposit.',
     prerender: true,
+  },
+  {
+    path: '/localist',
+    title: 'Localist - Weekly Meals Text List - Local Effort Cooperative',
+    description: 'Join the Localist text list: every Monday we text a limited menu of salads and hot bowls for Tuesday/Wednesday pickup in North Minneapolis.',
+    prerender: false,
   },
 ];
 
@@ -101,4 +101,8 @@ export const INTERNAL_ROUTES = [
   '/catherine-schedule',
   '/partners/',
   '/schedule/',
+  '/hub',
+  '/brain',
+  '/native-mobile-hub',
+  '/meal-prep-intake',
 ];

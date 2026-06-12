@@ -547,9 +547,15 @@ app.get('/api/sitemap.xml', async (req, res) => {
     const xml = await fs.promises.readFile(sitemapPath, 'utf8');
     return res.status(200).type('application/xml; charset=utf-8').send(xml);
   } catch (err) {
-    logger.error({ err }, 'dynamic sitemap route failed');
-    if (!res.headersSent) {
-      res.status(500).type('text/plain').send('Failed to load sitemap');
+    // Static file may be absent in the serverless bundle — generate from the route manifest instead.
+    try {
+      const dynamicSitemapHandler = require('../../api-handlers/sitemap.xml.js');
+      return await dynamicSitemapHandler(req, res);
+    } catch (fallbackErr) {
+      logger.error({ err: fallbackErr }, 'dynamic sitemap route failed');
+      if (!res.headersSent) {
+        res.status(500).type('text/plain').send('Failed to load sitemap');
+      }
     }
   }
 });

@@ -18,6 +18,7 @@ export const AskChefForm = ({ open, onOpenChange, dialogClassName = '' }) => {
     phone: '',
     subject: '',
     message: '',
+    website: '',
   });
   const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
   const dialogClasses = ['sm:max-w-[500px]', dialogClassName].filter(Boolean).join(' ');
@@ -39,6 +40,7 @@ export const AskChefForm = ({ open, onOpenChange, dialogClassName = '' }) => {
         phone: formData.phone,
         subject: formData.subject || 'Question for the Chef',
         message: formData.message,
+        website: formData.website,
         type: 'ask-chef',
       };
 
@@ -61,6 +63,7 @@ export const AskChefForm = ({ open, onOpenChange, dialogClassName = '' }) => {
           phone: '',
           subject: '',
           message: '',
+          website: '',
         });
         setStatus('idle');
         onOpenChange(false);
@@ -151,6 +154,17 @@ export const AskChefForm = ({ open, onOpenChange, dialogClassName = '' }) => {
                 required
               />
             </div>
+
+            <input
+              type="text"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="hidden"
+            />
 
             {status === 'error' && (
               <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">

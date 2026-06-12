@@ -27,7 +27,6 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 const HMEmbeddedApp = lazy(() => import('./partners/happymonday'));
 const WeddingsEmbeddedApp = lazy(() => import('./partners/weddings'));
 const PizzaPartyPage = lazy(() => import('./pages/PizzaPartyPage'));
-const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const SchedulePage = lazy(() => import('./pages/SchedulePage'));
 const WinterDinnerPage = lazy(() => import('./pages/WinterDinnerPage'));
 const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
@@ -363,14 +362,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route
-                  path="/calendar"
-                  element={
-                    <AnimatedPage>
-                      <CalendarPage />
-                    </AnimatedPage>
-                  }
-                />
+                <Route path="/calendar" element={<Navigate to="/book" replace />} />
                 <Route
                   path="/schedule/:token"
                   element={

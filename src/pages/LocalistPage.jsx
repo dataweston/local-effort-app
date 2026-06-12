@@ -15,6 +15,7 @@ const formatPhone = (value) => {
 
 const LocalistPage = () => {
   const [phone, setPhone] = useState('');
+  const [website, setWebsite] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [images, setImages] = useState([]);
@@ -44,7 +45,7 @@ const LocalistPage = () => {
       const response = await fetch('/api/localist/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, website }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data?.error || 'Subscription failed.');
@@ -116,6 +117,18 @@ const LocalistPage = () => {
                     disabled={status === 'submitting'}
                   />
                 </div>
+
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  autoComplete="off"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="hidden"
+                  style={{ display: 'none' }}
+                />
 
                 {error && (
                   <div className="le-checkout-error">{error}</div>

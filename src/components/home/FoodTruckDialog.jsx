@@ -13,7 +13,8 @@ const initialForm = {
   eventDate: "",
   cuisine: "",
   location: "",
-  notes: ""
+  notes: "",
+  website: ""
 };
 
 const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
@@ -79,6 +80,7 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
           phone: form.phone,
           subject: "Food Truck Inquiry",
           message: `Food Truck Inquiry\n\n${lines}\n\nMinimum acknowledged: $1000 (beta launch $200 off for first three bookings)`,
+          website: form.website,
           type: "food_truck"
         })
       });
@@ -143,6 +145,16 @@ const FoodTruckDialog = ({ children, triggerClassName = "" }) => {
                 <Input id="ft-location" value={form.location} onChange={updateField("location")} required placeholder="Venue or address" />
               </div>
             </div>
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={updateField("website")}
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="hidden"
+            />
             <div>
               <Label htmlFor="ft-notes">Additional details</Label>
               <Textarea id="ft-notes" rows={4} value={form.notes} onChange={updateField("notes")} placeholder="Share guest count, service windows, power access, or anything else we should know." />

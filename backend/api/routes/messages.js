@@ -65,7 +65,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   const { upsertContact, sendEmail, getHeaders, blacklistContact } = brevoService;
   const hasOutbox = !!(emailOutboxService && typeof emailOutboxService.enqueue === 'function');
   const submitRateBuckets = new Map();
-  const sensitiveSubmitTypes = new Set(['feedback', 'meal-prep-waitlist']);
+  const sensitiveSubmitTypes = new Set(['feedback', 'meal-prep-waitlist', 'subscribe', 'event-request', 'food-truck']);
   const parseListIds = (value) => {
     if (Array.isArray(value)) {
       return value
@@ -420,8 +420,21 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   router.post('/food-truck/inquire', async (req, res) => {
     try {
       const { name, email, phone, eventDate, cuisine, location, notes } = req.body || {};
+      // Honeypot: real users never fill the hidden "website" field.
+      if (readTrimmed(req.body?.website, 255)) {
+        if (logger?.info) logger.info({ email, hasHoneypot: true }, 'food-truck inquiry suppressed by honeypot');
+        return res.json({ ok: true, suppressed: true });
+      }
       if (!name || !email || !phone || !eventDate || !location) {
         return res.status(400).json({ error: 'missing-required-fields' });
+      }
+      if (!BASIC_EMAIL_REGEX.test(normalizeEmail(email))) {
+        return res.status(400).json({ error: 'invalid-email' });
+      }
+      const rateLimit = checkSubmitRateLimit({ req, type: 'food-truck', email });
+      if (rateLimit.limited) {
+        res.setHeader('Retry-After', String(rateLimit.retryAfter));
+        return res.status(429).json({ error: 'rate-limit-exceeded', retryAfter: rateLimit.retryAfter });
       }
 
       const [firstName, ...rest] = String(name).trim().split(/\s+/);
@@ -510,9 +523,19 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   router.post('/subscribe', async (req, res) => {
     try {
       const { email, firstName, lastName, name, phone, listIds, source = 'home-about' } = req.body || {};
+      // Honeypot: real users never fill the hidden "website" field.
+      if (readTrimmed(req.body?.website, 255)) {
+        if (logger?.info) logger.info({ source, hasHoneypot: true }, 'subscribe suppressed by honeypot');
+        return res.json({ ok: true, status: 'pending_confirmation', suppressed: true });
+      }
       const trimmedEmail = String(email || '').trim().toLowerCase();
-      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      if (!trimmedEmail || !BASIC_EMAIL_REGEX.test(trimmedEmail)) {
         return res.status(400).json({ error: 'Missing email' });
+      }
+      const rateLimit = checkSubmitRateLimit({ req, type: 'subscribe', email: trimmedEmail });
+      if (rateLimit.limited) {
+        res.setHeader('Retry-After', String(rateLimit.retryAfter));
+        return res.status(429).json({ error: 'rate-limit-exceeded', retryAfter: rateLimit.retryAfter });
       }
 
       const adminEmail = process.env.NEWSLETTER_ADMIN_EMAIL
@@ -763,8 +786,22 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         sendCopy = false,
       } = req.body || {};
 
+      // Honeypot: real users never fill the hidden "website" field.
+      if (readTrimmed(req.body?.website, 255)) {
+        if (logger?.info) logger.info({ email, hasHoneypot: true }, 'event request suppressed by honeypot');
+        return res.json({ ok: true, suppressed: true });
+      }
+
       if (!email || !firstName || !lastName || !phone) {
         return res.status(400).json({ error: 'missing-required-fields' });
+      }
+      if (!BASIC_EMAIL_REGEX.test(normalizeEmail(email))) {
+        return res.status(400).json({ error: 'invalid-email' });
+      }
+      const rateLimit = checkSubmitRateLimit({ req, type: 'event-request', email });
+      if (rateLimit.limited) {
+        res.setHeader('Retry-After', String(rateLimit.retryAfter));
+        return res.status(429).json({ error: 'rate-limit-exceeded', retryAfter: rateLimit.retryAfter });
       }
 
       const name = `${firstName} ${lastName}`.trim();

@@ -388,6 +388,7 @@ const FullPageDemoPage = () => {
   const [aboutGalleryLoading, setAboutGalleryLoading] = useState(false);
   const [aboutGalleryError, setAboutGalleryError] = useState(null);
   const [aboutSubscribeEmail, setAboutSubscribeEmail] = useState('');
+  const [aboutSubscribeWebsite, setAboutSubscribeWebsite] = useState('');
   const [aboutSubscribeStatus, setAboutSubscribeStatus] = useState('idle');
   const [aboutSubscribeMessage, setAboutSubscribeMessage] = useState('');
   const [pizzaImages, setPizzaImages] = useState([]);
@@ -2269,6 +2270,7 @@ const clampGuestCount = (value, config) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
+          website: aboutSubscribeWebsite,
           source: 'home-about',
         }),
       });
@@ -3622,6 +3624,16 @@ const clampGuestCount = (value, config) => {
                       required
                     />
                   </div>
+                  <input
+                    type="text"
+                    name="website"
+                    value={aboutSubscribeWebsite}
+                    onChange={(event) => setAboutSubscribeWebsite(event.target.value)}
+                    autoComplete="off"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="hidden"
+                  />
                   <button type="submit" className="btn btn-primary sm:mb-[1px]" disabled={aboutSubscribeStatus === 'sending'}>
                     {aboutSubscribeStatus === 'sending' ? 'Subscribing...' : 'Subscribe'}
                   </button>

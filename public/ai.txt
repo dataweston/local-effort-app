@@ -3,18 +3,21 @@
 
 site: https://www.localeffortfood.com/
 manifest: https://www.localeffortfood.com/ai/manifest.json
-last-updated: 2026-03-10
+llms-txt: https://www.localeffortfood.com/llms.txt
+last-updated: 2026-06-12
 
 primary-pages:
 - /              Home page with service overview, testimonials, and business information
+- /book          Book a private event (dinner party, pizza party, wedding, small event) with instant estimate + deposit
 - /sale          Public sale catalog page
 - /releases      Press releases and media updates
-- /blog          Blog index
-- /happymonday   Weekly post/newsletter page
+- /blog          Blog index ("Local Report")
+- /happymonday   Weekly menu and ordering page for Happy Monday
 - /pizza-party   Pizza party booking and deposit page
 - /psyche        Psyche olive oil product page
-- /february      February home-dinner booking page
-- /weekly-order  Weekly order checkout surface
+- /february      Seasonal home-dinner booking page
+- /localist      Localist weekly meals SMS list signup (North Minneapolis pickup)
+- /weekly-order  Weekly order checkout surface (customer-specific; not in search index)
 
 support:
 - API: GET /api/support/search?q=QUERY         Semantic search across public support content
@@ -22,7 +25,7 @@ support:
 - API: GET /api/public/pricing-faq             Pricing FAQ JSON
 - API: GET /api/public/estimator-help          Estimator guidance JSON
 - API: GET /api/search-images?query=TAG        Public image search results
-- Email: POST /api/messages/submit             General contact endpoint
+- Email: POST /api/messages/submit             General contact endpoint (JSON: name, email, phone, subject, message; leave "website" empty)
 
 commerce:
 - UCP profile: https://www.localeffortfood.com/.well-known/ucp
@@ -39,3 +42,4 @@ feeds:
 notes:
 - /#small-events and /#for-businesses are section anchors on the home page, not separate documents.
 - Some commerce flows are JS-enhanced or continue into hosted checkout after the public landing page.
+- Contact and subscription endpoints use a honeypot field named "website"; legitimate clients must leave it empty or omit it.

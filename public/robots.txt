@@ -16,6 +16,10 @@ Disallow: /weekly-order/portal
 Disallow: /weekly-order/*/portal
 Disallow: /catherine-schedule
 Disallow: /partners/
+Disallow: /hub
+Disallow: /brain
+Disallow: /native-mobile-hub
+Disallow: /meal-prep-intake
 
 # Explicitly allow common AI crawlers
 User-agent: GPTBot
