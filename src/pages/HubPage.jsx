@@ -1504,7 +1504,7 @@ function LocalistView({
   return (
     <div className="hub-menu-paper">
     <Panel
-      title={area === 'localist' ? "This week's menu" : `A menu for ${menuName}`}
+      title={area === 'localist' ? 'Place an order' : `A menu for ${menuName}`}
       icon={ShoppingCart}
     >
       {content && (
@@ -3109,220 +3109,225 @@ const hubCss = `
 }
 
 /* ── Menu paper: Localist & Security guest menus ──
-   A printed-menu feel that matches the public site (le-checkout palette:
-   warm paper, hairline rules, Fraunces headings, monospace prices). */
-.hub-menu-paper { display: grid; gap: 12px; }
-.hub-app-guest { background: #f3ebdd; }
+   Matches the public site identity used by the weekly meals and small-events
+   surfaces: brand-token linen/card palette, General Sans headings, rounded
+   bordered cards with soft shadows. Brand vars come from brand-tokens.css
+   (loaded globally); hex fallbacks mirror those tokens. */
+.hub-menu-paper { display: grid; gap: 14px; }
+.hub-menu-paper,
+.hub-menu-paper .hub-panel {
+  font-family: 'Source Sans 3', 'General Sans', system-ui, sans-serif;
+  font-size: 14px;
+}
+.hub-app-guest { background: var(--color-bg-page, #F1E3D8); }
 .hub-app-guest .hub-main { max-width: 680px; }
 .hub-app-guest .hub-topbar {
-  border-bottom: none;
-  padding: 26px 4px 0;
-  margin-bottom: 4px;
+  border-bottom: 1px solid var(--color-border-default, #C0BECF);
+  padding: 22px 4px 12px;
 }
 .hub-app-guest .hub-topbar h1 {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 32px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  color: #1f1b16;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-app-guest .hub-topbar p {
-  font-style: italic;
   font-size: 13px;
-  color: #756c61;
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
 }
 .hub-menu-paper .hub-panel {
-  background: #fffaf1;
-  border: 1px solid #d9d0c6;
-  border-radius: 3px;
+  background: #fdf8f1;
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(58, 46, 63, 0.10);
 }
 .hub-menu-paper .hub-panel-head {
-  padding: 20px 24px 2px;
-  border-bottom: none;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border-default, #C0BECF);
 }
 .hub-menu-paper .hub-panel-title svg { display: none; }
 .hub-menu-paper .hub-panel-title h2 {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 21px;
-  font-weight: 500;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.01em;
-  color: #1f1b16;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-localist-intro {
-  background: transparent;
-  border-bottom: none;
-  padding: 8px 24px 0;
+  background: rgba(222, 192, 183, 0.30);
+  border-bottom: 1px solid var(--color-border-default, #C0BECF);
+  padding: 14px 18px;
 }
 .hub-menu-paper .hub-localist-intro small {
-  color: #756c61;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
+  font-weight: 700;
+  letter-spacing: 0.22em;
 }
 .hub-menu-paper .hub-localist-intro h3 {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 17px;
-  font-weight: 500;
-  color: #1f1b16;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-localist-intro p {
   font-size: 14px;
   line-height: 1.6;
-  color: #4a453f;
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
 }
 .hub-menu-paper .hub-localist-intro span {
-  font-style: italic;
-  color: #756c61;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
+  font-size: 12px;
 }
 .hub-menu-paper .hub-localist-share {
-  border-bottom: none;
-  padding: 10px 24px 0;
+  border-bottom: 1px solid var(--color-border-light, #ece8e0);
+  padding: 10px 18px;
 }
 .hub-menu-paper .hub-localist-share button {
-  border-color: #d9d0c6;
+  border: 1px solid var(--color-border-default, #C0BECF);
   border-radius: 999px;
-  background: transparent;
-  color: #4a453f;
+  background: #fff;
+  color: var(--color-text-primary, #3A2E3F);
 }
-.hub-menu-paper .hub-form { padding: 12px 24px 24px; gap: 14px; }
-.hub-menu-paper .hub-empty { padding: 12px 24px 20px; font-size: 14px; color: #756c61; }
+.hub-menu-paper .hub-form { padding: 14px 18px 18px; gap: 14px; }
+.hub-menu-paper .hub-empty {
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
+}
 .hub-menu-paper .hub-menu-thanks {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 19px;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.45;
-  color: #1f1b16;
+  color: var(--color-text-primary, #3A2E3F);
 }
-.hub-menu-paper .hub-localist-list { gap: 0; }
+.hub-menu-paper .hub-localist-list { gap: 10px; }
 .hub-menu-paper .hub-localist-item {
-  border: none;
-  border-bottom: 1px dotted #cfc2ae;
-  border-radius: 0;
-  padding: 16px 0;
-  gap: 14px;
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+  gap: 12px;
 }
-.hub-menu-paper .hub-localist-item:last-child { border-bottom: none; }
 .hub-menu-paper .hub-localist-item-copy strong {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 17px;
-  font-weight: 500;
-  color: #1f1b16;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-localist-price {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: #756c61;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-olive, #7A846E);
 }
 .hub-menu-paper .hub-localist-item-copy > span {
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.55;
-  color: #4a453f;
-  margin-top: 3px;
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
+  margin-top: 2px;
 }
 .hub-menu-paper .hub-localist-inventory {
-  font-style: italic;
-  font-weight: 500;
   font-size: 12px;
-  color: #756c61;
+  font-weight: 700;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
 }
 .hub-menu-paper .hub-localist-flags span {
-  border: none;
-  background: transparent;
-  padding: 0;
-  min-height: 0;
-  font-style: italic;
-  font-weight: 500;
-  font-size: 12px;
-  color: #756c61;
-}
-.hub-menu-paper .hub-localist-flags span + span::before {
-  content: '\\00b7\\00a0';
-  margin-left: -2px;
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 999px;
+  background: var(--color-bg-page, #F1E3D8);
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
 }
 .hub-menu-paper .hub-localist-option {
-  border-color: #d9d0c6;
+  border: 1px solid var(--color-border-default, #C0BECF);
   border-radius: 999px;
-  background: transparent;
+  background: #fff;
   padding: 4px 10px;
-  color: #4a453f;
+  color: var(--color-text-primary, #3A2E3F);
 }
-.hub-menu-paper .hub-localist-option input { accent-color: #1f1b16; }
+.hub-menu-paper .hub-localist-option input { accent-color: var(--brand-olive, #7A846E); }
 .hub-menu-paper .hub-localist-quantity {
-  border-color: #d9d0c6;
-  border-radius: 999px;
-  background: transparent;
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 10px;
+  background: #fff;
   height: 34px;
   grid-template-columns: 34px 1fr 34px;
 }
-.hub-menu-paper .hub-localist-quantity button { background: transparent; color: #1f1b16; }
+.hub-menu-paper .hub-localist-quantity button {
+  background: var(--color-bg-page, #F1E3D8);
+  color: var(--color-text-primary, #3A2E3F);
+}
 .hub-menu-paper .hub-localist-quantity input {
-  background: transparent;
-  border-color: #e8e0d2;
+  background: #fff;
+  border-color: var(--color-border-default, #C0BECF);
   font-size: 14px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-field span {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.08em;
-  color: #756c61;
+  color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
 }
 .hub-menu-paper .hub-field input,
 .hub-menu-paper .hub-field select,
 .hub-menu-paper .hub-field textarea,
 .hub-menu-paper .hub-compose input {
   background: #fff;
-  border-color: #d9d0c6;
-  border-radius: 3px;
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 10px;
   height: 42px;
   font-size: 16px;
-  color: #1f1b16;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-field textarea { height: auto; }
 .hub-menu-paper .hub-localist-checkout {
-  background: transparent;
-  border: none;
-  border-top: 1px solid #1f1b16;
-  border-radius: 0;
-  padding: 16px 0 0;
-  margin-top: 4px;
+  background: rgba(122, 132, 110, 0.14);
+  border: 1px solid var(--color-border-default, #C0BECF);
+  border-radius: 12px;
+  padding: 12px 14px;
 }
 .hub-menu-paper .hub-localist-checkout strong {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 24px;
-  font-weight: 500;
-  color: #1f1b16;
+  font-family: 'General Sans', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #3A2E3F);
 }
 .hub-menu-paper .hub-localist-checkout span,
 .hub-menu-paper .hub-localist-checkout small {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  letter-spacing: 0.06em;
-  color: #756c61;
+  font-weight: 600;
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
 }
 .hub-menu-paper .hub-primary-button,
 .hub-menu-paper .hub-compose button {
-  background: #1f1b16;
-  color: #fffaf1;
+  background: var(--color-action-primary-bg, #D28D93);
+  color: var(--color-text-primary, #3A2E3F);
+  border: 1px solid var(--brand-rose, #C66C78);
   border-radius: 999px;
   height: 42px;
   padding: 0 20px;
   font-size: 14px;
+  font-weight: 700;
+}
+.hub-menu-paper .hub-primary-button:hover,
+.hub-menu-paper .hub-compose button:hover {
+  background: var(--color-action-primary-hover-bg, #D18A90);
 }
 .hub-menu-paper .hub-security-password-prompt {
-  font-family: Fraunces, Georgia, 'Times New Roman', serif;
-  font-size: 17px;
-  font-style: italic;
+  font-size: 15px;
   line-height: 1.55;
-  color: #4a453f;
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
 }
 .hub-menu-paper .hub-localist-chat-join,
-.hub-menu-paper .hub-localist-chat-form { border-top: 1px dotted #cfc2ae; }
-.hub-menu-paper .hub-message p { font-size: 14px; color: #4a453f; }
+.hub-menu-paper .hub-localist-chat-form { border-top: 1px solid var(--color-border-default, #C0BECF); }
+.hub-menu-paper .hub-message p {
+  font-size: 14px;
+  color: var(--color-text-secondary, rgba(58, 46, 63, 0.78));
+}
 @media (max-width: 760px) {
-  .hub-app-guest .hub-topbar { padding-top: 18px; }
-  .hub-app-guest .hub-topbar h1 { font-size: 26px; }
-  .hub-menu-paper .hub-panel-head { padding: 16px 18px 2px; }
-  .hub-menu-paper .hub-localist-intro,
-  .hub-menu-paper .hub-localist-share { padding-left: 18px; padding-right: 18px; }
-  .hub-menu-paper .hub-form { padding: 10px 18px 20px; }
+  .hub-app-guest .hub-topbar { padding-top: 16px; }
+  .hub-app-guest .hub-topbar h1 { font-size: 24px; }
 }
 `;
