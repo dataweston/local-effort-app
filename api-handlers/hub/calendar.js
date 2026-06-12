@@ -67,8 +67,7 @@ module.exports = async (req, res) => {
   try {
     const view = String(req.query?.view || 'week').toLowerCase();
     const anchor = req.query?.date ? new Date(String(req.query.date)) : new Date();
-    const planner = await getPlannerObjects({
-      prisma,
+    const planner = await getPlannerObjects(prisma, {
       supabaseUid: masterPlannerUid(auth),
       view,
       anchor,

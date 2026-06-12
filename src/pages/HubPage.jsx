@@ -28,11 +28,10 @@ import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSy
 
 const tabs = [
   { id: 'today', label: 'Today', icon: Home },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+  { id: 'calendar', label: 'Calendar & Shifts', icon: CalendarDays },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
   { id: 'docs', label: 'Docs', icon: FileText },
   { id: 'people', label: 'People', icon: UsersRound },
-  { id: 'shifts', label: 'Shifts', icon: ClipboardList },
 ];
 
 const mealPrepTab = { id: 'weeklyMealPrep', label: 'Weekly Meal Prep', icon: Soup };
@@ -355,7 +354,7 @@ function TodayView({ calendar, docs, conversations, shifts, setTab }) {
           ))}
         </div>
       </Panel>
-      <Panel title="Open Shifts" icon={ClipboardList} action={<button onClick={() => setTab('shifts')}>View shifts</button>}>
+      <Panel title="Open Shifts" icon={ClipboardList} action={<button onClick={() => setTab('calendar')}>View shifts</button>}>
         <div className="hub-list">
           {openShifts.length === 0 && <p className="hub-empty">No open shifts.</p>}
           {openShifts.map((shift) => (
@@ -391,7 +390,7 @@ function TodayView({ calendar, docs, conversations, shifts, setTab }) {
   );
 }
 
-function CalendarView({ accessToken, profile }) {
+function CalendarView({ accessToken, profile, isPrivileged }) {
   const [anchor, setAnchor] = useState(todayIso());
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -440,6 +439,7 @@ function CalendarView({ accessToken, profile }) {
   }, [visibleItems, anchor]);
 
   return (
+    <div className="hub-schedule-stack">
     <Panel
       title="Calendar"
       icon={CalendarDays}
@@ -487,6 +487,8 @@ function CalendarView({ accessToken, profile }) {
         </aside>
       </div>
     </Panel>
+    <ShiftsView accessToken={accessToken} profile={profile} isPrivileged={isPrivileged} />
+    </div>
   );
 }
 
@@ -671,7 +673,7 @@ function PeopleView({ people, onMessage }) {
   );
 }
 
-function ShiftsView({ accessToken, isPrivileged }) {
+function ShiftsView({ accessToken, profile, isPrivileged }) {
   const [from, setFrom] = useState(todayIso());
   const [shifts, setShifts] = useState([]);
   const [draft, setDraft] = useState({ title: '', date: todayIso(), startTime: '09:00', endTime: '' });
@@ -691,11 +693,35 @@ function ShiftsView({ accessToken, isPrivileged }) {
     await load();
   };
 
+  const putUp = async (shift) => {
+    await api('/api/hub/shifts', accessToken, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'putUp', plannerCardId: shift.id }),
+    });
+    await load();
+  };
+
   const createShift = async (event) => {
     event.preventDefault();
     await api('/api/hub/shifts', accessToken, { method: 'POST', body: JSON.stringify(draft) });
     setDraft({ title: '', date: todayIso(), startTime: '09:00', endTime: '' });
     await load();
+  };
+
+  const viewerName = profile?.displayName || '';
+
+  const shiftAction = (shift) => {
+    const mine = shift.people.includes(viewerName);
+    if (shift.open && !mine) {
+      return <button className="hub-shift-action" onClick={() => claim(shift)}><CheckCircle2 size={14} /> Pick up</button>;
+    }
+    if (shift.open) {
+      return <span className="hub-pill">Up for grabs</span>;
+    }
+    if (mine || isPrivileged) {
+      return <button className="hub-shift-action" onClick={() => putUp(shift)}><Upload size={14} /> Put up for pickup</button>;
+    }
+    return <span className="hub-pill">Covered</span>;
   };
 
   return (
@@ -706,18 +732,18 @@ function ShiftsView({ accessToken, isPrivileged }) {
         action={<button onClick={() => setFrom(addDays(from, 14))}>Next 2 weeks</button>}
       >
         <div className="hub-list">
+          {shifts.length === 0 && <p className="hub-empty">No shifts in this window.</p>}
           {shifts.map((shift) => (
             <div className="hub-shift" key={shift.id}>
               <div>
                 <strong>{shift.title}</strong>
                 <span>{formatDate(shift.date)} / {formatTime(shift.startTime)} {shift.endTime ? `to ${formatTime(shift.endTime)}` : ''}</span>
-                <small>{shift.people.length ? `Assigned: ${shift.people.join(', ')}` : 'No one assigned yet'}</small>
+                <small>
+                  {shift.people.length ? `Assigned: ${shift.people.join(', ')}` : 'No one assigned yet'}
+                  {shift.putUp ? ' / put up for pickup' : ''}
+                </small>
               </div>
-              {shift.open ? (
-                <button className="hub-shift-action" onClick={() => claim(shift)}><CheckCircle2 size={14} /> Pick up</button>
-              ) : (
-                <span className="hub-pill">Covered</span>
-              )}
+              {shiftAction(shift)}
             </div>
           ))}
         </div>
@@ -1272,6 +1298,7 @@ function LocalistView({
   const [content, setContent] = useState(null);
   const [order, setOrder] = useState({});
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [pickupWindow, setPickupWindow] = useState('');
   const [note, setNote] = useState('');
@@ -1323,6 +1350,7 @@ function LocalistView({
   const canCheckout = totalQuantity > 0
     && totalCents > 0
     && name.trim()
+    && email.trim()
     && (!requiresPickupWindow || pickupWindow)
     && !checkoutBusy;
   const cartPayload = useMemo(() => ({
@@ -1419,6 +1447,7 @@ function LocalistView({
         method: 'POST',
         body: JSON.stringify({
           name,
+          email,
           phone: formatPhone(phone),
           pickupWindow: requiresPickupWindow ? pickupWindow : '',
           note,
@@ -1457,6 +1486,7 @@ function LocalistView({
               setCheckoutStatus('idle');
               setOrder({});
               setName('');
+              setEmail('');
               setPhone('');
               setPickupWindow('');
               setNote('');
@@ -1571,6 +1601,9 @@ function LocalistView({
           </div>
           <Field label="Your name">
             <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+          </Field>
+          <Field label="Email for confirmation">
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" required />
           </Field>
           <Field label="Phone (optional)">
             <input value={formatPhone(phone)} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" autoComplete="tel" />
@@ -2067,8 +2100,8 @@ export default function HubPage() {
     : isCustomer
     ? [mealPrepTab]
     : isPrivileged
-    ? [tabs[0], tabs[1], mealPrepTab, tabs[3], tabs[5], adminTab, localistTab, securityTab]
-    : [tabs[0], tabs[1], mealPrepTab, tabs[2], tabs[3], tabs[5], localistTab, securityTab];
+    ? [tabs[0], tabs[1], mealPrepTab, tabs[3], adminTab, localistTab, securityTab]
+    : [tabs[0], tabs[1], mealPrepTab, tabs[2], tabs[3], localistTab, securityTab];
   const activeTab = isLocalist ? 'localist' : isCustomer ? 'weeklyMealPrep' : tab;
 
   if (localistToken) {
@@ -2151,11 +2184,10 @@ export default function HubPage() {
         </header>
 
         {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
-        {activeTab === 'calendar' && <CalendarView accessToken={auth.accessToken} profile={profile} />}
+        {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
-        {activeTab === 'shifts' && <ShiftsView accessToken={auth.accessToken} isPrivileged={isPrivileged} />}
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
@@ -2339,6 +2371,7 @@ const hubCss = `
 .hub-empty { color: var(--hub-muted); font-size: 12px; margin: 0; padding: 10px 14px; }
 
 /* ── Calendar ── */
+.hub-schedule-stack { display: grid; gap: 12px; }
 .hub-calendar-list { display: flex; flex-direction: column; gap: 16px; padding: 12px 14px; }
 .hub-calendar-shell { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; align-items: start; }
 .hub-day h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hub-muted); margin: 0 0 6px; }

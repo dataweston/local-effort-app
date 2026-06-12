@@ -60,6 +60,11 @@ const LOCALIST_ITEMS_QUERY = `
 
 const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
 
+function normalizeEmail(value) {
+  const email = cleanString(value, 160).toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
+}
+
 function normalizeArea(value) {
   const area = String(value || 'localist').trim().toLowerCase();
   return HUB_MENU_AREAS.has(area) ? area : 'localist';
@@ -142,6 +147,7 @@ module.exports = async function handler(req, res) {
   if (!client) return res.status(503).json({ error: 'Sanity not configured' });
 
   const name = cleanString(req.body?.name, 80);
+  const email = normalizeEmail(req.body?.email);
   const phone = cleanString(req.body?.phone, 40);
   const note = cleanString(req.body?.note, 180);
   const pickupWindow = cleanString(req.body?.pickupWindow, 40);
@@ -154,6 +160,7 @@ module.exports = async function handler(req, res) {
   const resolvedPickupWindow = sourceArea === 'security' ? SECURITY_PICKUP_WINDOW : pickupWindow;
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (!email) return res.status(400).json({ error: 'Email is required for confirmation' });
   if (sourceArea === 'localist' && (!pickupWindow || !PICKUP_WINDOWS.has(pickupWindow))) {
     return res.status(400).json({ error: 'Pickup window is required' });
   }
@@ -213,6 +220,7 @@ module.exports = async function handler(req, res) {
       data: {
         status: 'checkout_created',
         customerName: name,
+        customerEmail: email,
         customerPhone: phone || null,
         pickupWindow: resolvedPickupWindow,
         customerNote: note || null,
@@ -230,6 +238,7 @@ module.exports = async function handler(req, res) {
 
     const noteParts = [
       `${sourceArea === 'security' ? 'Security at Neon' : 'Localist'} order - ${name}`,
+      email ? `Email: ${email}` : null,
       sourceArea === 'localist' ? `Pickup: ${resolvedPickupWindow}` : null,
       phone ? `Phone: ${phone}` : null,
       note ? `Note: ${note}` : null,

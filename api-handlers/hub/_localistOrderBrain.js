@@ -27,15 +27,53 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function normalizedItems(items) {
+  return (Array.isArray(items) ? items : []).map((item) => {
+    const quantity = Number(item.quantity) || 0;
+    const unitPriceCents = Number(item.unitPriceCents) || 0;
+    const totalCents = Number(item.totalCents) || (unitPriceCents * quantity);
+    return {
+      ...item,
+      quantity,
+      unitPriceCents,
+      totalCents,
+      name: String(item.name || 'Menu item'),
+      customerOptions: Array.isArray(item.customerOptions) ? item.customerOptions : [],
+    };
+  }).filter((item) => item.quantity > 0);
+}
+
+function itemOptionsText(item) {
+  return item.customerOptions.length ? ` (${item.customerOptions.join(', ')})` : '';
+}
+
 function itemSummary(items) {
-  return (Array.isArray(items) ? items : [])
-    .map((item) => {
-      const options = Array.isArray(item.customerOptions) && item.customerOptions.length
-        ? ` (${item.customerOptions.join(', ')})`
-        : '';
-      return `${item.quantity}x ${item.name}${options}`;
-    })
+  return normalizedItems(items)
+    .map((item) => `${item.quantity}x ${item.name}${itemOptionsText(item)}`)
     .join('; ');
+}
+
+function itemTextLines(items) {
+  const lines = normalizedItems(items).map((item) => (
+    `- ${item.quantity}x ${item.name}${itemOptionsText(item)} @ ${formatCurrency(item.unitPriceCents)} = ${formatCurrency(item.totalCents)}`
+  ));
+  return lines.length ? lines.join('\n') : '- No item details';
+}
+
+function itemRowsHtml(items) {
+  const rows = normalizedItems(items).map((item) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;">${escapeHtml(`${item.quantity}x ${item.name}${itemOptionsText(item)}`)}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;">${escapeHtml(formatCurrency(item.unitPriceCents))}</td>
+      <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;">${escapeHtml(formatCurrency(item.totalCents))}</td>
+    </tr>
+  `).join('');
+
+  return rows || `
+    <tr>
+      <td colspan="3" style="padding:8px 0;border-bottom:1px solid #eee;">No item details</td>
+    </tr>
+  `;
 }
 
 function orderRawContent(order, prefix = 'Localist order') {
@@ -49,7 +87,8 @@ function orderRawContent(order, prefix = 'Localist order') {
     order.customerEmail ? `Email: ${order.customerEmail}` : null,
     order.customerPhone ? `Phone: ${order.customerPhone}` : null,
     order.customerNote ? `Notes/allergies: ${order.customerNote}` : null,
-    `Items: ${itemSummary(order.items)}`,
+    'Items:',
+    itemTextLines(order.items),
     order.squareOrderId ? `Square order: ${order.squareOrderId}` : null,
     order.squarePaymentId ? `Square payment: ${order.squarePaymentId}` : null,
     order.squareReceiptUrl ? `Square receipt: ${order.squareReceiptUrl}` : null,
@@ -66,7 +105,6 @@ async function sendPaidOrderEmail(order) {
 
   const areaLabel = orderAreaLabel(order);
   const subject = `${areaLabel} paid order - ${order.customerName || 'customer'} - ${formatCurrency(order.totalCents)}`;
-  const items = itemSummary(order.items) || 'No item details';
   const pickupLine = areaLabel === 'Localist' && order.pickupWindow
     ? `<p><strong>Pickup:</strong> ${escapeHtml(order.pickupWindow)}</p>`
     : '';
@@ -79,7 +117,17 @@ async function sendPaidOrderEmail(order) {
     ${order.customerEmail ? `<p><strong>Email:</strong> ${escapeHtml(order.customerEmail)}</p>` : ''}
     ${order.customerPhone ? `<p><strong>Phone:</strong> ${escapeHtml(order.customerPhone)}</p>` : ''}
     ${order.customerNote ? `<p><strong>Notes:</strong> ${escapeHtml(order.customerNote)}</p>` : ''}
-    <p><strong>Items:</strong> ${escapeHtml(items)}</p>
+    <h3>Items purchased</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:left;">Item</th>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:right;">Unit</th>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:right;">Line total</th>
+        </tr>
+      </thead>
+      <tbody>${itemRowsHtml(order.items)}</tbody>
+    </table>
     ${order.squareReceiptUrl ? `<p><a href="${escapeHtml(order.squareReceiptUrl)}">Square receipt</a></p>` : ''}
     ${order.squareOrderId ? `<p><strong>Square order:</strong> ${escapeHtml(order.squareOrderId)}</p>` : ''}
     ${order.squarePaymentId ? `<p><strong>Square payment:</strong> ${escapeHtml(order.squarePaymentId)}</p>` : ''}
@@ -111,8 +159,147 @@ async function sendPaidOrderEmail(order) {
   return { sent: true };
 }
 
+async function sendCustomerConfirmationEmail(order) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const toEmail = order.customerEmail;
+  const fromEmail = senderEmail();
+  if (!apiKey || !toEmail || !fromEmail) return { skipped: true };
+
+  const areaLabel = orderAreaLabel(order);
+  const subject = `Your ${areaLabel} order confirmation - ${formatCurrency(order.totalCents)}`;
+  const pickupLine = areaLabel === 'Localist' && order.pickupWindow
+    ? `<p><strong>Pickup:</strong> ${escapeHtml(order.pickupWindow)}</p>`
+    : '';
+  const receiptLine = order.squareReceiptUrl
+    ? `<p><a href="${escapeHtml(order.squareReceiptUrl)}">View your Square receipt</a></p>`
+    : '';
+  const htmlContent = `
+    <h2>${escapeHtml(subject)}</h2>
+    <p>Thanks${order.customerName ? `, ${escapeHtml(order.customerName)}` : ''}. Your order is confirmed and paid.</p>
+    <p><strong>Total:</strong> ${escapeHtml(formatCurrency(order.totalCents))} (${Number(order.totalQuantity) || 0} item${Number(order.totalQuantity) === 1 ? '' : 's'})</p>
+    ${pickupLine}
+    <h3>Items purchased</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:left;">Item</th>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:right;">Unit</th>
+          <th style="padding:8px 0;border-bottom:2px solid #ddd;text-align:right;">Line total</th>
+        </tr>
+      </thead>
+      <tbody>${itemRowsHtml(order.items)}</tbody>
+    </table>
+    ${order.customerNote ? `<p><strong>Notes:</strong> ${escapeHtml(order.customerNote)}</p>` : ''}
+    ${receiptLine}
+    <p>Questions? Reply to this email.</p>
+  `;
+  const textContent = [
+    `Your ${areaLabel} order is confirmed and paid.`,
+    `Name: ${order.customerName || ''}`,
+    `Total: ${formatCurrency(order.totalCents)} (${Number(order.totalQuantity) || 0} item${Number(order.totalQuantity) === 1 ? '' : 's'})`,
+    areaLabel === 'Localist' && order.pickupWindow ? `Pickup: ${order.pickupWindow}` : null,
+    '',
+    'Items purchased:',
+    itemTextLines(order.items),
+    order.customerNote ? `Notes: ${order.customerNote}` : null,
+    order.squareReceiptUrl ? `Square receipt: ${order.squareReceiptUrl}` : null,
+  ].filter((line) => line !== null).join('\n');
+
+  const response = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { email: fromEmail, name: process.env.LOCALIST_ORDER_SENDER_NAME || 'Local Effort' },
+      to: [{ email: toEmail, name: order.customerName || undefined }],
+      replyTo: { email: notificationEmail(), name: 'Local Effort' },
+      subject,
+      htmlContent,
+      textContent,
+    }),
+  });
+  if (!response.ok) {
+    const details = await response.text().catch(() => '');
+    const error = new Error('Brevo customer confirmation email failed');
+    error.status = response.status;
+    error.details = details;
+    throw error;
+  }
+  return { sent: true };
+}
+
+async function emailEventExists(prisma, eventType, sourceId) {
+  if (!prisma?.ledgerEvent?.findFirst) return false;
+  const existing = await prisma.ledgerEvent.findFirst({
+    where: {
+      eventType,
+      source: 'hub_localist_order',
+      sourceId,
+      tombstonedAt: null,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  return !!existing;
+}
+
+async function recordEmailEvent(prisma, eventType, sourceId, order, recipient) {
+  if (!prisma?.ledgerEvent?.create) return;
+  await prisma.ledgerEvent.create({
+    data: {
+      eventType,
+      schemaVersion: 1,
+      occurredAt: new Date(),
+      source: 'hub_localist_order',
+      sourceId,
+      actorType: 'system',
+      actorId: null,
+      payload: {
+        orderId: order.id,
+        area: orderAreaLabel(order),
+        recipient,
+        customerEmail: order.customerEmail || null,
+        totalCents: order.totalCents,
+        totalQuantity: order.totalQuantity,
+        items: order.items,
+      },
+    },
+  });
+}
+
+async function sendPaidOrderEmails(prisma, order) {
+  const ownerEventType = 'localist.order.notification_email_sent';
+  const ownerSourceId = `${order.id}:owner`;
+  const customerEventType = 'localist.order.customer_confirmation_email_sent';
+  const customerSourceId = `${order.id}:customer`;
+
+  if (!(await emailEventExists(prisma, ownerEventType, ownerSourceId))) {
+    try {
+      const result = await sendPaidOrderEmail(order);
+      if (result?.sent) await recordEmailEvent(prisma, ownerEventType, ownerSourceId, order, notificationEmail());
+    } catch (err) {
+      console.warn('[hub/localist-order] paid order email failed', err?.message || err);
+    }
+  }
+
+  if (order.customerEmail && !(await emailEventExists(prisma, customerEventType, customerSourceId))) {
+    try {
+      const result = await sendCustomerConfirmationEmail(order);
+      if (result?.sent) await recordEmailEvent(prisma, customerEventType, customerSourceId, order, order.customerEmail);
+    } catch (err) {
+      console.warn('[hub/localist-order] customer confirmation email failed', err?.message || err);
+    }
+  }
+}
+
 async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
-  if (!prisma?.ledgerEvent?.create || !prisma?.brainInboxItem?.create) return {};
+  if (!prisma?.ledgerEvent?.create) return {};
+  if (!prisma?.brainInboxItem?.create) {
+    if (paid) await sendPaidOrderEmails(prisma, order);
+    return {};
+  }
 
   const eventType = paid ? 'localist.order.paid' : 'localist.order.checkout_created';
   const sourceId = paid ? `${order.id}:paid` : order.id;
@@ -125,7 +312,10 @@ async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
     },
     orderBy: { createdAt: 'desc' },
   });
-  if (existing) return { ledgerEvent: existing };
+  if (existing) {
+    if (paid) await sendPaidOrderEmails(prisma, order);
+    return { ledgerEvent: existing };
+  }
 
   const payload = {
     orderId: order.id,
@@ -196,9 +386,7 @@ async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
   }).catch(() => {});
 
   if (paid) {
-    await sendPaidOrderEmail(order).catch((err) => {
-      console.warn('[hub/localist-order] paid order email failed', err?.message || err);
-    });
+    await sendPaidOrderEmails(prisma, order);
   }
 
   return { ledgerEvent, inboxItem };
@@ -238,6 +426,8 @@ module.exports = {
   orderRawContent,
   orderAreaLabel,
   sendPaidOrderEmail,
+  sendCustomerConfirmationEmail,
+  sendPaidOrderEmails,
   writeOrderBrainRecords,
   markLocalistOrderPaidFromSquare,
 };
