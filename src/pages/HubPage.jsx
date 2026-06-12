@@ -1473,10 +1473,10 @@ function LocalistView({
 
   if (checkoutStatus === 'success') {
     return (
-      <>
-        <Panel title="Payment Received" icon={CheckCircle2}>
-          <p className="hub-empty" style={{ color: 'var(--hub-accent)', fontSize: 20 }}>
-            Thanks{name ? `, ${name}` : ''}! Square has processed your {successName} checkout.
+      <div className="hub-menu-paper">
+        <Panel title="Payment received" icon={CheckCircle2}>
+          <p className="hub-empty hub-menu-thanks">
+            Thanks{name ? `, ${name}` : ''} — your {successName} order is in. See you at pickup.
           </p>
           <button
             className="hub-primary-button"
@@ -1497,13 +1497,16 @@ function LocalistView({
           </button>
         </Panel>
         {showChat && <LocalistChat />}
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-    <Panel title="Place an Order" icon={ShoppingCart}>
+    <div className="hub-menu-paper">
+    <Panel
+      title={area === 'localist' ? "This week's menu" : `A menu for ${menuName}`}
+      icon={ShoppingCart}
+    >
       {content && (
         <section className="hub-localist-intro">
           {content.eyebrow && <small>{content.eyebrow}</small>}
@@ -1636,7 +1639,7 @@ function LocalistView({
       )}
     </Panel>
     {showChat && <LocalistChat />}
-    </>
+    </div>
   );
 }
 
@@ -1902,6 +1905,7 @@ function SecurityPasswordGate({ children }) {
   if (unlocked) return children;
 
   return (
+    <div className="hub-menu-paper">
     <Panel title="Security at Neon" icon={ShieldCheck}>
       <form className="hub-form hub-security-password-form" onSubmit={submit}>
         <p className="hub-security-password-prompt">{SECURITY_MENU_PROMPT}</p>
@@ -1921,6 +1925,7 @@ function SecurityPasswordGate({ children }) {
         {error && <p className="hub-error">{error}</p>}
       </form>
     </Panel>
+    </div>
   );
 }
 
@@ -3101,5 +3106,223 @@ const hubCss = `
     cursor: pointer;
   }
   .hub-mobile-nav button.is-active { color: var(--hub-accent); }
+}
+
+/* ── Menu paper: Localist & Security guest menus ──
+   A printed-menu feel that matches the public site (le-checkout palette:
+   warm paper, hairline rules, Fraunces headings, monospace prices). */
+.hub-menu-paper { display: grid; gap: 12px; }
+.hub-app-guest { background: #f3ebdd; }
+.hub-app-guest .hub-main { max-width: 680px; }
+.hub-app-guest .hub-topbar {
+  border-bottom: none;
+  padding: 26px 4px 0;
+  margin-bottom: 4px;
+}
+.hub-app-guest .hub-topbar h1 {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: #1f1b16;
+}
+.hub-app-guest .hub-topbar p {
+  font-style: italic;
+  font-size: 13px;
+  color: #756c61;
+}
+.hub-menu-paper .hub-panel {
+  background: #fffaf1;
+  border: 1px solid #d9d0c6;
+  border-radius: 3px;
+}
+.hub-menu-paper .hub-panel-head {
+  padding: 20px 24px 2px;
+  border-bottom: none;
+}
+.hub-menu-paper .hub-panel-title svg { display: none; }
+.hub-menu-paper .hub-panel-title h2 {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-localist-intro {
+  background: transparent;
+  border-bottom: none;
+  padding: 8px 24px 0;
+}
+.hub-menu-paper .hub-localist-intro small {
+  color: #756c61;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+.hub-menu-paper .hub-localist-intro h3 {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-localist-intro p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4a453f;
+}
+.hub-menu-paper .hub-localist-intro span {
+  font-style: italic;
+  color: #756c61;
+}
+.hub-menu-paper .hub-localist-share {
+  border-bottom: none;
+  padding: 10px 24px 0;
+}
+.hub-menu-paper .hub-localist-share button {
+  border-color: #d9d0c6;
+  border-radius: 999px;
+  background: transparent;
+  color: #4a453f;
+}
+.hub-menu-paper .hub-form { padding: 12px 24px 24px; gap: 14px; }
+.hub-menu-paper .hub-empty { padding: 12px 24px 20px; font-size: 14px; color: #756c61; }
+.hub-menu-paper .hub-menu-thanks {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 19px;
+  line-height: 1.45;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-localist-list { gap: 0; }
+.hub-menu-paper .hub-localist-item {
+  border: none;
+  border-bottom: 1px dotted #cfc2ae;
+  border-radius: 0;
+  padding: 16px 0;
+  gap: 14px;
+}
+.hub-menu-paper .hub-localist-item:last-child { border-bottom: none; }
+.hub-menu-paper .hub-localist-item-copy strong {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-localist-price {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #756c61;
+}
+.hub-menu-paper .hub-localist-item-copy > span {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #4a453f;
+  margin-top: 3px;
+}
+.hub-menu-paper .hub-localist-inventory {
+  font-style: italic;
+  font-weight: 500;
+  font-size: 12px;
+  color: #756c61;
+}
+.hub-menu-paper .hub-localist-flags span {
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-height: 0;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 12px;
+  color: #756c61;
+}
+.hub-menu-paper .hub-localist-flags span + span::before {
+  content: '\\00b7\\00a0';
+  margin-left: -2px;
+}
+.hub-menu-paper .hub-localist-option {
+  border-color: #d9d0c6;
+  border-radius: 999px;
+  background: transparent;
+  padding: 4px 10px;
+  color: #4a453f;
+}
+.hub-menu-paper .hub-localist-option input { accent-color: #1f1b16; }
+.hub-menu-paper .hub-localist-quantity {
+  border-color: #d9d0c6;
+  border-radius: 999px;
+  background: transparent;
+  height: 34px;
+  grid-template-columns: 34px 1fr 34px;
+}
+.hub-menu-paper .hub-localist-quantity button { background: transparent; color: #1f1b16; }
+.hub-menu-paper .hub-localist-quantity input {
+  background: transparent;
+  border-color: #e8e0d2;
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.hub-menu-paper .hub-field span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: #756c61;
+}
+.hub-menu-paper .hub-field input,
+.hub-menu-paper .hub-field select,
+.hub-menu-paper .hub-field textarea,
+.hub-menu-paper .hub-compose input {
+  background: #fff;
+  border-color: #d9d0c6;
+  border-radius: 3px;
+  height: 42px;
+  font-size: 16px;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-field textarea { height: auto; }
+.hub-menu-paper .hub-localist-checkout {
+  background: transparent;
+  border: none;
+  border-top: 1px solid #1f1b16;
+  border-radius: 0;
+  padding: 16px 0 0;
+  margin-top: 4px;
+}
+.hub-menu-paper .hub-localist-checkout strong {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #1f1b16;
+}
+.hub-menu-paper .hub-localist-checkout span,
+.hub-menu-paper .hub-localist-checkout small {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.06em;
+  color: #756c61;
+}
+.hub-menu-paper .hub-primary-button,
+.hub-menu-paper .hub-compose button {
+  background: #1f1b16;
+  color: #fffaf1;
+  border-radius: 999px;
+  height: 42px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+.hub-menu-paper .hub-security-password-prompt {
+  font-family: Fraunces, Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.55;
+  color: #4a453f;
+}
+.hub-menu-paper .hub-localist-chat-join,
+.hub-menu-paper .hub-localist-chat-form { border-top: 1px dotted #cfc2ae; }
+.hub-menu-paper .hub-message p { font-size: 14px; color: #4a453f; }
+@media (max-width: 760px) {
+  .hub-app-guest .hub-topbar { padding-top: 18px; }
+  .hub-app-guest .hub-topbar h1 { font-size: 26px; }
+  .hub-menu-paper .hub-panel-head { padding: 16px 18px 2px; }
+  .hub-menu-paper .hub-localist-intro,
+  .hub-menu-paper .hub-localist-share { padding-left: 18px; padding-right: 18px; }
+  .hub-menu-paper .hub-form { padding: 10px 18px 20px; }
 }
 `;
