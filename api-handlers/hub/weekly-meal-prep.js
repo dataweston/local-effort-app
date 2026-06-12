@@ -11,11 +11,8 @@ try {
 
 const TARGET_CUSTOMER_SLUGS = ['levy-family', 'sanjay-roy', 'katie-ferguson', 'tyler-cooper'];
 const NOTE_SOURCE = 'drafts';
-const NOTE_TABS = [
-  { id: 'production', title: 'Production' },
-  { id: 'packout', title: 'Packout' },
-  { id: 'delivery', title: 'Delivery' },
-];
+const NOTE_TIMEZONE = 'America/Chicago';
+const FUTURE_WEEK_COUNT = 3;
 
 function parseJson(value, fallback = null) {
   if (!value) return fallback;
@@ -29,6 +26,84 @@ function parseJson(value, fallback = null) {
 
 function sourceIdForTab(tabId) {
   return `weekly-meal-prep:${tabId}`;
+}
+
+function localToday() {
+  // YYYY-MM-DD in kitchen-local time, so tabs roll over on local Tuesday.
+  return new Date().toLocaleDateString('en-CA', { timeZone: NOTE_TIMEZONE });
+}
+
+function addDaysIso(iso, days) {
+  const date = new Date(`${iso}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function pairTitle(sundayIso) {
+  const sunday = new Date(`${sundayIso}T00:00:00`);
+  const monday = new Date(`${sundayIso}T00:00:00`);
+  monday.setDate(monday.getDate() + 1);
+  const sundayLabel = sunday.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const mondayLabel = monday.getMonth() === sunday.getMonth()
+    ? String(monday.getDate())
+    : monday.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  return `${sundayLabel}/${mondayLabel}`;
+}
+
+// Each prep week is a Sunday/Monday pair. A week's tab stays visible through
+// its Monday and falls off on Tuesday; there are always FUTURE_WEEK_COUNT tabs.
+function activeWeekTabs() {
+  const today = localToday();
+  const dayOfWeek = new Date(`${today}T00:00:00`).getDay(); // 0 = Sunday
+  let sunday = addDaysIso(today, -dayOfWeek);
+  if (today > addDaysIso(sunday, 1)) sunday = addDaysIso(sunday, 7);
+  const tabs = [];
+  for (let i = 0; i < FUTURE_WEEK_COUNT; i += 1) {
+    tabs.push({ id: `week-${sunday}`, title: pairTitle(sunday), weekStart: sunday });
+    sunday = addDaysIso(sunday, 7);
+  }
+  return tabs;
+}
+
+function weekStartFromSourceId(sourceId) {
+  const match = /^weekly-meal-prep:week-(\d{4}-\d{2}-\d{2})$/.exec(String(sourceId || ''));
+  return match ? match[1] : null;
+}
+
+// Move fallen-off week notes out of the notepad and into the knowledge graph
+// as brain Note entities, so their contents stay queryable.
+async function archiveExpiredWeekNotes(currentTabs) {
+  const firstWeekStart = currentTabs[0]?.weekStart;
+  if (!firstWeekStart) return;
+  const docs = await prisma.hubDocument.findMany({
+    where: { source: NOTE_SOURCE, sourceId: { startsWith: 'weekly-meal-prep:week-' }, status: 'published' },
+  });
+  for (const doc of docs) {
+    const weekStart = weekStartFromSourceId(doc.sourceId);
+    if (!weekStart || weekStart >= firstWeekStart) continue;
+    const name = `Weekly Meal Prep — ${pairTitle(weekStart)}, ${weekStart.slice(0, 4)}`;
+    const canonicalName = `weekly meal prep ${weekStart}`;
+    const existing = await prisma.brainEntity.findFirst({
+      where: { entityType: 'Note', canonicalName, tombstonedAt: null },
+    });
+    if (!existing) {
+      await prisma.brainEntity.create({
+        data: {
+          entityType: 'Note',
+          name,
+          canonicalName,
+          properties: {
+            kind: 'weekly-meal-prep',
+            weekStart,
+            body: doc.body || '',
+            hubDocumentId: doc.id,
+            archivedAt: new Date().toISOString(),
+          },
+        },
+      });
+    }
+    await prisma.hubDocument.update({ where: { id: doc.id }, data: { status: 'archived' } });
+  }
 }
 
 function publicDoc(doc) {
@@ -164,18 +239,20 @@ async function loadCustomers(auth) {
 }
 
 async function loadNotes() {
-  const sourceIds = NOTE_TABS.map((tab) => sourceIdForTab(tab.id));
+  const tabs = activeWeekTabs();
+  await archiveExpiredWeekNotes(tabs);
+  const sourceIds = tabs.map((tab) => sourceIdForTab(tab.id));
   const docs = await prisma.hubDocument.findMany({
     where: { source: NOTE_SOURCE, sourceId: { in: sourceIds }, status: 'published' },
   });
   const bySourceId = new Map(docs.map((doc) => [doc.sourceId, doc]));
-  return NOTE_TABS.map((tab) => ({
+  return tabs.map((tab) => ({
     ...tab,
     document: publicDoc(bySourceId.get(sourceIdForTab(tab.id))),
   }));
 }
 
-module.exports = async (req, res) => {
+async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST']);
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
@@ -186,31 +263,27 @@ module.exports = async (req, res) => {
   try {
     if (req.method === 'POST') {
       if (auth.isCustomer && !auth.isPrivileged) return res.status(403).json({ error: 'Staff access required' });
-      const tabId = cleanString(req.body?.tabId, 40) || 'production';
-      const tab = NOTE_TABS.find((entry) => entry.id === tabId);
+      const tabs = activeWeekTabs();
+      const tabId = cleanString(req.body?.tabId, 40) || tabs[0].id;
+      const tab = tabs.find((entry) => entry.id === tabId);
       if (!tab) return res.status(400).json({ error: 'Unknown note tab' });
       const body = typeof req.body?.body === 'string' ? req.body.body.slice(0, 40_000) : '';
+      const payload = {
+        title: `Weekly Meal Prep — ${tab.title}`,
+        body,
+        summary: 'Shared weekly meal prep menu. Falls off the notepad on Tuesday and archives to the brain.',
+        visibility: 'staff',
+        category: 'weekly-meal-prep',
+        tags: ['weekly-meal-prep', 'drafts'],
+        createdByUserId: auth.viewer.userId || null,
+      };
       const doc = await prisma.hubDocument.upsert({
         where: { source_sourceId: { source: NOTE_SOURCE, sourceId: sourceIdForTab(tab.id) } },
-        update: {
-          title: `Weekly Meal Prep - ${tab.title}`,
-          body,
-          summary: 'Shared weekly meal prep note synced from Hub.',
-          visibility: 'staff',
-          category: 'weekly-meal-prep',
-          tags: ['weekly-meal-prep', 'drafts'],
-          createdByUserId: auth.viewer.userId || null,
-        },
+        update: payload,
         create: {
-          title: `Weekly Meal Prep - ${tab.title}`,
-          body,
-          summary: 'Shared weekly meal prep note synced from Hub.',
-          visibility: 'staff',
-          category: 'weekly-meal-prep',
-          tags: ['weekly-meal-prep', 'drafts'],
+          ...payload,
           source: NOTE_SOURCE,
           sourceId: sourceIdForTab(tab.id),
-          createdByUserId: auth.viewer.userId || null,
         },
       });
       return res.status(200).json({ ok: true, note: { ...tab, document: publicDoc(doc) } });
@@ -228,4 +301,7 @@ module.exports = async (req, res) => {
     console.error('[hub/weekly-meal-prep] error', err);
     return res.status(500).json({ error: 'Unable to load weekly meal prep' });
   }
-};
+}
+
+module.exports = handler;
+module.exports._internals = { activeWeekTabs, archiveExpiredWeekNotes, loadNotes, pairTitle };

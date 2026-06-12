@@ -781,7 +781,7 @@ function MarkdownPreview({ body }) {
 
 function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
   const [data, setData] = useState({ customers: [], notes: [], mode: 'staff' });
-  const [activeTab, setActiveTab] = useState('production');
+  const [activeTab, setActiveTab] = useState(null);
   const [noteBody, setNoteBody] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -921,7 +921,7 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
               {note.title}
             </button>
           ))}
-          <span>{status || 'Autosaves to Drafts-backed hub docs'}</span>
+          <span>{status || 'Shared with all staff. Tabs fall off Tuesday and archive to the brain.'}</span>
         </div>
         {canEditNotes ? (
           preview ? (
@@ -932,7 +932,7 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
               value={noteBody}
               onChange={(event) => setNoteBody(event.target.value)}
               spellCheck="true"
-              placeholder={"# Production\n- Prep notes\n- Packout questions\n- Delivery changes"}
+              placeholder={"# Menu\n- Dishes for this week\n\n# Production\n- Prep notes\n\n# Packout / Delivery\n- Questions and changes"}
             />
           )
         ) : (
