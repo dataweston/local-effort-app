@@ -69,6 +69,29 @@ const BlogPost = () => {
   const heroSrc = post.mainImageUrl || post.ogImageUrl || ''
   const heroAlt = post.mainImageAlt || post.ogImageAlt || post.title || ''
 
+  const blogPostingJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title || '',
+    description: description || undefined,
+    url: canonicalUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+    image: heroSrc || undefined,
+    datePublished: post.publishedAt || undefined,
+    dateModified: post.updatedAt || post.publishedAt || undefined,
+    author: {
+      '@type': 'Organization',
+      name: 'Local Effort Cooperative',
+      url: SITE_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Local Effort Cooperative',
+      url: SITE_URL,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/gallery/logo.png` },
+    },
+  }
+
   return (
     <div className="blog-page fullpage-demo-scope">
       <Helmet>
@@ -83,6 +106,7 @@ const BlogPost = () => {
         {post.slug && (
           <link rel="alternate" type="application/activity+json" href={`/api/activitypub/objects/${encodeURIComponent(post.slug)}`} />
         )}
+        <script type="application/ld+json">{JSON.stringify(blogPostingJsonLd)}</script>
       </Helmet>
 
       <div className="blog-post-shell">

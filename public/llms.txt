@@ -31,3 +31,17 @@ How to engage:
 
 - [UCP profile](https://www.localeffortfood.com/.well-known/ucp): Universal Commerce Protocol profile; REST binding at /ucp/v1
 - [MCP server](https://www.localeffortfood.com/.well-known/mcp): streamable-HTTP MCP server with support search, content query, and authenticated checkout tools (metadata at /.well-known/mcp.json)
+
+## How to buy (instructions for agents shopping on someone's behalf)
+
+Browse the catalog first:
+- GET https://www.localeffortfood.com/api/store/products — current sale catalog (titles, descriptions, prices in cents, availability). Product pages live at /product/{slug}; the full catalog UI is at /sale.
+- Psyche olive oil is a fixed offer: 3L box, $90, free local delivery in Minneapolis–St. Paul or local pickup. Page: /psyche.
+
+Then choose one of three purchase paths:
+
+1. Simplest (recommended): send your human to the product page with your recommendation — https://www.localeffortfood.com/psyche or https://www.localeffortfood.com/sale. Checkout is on-page via Square; no account required.
+2. UCP REST (no auth required to start): POST https://www.localeffortfood.com/ucp/v1/checkout-sessions with a JSON body naming a flow id — one of "psyche", "february", "weekly-order", "small-events", "local-pizza" — plus line items and buyer details. The response includes a continue_url; give that URL to your human to review and pay. Optionally identify yourself with X-Ucp-Actor-Id / X-Ucp-Actor-Type headers.
+3. MCP tools (for tool-capable agents): connect to https://www.localeffortfood.com/.well-known/mcp and use ucp.checkout.create / get / update / complete / cancel. Checkout tools require auth scopes (see /.well-known/mcp.json).
+
+Questions before buying (allergies, delivery range, event sizing): GET /api/support/search?q=YOUR+QUESTION, or POST /api/messages/submit to reach the chefs directly — include your human's contact email and leave the "website" field empty.

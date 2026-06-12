@@ -127,8 +127,33 @@ function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
     process.stdout.write(`Wrote ${outPath}\n`);
   }
 
-  // Generate sitemap from all public routes (not just prerendered)
-  const allPublicUrls = PUBLIC_ROUTES.map(r => abs(r.path));
+  // Generate sitemap from all public routes (not just prerendered),
+  // plus dynamic blog/product slugs fetched from Sanity when configured.
+  const dynamicUrls = [];
+  try {
+    const dotenv = require('dotenv');
+    dotenv.config();
+    dotenv.config({ path: path.join(process.cwd(), '.env.production.local'), override: false });
+    const projectId = process.env.VITE_APP_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
+    const dataset = process.env.VITE_APP_SANITY_DATASET || process.env.VITE_SANITY_DATASET || process.env.SANITY_DATASET;
+    if (projectId && dataset) {
+      const sanity = require('@sanity/client');
+      const client = sanity.createClient({ projectId, dataset, useCdn: true, apiVersion: '2023-05-03' });
+      const blogSlugs = await client
+        .fetch('*[_type == "blogPost" && defined(slug.current)][].slug.current')
+        .catch(() => []);
+      const productSlugs = await client
+        .fetch('*[_type == "product" && defined(slug.current) && active == true][].slug.current')
+        .catch(() => []);
+      for (const slug of blogSlugs || []) dynamicUrls.push(abs(`/blog/${encodeURIComponent(slug)}`));
+      for (const slug of productSlugs || []) dynamicUrls.push(abs(`/product/${encodeURIComponent(slug)}`));
+      process.stdout.write(`Sitemap: added ${dynamicUrls.length} dynamic blog/product URLs\n`);
+    }
+  } catch (err) {
+    process.stdout.write(`Sitemap: skipped dynamic slugs (${err && err.message})\n`);
+  }
+
+  const allPublicUrls = PUBLIC_ROUTES.map(r => abs(r.path)).concat(dynamicUrls);
   const sitemap = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

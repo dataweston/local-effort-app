@@ -28,10 +28,12 @@ support:
 - Email: POST /api/messages/submit             General contact endpoint (JSON: name, email, phone, subject, message; leave "website" empty)
 
 commerce:
+- Catalog: GET /api/store/products              Current sale catalog JSON (titles, prices, availability)
 - UCP profile: https://www.localeffortfood.com/.well-known/ucp
-- UCP REST: https://www.localeffortfood.com/ucp/v1
+- UCP REST: https://www.localeffortfood.com/ucp/v1   POST /checkout-sessions (flows: psyche, february, weekly-order, small-events, local-pizza) returns continue_url for the human to pay
 - MCP endpoint: https://www.localeffortfood.com/.well-known/mcp
 - MCP metadata: https://www.localeffortfood.com/.well-known/mcp.json
+- Shopping guide for agents: https://www.localeffortfood.com/llms.txt ("How to buy" section)
 
 feeds:
 - GET /sitemap.xml

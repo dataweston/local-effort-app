@@ -57,7 +57,8 @@
     "Core commerce pages include /sale, /book, /pizza-party, /psyche, /february, and /weekly-order.",
     "Event booking with instant estimates and deposits lives at /book.",
     "Some checkout flows are JS-enhanced and may continue into hosted checkout after the public landing page.",
-    "Form endpoints include a honeypot field named 'website'; leave it empty or omit it, otherwise the submission is silently discarded."
+    "Form endpoints include a honeypot field named 'website'; leave it empty or omit it, otherwise the submission is silently discarded.",
+    "Agents shopping on a human's behalf: read the 'How to buy' section of /llms.txt — browse GET /api/store/products, then either link the human to /sale or /psyche, or create a UCP checkout session and hand them the continue_url."
   ],
   "navigation": [
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
@@ -85,6 +86,18 @@
       "method": "GET",
       "path": "/api/public/site",
       "description": "Machine-readable summary of routes, feeds, and APIs.",
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/store/products",
+      "description": "Current sale catalog: titles, descriptions, prices in cents, availability. Product pages at /product/{slug}.",
+      "response": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/ucp/v1/checkout-sessions",
+      "description": "Start an agent checkout session. Body: { flow: psyche|february|weekly-order|small-events|local-pizza, line_items, buyer }. Response includes continue_url for the human to review and pay.",
       "response": "application/json"
     },
     {
