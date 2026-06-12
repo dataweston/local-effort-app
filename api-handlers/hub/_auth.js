@@ -23,6 +23,7 @@ function coerceRole(value) {
 
 function coerceHubAccess(value) {
   const access = String(value || '').toLowerCase();
+  if (access === 'customer' || access === 'subscriber') return 'customer';
   if (access === 'privileged' || access === 'admin') return 'privileged';
   return 'staff';
 }
@@ -34,7 +35,8 @@ function hubAccessFor(auth) {
   return {
     accessLevel,
     hasHubAccess: !!accessLevel,
-    isStaff: !!accessLevel,
+    isCustomer: accessLevel === 'customer',
+    isStaff: accessLevel === 'staff' || accessLevel === 'privileged' || !!auth?.isAdmin,
     isPrivileged: accessLevel === 'privileged' || !!auth?.isAdmin,
   };
 }
@@ -100,10 +102,13 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
   };
 }
 
-function requireHubAccess(auth, { privileged = false } = {}) {
+function requireHubAccess(auth, { privileged = false, allowedAccess = ['staff', 'privileged'] } = {}) {
   if (auth.error) return auth;
   if (!auth.hasHubAccess) return { error: 'Hub access required', status: 403 };
   if (privileged && !auth.isPrivileged) return { error: 'Privileged access required', status: 403 };
+  if (!privileged && Array.isArray(allowedAccess) && !allowedAccess.includes(auth.accessLevel) && !auth.isPrivileged) {
+    return { error: 'Hub access level not allowed', status: 403 };
+  }
   return null;
 }
 

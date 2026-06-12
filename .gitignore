@@ -21,3 +21,8 @@ public/sitemap.xml
 .routes-manifest.json
 tools/.routes-build/
 tools/.ssr-build/
+
+# Brain sidecar local data
+brain-sidecar/.lancedb/
+__pycache__/
+*.pyc

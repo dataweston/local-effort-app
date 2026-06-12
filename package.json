@@ -4,6 +4,7 @@
   "private": true,
   "description": "Website for the Local Effort project.",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@cloudinary/react": "^1.14.3",
     "@cloudinary/url-gen": "^1.21.0",
     "@dnd-kit/core": "^6.1.0",

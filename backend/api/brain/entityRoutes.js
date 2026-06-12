@@ -9,7 +9,7 @@
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { RELATIONSHIPS, validateRelationship } = require('./relationshipDictionary');
-const { canonicalName: canonicalEntityName } = require('./ledger');
+const { canonicalName: canonicalEntityName, writeLedgerEvent } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -568,6 +568,87 @@ function registerEntityRoutes(app, { logger } = {}) {
     }
   });
 
+  // POST /api/brain/entities/:id/merge-into/:targetId
+  // Repoints all graph references from :id (the duplicate) onto :targetId
+  // (the survivor), copies aliases + missing properties/FK anchors, then
+  // tombstones the duplicate. The survivor keeps its name and type.
+  app.post('/api/brain/entities/:id/merge-into/:targetId', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { id: loserId, targetId } = req.params;
+      if (loserId === targetId) return res.status(400).json({ error: 'cannot merge an entity into itself' });
+
+      const [loser, target] = await Promise.all([
+        prisma.brainEntity.findUnique({ where: { id: loserId }, include: { aliases: true } }),
+        prisma.brainEntity.findUnique({ where: { id: targetId } }),
+      ]);
+      if (!loser) return res.status(404).json({ error: 'source entity not found' });
+      if (!target) return res.status(404).json({ error: 'target entity not found' });
+      if (target.tombstonedAt) return res.status(400).json({ error: 'target entity is tombstoned' });
+      if (loser.tombstonedAt) return res.status(400).json({ error: 'source entity is already tombstoned' });
+
+      const FK_ANCHORS = ['localEffortCustomerId', 'localEffortDishId', 'localBudgetVendorId', 'squareCustomerId', 'plannerCardId'];
+      const anchorFill = {};
+      for (const key of FK_ANCHORS) {
+        if (!target[key] && loser[key]) anchorFill[key] = loser[key];
+      }
+
+      const aliasRows = [
+        ...loser.aliases.map(a => ({ entityId: targetId, alias: a.alias, source: a.source })),
+        { entityId: targetId, alias: loser.name, source: 'merge' },
+      ];
+
+      await prisma.$transaction([
+        prisma.brainAssertion.updateMany({ where: { srcId: loserId }, data: { srcId: targetId } }),
+        prisma.brainAssertion.updateMany({ where: { dstId: loserId }, data: { dstId: targetId } }),
+        // Repointing can turn loser↔target edges into self-edges — retract
+        // them (MENU_SNAPSHOT is the only relType modeled as a self-edge).
+        prisma.brainAssertion.updateMany({
+          where: { srcId: targetId, dstId: targetId, retractedAt: null, relType: { not: 'MENU_SNAPSHOT' } },
+          data: { retractedAt: new Date(), retractedBy: 'system:merge', retractedReason: 'self_edge_after_merge' },
+        }),
+        prisma.brainInference.updateMany({ where: { srcId: loserId }, data: { srcId: targetId } }),
+        prisma.brainInference.updateMany({ where: { dstId: loserId }, data: { dstId: targetId } }),
+        prisma.brainInboxItem.updateMany({ where: { resultEntityId: loserId }, data: { resultEntityId: targetId } }),
+        prisma.brainEntityAlias.deleteMany({ where: { entityId: loserId } }),
+        prisma.brainEntityAlias.createMany({ data: aliasRows, skipDuplicates: true }),
+        prisma.brainEntity.update({
+          where: { id: targetId },
+          data: {
+            properties: { ...(loser.properties || {}), ...(target.properties || {}) },
+            ...anchorFill,
+          },
+        }),
+        prisma.brainEntity.update({
+          where: { id: loserId },
+          data: { tombstonedAt: new Date(), tombstoneReason: `merged_into:${targetId}`, status: 'archived' },
+        }),
+      ]);
+
+      await writeLedgerEvent({
+        eventType: 'entity.merged',
+        source: 'admin_ux',
+        actorType: 'founder',
+        payload: {
+          loserId,
+          loserName: loser.name,
+          loserType: loser.entityType,
+          targetId,
+          targetName: target.name,
+          targetType: target.entityType,
+        },
+      });
+
+      logger?.info({ loserId, targetId }, 'brain: entities merged');
+      return res.json({ ok: true, targetId });
+    } catch (err) {
+      logger?.error({ err }, 'brain: entity merge error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
   // POST /api/brain/assertions/:id/confirm — confirm a provisional assertion
   app.get('/api/brain/assertion/:id', async (req, res) => {
     try {
@@ -1046,6 +1127,7 @@ function registerEntityRoutes(app, { logger } = {}) {
 
       const [
         duplicateEntities,
+        crossTypeDuplicates,
         duplicateSourceIds,
         selfEdges,
         provisional,
@@ -1055,11 +1137,26 @@ function registerEntityRoutes(app, { logger } = {}) {
           SELECT "entityType",
                  COALESCE("canonicalName", lower(name)) AS canonical,
                  COUNT(*)::int AS n,
-                 ARRAY_AGG(name ORDER BY "createdAt") AS names
+                 json_agg(json_build_object('id', id, 'name', name, 'entityType', "entityType") ORDER BY "createdAt") AS members
           FROM "BrainEntity"
           WHERE "tombstonedAt" IS NULL
           GROUP BY 1, 2
           HAVING COUNT(*) > 1
+          ORDER BY n DESC
+          LIMIT 50
+        `,
+        prisma.$queryRaw`
+          SELECT canonical,
+                 COUNT(*)::int AS n,
+                 json_agg(json_build_object('id', id, 'name', name, 'entityType', "entityType") ORDER BY "createdAt") AS members
+          FROM (
+            SELECT id, "entityType", name, "createdAt",
+                   COALESCE("canonicalName", lower(name)) AS canonical
+            FROM "BrainEntity"
+            WHERE "tombstonedAt" IS NULL
+          ) x
+          GROUP BY canonical
+          HAVING COUNT(*) > 1 AND COUNT(DISTINCT "entityType") > 1
           ORDER BY n DESC
           LIMIT 50
         `,
@@ -1100,6 +1197,7 @@ function registerEntityRoutes(app, { logger } = {}) {
       return res.json({
         ok: true,
         duplicateEntities,
+        crossTypeDuplicates,
         duplicateSourceIds,
         selfEdges,
         provisionalAssertions: provisional,

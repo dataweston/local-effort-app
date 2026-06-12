@@ -10,7 +10,6 @@
  */
 
 const { PrismaClient } = require('@prisma/client');
-const path = require('path');
 const { randomUUID } = require('crypto');
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -23,19 +22,31 @@ const localEffort = new PrismaClient({
   datasources: { db: { url: process.env.DATABASE_URL } },
 });
 
-// Local Budget uses its own DATABASE_URL — load from its .env
-const LB_ENV_PATH = path.resolve('c:/Users/user/Local Budget/.env');
-const fs = require('fs');
-const lbEnvRaw = fs.readFileSync(LB_ENV_PATH, 'utf8');
-const lbDbUrl = lbEnvRaw.match(/^DATABASE_URL="?([^"\n]+)"?/m)?.[1];
-if (!lbDbUrl) throw new Error('Could not read Local Budget DATABASE_URL');
+// Local Budget is consumed through its integration API; do not read its .env or database directly.
+function localBudgetConfig() {
+  const baseUrl = process.env.LOCAL_BUDGET_API_URL;
+  const token = process.env.LOCAL_BUDGET_API_TOKEN;
+  if (!baseUrl || !token) {
+    throw new Error('LOCAL_BUDGET_API_URL and LOCAL_BUDGET_API_TOKEN are required');
+  }
+  return { baseUrl: baseUrl.replace(/\/+$/, ''), token };
+}
 
-const { PrismaClient: LBPrismaClient } = require(
-  path.resolve('c:/Users/user/Local Budget/node_modules/@prisma/client')
-);
-const localBudget = new LBPrismaClient({
-  datasources: { db: { url: lbDbUrl } },
-});
+async function fetchLocalBudget(pathname, params = {}) {
+  const { baseUrl, token } = localBudgetConfig();
+  const url = new URL(`${baseUrl}${pathname}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
+  }
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`Local Budget API ${response.status} for ${url.pathname}: ${body.slice(0, 300)}`);
+  }
+  return response.json();
+}
 
 // ── Normalization ────────────────────────────────────────────────────────────
 
@@ -137,29 +148,17 @@ async function phase1Extract() {
   const leMenuWeeks = await localEffort.menuWeek.findMany();
   console.log(`  local-effort menuWeeks: ${leMenuWeeks.length}`);
 
-  // Transactions from Local Budget — COGS and OPERATING only, with merchant names
-  const lbTransactions = await localBudget.transaction.findMany({
-    where: {
-      classification: { in: ['COGS', 'OPERATING'] },
-      merchantName: { not: null },
-    },
-    select: {
-      id: true,
-      merchantName: true,
-      description: true,
-      classification: true,
-      amount: true,
-      date: true,
-    },
-    orderBy: { date: 'asc' },
-  });
-  console.log(`  local-budget COGS/OPERATING transactions: ${lbTransactions.length}`);
+  // Vendor rollups from Local Budget — COGS and OPERATING only by default.
+  const lbVendorResponse = await fetchLocalBudget('/api/integration/v1/vendors');
+  const lbVendors = lbVendorResponse.vendors || [];
+  const lbTxCount = lbVendors.reduce((sum, vendor) => sum + Number(vendor.txCount || 0), 0);
+  console.log(`  local-budget COGS/OPERATING vendor rollups: ${lbVendors.length} vendors, ${lbTxCount} txns`);
 
   // Extract distinct vendor candidates from merchant names
   const vendorMap = new Map(); // normalizedName → { canonical, rawNames, txCount, totalSpend, firstSeen, lastSeen, classification }
-  for (const tx of lbTransactions) {
-    const raw = tx.merchantName;
-    const normalized = normalizeName(raw);
+  for (const apiVendor of lbVendors) {
+    const raw = apiVendor.name;
+    const normalized = normalizeName(apiVendor.normalizedName || raw);
     if (!normalized || normalized.length < 3) continue;
     if (shouldSkipVendor(normalized)) continue;
 
@@ -170,21 +169,23 @@ async function phase1Extract() {
       vendorMap.set(canonical, {
         canonical,
         rawNames: new Set(),
-        txIds: [],
+        txCount: 0,
         totalSpend: 0,
-        firstSeen: tx.date,
-        lastSeen: tx.date,
-        primaryClassification: tx.classification,
+        firstSeen: new Date(apiVendor.firstSeen),
+        lastSeen: new Date(apiVendor.lastSeen),
+        primaryClassification: apiVendor.primaryClassification,
       });
     }
     const v = vendorMap.get(canonical);
-    v.rawNames.add(raw);
-    v.txIds.push(tx.id);
-    v.totalSpend += parseFloat(tx.amount);
-    if (tx.date < v.firstSeen) v.firstSeen = tx.date;
-    if (tx.date > v.lastSeen) v.lastSeen = tx.date;
+    for (const rawName of (apiVendor.rawNames || [raw])) v.rawNames.add(rawName);
+    v.txCount += Number(apiVendor.txCount || 0);
+    v.totalSpend += Number(apiVendor.totalSpend || 0);
+    const firstSeen = new Date(apiVendor.firstSeen);
+    const lastSeen = new Date(apiVendor.lastSeen);
+    if (firstSeen < v.firstSeen) v.firstSeen = firstSeen;
+    if (lastSeen > v.lastSeen) v.lastSeen = lastSeen;
     // Prefer COGS classification
-    if (tx.classification === 'COGS') v.primaryClassification = 'COGS';
+    if (apiVendor.primaryClassification === 'COGS') v.primaryClassification = 'COGS';
   }
 
   // Convert to array, sort by spend descending
@@ -195,7 +196,7 @@ async function phase1Extract() {
   console.log(`  extracted vendor candidates: ${vendors.length}`);
   console.log(`  top 10 by spend:`);
   vendors.slice(0, 10).forEach(v =>
-    console.log(`    $${v.totalSpend.toFixed(0).padStart(6)} ${v.canonical} (${v.txIds.length} txns, ${v.primaryClassification})`)
+    console.log(`    $${v.totalSpend.toFixed(0).padStart(6)} ${v.canonical} (${v.txCount} txns, ${v.primaryClassification})`)
   );
 
   return { leCustomers, leDishes, leOrders, leMenuWeeks, vendors };
@@ -300,7 +301,7 @@ async function phase3Write(data) {
           vendorName: vendor.canonical,
           rawNames: vendor.rawNames,
           totalSpend: vendor.totalSpend,
-          txCount: vendor.txIds.length,
+          txCount: vendor.txCount,
           classification: vendor.primaryClassification,
           firstSeen: vendor.firstSeen,
           lastSeen: vendor.lastSeen,
@@ -319,7 +320,7 @@ async function phase3Write(data) {
           .join(' '),
         properties: {
           totalSpend: Math.round(vendor.totalSpend),
-          txCount: vendor.txIds.length,
+          txCount: vendor.txCount,
           primaryClassification: vendor.primaryClassification,
           firstSeen: vendor.firstSeen,
           lastSeen: vendor.lastSeen,
@@ -627,7 +628,6 @@ async function main() {
     await phase3Write(merged);
   } finally {
     await localEffort.$disconnect();
-    await localBudget.$disconnect();
   }
 }
 

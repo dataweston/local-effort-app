@@ -1,10 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { createRequire } = require('module');
 
 const rootDir = path.resolve(__dirname, '..');
-const localBudgetDir = 'C:\\Users\\user\\Local Budget';
 const outputDir = path.join(rootDir, 'reports', 'local-budget-pnl');
 const chromeCandidates = [
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -14,6 +12,7 @@ const chromeCandidates = [
 ];
 
 function loadEnv(filePath) {
+  if (!fs.existsSync(filePath)) return;
   const text = fs.readFileSync(filePath, 'utf8');
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
@@ -30,6 +29,31 @@ function loadEnv(filePath) {
     }
     process.env[key] = value;
   }
+}
+
+function localBudgetConfig() {
+  const baseUrl = process.env.LOCAL_BUDGET_API_URL;
+  const token = process.env.LOCAL_BUDGET_API_TOKEN;
+  if (!baseUrl || !token) {
+    throw new Error('LOCAL_BUDGET_API_URL and LOCAL_BUDGET_API_TOKEN are required');
+  }
+  return { baseUrl: baseUrl.replace(/\/+$/, ''), token };
+}
+
+async function fetchLocalBudget(pathname, params = {}) {
+  const { baseUrl, token } = localBudgetConfig();
+  const url = new URL(`${baseUrl}${pathname}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
+  }
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`Local Budget API ${response.status} for ${url.pathname}: ${body.slice(0, 300)}`);
+  }
+  return response.json();
 }
 
 function money(value) {
@@ -349,7 +373,7 @@ function renderStatement(report, metadata) {
   <header>
     <h1>${escapeHtml(title)}</h1>
     <div class="subhead">Period: ${escapeHtml(formatDisplayDate(report.startDate))} through ${escapeHtml(formatDisplayDate(report.endDate))}</div>
-    <div class="subhead">Generated: ${escapeHtml(metadata.generatedAt)} from Local Budget database at ${escapeHtml(localBudgetDir)}</div>
+    <div class="subhead">Generated: ${escapeHtml(metadata.generatedAt)} from Local Budget API at ${escapeHtml(metadata.apiUrl)}</div>
   </header>
 
   <section class="summary">
@@ -421,133 +445,87 @@ function renderStatement(report, metadata) {
 </html>`;
 }
 
-async function buildReport(prisma, year) {
-  const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-  const yearEndDate = new Date(`${year}-12-31T23:59:59.999Z`);
-  const latestTx = await prisma.transaction.findFirst({
-    where: {
-      date: { gte: startDate, lte: yearEndDate },
-    },
-    orderBy: { date: 'desc' },
-    select: { date: true },
-  });
-  const endDate = latestTx
-    ? new Date(Date.UTC(latestTx.date.getUTCFullYear(), latestTx.date.getUTCMonth(), latestTx.date.getUTCDate(), 23, 59, 59, 999))
-    : yearEndDate;
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      date: { gte: startDate, lte: endDate },
-    },
-    select: {
-      id: true,
-      amount: true,
-      type: true,
-      status: true,
-      classification: true,
-      categoryId: true,
-      category: { select: { id: true, name: true, defaultClassification: true } },
-      splits: {
-        select: {
-          amount: true,
-          classification: true,
-          category: { select: { id: true, name: true, defaultClassification: true } },
-        },
-      },
-    },
-    orderBy: { date: 'asc' },
-  });
+async function buildReport(year) {
+  const { report: apiReport } = await fetchLocalBudget('/api/integration/v1/pnl', { year });
+  const startDate = new Date(apiReport.startDate);
+  const endDate = new Date(apiReport.endDate);
+  const report = {
+    ...blankReport(year),
+    ...apiReport,
+    startDate,
+    endDate,
+    totalTransactionsConsidered: apiReport.totalLinesConsidered || 0,
+    categoryRows: (apiReport.byCategory || []).map((row) => ({ ...row })),
+    statusCounts: new Map(),
+  };
 
-  const report = blankReport(year);
-  report.startDate = startDate;
-  report.endDate = endDate;
-  report.totalTransactionsInPeriod = transactions.length;
+  report.operatingIncome =
+    apiReport.netBusinessIncome ??
+    report.totalRevenue - report.cogs - report.operatingExpenses - report.reimbursableExpenses;
+  report.totalExpenses =
+    report.cogs + report.operatingExpenses + report.personalExpenses + report.reimbursableExpenses;
+  report.netIncome = report.totalRevenue - report.totalExpenses;
+  report.operatingMargin = report.totalRevenue > 0 ? (report.operatingIncome / report.totalRevenue) * 100 : 0;
+  report.netMargin = report.totalRevenue > 0 ? (report.netIncome / report.totalRevenue) * 100 : 0;
+  report.totalPnlVolume = report.totalRevenue + report.totalExpenses;
 
-  for (const tx of transactions) {
-    report.statusCounts.set(tx.status, (report.statusCounts.get(tx.status) || 0) + 1);
-    const txClassification = getEffectiveClassification(tx);
-    if (txClassification === 'TRANSFER' || tx.type === 'TRANSFER') report.transferLineCount += 1;
+  const daysInPeriod = Math.max(
+    1,
+    Math.ceil((endDate.getTime() - startDate.getTime() + 1) / 86_400_000)
+  );
+  const monthsInPeriod = Math.max(daysInPeriod / 30.4375, 1 / 30.4375);
+  report.daysInPeriod = daysInPeriod;
+  report.monthsInPeriod = monthsInPeriod;
+  report.averageMonthlyRevenue = report.totalRevenue / monthsInPeriod;
+  report.averageMonthlyExpenses = report.totalExpenses / monthsInPeriod;
+  report.averageMonthlyNet = report.netIncome / monthsInPeriod;
+  report.operatingBurnRate =
+    (report.cogs + report.operatingExpenses + report.reimbursableExpenses) / monthsInPeriod;
 
-    if (tx.splits.length > 0) {
-      for (const split of tx.splits) {
-        const splitClassification =
-          split.classification ||
-          (split.category && split.category.defaultClassification) ||
-          txClassification;
-        const splitCategoryId = (split.category && split.category.id) || tx.categoryId || null;
-        const splitCategoryName =
-          (split.category && split.category.name) ||
-          (tx.category && tx.category.name) ||
-          'Uncategorized';
-        applyLine(report, split.amount, splitClassification, splitCategoryId, splitCategoryName);
-      }
-      continue;
-    }
-
-    applyLine(
-      report,
-      tx.amount,
-      txClassification,
-      tx.categoryId || null,
-      (tx.category && tx.category.name) || 'Uncategorized'
-    );
-  }
-
-  finalizeReport(report, startDate, endDate);
+  report.categoryRows = report.categoryRows
+    .map((row) => ({
+      ...row,
+      percentOfTotal: report.totalPnlVolume > 0 ? (row.amount / report.totalPnlVolume) * 100 : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
   return report;
 }
 
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
-  loadEnv(path.join(localBudgetDir, '.env'));
-
-  const budgetRequire = createRequire(path.join(localBudgetDir, 'package.json'));
-  const { PrismaClient } = budgetRequire('@prisma/client');
-  const prisma = new PrismaClient();
+  loadEnv(path.join(rootDir, '.env'));
   const browserPath = findBrowserExecutable();
 
-  try {
-    const [minTx, maxTx, counts] = await Promise.all([
-      prisma.transaction.findFirst({ orderBy: { date: 'asc' }, select: { date: true } }),
-      prisma.transaction.findFirst({ orderBy: { date: 'desc' }, select: { date: true } }),
-      prisma.transaction.groupBy({
-        by: ['type', 'status'],
-        _count: { _all: true },
-        _sum: { amount: true },
-      }),
-    ]);
+  const metadata = {
+    generatedAt: new Date().toISOString(),
+    apiUrl: localBudgetConfig().baseUrl,
+    minDate: null,
+    maxDate: null,
+    counts: [],
+  };
 
-    const metadata = {
-      generatedAt: new Date().toISOString(),
-      minDate: minTx ? formatDate(minTx.date) : null,
-      maxDate: maxTx ? formatDate(maxTx.date) : null,
-      counts,
-    };
+  const outputs = [];
 
-    const outputs = [];
-
-    for (const year of [2025, 2026]) {
-      const report = await buildReport(prisma, year);
-      const html = renderStatement(report, metadata);
-      const htmlPath = path.join(outputDir, `local-budget-profit-loss-${year}.html`);
-      const pdfPath = path.join(outputDir, `local-budget-profit-loss-${year}.pdf`);
-      fs.writeFileSync(htmlPath, html, 'utf8');
-      renderPdf(browserPath, htmlPath, pdfPath);
-      outputs.push({
-        year,
-        pdfPath,
-        htmlPath,
-        totalRevenue: report.totalRevenue,
-        totalExpenses: report.totalExpenses,
-        netIncome: report.netIncome,
-        transactions: report.totalTransactionsInPeriod,
-        pnlLines: report.totalTransactionsConsidered,
-        statuses: Object.fromEntries(report.statusCounts),
-      });
-    }
-    console.log(JSON.stringify({ metadata, browserPath, outputs }, null, 2));
-  } finally {
-    await prisma.$disconnect();
+  for (const year of [2025, 2026]) {
+    const report = await buildReport(year);
+    const html = renderStatement(report, metadata);
+    const htmlPath = path.join(outputDir, `local-budget-profit-loss-${year}.html`);
+    const pdfPath = path.join(outputDir, `local-budget-profit-loss-${year}.pdf`);
+    fs.writeFileSync(htmlPath, html, 'utf8');
+    renderPdf(browserPath, htmlPath, pdfPath);
+    outputs.push({
+      year,
+      pdfPath,
+      htmlPath,
+      totalRevenue: report.totalRevenue,
+      totalExpenses: report.totalExpenses,
+      netIncome: report.netIncome,
+      transactions: report.totalTransactionsInPeriod,
+      pnlLines: report.totalTransactionsConsidered,
+      statuses: Object.fromEntries(report.statusCounts),
+    });
   }
+  console.log(JSON.stringify({ metadata, browserPath, outputs }, null, 2));
 }
 
 main().catch((error) => {

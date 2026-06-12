@@ -13,6 +13,7 @@ import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSy
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useBrainInbox } from '../hooks/useBrainInbox';
 import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
+import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -310,6 +311,17 @@ export default function WeeklyDemoPage() {
           </form>
         )}
       </div>
+
+      {/* Brain pulse — what the brain knows today (admin only) */}
+      {auth.isAdmin && (
+        <div className="max-w-[1800px] mx-auto pt-3">
+          <BrainPulsePanel
+            accessToken={auth.accessToken}
+            enabled={!!auth.isAdmin}
+            onOpenInbox={() => setInboxOpen(true)}
+          />
+        </div>
+      )}
 
       {/* View tabs + content */}
       <div className="max-w-[1800px] mx-auto px-4 py-4">

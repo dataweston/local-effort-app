@@ -272,6 +272,18 @@ async function ingestMealPrepIntake(formData, { logger } = {}) {
   });
 
   logger?.info?.({ customerId: customer.id, ledgerEventId: ledgerEvent.id }, 'brain: meal prep intake ingested');
+
+  // Mine dietary constraints from this intake — fire-and-forget, never blocks
+  // the form response. Lazy require avoids paying SDK init cost on cold start.
+  try {
+    const { runConstraintMiner } = require('./constraintMiner');
+    runConstraintMiner({ logger, ledgerEventId: ledgerEvent.id }).catch((err) =>
+      logger?.warn?.({ err }, 'brain: intake constraint mining failed'),
+    );
+  } catch (err) {
+    logger?.warn?.({ err }, 'brain: constraint miner unavailable');
+  }
+
   return { ok: true, customerId: customer.id, noteId: note.id, ledgerEventId: ledgerEvent.id };
 }
 

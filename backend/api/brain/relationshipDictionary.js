@@ -9,6 +9,30 @@
 const ANY = ['*'];
 
 const RELATIONSHIPS = {
+  AVOIDS: {
+    src: ['Customer', 'Person'],
+    dst: ['Ingredient', 'Dish', 'Constraint'],
+    inverseLabel: 'AVOIDED_BY',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A customer avoids an ingredient, dish, or dietary pattern. metadata.severity: medical | avoid | preference.',
+  },
+  PREFERS: {
+    src: ['Customer', 'Person'],
+    dst: ['Ingredient', 'Dish', 'Constraint'],
+    inverseLabel: 'PREFERRED_BY',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A customer prefers an ingredient or dish. metadata.severity is preference.',
+  },
+  MEDICAL_CONSTRAINT: {
+    src: ['Customer', 'Person'],
+    dst: ['Ingredient', 'Dish', 'Constraint'],
+    inverseLabel: 'MEDICAL_CONSTRAINT_OF',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A medically mandated constraint (allergy/intolerance). Blocks menu broadcast with no override.',
+  },
   ABOUT: {
     src: ['Note'],
     dst: ANY,

@@ -392,6 +392,30 @@ function registerMenuRoutes(app, { logger } = {}) {
         return res.status(404).json({ error: 'menu not yet published' });
       }
 
+      // Prior feedback for this menu, latest rating per dish, so a refreshed
+      // portal page can re-hydrate submitted state instead of double-submitting.
+      const feedbackEvents = await prisma.ledgerEvent.findMany({
+        where: {
+          eventType: 'menu.feedback',
+          tombstonedAt: null,
+          payload: { path: ['menuId'], equals: menu.id },
+        },
+        orderBy: { occurredAt: 'asc' },
+        select: { payload: true },
+        take: 500,
+      });
+      const feedbackByDish = new Map();
+      for (const ev of feedbackEvents) {
+        const p = ev.payload || {};
+        if (!p.dishName) continue;
+        feedbackByDish.set(p.dishName, {
+          dishName: p.dishName,
+          rating: p.rating,
+          notes: p.notes || null,
+          customerName: p.customerName || null,
+        });
+      }
+
       // Return safe public view — no internal IDs for customer list
       return res.json({
         ok: true,
@@ -402,6 +426,7 @@ function registerMenuRoutes(app, { logger } = {}) {
           notes: menu.properties?.notes,
           broadcastAt: menu.properties?.broadcastAt,
         },
+        feedback: [...feedbackByDish.values()],
       });
     } catch (err) {
       logger?.error({ err }, 'brain: portal read error');

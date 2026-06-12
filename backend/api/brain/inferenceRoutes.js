@@ -25,11 +25,12 @@ let lastRun = null;
 function registerInferenceRoutes(app, { logger } = {}) {
   const prisma = getPrisma();
 
-  // POST /api/brain/inference/run
-  app.post('/api/brain/inference/run', async (req, res) => {
+  // POST (manual) or GET (Vercel cron) /api/brain/inference/run
+  const runHandler = async (req, res) => {
     try {
       const admin = await verifyAdminRequest(req);
-      const isCron = req.headers['x-vercel-cron'] === '1';
+      const isCron = req.headers['x-vercel-cron'] === '1'
+        || String(req.headers['user-agent'] || '').startsWith('vercel-cron');
       const keyOk = hasBrainAdminHeader(req);
       if (!admin && !isCron && !keyOk) return res.status(403).json({ error: 'admin only' });
 
@@ -54,7 +55,9 @@ function registerInferenceRoutes(app, { logger } = {}) {
       logger?.error({ err }, 'brain/inference: run trigger error');
       return res.status(500).json({ error: 'internal-error' });
     }
-  });
+  };
+  app.post('/api/brain/inference/run', runHandler);
+  app.get('/api/brain/inference/run', runHandler);
 
   // GET /api/brain/inference
   app.get('/api/brain/inference', async (req, res) => {

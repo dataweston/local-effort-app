@@ -32,6 +32,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import re
 import json
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -43,8 +45,6 @@ from ledger import write_ledger_event, write_assertion, find_or_create_entity, a
 
 MATCH_THRESHOLD = float(os.environ.get('MATCH_THRESHOLD', '0.55'))
 
-LB_ENV_PATH = Path('c:/Users/user/Local Budget/.env')
-
 CPW_VENDOR   = 'Co-op Partners Warehouse'
 EASTSIDE_VENDOR = 'Eastside Food Co-op'
 
@@ -54,27 +54,55 @@ EASTSIDE_VENDOR = 'Eastside Food Co-op'
 DATE_WINDOW_DAYS = 1
 
 
-# ── Local Budget connection ───────────────────────────────────────────────────
+# ── Local Budget API ──────────────────────────────────────────────────────────
 
-def _lb_url() -> str:
-    text = LB_ENV_PATH.read_text()
-    for line in text.splitlines():
-        k, _, v = line.partition('=')
-        v = v.strip().strip('"')
-        if k == 'DATABASE_URL' and v:
-            return v
-    raise RuntimeError(f'DATABASE_URL not found in {LB_ENV_PATH}')
+def _lb_api_config() -> tuple[str, str]:
+    base_url = os.environ.get('LOCAL_BUDGET_API_URL', '').rstrip('/')
+    token = os.environ.get('LOCAL_BUDGET_API_TOKEN', '')
+    if not base_url or not token:
+        raise RuntimeError('LOCAL_BUDGET_API_URL and LOCAL_BUDGET_API_TOKEN are required')
+    return base_url, token
 
 
-def _lb_query(sql: str, params=None) -> list[dict]:
-    import psycopg2, psycopg2.extras
-    conn = psycopg2.connect(_lb_url(), cursor_factory=psycopg2.extras.RealDictCursor, connect_timeout=15)
+def _lb_get(path: str, params: dict | None = None) -> dict:
+    base_url, token = _lb_api_config()
+    query_string = urllib.parse.urlencode({k: v for k, v in (params or {}).items() if v is not None})
+    url = f'{base_url}{path}'
+    if query_string:
+        url = f'{url}?{query_string}'
+    req = urllib.request.Request(
+        url,
+        headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'},
+    )
     try:
-        with conn.cursor() as cur:
-            cur.execute(sql, params or ())
-            return [dict(r) for r in cur.fetchall()]
-    finally:
-        conn.close()
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace')
+        raise RuntimeError(f'Local Budget API {exc.code} for {path}: {body[:300]}') from exc
+
+
+def _parse_api_datetime(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace('Z', '+00:00'))
+
+
+def _lb_transactions(merchant: str, classifications: str = 'INCOME,REIMBURSEMENT,COGS,OPERATING,REIMBURSABLE') -> list[dict]:
+    rows: list[dict] = []
+    cursor = None
+    while True:
+        data = _lb_get('/api/integration/v1/transactions', {
+            'merchant': merchant,
+            'classification': classifications,
+            'limit': 2000,
+            'cursor': cursor,
+        })
+        batch = data.get('transactions') or []
+        for row in batch:
+            row['date'] = _parse_api_datetime(row['date'])
+            rows.append(row)
+        cursor = data.get('nextCursor')
+        if not cursor:
+            return rows
 
 
 # ── Name normalisation ────────────────────────────────────────────────────────
@@ -136,18 +164,7 @@ def _run_receipt_transaction_match(dry_run: bool, ledger_id: str) -> dict:
     """, (EASTSIDE_VENDOR, '%eastside%'))
 
     # Fetch all Eastside-matching LB transactions once (business only — exclude PERSONAL)
-    lb_txns = _lb_query("""
-        SELECT t.id, t.date, t.amount, t."merchantName", t.description
-        FROM transactions t
-        LEFT JOIN categories c ON c.id = t."categoryId"
-        WHERE (t."merchantName" ILIKE '%%eastside%%'
-           OR t."merchantName" ILIKE '%%eastside food%%'
-           OR t.description ILIKE '%%eastside%%')
-          AND (c."defaultClassification" IS NULL
-               OR c."defaultClassification" != 'PERSONAL')
-          AND (t.classification IS NULL OR t.classification != 'PERSONAL')
-        ORDER BY t.date
-    """)
+    lb_txns = _lb_transactions('eastside')
 
     print(f'  [crossref] {len(receipts)} receipt PAYMENT_SENT assertions, {len(lb_txns)} LB Eastside transactions')
 
@@ -356,27 +373,16 @@ def _run_lb_spend_summary(dry_run: bool, ledger_id: str) -> dict:
             written += 1
             continue
 
-        rows = _lb_query("""
-            SELECT
-                COUNT(*) as txn_count,
-                SUM(t.amount) as total_spend,
-                MIN(t.date) as first_txn,
-                MAX(t.date) as last_txn,
-                AVG(t.amount) as avg_txn
-            FROM transactions t
-            LEFT JOIN categories c ON c.id = t."categoryId"
-            WHERE t."merchantName" ILIKE %s
-              AND (c."defaultClassification" IS NULL
-                   OR c."defaultClassification" != 'PERSONAL')
-              AND (t.classification IS NULL OR t.classification != 'PERSONAL')
-        """, (pattern,))
-
-        if not rows or rows[0]['txn_count'] == 0:
+        rows = _lb_transactions(pattern.strip('%'))
+        if not rows:
             continue
 
-        r = rows[0]
+        total_spend = sum(abs(float(row['amount'])) for row in rows)
+        first_txn = min(row['date'] for row in rows)
+        last_txn = max(row['date'] for row in rows)
+        avg_txn = total_spend / len(rows)
         if dry_run:
-            print(f'    [DRY] {vendor_name}: {r["txn_count"]} txns ${r["total_spend"]} avg=${r["avg_txn"]:.2f}')
+            print(f'    [DRY] {vendor_name}: {len(rows)} txns ${total_spend} avg=${avg_txn:.2f}')
             written += 1
             continue
 
@@ -389,11 +395,11 @@ def _run_lb_spend_summary(dry_run: bool, ledger_id: str) -> dict:
             payload={
                 'type': 'lb_spend_summary',
                 'vendor': vendor_name,
-                'txnCount': int(r['txn_count']),
-                'totalSpend': float(r['total_spend']),
-                'firstTxn': str(r['first_txn']),
-                'lastTxn': str(r['last_txn']),
-                'avgTxn': float(r['avg_txn']),
+                'txnCount': len(rows),
+                'totalSpend': total_spend,
+                'firstTxn': str(first_txn),
+                'lastTxn': str(last_txn),
+                'avgTxn': avg_txn,
             },
         )
 
@@ -405,11 +411,11 @@ def _run_lb_spend_summary(dry_run: bool, ledger_id: str) -> dict:
             confidence=1.0,
             metadata={
                 'source': 'local_budget',
-                'txnCount': int(r['txn_count']),
-                'totalSpendUsd': float(r['total_spend']),
-                'avgTxnUsd': float(r['avg_txn']),
-                'firstTxn': str(r['first_txn'].date()),
-                'lastTxn': str(r['last_txn'].date()),
+                'txnCount': len(rows),
+                'totalSpendUsd': total_spend,
+                'avgTxnUsd': avg_txn,
+                'firstTxn': str(first_txn.date()),
+                'lastTxn': str(last_txn.date()),
             },
             provisional=False,
         )

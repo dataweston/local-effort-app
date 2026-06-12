@@ -14,7 +14,7 @@
 const crypto = require('crypto');
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
-const { writeLedgerEvent, createInboxItem } = require('./ledger');
+const { writeLedgerEvent, createInboxItem, findOrCreateEntity } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -131,9 +131,19 @@ function registerInboxRoutes(app, { logger } = {}) {
       if (matchedIds.length) {
         const entities = await prisma.brainEntity.findMany({
           where: { id: { in: matchedIds } },
-          select: { id: true, name: true, entityType: true, assertionCount: true },
+          select: {
+            id: true,
+            name: true,
+            entityType: true,
+            _count: { select: { srcAssertions: true, dstAssertions: true } },
+          },
         });
-        matchedEntityMap = Object.fromEntries(entities.map((e) => [e.id, e]));
+        matchedEntityMap = Object.fromEntries(entities.map((e) => [e.id, {
+          id: e.id,
+          name: e.name,
+          entityType: e.entityType,
+          assertionCount: (e._count?.srcAssertions || 0) + (e._count?.dstAssertions || 0),
+        }]));
       }
 
       const enriched = items.map((item) => ({
@@ -178,7 +188,7 @@ function registerInboxRoutes(app, { logger } = {}) {
         const { entityType, name, properties } = triagePayload || {};
         if (!entityType || !name) return res.status(400).json({ error: 'entityType and name required' });
 
-        const ledgerEvent = await writeLedgerEvent({
+        await writeLedgerEvent({
           eventType: 'inbox.captured',
           occurredAt: new Date(),
           source: 'admin_ux',
@@ -186,14 +196,14 @@ function registerInboxRoutes(app, { logger } = {}) {
           payload: { inboxItemId: id, action: 'new_entity', entityType, name },
         });
 
-        const entity = await prisma.brainEntity.create({
-          data: {
-            entityType,
-            name,
-            properties: properties || null,
-            status: 'active',
-          },
-        });
+        // Reuse an existing entity on name/alias match instead of minting duplicates
+        const { entity, created } = await findOrCreateEntity({ entityType, name, properties: properties || null });
+        if (!created && properties && typeof properties === 'object') {
+          await prisma.brainEntity.update({
+            where: { id: entity.id },
+            data: { properties: { ...(entity.properties || {}), ...properties } },
+          });
+        }
         resultEntityId = entity.id;
       }
 

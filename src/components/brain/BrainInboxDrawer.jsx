@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw, Sparkles, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 import { useBrainEntities } from '../../hooks/useBrainEntities';
+import { API_BASE } from '../../lib/apiBase';
 
 const ENTITY_TYPES = [
   '', 'Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product',
@@ -83,7 +84,7 @@ export function BrainInboxDrawer({ open, onClose, items, triage, loading, access
         </div>
 
         {tab === 'inbox' ? (
-          <InboxPanel items={items} triage={triage} loading={loading} onClose={onClose} />
+          <InboxPanel items={items} triage={triage} loading={loading} onClose={onClose} accessToken={accessToken} />
         ) : (
           <EntitiesPanel accessToken={accessToken} />
         )}
@@ -110,9 +111,26 @@ function TabButton({ active, onClick, children }) {
 
 // ── Inbox panel ───────────────────────────────────────────────────────────────
 
-function InboxPanel({ items, triage, loading, onClose }) {
+function InboxPanel({ items, triage, loading, onClose, accessToken }) {
   const [cursor, setCursor] = useState(0);
   const [triaging, setTriaging] = useState(null);
+  const [hubStatus, setHubStatus] = useState({}); // itemId → 'sending' | 'sent' | 'failed'
+
+  async function sendToHub(item) {
+    if (!accessToken || hubStatus[item.id] === 'sending') return;
+    setHubStatus(prev => ({ ...prev, [item.id]: 'sending' }));
+    try {
+      const res = await fetch(`${API_BASE}/api/hub/brain-publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ sourceType: 'brain_inbox', sourceId: item.id, visibility: 'staff' }),
+      });
+      const data = await res.json();
+      setHubStatus(prev => ({ ...prev, [item.id]: res.ok && !data.error ? 'sent' : 'failed' }));
+    } catch {
+      setHubStatus(prev => ({ ...prev, [item.id]: 'failed' }));
+    }
+  }
 
   useEffect(() => { setCursor(0); }, [items.length]);
 
@@ -170,8 +188,10 @@ function InboxPanel({ items, triage, loading, onClose }) {
             item={item}
             active={idx === cursor}
             triaging={triaging === item.id}
+            hubStatus={hubStatus[item.id]}
             onClick={() => setCursor(idx)}
             onTriage={(action, payload) => handleTriage(item.id, action, payload)}
+            onSendToHub={() => sendToHub(item)}
           />
         ))}
       </div>
@@ -179,7 +199,7 @@ function InboxPanel({ items, triage, loading, onClose }) {
   );
 }
 
-function InboxItem({ item, active, triaging, onClick, onTriage }) {
+function InboxItem({ item, active, triaging, hubStatus, onClick, onTriage, onSendToHub }) {
   const [expanded, setExpanded] = useState(false);
   const [hintExpanded, setHintExpanded] = useState(false);
 
@@ -339,6 +359,12 @@ function InboxItem({ item, active, triaging, onClick, onTriage }) {
             label={hint?.action === 'new_task' && hint.taskTitle ? `Task: ${hint.taskTitle.slice(0, 20)}` : 'Task'}
             shortcut="k"
             onClick={e => { e.stopPropagation(); onTriage('new_task', { title: hint?.taskTitle || displayContent.slice(0, 80) }); }}
+          />
+          <ActionButton
+            icon={hubStatus === 'sent' ? <CheckCircle2 size={12} /> : <Send size={12} />}
+            label={hubStatus === 'sent' ? 'In hub' : hubStatus === 'sending' ? 'Sending…' : hubStatus === 'failed' ? 'Hub failed — retry' : 'Send to hub'}
+            shortcut="h"
+            onClick={e => { e.stopPropagation(); if (hubStatus !== 'sent') onSendToHub(); }}
           />
         </div>
       )}

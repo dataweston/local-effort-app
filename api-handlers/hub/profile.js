@@ -27,6 +27,7 @@ function publicProfile(profile, user) {
     phone: profile.phone || null,
     status: profile.status,
     isPrivileged: profile.accessLevel === 'privileged' || isAdminEmail(user?.email || profile.email),
+    isCustomer: profile.accessLevel === 'customer',
     createdAt: asIso(profile.createdAt),
     updatedAt: asIso(profile.updatedAt),
   };

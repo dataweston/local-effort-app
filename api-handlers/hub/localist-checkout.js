@@ -21,6 +21,7 @@ const PICKUP_WINDOWS = new Set([
   'Wednesday, 4pm-6pm',
 ]);
 const HUB_MENU_AREAS = new Set(['localist', 'security']);
+const SECURITY_PICKUP_WINDOW = 'Security at Neon';
 
 let squareClient = null;
 try {
@@ -150,9 +151,12 @@ module.exports = async function handler(req, res) {
   const entrySource = req.body?.entrySource === 'shared' ? 'shared' : 'direct';
   const sourceArea = normalizeArea(req.body?.sourceArea);
   const submittedItems = Array.isArray(req.body?.items) ? req.body.items : [];
+  const resolvedPickupWindow = sourceArea === 'security' ? SECURITY_PICKUP_WINDOW : pickupWindow;
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
-  if (!pickupWindow || !PICKUP_WINDOWS.has(pickupWindow)) return res.status(400).json({ error: 'Pickup window is required' });
+  if (sourceArea === 'localist' && (!pickupWindow || !PICKUP_WINDOWS.has(pickupWindow))) {
+    return res.status(400).json({ error: 'Pickup window is required' });
+  }
   if (!submittedItems.length) return res.status(400).json({ error: 'No items selected' });
 
   let localOrder = null;
@@ -210,7 +214,7 @@ module.exports = async function handler(req, res) {
         status: 'checkout_created',
         customerName: name,
         customerPhone: phone || null,
-        pickupWindow,
+        pickupWindow: resolvedPickupWindow,
         customerNote: note || null,
         localistWindowId: localistWindow?.id || null,
         localistToken: token || null,
@@ -226,7 +230,7 @@ module.exports = async function handler(req, res) {
 
     const noteParts = [
       `${sourceArea === 'security' ? 'Security at Neon' : 'Localist'} order - ${name}`,
-      `Pickup: ${pickupWindow}`,
+      sourceArea === 'localist' ? `Pickup: ${resolvedPickupWindow}` : null,
       phone ? `Phone: ${phone}` : null,
       note ? `Note: ${note}` : null,
       orderItems.length ? `Items: ${orderItems.map((item) => (

@@ -141,7 +141,7 @@ export default function BrainPortalPage() {
               submitting={submitting === dishName}
               disabled={!nameConfirmed}
               shareToken={shareToken}
-              onRate={(rating) => submitFeedback(dishName, rating)}
+              onRate={(rating, notes) => submitFeedback(dishName, rating, notes)}
             />
           );
         })}

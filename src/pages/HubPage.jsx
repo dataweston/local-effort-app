@@ -17,12 +17,14 @@ import {
   Send,
   ShieldCheck,
   ShoppingCart,
+  Soup,
   Upload,
   UserPlus,
   UsersRound,
   X,
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
 
 const tabs = [
   { id: 'today', label: 'Today', icon: Home },
@@ -32,6 +34,8 @@ const tabs = [
   { id: 'people', label: 'People', icon: UsersRound },
   { id: 'shifts', label: 'Shifts', icon: ClipboardList },
 ];
+
+const mealPrepTab = { id: 'weeklyMealPrep', label: 'Weekly Meal Prep', icon: Soup };
 
 const LOCALIST_CUSTOMER_OPTIONS = [
   { key: 'glutenFree', label: 'Gluten free' },
@@ -56,6 +60,7 @@ const LOCALIST_ITEM_FLAG_LABELS = [
 ];
 
 const SECURITY_MENU_PASSWORD = 'noodleboy.';
+const SECURITY_MENU_QR_TOKEN = 'neon-kitchen-security';
 const SECURITY_MENU_STORAGE_KEY = 'le:securityMenuAccess';
 const SECURITY_MENU_PROMPT = 'this menu is designed especially for the security team at Neon Kitchen. Please enter your password to order.';
 
@@ -274,7 +279,7 @@ function HubAuthScreen({ auth, inviteToken }) {
         </button>
 
         <p className="hub-help">
-          Use email and password. Invite links control who can create staff or privileged profiles.
+          Use email and password. Invite links control who can create staff, customer, or privileged profiles.
         </p>
       </div>
     </main>
@@ -386,10 +391,11 @@ function TodayView({ calendar, docs, conversations, shifts, setTab }) {
   );
 }
 
-function CalendarView({ accessToken }) {
+function CalendarView({ accessToken, profile }) {
   const [anchor, setAnchor] = useState(todayIso());
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [quickView, setQuickView] = useState('all');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -403,14 +409,35 @@ function CalendarView({ accessToken }) {
 
   useEffect(() => { load(); }, [load]);
 
+  const visibleItems = useMemo(() => {
+    const viewerName = String(profile?.displayName || '').toLowerCase();
+    if (quickView === 'available') return items.filter((item) => item.metadata?.optional || item.subtitle === null);
+    if (quickView === 'mine') {
+      return items.filter((item) => {
+        const people = item.metadata?.people || [];
+        return people.some((person) => String(person || '').toLowerCase() === viewerName);
+      });
+    }
+    return items;
+  }, [items, profile, quickView]);
+
+  const westonBlocks = useMemo(() => {
+    return items.filter((item) => {
+      const text = `${item.title || ''} ${item.subtitle || ''} ${item.metadata?.category || ''}`.toLowerCase();
+      const people = item.metadata?.people || [];
+      return people.some((person) => String(person || '').toLowerCase().includes('weston')) &&
+        (text.includes('kitchen time') || text.includes('office hours'));
+    });
+  }, [items]);
+
   const grouped = useMemo(() => {
     const result = new Map();
-    items.forEach((item) => {
+    visibleItems.forEach((item) => {
       const date = String(item.startsAt || item.metadata?.date || '').slice(0, 10) || anchor;
       result.set(date, [...(result.get(date) || []), item]);
     });
     return [...result.entries()].sort(([a], [b]) => a.localeCompare(b));
-  }, [items, anchor]);
+  }, [visibleItems, anchor]);
 
   return (
     <Panel
@@ -421,25 +448,43 @@ function CalendarView({ accessToken }) {
           <button onClick={() => setAnchor(addDays(anchor, -7))}>Previous</button>
           <button onClick={() => setAnchor(todayIso())}>Today</button>
           <button onClick={() => setAnchor(addDays(anchor, 7))}>Next</button>
+          <button className={quickView === 'mine' ? 'is-active' : ''} onClick={() => setQuickView('mine')}>My shifts</button>
+          <button className={quickView === 'available' ? 'is-active' : ''} onClick={() => setQuickView('available')}>Available shifts</button>
+          <button className={quickView === 'all' ? 'is-active' : ''} onClick={() => setQuickView('all')}>All events</button>
+          <GoogleCalendarSync accessToken={accessToken} weekStart={anchor} />
           <button onClick={load}><RefreshCw size={13} /></button>
         </div>
       )}
     >
       {loading && <p className="hub-empty">Loading calendar...</p>}
-      <div className="hub-calendar-list">
-        {grouped.map(([date, dayItems]) => (
-          <section className="hub-day" key={date}>
-            <h3>{formatDate(date)}</h3>
-            {dayItems.map((item) => (
-              <div className="hub-calendar-item" key={item.id}>
-                <span>{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'}</span>
-                <strong>{item.title}</strong>
-                <small>{item.subtitle || item.type} {item.metadata?.optional ? '/ open shift' : ''}</small>
-              </div>
-            ))}
-          </section>
-        ))}
-        {!loading && grouped.length === 0 && <p className="hub-empty">No calendar items this week.</p>}
+      <div className="hub-calendar-shell">
+        <div className="hub-calendar-list">
+          {grouped.map(([date, dayItems]) => (
+            <section className="hub-day" key={date}>
+              <h3>{formatDate(date)}</h3>
+              {dayItems.map((item) => (
+                <div className="hub-calendar-item" key={item.id}>
+                  <span>{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'}</span>
+                  <strong>{item.title}</strong>
+                  <small>{item.subtitle || item.type} {item.metadata?.optional ? '/ open shift' : ''}</small>
+                </div>
+              ))}
+            </section>
+          ))}
+          {!loading && grouped.length === 0 && <p className="hub-empty">No calendar items this week.</p>}
+        </div>
+        <aside className="hub-calendar-widget">
+          <strong>Weston kitchen time</strong>
+          <strong>Weston office hours</strong>
+          {westonBlocks.length === 0 ? (
+            <span>Waiting on weeklydemo categories.</span>
+          ) : westonBlocks.map((item) => (
+            <div key={item.id}>
+              <span>{formatDate(String(item.startsAt || item.metadata?.date || '').slice(0, 10))}</span>
+              <small>{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'} / {item.title}</small>
+            </div>
+          ))}
+        </aside>
       </div>
     </Panel>
   );
@@ -692,6 +737,186 @@ function ShiftsView({ accessToken, isPrivileged }) {
   );
 }
 
+function MarkdownPreview({ body }) {
+  const lines = String(body || '').split('\n');
+  return (
+    <div className="hub-markdown-preview">
+      {lines.map((line, index) => {
+        if (line.startsWith('### ')) return <h4 key={index}>{line.slice(4)}</h4>;
+        if (line.startsWith('## ')) return <h3 key={index}>{line.slice(3)}</h3>;
+        if (line.startsWith('# ')) return <h2 key={index}>{line.slice(2)}</h2>;
+        if (line.startsWith('- ')) return <p key={index}>• {line.slice(2)}</p>;
+        if (!line.trim()) return <br key={index} />;
+        return <p key={index}>{line}</p>;
+      })}
+    </div>
+  );
+}
+
+function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
+  const [data, setData] = useState({ customers: [], notes: [], mode: 'staff' });
+  const [activeTab, setActiveTab] = useState('production');
+  const [noteBody, setNoteBody] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
+  const [preview, setPreview] = useState(false);
+  const lastSavedRef = useRef('');
+  const activeTabRef = useRef(activeTab);
+
+  const canEditNotes = data.mode !== 'customer';
+
+  const load = useCallback(async ({ keepStatus = false } = {}) => {
+    setLoading(true);
+    try {
+      const next = await api('/api/hub/weekly-meal-prep', accessToken);
+      setData(next);
+      const selected = (next.notes || []).find((note) => note.id === activeTabRef.current) || next.notes?.[0];
+      if (selected) {
+        activeTabRef.current = selected.id;
+        setActiveTab(selected.id);
+        const body = selected.document?.body || '';
+        setNoteBody(body);
+        lastSavedRef.current = body;
+      }
+      if (!keepStatus) setStatus('');
+    } catch (err) {
+      setStatus(err.message || 'Unable to load weekly meal prep.');
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken]);
+
+  useEffect(() => { load().catch(() => {}); }, [load]);
+
+  useEffect(() => {
+    if (!canEditNotes || noteBody === lastSavedRef.current) return;
+    setStatus('Saving...');
+    const timer = window.setTimeout(async () => {
+      try {
+        const saved = await api('/api/hub/weekly-meal-prep', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({ tabId: activeTab, body: noteBody }),
+        });
+        lastSavedRef.current = saved.note?.document?.body || noteBody;
+        setStatus(`Saved ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+      } catch (err) {
+        setStatus(err.message || 'Autosave failed.');
+      }
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [accessToken, activeTab, canEditNotes, noteBody]);
+
+  const chooseNote = (tabId) => {
+    const next = data.notes.find((note) => note.id === tabId);
+    activeTabRef.current = tabId;
+    setActiveTab(tabId);
+    const body = next?.document?.body || '';
+    setNoteBody(body);
+    lastSavedRef.current = body;
+  };
+
+  const customerLabel = profile?.accessLevel === 'customer'
+    ? 'Customer view'
+    : isPrivileged
+    ? 'Privileged view: staff and customer'
+    : 'Staff view';
+
+  return (
+    <div className="hub-meal-prep">
+      <Panel
+        title="Active Customer Profiles"
+        icon={Soup}
+        action={(
+          <div className="hub-button-row">
+            <span className="hub-pill">{customerLabel}</span>
+            <button onClick={() => load()}><RefreshCw size={13} /></button>
+          </div>
+        )}
+      >
+        {loading && <p className="hub-empty">Loading meal prep...</p>}
+        <div className="hub-customer-table-wrap">
+          <table className="hub-customer-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>Profile</th>
+                <th>Latest Order</th>
+                <th>Brain Signals</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.customers.map((customer) => (
+                <tr key={customer.id}>
+                  <td>
+                    <strong>{customer.name}</strong>
+                    <span>{customer.users.map((user) => user.email).join(', ') || customer.slug}</span>
+                  </td>
+                  <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
+                  <td>
+                    <span>{customer.profile.householdSize || 'Household not set'}</span>
+                    <small>{customer.profile.deliveryNotes || customer.profile.address || ''}</small>
+                  </td>
+                  <td>
+                    {customer.latestOrder ? (
+                      <>
+                        <span>{formatDate(String(customer.latestOrder.weekStart).slice(0, 10))} / {customer.latestOrder.itemCount} items</span>
+                        <small>{customer.latestOrder.items.slice(0, 3).map((item) => `${item.quantity}x ${item.title}`).join('; ')}</small>
+                      </>
+                    ) : 'No order yet'}
+                  </td>
+                  <td>
+                    <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
+                    {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
+                  </td>
+                </tr>
+              ))}
+              {!loading && data.customers.length === 0 && (
+                <tr><td colSpan="5">No customer profiles are linked yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+
+      <Panel
+        title="Shared Prep Notes"
+        icon={FileText}
+        action={(
+          <div className="hub-button-row">
+            <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
+            <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
+          </div>
+        )}
+      >
+        <div className="hub-wordpad-tabs">
+          {(data.notes || []).map((note) => (
+            <button key={note.id} className={activeTab === note.id ? 'is-active' : ''} onClick={() => chooseNote(note.id)}>
+              {note.title}
+            </button>
+          ))}
+          <span>{status || 'Autosaves to Drafts-backed hub docs'}</span>
+        </div>
+        {canEditNotes ? (
+          preview ? (
+            <MarkdownPreview body={noteBody} />
+          ) : (
+            <textarea
+              className="hub-wordpad"
+              value={noteBody}
+              onChange={(event) => setNoteBody(event.target.value)}
+              spellCheck="true"
+              placeholder={"# Production\n- Prep notes\n- Packout questions\n- Delivery changes"}
+            />
+          )
+        ) : (
+          <MarkdownPreview body={noteBody || 'No staff note published yet.'} />
+        )}
+      </Panel>
+    </div>
+  );
+}
+
 function PrivilegedTools({ accessToken, reloadDocs }) {
   const [invite, setInvite] = useState({ email: '', accessLevel: 'staff', displayNameHint: '' });
   const [created, setCreated] = useState(null);
@@ -842,6 +1067,7 @@ function PrivilegedTools({ accessToken, reloadDocs }) {
           <Field label="Access">
             <select value={invite.accessLevel} onChange={(e) => setInvite({ ...invite, accessLevel: e.target.value })}>
               <option value="staff">Staff</option>
+              <option value="customer">Customer</option>
               <option value="privileged">Privileged</option>
             </select>
           </Field>
@@ -1093,7 +1319,12 @@ function LocalistView({
   const totalCents = selectedItems.reduce((sum, item) => sum + (item.priceCents || 0) * item.quantity, 0);
   const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
   const checkoutBusy = checkoutStatus === 'loading';
-  const canCheckout = totalQuantity > 0 && totalCents > 0 && name.trim() && pickupWindow && !checkoutBusy;
+  const requiresPickupWindow = area === 'localist';
+  const canCheckout = totalQuantity > 0
+    && totalCents > 0
+    && name.trim()
+    && (!requiresPickupWindow || pickupWindow)
+    && !checkoutBusy;
   const cartPayload = useMemo(() => ({
     totalQuantity,
     totalCents,
@@ -1189,7 +1420,7 @@ function LocalistView({
         body: JSON.stringify({
           name,
           phone: formatPhone(phone),
-          pickupWindow,
+          pickupWindow: requiresPickupWindow ? pickupWindow : '',
           note,
           localistToken: params.get('localist') || '',
           visitorId: identity.visitorId,
@@ -1344,14 +1575,16 @@ function LocalistView({
           <Field label="Phone (optional)">
             <input value={formatPhone(phone)} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" autoComplete="tel" />
           </Field>
-          <Field label="Pickup window">
-            <select value={pickupWindow} onChange={(e) => setPickupWindow(e.target.value)} required>
-              <option value="">Select pickup window</option>
-              {LOCALIST_PICKUP_WINDOWS.map((windowLabel) => (
-                <option key={windowLabel} value={windowLabel}>{windowLabel}</option>
-              ))}
-            </select>
-          </Field>
+          {requiresPickupWindow && (
+            <Field label="Pickup window">
+              <select value={pickupWindow} onChange={(e) => setPickupWindow(e.target.value)} required>
+                <option value="">Select pickup window</option>
+                {LOCALIST_PICKUP_WINDOWS.map((windowLabel) => (
+                  <option key={windowLabel} value={windowLabel}>{windowLabel}</option>
+                ))}
+              </select>
+            </Field>
+          )}
           <Field label="Notes (optional)">
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Allergies, delivery instructions..." />
           </Field>
@@ -1598,12 +1831,28 @@ function LocalistChat() {
 }
 
 function SecurityPasswordGate({ children }) {
+  const hasQrAccess = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('access') === SECURITY_MENU_QR_TOKEN
+      || params.get('securityAccess') === SECURITY_MENU_QR_TOKEN;
+  };
   const [unlocked, setUnlocked] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.sessionStorage.getItem(SECURITY_MENU_STORAGE_KEY) === '1';
+    return window.sessionStorage.getItem(SECURITY_MENU_STORAGE_KEY) === '1' || hasQrAccess();
   });
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!hasQrAccess()) return;
+    window.sessionStorage.setItem(SECURITY_MENU_STORAGE_KEY, '1');
+    setUnlocked(true);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('access');
+    url.searchParams.delete('securityAccess');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  }, []);
 
   const submit = (event) => {
     event.preventDefault();
@@ -1781,6 +2030,7 @@ export default function HubPage() {
 
   const loadShellData = useCallback(async () => {
     if (!auth.accessToken || !profile) return;
+    if (profile.accessLevel === 'customer') return;
     const start = todayIso();
     const [peopleData, docsData, calendarData, convData, shiftData] = await Promise.all([
       api('/api/hub/people', auth.accessToken),
@@ -1801,20 +2051,25 @@ export default function HubPage() {
 
   const isPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
   const isLocalist = !!profile && profile.accessLevel === 'localist';
+  const isCustomer = !!profile && profile.accessLevel === 'customer';
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
   const navTabs = isLocalist
     ? [localistTab]
+    : isCustomer
+    ? [mealPrepTab]
     : isPrivileged
-    ? [...tabs, adminTab, localistTab, securityTab]
-    : [...tabs, localistTab, securityTab];
+    ? [...tabs, mealPrepTab, adminTab, localistTab, securityTab]
+    : [...tabs, mealPrepTab, localistTab, securityTab];
   const mobileNavTabs = isLocalist
     ? [localistTab]
+    : isCustomer
+    ? [mealPrepTab]
     : isPrivileged
-    ? [tabs[0], tabs[1], tabs[3], tabs[5], adminTab, localistTab, securityTab]
-    : [tabs[0], tabs[1], tabs[2], tabs[3], tabs[5], localistTab, securityTab];
-  const activeTab = isLocalist ? 'localist' : tab;
+    ? [tabs[0], tabs[1], mealPrepTab, tabs[3], tabs[5], adminTab, localistTab, securityTab]
+    : [tabs[0], tabs[1], mealPrepTab, tabs[2], tabs[3], tabs[5], localistTab, securityTab];
+  const activeTab = isLocalist ? 'localist' : isCustomer ? 'weeklyMealPrep' : tab;
 
   if (localistToken) {
     if (!localistAccess.loaded) {
@@ -1890,17 +2145,18 @@ export default function HubPage() {
         <header className="hub-topbar">
           <div>
             <h1>{navTabs.find((item) => item.id === activeTab)?.label || 'Hub'}</h1>
-            <p>{isLocalist ? 'Localist view' : isPrivileged ? 'Privileged view' : 'Staff view'}</p>
+            <p>{isLocalist ? 'Localist view' : isCustomer ? 'Customer view' : isPrivileged ? 'Privileged view' : 'Staff view'}</p>
           </div>
           <button onClick={loadShellData}><RefreshCw size={13} /> Refresh</button>
         </header>
 
         {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
-        {activeTab === 'calendar' && <CalendarView accessToken={auth.accessToken} />}
+        {activeTab === 'calendar' && <CalendarView accessToken={auth.accessToken} profile={profile} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
         {activeTab === 'shifts' && <ShiftsView accessToken={auth.accessToken} isPrivileged={isPrivileged} />}
+        {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
         {activeTab === 'security' && <SecurityView />}
@@ -2043,6 +2299,7 @@ const hubCss = `
 .hub-person button:hover,
 .hub-shift-action:hover { background: var(--hub-row-hover); }
 .hub-button-row { display: flex; gap: 4px; }
+.hub-button-row button.is-active { background: var(--hub-accent-bg); color: var(--hub-accent); border-color: #b9d1c8; }
 
 /* ── Grid & panels ── */
 .hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -2083,6 +2340,7 @@ const hubCss = `
 
 /* ── Calendar ── */
 .hub-calendar-list { display: flex; flex-direction: column; gap: 16px; padding: 12px 14px; }
+.hub-calendar-shell { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; align-items: start; }
 .hub-day h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hub-muted); margin: 0 0 6px; }
 .hub-calendar-item {
   display: grid;
@@ -2097,6 +2355,18 @@ const hubCss = `
 .hub-calendar-item span { font-size: 11px; font-weight: 700; color: var(--hub-accent); }
 .hub-calendar-item strong { font-size: 13px; font-weight: 600; }
 .hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 11px; }
+.hub-calendar-widget {
+  margin: 12px 14px 12px 0;
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+  background: var(--hub-bg);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+.hub-calendar-widget strong { font-size: 12px; }
+.hub-calendar-widget span,
+.hub-calendar-widget small { color: var(--hub-muted); font-size: 11px; }
 
 /* ── Chat ── */
 .hub-chat-layout { display: grid; grid-template-columns: minmax(220px, 280px) 1fr; gap: 12px; }
@@ -2190,6 +2460,108 @@ const hubCss = `
   font-weight: 600;
   color: var(--hub-accent);
   white-space: nowrap;
+}
+
+/* ── Weekly meal prep ── */
+.hub-meal-prep { display: grid; gap: 12px; }
+.hub-customer-table-wrap {
+  max-height: min(430px, 52svh);
+  overflow: auto;
+  border-top: 1px solid var(--hub-border-light);
+}
+.hub-customer-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.hub-customer-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--hub-panel);
+  border-bottom: 1px solid var(--hub-border);
+  color: var(--hub-muted);
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+}
+.hub-customer-table td {
+  vertical-align: top;
+  border-bottom: 1px solid var(--hub-border-light);
+  padding: 9px 10px;
+}
+.hub-customer-table strong,
+.hub-customer-table span,
+.hub-customer-table small {
+  display: block;
+}
+.hub-customer-table small,
+.hub-customer-table span:not(:first-child) {
+  color: var(--hub-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.hub-wordpad-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--hub-border-light);
+  overflow-x: auto;
+}
+.hub-wordpad-tabs button {
+  height: 28px;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
+  color: var(--hub-ink);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hub-wordpad-tabs button.is-active {
+  background: var(--hub-accent-bg);
+  border-color: #b9d1c8;
+  color: var(--hub-accent);
+}
+.hub-wordpad-tabs span {
+  margin-left: auto;
+  color: var(--hub-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.hub-wordpad {
+  width: 100%;
+  min-height: 340px;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  padding: 12px 14px;
+  background: #fff;
+  color: var(--hub-ink);
+  font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.hub-markdown-preview {
+  min-height: 260px;
+  padding: 12px 14px;
+  background: #fff;
+}
+.hub-markdown-preview h2,
+.hub-markdown-preview h3,
+.hub-markdown-preview h4 { margin: 10px 0 5px; font-weight: 700; }
+.hub-markdown-preview h2 { font-size: 17px; }
+.hub-markdown-preview h3 { font-size: 15px; }
+.hub-markdown-preview h4 { font-size: 13px; }
+.hub-markdown-preview p {
+  margin: 0 0 5px;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 /* ── Misc ── */
@@ -2581,7 +2953,8 @@ const hubCss = `
   .hub-sidebar { display: none; }
   .hub-main { padding: 12px 12px 68px; }
   .hub-topbar { margin-bottom: 12px; }
-  .hub-grid, .hub-chat-layout, .hub-doc-layout { grid-template-columns: 1fr; }
+  .hub-grid, .hub-chat-layout, .hub-doc-layout, .hub-calendar-shell { grid-template-columns: 1fr; }
+  .hub-calendar-widget { margin: 0 14px 12px; }
   .hub-calendar-item { grid-template-columns: 1fr; }
   .hub-calendar-item small { grid-column: auto; }
   .hub-shift { flex-wrap: wrap; }
@@ -2673,7 +3046,7 @@ const hubCss = `
     left: 0; right: 0; bottom: 0;
     z-index: 30;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
     background: #eee9df;
     border-top: 1px solid var(--hub-border);
     padding: 4px 4px 4px;

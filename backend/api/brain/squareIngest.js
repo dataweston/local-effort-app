@@ -14,7 +14,6 @@
  */
 
 const { writeLedgerEvent, findVendorByName, createInboxItem } = require('./ledger');
-const { getPrisma } = require('../utils/prisma');
 
 async function ingestSquarePayment(payment, { logger } = {}) {
   try {
@@ -52,32 +51,14 @@ async function ingestSquarePayment(payment, { logger } = {}) {
       },
     });
 
-    // 2. Try to match to a known Vendor
+    // 2. Try to match to a known Vendor. The payment fact lives in the ledger
+    // event (the inference engine reads payload.merchantName) — no graph
+    // assertion is written, since a vendor→vendor self-edge violates the
+    // relationship dictionary and gets auto-retracted by review automation.
     if (merchantName) {
       const vendorEntityId = await findVendorByName(merchantName);
       if (vendorEntityId) {
-        const prisma = getPrisma();
-        // Write PRICED_AT assertion: Vendor paid $X on this date
-        await prisma.brainAssertion.create({
-          data: {
-            srcId: vendorEntityId,
-            dstId: vendorEntityId, // self-referencing for payment events — vendor paid
-            relType: 'PAYMENT_RECEIVED',
-            metadata: {
-              squarePaymentId,
-              amountCents,
-              receiptUrl,
-              occurredAt,
-            },
-            validFrom: new Date(occurredAt),
-            knownFrom: new Date(),
-            confidence: 1.0,
-            sourceType: 'ledger_event',
-            sourceId: ledgerEvent.id,
-            createdBy: 'system',
-          },
-        });
-        if (logger?.info) logger.info({ squarePaymentId, vendorEntityId }, 'brain: square payment linked to vendor');
+        if (logger?.info) logger.info({ squarePaymentId, vendorEntityId, ledgerEventId: ledgerEvent.id }, 'brain: square payment linked to vendor');
         return;
       }
     }

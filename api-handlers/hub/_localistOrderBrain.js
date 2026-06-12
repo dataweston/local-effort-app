@@ -1,3 +1,32 @@
+const SECURITY_PICKUP_WINDOW = 'Security at Neon';
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
+function notificationEmail() {
+  return process.env.LOCALIST_ORDER_NOTIFY_EMAIL
+    || 'dataweston@gmail.com';
+}
+
+function senderEmail() {
+  return process.env.SENDER_EMAIL || process.env.LOCALIST_ORDER_SENDER_EMAIL || notificationEmail();
+}
+
+function orderAreaLabel(order) {
+  return order?.pickupWindow === SECURITY_PICKUP_WINDOW ? 'Security at Neon' : 'Localist';
+}
+
+function formatCurrency(cents) {
+  return `$${((Number(cents) || 0) / 100).toFixed(2)}`;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function itemSummary(items) {
   return (Array.isArray(items) ? items : [])
     .map((item) => {
@@ -10,11 +39,13 @@ function itemSummary(items) {
 }
 
 function orderRawContent(order, prefix = 'Localist order') {
+  const areaLabel = orderAreaLabel(order);
   const lines = [
     `${prefix}: ${order.customerName}`,
+    `Area: ${areaLabel}`,
     `Status: ${order.status}`,
-    `Total: $${((Number(order.totalCents) || 0) / 100).toFixed(2)} (${order.totalQuantity} item${order.totalQuantity === 1 ? '' : 's'})`,
-    `Pickup: ${order.pickupWindow}`,
+    `Total: ${formatCurrency(order.totalCents)} (${order.totalQuantity} item${order.totalQuantity === 1 ? '' : 's'})`,
+    areaLabel === 'Localist' ? `Pickup: ${order.pickupWindow}` : null,
     order.customerEmail ? `Email: ${order.customerEmail}` : null,
     order.customerPhone ? `Phone: ${order.customerPhone}` : null,
     order.customerNote ? `Notes/allergies: ${order.customerNote}` : null,
@@ -25,6 +56,59 @@ function orderRawContent(order, prefix = 'Localist order') {
     order.squarePaymentLinkUrl ? `Square checkout: ${order.squarePaymentLinkUrl}` : null,
   ].filter(Boolean);
   return lines.join('\n');
+}
+
+async function sendPaidOrderEmail(order) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const toEmail = notificationEmail();
+  const fromEmail = senderEmail();
+  if (!apiKey || !toEmail || !fromEmail) return { skipped: true };
+
+  const areaLabel = orderAreaLabel(order);
+  const subject = `${areaLabel} paid order - ${order.customerName || 'customer'} - ${formatCurrency(order.totalCents)}`;
+  const items = itemSummary(order.items) || 'No item details';
+  const pickupLine = areaLabel === 'Localist' && order.pickupWindow
+    ? `<p><strong>Pickup:</strong> ${escapeHtml(order.pickupWindow)}</p>`
+    : '';
+  const htmlContent = `
+    <h2>${escapeHtml(subject)}</h2>
+    <p><strong>Status:</strong> ${escapeHtml(order.status || 'paid')}</p>
+    <p><strong>Total:</strong> ${escapeHtml(formatCurrency(order.totalCents))} (${Number(order.totalQuantity) || 0} item${Number(order.totalQuantity) === 1 ? '' : 's'})</p>
+    ${pickupLine}
+    <p><strong>Name:</strong> ${escapeHtml(order.customerName || '')}</p>
+    ${order.customerEmail ? `<p><strong>Email:</strong> ${escapeHtml(order.customerEmail)}</p>` : ''}
+    ${order.customerPhone ? `<p><strong>Phone:</strong> ${escapeHtml(order.customerPhone)}</p>` : ''}
+    ${order.customerNote ? `<p><strong>Notes:</strong> ${escapeHtml(order.customerNote)}</p>` : ''}
+    <p><strong>Items:</strong> ${escapeHtml(items)}</p>
+    ${order.squareReceiptUrl ? `<p><a href="${escapeHtml(order.squareReceiptUrl)}">Square receipt</a></p>` : ''}
+    ${order.squareOrderId ? `<p><strong>Square order:</strong> ${escapeHtml(order.squareOrderId)}</p>` : ''}
+    ${order.squarePaymentId ? `<p><strong>Square payment:</strong> ${escapeHtml(order.squarePaymentId)}</p>` : ''}
+  `;
+  const textContent = orderRawContent(order, `Paid ${areaLabel} order`);
+
+  const response = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { email: fromEmail, name: process.env.LOCALIST_ORDER_SENDER_NAME || 'Local Effort' },
+      to: [{ email: toEmail }],
+      subject,
+      htmlContent,
+      textContent,
+    }),
+  });
+  if (!response.ok) {
+    const details = await response.text().catch(() => '');
+    const error = new Error('Brevo paid order email failed');
+    error.status = response.status;
+    error.details = details;
+    throw error;
+  }
+  return { sent: true };
 }
 
 async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
@@ -85,7 +169,7 @@ async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
 
   const inboxItem = await prisma.brainInboxItem.create({
     data: {
-      rawContent: orderRawContent(order, paid ? 'Paid Localist order' : 'Localist checkout started'),
+      rawContent: orderRawContent(order, paid ? `Paid ${orderAreaLabel(order)} order` : `${orderAreaLabel(order)} checkout started`),
       source: 'hub_localist_order',
       attachments: order.squarePaymentLinkUrl
         ? [
@@ -110,6 +194,12 @@ async function writeOrderBrainRecords(prisma, order, { paid = false } = {}) {
       ? { brainLedgerEventId: ledgerEvent.id, brainInboxItemId: inboxItem.id }
       : { brainLedgerEventId: ledgerEvent.id, brainInboxItemId: inboxItem.id },
   }).catch(() => {});
+
+  if (paid) {
+    await sendPaidOrderEmail(order).catch((err) => {
+      console.warn('[hub/localist-order] paid order email failed', err?.message || err);
+    });
+  }
 
   return { ledgerEvent, inboxItem };
 }
@@ -146,6 +236,8 @@ async function markLocalistOrderPaidFromSquare(prisma, payment) {
 module.exports = {
   itemSummary,
   orderRawContent,
+  orderAreaLabel,
+  sendPaidOrderEmail,
   writeOrderBrainRecords,
   markLocalistOrderPaidFromSquare,
 };

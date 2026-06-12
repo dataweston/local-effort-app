@@ -7,6 +7,8 @@ import Graph from 'graphology';
 import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
+import { BrainExplorePanel } from '../components/brain/BrainExplorePanel';
+import { BrainQualityPanel } from '../components/brain/BrainQualityPanel';
 
 const ENTITY_TYPES = [
   'Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product',
@@ -349,6 +351,9 @@ function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false 
   const [editName, setEditName] = useState('');
   const [saving, setSaving] = useState(false);
   const [actionId, setActionId] = useState(null);
+  const [showMerge, setShowMerge] = useState(false);
+  const [mergeTarget, setMergeTarget] = useState(null);
+  const [mergeError, setMergeError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -399,6 +404,27 @@ function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false 
     load();
   }
 
+  async function handleMerge() {
+    if (!mergeTarget?.id) return;
+    if (!confirm(`Merge "${entity.name}" into "${mergeTarget.name}" (${mergeTarget.entityType})? This entity's assertions and aliases move to the target, then it is archived.`)) return;
+    setSaving(true);
+    setMergeError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/brain/entities/${id}/merge-into/${mergeTarget.id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'merge failed');
+      onUpdated?.();
+      onClose();
+    } catch (err) {
+      setMergeError(err.message || 'merge failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) return <div className="p-6 text-sm text-gray-400">Loading…</div>;
   if (!entity) return <div className="p-6 text-sm text-red-500">Not found</div>;
 
@@ -445,6 +471,10 @@ function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false 
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <button onClick={() => setShowMerge(v => !v)} disabled={saving}
+            className={`text-xs px-2 py-1 border rounded disabled:opacity-50 ${showMerge ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+            Merge…
+          </button>
           <button onClick={handleTombstone} disabled={saving}
             className="text-xs px-2 py-1 border border-red-200 text-red-600 rounded hover:bg-red-50 disabled:opacity-50">
             Archive
@@ -454,6 +484,25 @@ function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false 
       </div>
 
       <div className="overflow-y-auto flex-1 p-4 space-y-4">
+        {showMerge && (
+          <div className="rounded border border-gray-200 bg-gray-50 p-3 space-y-2">
+            <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              Merge this entity into…
+            </div>
+            <EntityPicker label="Surviving entity" value={mergeTarget} accessToken={accessToken} onChange={setMergeTarget} />
+            {mergeError && <div className="text-xs text-red-700">{mergeError}</div>}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => { setShowMerge(false); setMergeTarget(null); }} className="text-xs px-2 py-1 border rounded bg-white">Cancel</button>
+              <button
+                onClick={handleMerge}
+                disabled={saving || !mergeTarget || mergeTarget.id === id}
+                className="text-xs px-2 py-1 rounded bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50"
+              >
+                {saving ? 'Merging…' : 'Merge into target'}
+              </button>
+            </div>
+          </div>
+        )}
         {entity.properties && Object.keys(entity.properties).length > 0 && (
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Properties</div>
@@ -1010,16 +1059,16 @@ function SmartReviewPanel({ accessToken, enabled, onApplied }) {
   );
 }
 
-function GraphLoader({ entities, onNodeClick }) {
+function GraphLoader({ nodes, edges, onNodeClick }) {
   const loadGraph = useLoadGraph();
   const registerEvents = useRegisterEvents();
   const sigma = useSigma();
 
   useEffect(() => {
-    if (!entities.length) return;
+    if (!nodes.length) return;
     const graph = new Graph({ multi: false, type: 'directed' });
 
-    entities.forEach(e => {
+    nodes.forEach(e => {
       if (!graph.hasNode(e.id)) {
         graph.addNode(e.id, {
           label: e.name,
@@ -1031,10 +1080,21 @@ function GraphLoader({ entities, onNodeClick }) {
       }
     });
 
+    (edges || []).forEach(edge => {
+      if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) return;
+      if (edge.source === edge.target) return;
+      if (graph.hasEdge(edge.source, edge.target)) return;
+      graph.addDirectedEdge(edge.source, edge.target, {
+        label: edge.relType,
+        size: 1,
+        color: edge.provisional ? '#e8c98a' : '#cbd5e1',
+      });
+    });
+
     loadGraph(graph);
     circular.assign(graph);
-    forceAtlas2.assign(graph, { iterations: 120, settings: { gravity: 1, scalingRatio: 2, barnesHutOptimize: true } });
-  }, [entities, loadGraph]);
+    forceAtlas2.assign(graph, { iterations: 150, settings: { gravity: 1, scalingRatio: 4, barnesHutOptimize: true } });
+  }, [nodes, edges, loadGraph]);
 
   useEffect(() => {
     registerEvents({
@@ -1046,8 +1106,8 @@ function GraphLoader({ entities, onNodeClick }) {
   return null;
 }
 
-function GraphView({ entities, onNodeClick, selectedId }) {
-  if (!entities.length) {
+function GraphView({ nodes, edges, onNodeClick, selectedId }) {
+  if (!nodes.length) {
     return (
       <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
         No entities to display
@@ -1069,7 +1129,7 @@ function GraphView({ entities, onNodeClick, selectedId }) {
       <SigmaContainer
         style={{ width: '100%', height: '100%' }}
         settings={{
-          renderLabels: entities.length < 150,
+          renderLabels: nodes.length < 150,
           labelSize: 11,
           labelColor: { color: '#374151' },
           defaultEdgeColor: '#d1d5db',
@@ -1081,7 +1141,7 @@ function GraphView({ entities, onNodeClick, selectedId }) {
           }),
         }}
       >
-        <GraphLoader entities={entities} onNodeClick={onNodeClick} />
+        <GraphLoader nodes={nodes} edges={edges} onNodeClick={onNodeClick} />
       </SigmaContainer>
       <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 rounded px-2 py-1 pointer-events-none">
         scroll=zoom · drag=pan · click=inspect · dbl-click=reset
@@ -1106,7 +1166,30 @@ export default function BrainBrowserPage() {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
+  const [graphLoading, setGraphLoading] = useState(false);
   const LIMIT = 50;
+
+  // Graph view gets its own nodes+edges fetch (the table fetch has no edges)
+  useEffect(() => {
+    if (viewMode !== 'graph' || !auth.accessToken) return;
+    let cancelled = false;
+    setGraphLoading(true);
+    const params = new URLSearchParams({ limit: '200' });
+    if (typeFilter) params.set('type', typeFilter);
+    if (activeQuery) params.set('q', activeQuery);
+    fetch(`${API_BASE}/api/brain/graph?${params}`, {
+      headers: { Authorization: `Bearer ${auth.accessToken}` },
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        if (d.ok) setGraphData({ nodes: d.nodes || [], edges: d.edges || [] });
+        setGraphLoading(false);
+      })
+      .catch(() => { if (!cancelled) setGraphLoading(false); });
+    return () => { cancelled = true; };
+  }, [viewMode, typeFilter, activeQuery, auth.accessToken]);
 
   const fetchEntities = useCallback((q, type, sortField, off) => {
     if (!auth.accessToken) return;
@@ -1188,6 +1271,18 @@ export default function BrainBrowserPage() {
               >
                 Graph
               </button>
+              <button
+                onClick={() => { setViewMode('explore'); setSelectedId(null); }}
+                className={`px-3 py-1.5 ${viewMode === 'explore' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Explore
+              </button>
+              <button
+                onClick={() => { setViewMode('quality'); setSelectedId(null); }}
+                className={`px-3 py-1.5 ${viewMode === 'quality' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Quality
+              </button>
             </div>
             {viewMode === 'table' && (
               <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -1234,21 +1329,28 @@ export default function BrainBrowserPage() {
         onApplied={handleRefresh}
       />
 
-      <LedgerLookupPanel
-        accessToken={auth.accessToken}
-        onSelectEntity={id => setSelectedId(id)}
-      />
+      {!['explore', 'quality'].includes(viewMode) && (
+        <LedgerLookupPanel
+          accessToken={auth.accessToken}
+          onSelectEntity={id => setSelectedId(id)}
+        />
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>
-        {viewMode === 'graph' ? (
+        {viewMode === 'explore' ? (
+          <BrainExplorePanel accessToken={auth.accessToken} />
+        ) : viewMode === 'quality' ? (
+          <BrainQualityPanel accessToken={auth.accessToken} onMerged={handleRefresh} />
+        ) : viewMode === 'graph' ? (
           <>
             <div className={`flex overflow-hidden ${showDetail ? 'w-1/2' : 'w-full'}`} style={{ minHeight: 0 }}>
-              {loading ? (
+              {graphLoading ? (
                 <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading…</div>
               ) : (
                 <GraphView
-                  entities={entities}
+                  nodes={graphData.nodes}
+                  edges={graphData.edges}
                   selectedId={selectedId}
                   onNodeClick={id => setSelectedId(id === selectedId ? null : id)}
                 />

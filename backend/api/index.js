@@ -61,13 +61,16 @@ const { markLocalistOrderPaidFromSquare } = require('../../api-handlers/hub/_loc
 const { registerGmailRoutes } = require('./brain/gmailRoutes');
 const { registerInboxRoutes } = require('./brain/inboxRoutes');
 const { registerInferenceRoutes } = require('./brain/inferenceRoutes');
-const { runInferencePass } = require('./brain/inferenceEngine');
 const { registerMenuRoutes } = require('./brain/menuRoutes');
 const { registerOntologyRoutes } = require('./brain/ontologyRoutes');
 const { registerSidecarRoutes } = require('./brain/sidecarRoutes');
 const { registerSearchRoutes } = require('./brain/searchRoutes');
 const { registerHypothesisRoutes } = require('./brain/hypothesisRoutes');
 const { registerEntityRoutes } = require('./brain/entityRoutes');
+const { registerTriageRoutes } = require('./brain/triageRoutes');
+const { registerCockpitRoutes } = require('./brain/cockpitRoutes');
+const { registerExploreRoutes } = require('./brain/exploreRoutes');
+const { registerSquareOrdersRoutes } = require('./brain/squareOrdersSync');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
 const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
@@ -561,37 +564,16 @@ registerSidecarRoutes(app, { logger });
 registerSearchRoutes(app, { logger });
 registerHypothesisRoutes(app, { logger });
 registerEntityRoutes(app, { logger });
+registerTriageRoutes(app, { logger });
+registerCockpitRoutes(app, { logger });
+registerExploreRoutes(app, { logger });
+registerSquareOrdersRoutes(app, { logger });
 
-// Nightly brain jobs — 02:00: Python sidecar extraction, then inference pass
-{
-  const { spawn } = require('child_process');
-  const path = require('path');
-  let lastNightlyDay = null;
-
-  function runNightly() {
-    const sidecarDir = path.resolve(__dirname, '../../brain-sidecar');
-    const pythonBin = process.env.BRAIN_PYTHON_BIN || 'python3';
-    const child = spawn(pythonBin, ['run.py'], { cwd: sidecarDir, env: { ...process.env } });
-    child.stdout.on('data', d => logger.info({ line: d.toString().trim() }, 'brain/sidecar: nightly'));
-    child.stderr.on('data', d => logger.warn({ line: d.toString().trim() }, 'brain/sidecar: stderr'));
-    child.on('close', code => {
-      logger.info({ code }, 'brain/sidecar: nightly complete — starting inference');
-      runInferencePass({ logger }).catch(err =>
-        logger.error({ err }, 'brain/inference: nightly cron failed')
-      );
-    });
-  }
-
-  setInterval(() => {
-    const now = new Date();
-    const hour = now.getHours();
-    const day = now.toDateString();
-    if (hour === 2 && lastNightlyDay !== day) {
-      lastNightlyDay = day;
-      runNightly();
-    }
-  }, 30 * 60 * 1000);
-}
+// Nightly brain jobs run via Vercel crons (see vercel.json):
+//   /api/brain/triage/run, /api/brain/inference/run, /api/brain/hypothesis/run
+// The old in-process setInterval + Python spawn was removed — it never ran in
+// serverless deployments. To run the Python sidecar extraction locally, use
+// POST /api/brain/sidecar/run or `python brain-sidecar/run.py <job>` directly.
 
 // MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---
@@ -1417,6 +1399,15 @@ app.all('/api/hub/shifts', async (req, res, next) => {
     await require('../../api-handlers/hub/shifts')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub shifts handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/weekly-meal-prep', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/weekly-meal-prep')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub weekly meal prep handler failed');
     next(err);
   }
 });
