@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso } = require('./_http');
-const { getPlannerObjects, rangeForView } = require('./_planner');
+const { getPlannerObjects } = require('./_planner');
 const { getWeekEnd } = require('./_dates');
 const { masterPlannerUid } = require('./_masterPlanner');
 
