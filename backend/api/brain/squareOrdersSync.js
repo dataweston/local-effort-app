@@ -18,7 +18,8 @@ const crypto = require('crypto');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent } = require('./ledger');
 const { getPrisma } = require('../utils/prisma');
-const { getSquareClient } = require('../../../api/_lib/squareClient');
+// Root api/ is excluded by .vercelignore; use the deployed api-handlers copy.
+const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
 
 const verifyAdminRequest = createAdminVerifier();
 
