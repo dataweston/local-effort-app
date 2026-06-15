@@ -4318,7 +4318,7 @@ app.post('/api/intake/submit', async (req, res) => {
         'delivery_timing',
         'delivery_preference',
       ],
-      'Household': ['household_size', 'meal_requests_selected', 'meal_requests_details', 'servings_per_meal', 'meals_per_week', 'meal_mix'],
+      'Household': ['adults', 'kids', 'kids_ages', 'household_size', 'meal_requests_selected', 'meal_requests_details', 'servings_per_meal', 'meals_per_week', 'meal_mix'],
       'Proteins': [
         'proteins_selected',
         'proteins_everyday',
@@ -4403,7 +4403,8 @@ app.post('/api/intake/submit', async (req, res) => {
       htmlContent += '</table>';
     }
 
-    // Include any fields not in predefined sections
+    // Include any fields not in predefined sections (estimate gets its own section below).
+    usedKeys.add('estimate');
     const remainingKeys = Object.keys(formData).filter(k => !usedKeys.has(k));
     if (remainingKeys.length > 0) {
       htmlContent += `
@@ -4427,6 +4428,38 @@ app.post('/api/intake/submit', async (req, res) => {
         `;
       }
       htmlContent += '</table>';
+    }
+
+    // Estimate block (computed client-side and sent in the payload).
+    const estimate = formData.estimate && typeof formData.estimate === 'object' ? formData.estimate : null;
+    const fmtMoney = (n) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    if (estimate) {
+      const kidAges = Array.isArray(estimate.kidAges)
+        ? estimate.kidAges.filter((a) => a !== null && a !== undefined && a !== '')
+        : [];
+      const headcount = [
+        estimate.adults ? `${estimate.adults} adult${estimate.adults === 1 ? '' : 's'}` : null,
+        estimate.kids ? `${estimate.kids} kid${estimate.kids === 1 ? '' : 's'}${kidAges.length ? ` (ages ${kidAges.join(', ')})` : ''}` : null,
+      ].filter(Boolean).join(' + ') || '—';
+      htmlContent += `
+        <h2 style="color: #5c5650; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid #e8e4df; padding-bottom: 8px;">
+          Estimate
+        </h2>
+        <p style="margin: 0 0 8px; color: #2d2a26; font-size: 18px; font-weight: 700;">
+          Estimated weekly cost: ${fmtMoney(estimate.weeklyTotal)}
+        </p>
+        <p style="margin: 0 0 12px; color: #888; font-size: 13px;">Headcount: ${headcount}</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${(Array.isArray(estimate.lines) ? estimate.lines : []).map((line) => `
+            <tr>
+              <td style="padding: 6px 12px 6px 0; vertical-align: top; color: #333; font-size: 14px; line-height: 1.5;">${line.label}</td>
+              <td style="padding: 6px 0; text-align: right; color: #333; font-size: 14px; white-space: nowrap;"><strong>${fmtMoney(line.subtotal)}</strong></td>
+            </tr>
+          `).join('')}
+        </table>
+        ${Array.isArray(estimate.notIncluded) && estimate.notIncluded.length ? `<p style="margin: 8px 0 0; color: #888; font-size: 13px;">Noted but not included in estimate: ${estimate.notIncluded.join(', ')}.</p>` : ''}
+        ${estimate.kids ? `<p style="margin: 8px 0 0; color: #888; font-size: 13px;"><em>Kids' pricing is an age-based estimate; final cost depends on requested portions.</em></p>` : ''}
+      `;
     }
 
     htmlContent += `

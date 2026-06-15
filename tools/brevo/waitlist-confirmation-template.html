@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're on the Local Effort Cooperative weekly meals waitlist</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f1e8; color: #2d2a24; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08); }
+        .header { background-color: #3a4a2f; color: #ffffff; padding: 40px 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.01em; }
+        .header p { margin: 10px 0 0 0; font-size: 15px; opacity: 0.85; line-height: 1.5; }
+        .hero img { width: 100%; height: auto; display: block; }
+        .content { padding: 34px 30px; }
+        .content p { margin: 0 0 16px 0; font-size: 16px; line-height: 1.65; color: #3d382f; }
+        .cta { text-align: center; margin: 32px 0 12px 0; }
+        .cta a { background-color: #6b7d4f; color: #ffffff; padding: 15px 32px; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px; display: inline-block; }
+        .cta-sub { text-align: center; font-size: 13px; color: #8a8475; margin: 0 0 8px 0; }
+        .footer { background-color: #2d2a24; color: #cfc9ba; padding: 22px 30px; text-align: center; }
+        .footer a { color: #cfc9ba; text-decoration: underline; }
+        .footer p { margin: 5px 0; font-size: 13px; }
+        @media (max-width: 600px) {
+            .header { padding: 30px 20px; }
+            .header h1 { font-size: 22px; }
+            .content { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Local Effort Cooperative</h1>
+            <p>Always Mostly Local<br>Seasonal Meal Prep</p>
+        </div>
+        <div class="hero">
+            <img src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,f_auto,q_auto,w_1200,h_560,g_auto/sskam9vptchdg2nomckh" alt="Seasonal meal prep from Local Effort Cooperative" width="600">
+        </div>
+        <div class="content">
+            <p>Hi {{ params.FIRSTNAME }},</p>
+            <p>Thanks for joining the waitlist for our weekly meals. You're on the list, and we'll be in touch as spots open up.</p>
+
+            <p>To help us match you with the right plan, please take a minute to fill out your meal prep intake. It tells us about your household, schedule, and any dietary needs.</p>
+
+            <div class="cta">
+                <a href="{{ params.INTAKE_URL }}">Complete your meal prep intake</a>
+            </div>
+            <p class="cta-sub">Or paste this link into your browser:<br>{{ params.INTAKE_URL }}</p>
+        </div>
+        <div class="footer">
+            <p>Local Effort Cooperative &middot; Minneapolis, MN</p>
+            <p><a href="{{ params.SITE_URL }}">localeffortfood.com</a></p>
+        </div>
+    </div>
+</body>
+</html>

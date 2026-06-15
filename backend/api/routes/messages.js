@@ -84,6 +84,8 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     .replace(/>/g, '&gt;');
   const defaultListIds = parseListIds(process.env.BREVO_NEWSLETTER_LIST_IDS || process.env.BREVO_LIST_IDS || '');
   const tokenTtlHours = Number.parseInt(process.env.NEWSLETTER_CONFIRM_TTL_HOURS || '72', 10) || 72;
+  const waitlistConfirmTemplateId = Number.parseInt(process.env.BREVO_MEAL_PREP_WAITLIST_TEMPLATE_ID || '27', 10) || null;
+  const siteUrl = (process.env.PUBLIC_SITE_URL || 'https://localeffortfood.com').replace(/\/+$/, '');
   const unsubscribeSecret = process.env.EMAIL_UNSUBSCRIBE_SECRET || process.env.SANITY_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET || 'dev-unsubscribe-secret';
 
   const logAudit = (event, details = {}) => {
@@ -408,6 +410,27 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         await sendEmail(payload);
       } catch (err) {
         return handleEmailError(res, err, 'Failed to send email');
+      }
+
+      // Send the client a branded waitlist confirmation with a link to the meal prep intake.
+      // Non-fatal: the signup already succeeded above, so a confirmation failure is logged, not surfaced.
+      if (type === 'meal-prep-waitlist' && email && waitlistConfirmTemplateId) {
+        const [firstName] = String(name || '').trim().split(/\s+/);
+        try {
+          await sendEmail({
+            to: [{ email, name: name || email }],
+            sender: { email: senderEmail, name: 'Local Effort' },
+            templateId: waitlistConfirmTemplateId,
+            tags: ['meal-prep-waitlist', 'confirmation'],
+            params: {
+              FIRSTNAME: firstName || 'there',
+              INTAKE_URL: `${siteUrl}/meal-prep-intake`,
+              SITE_URL: siteUrl,
+            },
+          });
+        } catch (err) {
+          if (logger) logger.warn({ err, email }, 'failed to send meal-prep-waitlist confirmation email');
+        }
       }
 
       return res.json({ ok: true, id: msgDoc?._id || null });

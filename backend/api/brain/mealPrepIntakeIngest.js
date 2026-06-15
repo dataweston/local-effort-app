@@ -32,6 +32,10 @@ function formatValue(value) {
 
 function summarizeIntake(formData) {
   const priorityKeys = [
+    'adults',
+    'kids',
+    'kids_ages',
+    'household_size',
     'meals_per_week',
     'meal_mix',
     'meal_requests_selected',
@@ -140,7 +144,12 @@ async function ingestMealPrepIntake(formData, { logger } = {}) {
   const clientName = compact(formData.client_name || formData.name || formData.email || 'New Meal Prep Customer');
   const email = compact(formData.email || '').toLowerCase();
   const phone = compact(formData.phone || '');
-  const summary = summarizeIntake(formData);
+  const estimate = formData.estimate && typeof formData.estimate === 'object' ? formData.estimate : null;
+  const estimateWeeklyTotal = estimate && Number.isFinite(Number(estimate.weeklyTotal))
+    ? Number(estimate.weeklyTotal)
+    : null;
+  const summary = summarizeIntake(formData)
+    + (estimateWeeklyTotal != null ? `\nEstimated weekly cost: $${estimateWeeklyTotal}` : '');
   const sourceId = sourceIdFor(formData);
 
   const ledgerEvent = await writeLedgerEvent({
@@ -159,22 +168,36 @@ async function ingestMealPrepIntake(formData, { logger } = {}) {
       address: formData.address || null,
       submittedAt: submittedAt.toISOString(),
       summary,
+      estimate: estimate || null,
+      estimateWeeklyTotal,
       answers: formData,
     },
   });
+
+  const householdSize = formData.household_size
+    || [
+      formData.adults ? `${formData.adults} adult${Number(formData.adults) === 1 ? '' : 's'}` : null,
+      formData.kids ? `${formData.kids} kid${Number(formData.kids) === 1 ? '' : 's'}` : null,
+    ].filter(Boolean).join(', ')
+    || null;
 
   const customerProperties = cleanObject({
     source: SOURCE,
     email: email || null,
     phone: phone || null,
     address: formData.address || null,
-    householdSize: formData.household_size || null,
+    householdSize,
+    adults: formData.adults || null,
+    kids: formData.kids || null,
+    kidsAges: Array.isArray(formData.kids_ages) ? formData.kids_ages.filter((a) => a !== '' && a != null) : null,
     preferredStartDate: formData.preferred_start_date || null,
     preferredDeliveryDay: formData.preferred_delivery_day || null,
     deliveryPreference: formData.delivery_preference || null,
     latestMealPrepIntakeAt: submittedAt.toISOString(),
     latestMealPrepIntakeLedgerEventId: ledgerEvent.id,
     latestMealPrepIntakeSummary: summary || null,
+    latestMealPrepEstimateWeeklyTotal: estimateWeeklyTotal,
+    latestMealPrepEstimate: estimate || null,
   });
 
   let customer = await findCustomerByEmail(prisma, email);

@@ -33,7 +33,15 @@ export const MEAL_PREP_INTAKE_QUESTIONS = [
     category: 'Household',
     hidePrompt: true,
     fields: [
-      { id: 'household_size', type: 'text', label: 'Household size', placeholder: 'e.g., 2 adults, 1 kid' },
+      { id: 'adults', type: 'number', label: 'How many adults?', placeholder: 'e.g., 2', min: 0 },
+      { id: 'kids', type: 'number', label: 'How many kids?', placeholder: 'e.g., 1', min: 0 },
+      {
+        id: 'kids_ages',
+        type: 'kids-ages',
+        label: 'How old are the kids?',
+        helper: 'Pricing scales by age: under 1 is free, and 13+ is full price.',
+        dependsOn: 'kids',
+      },
       {
         id: 'meal_requests',
         type: 'meal-request-picker',

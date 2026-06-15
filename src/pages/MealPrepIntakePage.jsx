@@ -73,9 +73,9 @@ const parseFirstNumber = (value) => {
   return match ? Number(match[0]) : null;
 };
 
-const getHouseholdCount = (value) => {
+const toCount = (value) => {
   const count = parseFirstNumber(value);
-  return count && count > 0 ? count : 1;
+  return count && count > 0 ? Math.floor(count) : 0;
 };
 
 const getRequestedMealDays = (details, meal) => {
@@ -83,52 +83,96 @@ const getRequestedMealDays = (details, meal) => {
   return days && days > 0 ? days : 1;
 };
 
+const KID_FLAT_MEAL_RATE = 11;
+
+// Per-child pricing as a function of age and the adult per-person rate for that meal:
+//   under 1 -> free
+//   1-4     -> flat $11/meal
+//   5-9     -> 50% off the adult rate
+//   10-12   -> 25% off the adult rate
+//   13+     -> full adult price
+const kidMealPrice = (age, adultRate) => {
+  if (age == null || Number.isNaN(age)) return adultRate; // unknown age priced as adult
+  if (age < 1) return 0;
+  if (age <= 4) return KID_FLAT_MEAL_RATE;
+  if (age <= 9) return adultRate * 0.5;
+  if (age <= 12) return adultRate * 0.75;
+  return adultRate;
+};
+
+const getKidAges = (answers) => {
+  const kids = toCount(answers.kids);
+  if (kids <= 0) return [];
+  const raw = Array.isArray(answers.kids_ages) ? answers.kids_ages : [];
+  return Array.from({ length: kids }, (_, i) => {
+    const parsed = parseFirstNumber(raw[i]);
+    return parsed == null ? null : parsed;
+  });
+};
+
+// Sum kid charges for one meal at a given adult per-person rate.
+const sumKidMeal = (kidAges, adultRate, days) =>
+  kidAges.reduce((sum, age) => sum + kidMealPrice(age, adultRate) * days, 0);
+
 const calculateMealPrepEstimate = (answers) => {
   const selected = Array.isArray(answers.meal_requests_selected) ? answers.meal_requests_selected : [];
   const details = answers.meal_requests_details && typeof answers.meal_requests_details === 'object'
     ? answers.meal_requests_details
     : {};
-  const people = getHouseholdCount(answers.household_size);
+  const adults = toCount(answers.adults);
+  const kidAges = getKidAges(answers);
+  const kids = kidAges.length;
+  const people = adults + kids;
   const lines = [];
   const notIncluded = [];
 
-  if (selected.includes('Breakfast')) {
-    const days = getRequestedMealDays(details, 'Breakfast');
-    const subtotal = people * days * 13.5;
-    lines.push({
-      id: 'breakfast',
-      label: `Breakfast, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at $13.50/person`,
-      subtotal,
-    });
-  }
+  const headcountLabel = (() => {
+    const parts = [];
+    if (adults) parts.push(`${adults} ${adults === 1 ? 'adult' : 'adults'}`);
+    if (kids) parts.push(`${kids} ${kids === 1 ? 'kid' : 'kids'}`);
+    return parts.join(' + ') || '0 people';
+  })();
 
-  if (selected.includes('Lunch')) {
-    const days = getRequestedMealDays(details, 'Lunch');
-    const subtotal = people * days * 18;
+  // Per-person adult meal rates.
+  const PER_PERSON = { Breakfast: 13.5, Lunch: 18 };
+
+  ['Breakfast', 'Lunch'].forEach((meal) => {
+    if (!selected.includes(meal)) return;
+    const days = getRequestedMealDays(details, meal);
+    const rate = PER_PERSON[meal];
+    const adultSub = adults * days * rate;
+    const kidSub = sumKidMeal(kidAges, rate, days);
     lines.push({
-      id: 'lunch',
-      label: `Lunch, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at $18/person`,
-      subtotal,
+      id: meal.toLowerCase(),
+      label: `${meal}, ${headcountLabel} x ${days} ${days === 1 ? 'day' : 'days'} at $${rate % 1 ? rate.toFixed(2) : rate}/adult`,
+      subtotal: adultSub + kidSub,
     });
-  }
+  });
 
   if (selected.includes('Dinner')) {
     const days = getRequestedMealDays(details, 'Dinner');
-    let subtotal = days * 24;
-    let rateLabel = '$24 for a solo/single person dinner';
 
-    if (people === 2) {
-      subtotal = days * 45;
+    // Adults keep the existing solo / family-of-2 / family flat tiers.
+    let adultSub = adults * days * 18; // family rate, 3+ adults
+    let rateLabel = '$18/adult for a family dinner';
+    if (adults === 1) {
+      adultSub = days * 24;
+      rateLabel = '$24 for a solo dinner';
+    } else if (adults === 2) {
+      adultSub = days * 45;
       rateLabel = '$45 for a family of 2 dinner';
-    } else if (people >= 3) {
-      subtotal = people * days * 18;
-      rateLabel = '$18/person for a family dinner';
+    } else if (adults === 0) {
+      adultSub = 0;
+      rateLabel = 'kids only';
     }
+
+    // Kids priced individually off the $18/person family dinner rate.
+    const kidSub = sumKidMeal(kidAges, 18, days);
 
     lines.push({
       id: 'dinner',
-      label: `Dinner, ${people} ${people === 1 ? 'person' : 'people'} x ${days} ${days === 1 ? 'day' : 'days'} at ${rateLabel}`,
-      subtotal,
+      label: `Dinner, ${headcountLabel} x ${days} ${days === 1 ? 'day' : 'days'} at ${rateLabel}${kids ? ' + age-based kids' : ''}`,
+      subtotal: adultSub + kidSub,
     });
   }
 
@@ -143,7 +187,7 @@ const calculateMealPrepEstimate = (answers) => {
   });
 
   const total = lines.reduce((sum, line) => sum + line.subtotal, 0);
-  return { total, lines, notIncluded };
+  return { total, lines, notIncluded, adults, kids, people, kidAges };
 };
 
 const MealPrepIntakePage = () => {
@@ -187,7 +231,12 @@ const MealPrepIntakePage = () => {
         id: 'meals',
         title: 'Meals',
         items: [
-          item('household_size', 'Household'),
+          item('adults', 'Adults'),
+          item('kids', 'Kids'),
+          item('kids_ages', 'Kids ages', (() => {
+            const ages = getKidAges(answers).filter((age) => age != null);
+            return ages.length ? ages.join(', ') : '';
+          })()),
           item('meal_requests', 'Meal requests', formatMealRequests(answers)),
         ],
       },
@@ -227,6 +276,15 @@ const MealPrepIntakePage = () => {
 
   const updateAnswer = (id, value) => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
+    setValidationMessage('');
+  };
+
+  const updateKidAge = (id, index, value) => {
+    setAnswers((prev) => {
+      const current = Array.isArray(prev[id]) ? [...prev[id]] : [];
+      current[index] = value;
+      return { ...prev, [id]: current };
+    });
     setValidationMessage('');
   };
 
@@ -435,12 +493,22 @@ const MealPrepIntakePage = () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const estimate = calculateMealPrepEstimate(answers);
       const response = await fetch('/api/intake/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...answers,
           intake_type: 'meal-prep-intake',
+          estimate: {
+            weeklyTotal: estimate.total,
+            currency: 'USD',
+            adults: estimate.adults,
+            kids: estimate.kids,
+            kidAges: estimate.kidAges,
+            lines: estimate.lines.map((line) => ({ label: line.label, subtotal: line.subtotal })),
+            notIncluded: estimate.notIncluded,
+          },
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -494,6 +562,55 @@ const MealPrepIntakePage = () => {
             />
           </div>
         );
+      case 'number':
+        return (
+          <div key={field.id} className="meal-prep-intake-field">
+            <label className="meal-prep-intake-label" htmlFor={field.id}>
+              {field.label}{field.required ? ' *' : ''}
+            </label>
+            <input
+              id={field.id}
+              className="meal-prep-intake-input"
+              type="number"
+              inputMode="numeric"
+              min={field.min ?? 0}
+              value={value}
+              placeholder={field.placeholder || ''}
+              onChange={(event) => updateAnswer(field.id, event.target.value)}
+            />
+          </div>
+        );
+      case 'kids-ages': {
+        const kidsCount = toCount(getAnswer(field.dependsOn || 'kids', ''));
+        if (kidsCount <= 0) return null;
+        const ages = Array.isArray(value) ? value : [];
+        return (
+          <div key={field.id} className="meal-prep-intake-field">
+            <div className="meal-prep-intake-label">{field.label}{field.required ? ' *' : ''}</div>
+            {field.helper && <div className="meal-prep-intake-helper">{field.helper}</div>}
+            <div className="meal-prep-intake-kids-ages">
+              {Array.from({ length: kidsCount }, (_, index) => (
+                <div key={index} className="meal-prep-intake-kid-age">
+                  <label className="meal-prep-intake-sub-label" htmlFor={`${field.id}_${index}`}>
+                    Child {index + 1} age
+                  </label>
+                  <input
+                    id={`${field.id}_${index}`}
+                    className="meal-prep-intake-input"
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={25}
+                    value={ages[index] ?? ''}
+                    placeholder="age"
+                    onChange={(event) => updateKidAge(field.id, index, event.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
       case 'address':
         return (
           <div key={field.id} className="meal-prep-intake-field">
@@ -750,6 +867,53 @@ const MealPrepIntakePage = () => {
     return <span>{formatDisplayValue(value)}</span>;
   };
 
+  // Whether enough has been entered for the estimate to be meaningful (at least one meal chosen).
+  const hasMealSelections = Array.isArray(answers.meal_requests_selected)
+    && answers.meal_requests_selected.length > 0;
+
+  const renderEstimate = (heading = 'the estimated weekly cost is') => (
+    <section className="meal-prep-intake-estimate" aria-label="Estimated weekly cost">
+      <div className="meal-prep-intake-estimate-main">
+        <div>
+          <div className="meal-prep-intake-tag">Estimate</div>
+          <h2>{heading} {moneyFormatter.format(weeklyEstimate.total)}</h2>
+        </div>
+        <button
+          type="button"
+          className="meal-prep-intake-estimate-toggle"
+          onClick={() => setEstimateExpanded((prev) => !prev)}
+          aria-expanded={estimateExpanded}
+        >
+          {estimateExpanded ? 'Hide breakdown' : 'Click to expand'}
+        </button>
+      </div>
+      {estimateExpanded && (
+        <div className="meal-prep-intake-estimate-breakdown">
+          {weeklyEstimate.lines.map((line) => (
+            <div key={line.id} className="meal-prep-intake-estimate-line">
+              <span>{line.label}</span>
+              <strong>{moneyFormatter.format(line.subtotal)}</strong>
+            </div>
+          ))}
+          {weeklyEstimate.kids > 0 && (
+            <div className="meal-prep-intake-estimate-footnote">
+              Kids' pricing here is an estimate based on age. The actual cost depends on the portions you'd
+              like for them, not their age alone — we'll fine-tune it with you.
+            </div>
+          )}
+          {weeklyEstimate.notIncluded.length > 0 && (
+            <div className="meal-prep-intake-estimate-footnote">
+              {weeklyEstimate.notIncluded.join(' and ')} are noted in your profile but not included in this estimate yet.
+            </div>
+          )}
+        </div>
+      )}
+      <p className="meal-prep-intake-estimate-note">
+        this might not be your final cost. we'll offer a more finely-tuned price that takes into account your needs and preferences, your portions, and other family-specific details. you can save 8% by switching to monthly billing, and you'll save on fees if you pay by ACH rather than credit. We're happy to explore cost with you to make sure it works with your life.
+      </p>
+    </section>
+  );
+
   if (submitted) {
     return (
       <div className="meal-prep-intake">
@@ -780,40 +944,7 @@ const MealPrepIntakePage = () => {
                 Start Over
               </button>
             </div>
-            <section className="meal-prep-intake-estimate" aria-label="Estimated weekly cost">
-              <div className="meal-prep-intake-estimate-main">
-                <div>
-                  <div className="meal-prep-intake-tag">Estimate</div>
-                  <h2>the estimated weekly cost is {moneyFormatter.format(weeklyEstimate.total)}</h2>
-                </div>
-                <button
-                  type="button"
-                  className="meal-prep-intake-estimate-toggle"
-                  onClick={() => setEstimateExpanded((prev) => !prev)}
-                  aria-expanded={estimateExpanded}
-                >
-                  {estimateExpanded ? 'Hide breakdown' : 'Click to expand'}
-                </button>
-              </div>
-              {estimateExpanded && (
-                <div className="meal-prep-intake-estimate-breakdown">
-                  {weeklyEstimate.lines.map((line) => (
-                    <div key={line.id} className="meal-prep-intake-estimate-line">
-                      <span>{line.label}</span>
-                      <strong>{moneyFormatter.format(line.subtotal)}</strong>
-                    </div>
-                  ))}
-                  {weeklyEstimate.notIncluded.length > 0 && (
-                    <div className="meal-prep-intake-estimate-footnote">
-                      {weeklyEstimate.notIncluded.join(' and ')} are noted in your profile but not included in this estimate yet.
-                    </div>
-                  )}
-                </div>
-              )}
-              <p className="meal-prep-intake-estimate-note">
-                this might not be your final cost. we'll offer a more finely-tuned price that takes into account your needs and preferences, your portions, and other family-specific details. you can save 8% by switching to monthly billing, and you'll save on fees if you pay by ACH rather than credit. We're happy to explore cost with you to make sure it works with your life.
-              </p>
-            </section>
+            {renderEstimate()}
             <div className="meal-prep-intake-summary">
               <div className="meal-prep-intake-summary-heading">
                 <div className="meal-prep-intake-tag">Review</div>
@@ -894,6 +1025,7 @@ const MealPrepIntakePage = () => {
                   </>
                 )}
                 {renderInput()}
+                {hasMealSelections && renderEstimate('estimated weekly cost so far:')}
                 {validationMessage && <div className="meal-prep-intake-validation">{validationMessage}</div>}
                 <div className="meal-prep-intake-actions">
                   <button type="button" className="meal-prep-intake-secondary" onClick={handleBack}>
