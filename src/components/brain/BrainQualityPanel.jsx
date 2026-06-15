@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { GitMerge, RefreshCw } from 'lucide-react';
+import { GitMerge, RefreshCw, Archive } from 'lucide-react';
 import { API_BASE } from '../../lib/apiBase';
 
 /**
@@ -13,22 +13,50 @@ export function BrainQualityPanel({ accessToken, onMerged }) {
   const [error, setError] = useState('');
   const [merging, setMerging] = useState(null); // cluster key while merging
   const [survivors, setSurvivors] = useState({}); // cluster key → entity id
+  const [fragments, setFragments] = useState(null); // { fragments: [], count }
+  const [archiving, setArchiving] = useState(false);
 
   const load = useCallback(() => {
     if (!accessToken) return;
     setLoading(true);
     setError('');
-    fetch(`${API_BASE}/api/brain/quality`, { headers: { Authorization: `Bearer ${accessToken}` } })
-      .then((r) => r.json())
-      .then((d) => {
-        if (!d.ok) throw new Error(d.error || 'quality report failed');
-        setData(d);
+    Promise.all([
+      fetch(`${API_BASE}/api/brain/quality`, { headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.json()),
+      fetch(`${API_BASE}/api/brain/quality/fragments`, { headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.json()),
+    ])
+      .then(([quality, frag]) => {
+        if (!quality.ok) throw new Error(quality.error || 'quality report failed');
+        setData(quality);
+        setFragments(frag.ok ? frag : { fragments: [], count: 0 });
       })
       .catch((err) => setError(err.message || 'quality report failed'))
       .finally(() => setLoading(false));
   }, [accessToken]);
 
   useEffect(() => { load(); }, [load]);
+
+  async function archiveFragments(ids) {
+    const body = ids === 'all' ? { all: true } : { ids };
+    const label = ids === 'all' ? `all ${fragments?.count || 0} fragment entities` : '1 entity';
+    if (!confirm(`Archive ${label}? This is reversible — they become status=archived and drop out of active views. Their assertions are kept.`)) return;
+    setArchiving(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/brain/quality/fragments/archive`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error || 'archive failed');
+      onMerged?.();
+      load();
+    } catch (err) {
+      setError(err.message || 'archive failed');
+    } finally {
+      setArchiving(false);
+    }
+  }
 
   async function mergeCluster(key, members) {
     const survivorId = survivors[key] || members[0]?.id;
@@ -129,7 +157,47 @@ export function BrainQualityPanel({ accessToken, onMerged }) {
               <span className="px-2 py-1 rounded bg-white border border-gray-200 text-gray-700">
                 {(data.orphanedEntitiesByType || []).reduce((s, o) => s + Number(o.n || 0), 0)} orphaned entities
               </span>
+              {fragments?.count > 0 && (
+                <span className="px-2 py-1 rounded bg-rose-50 border border-rose-200 text-rose-800">
+                  {fragments.count} fragment food names
+                </span>
+              )}
             </div>
+
+            {/* Fragment food names — the "dishes" mess. Sentence fragments the
+                gmail extractor minted mid-sentence as Dish/Ingredient/Menu. */}
+            {fragments?.count > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Fragment food names <span className="font-normal normal-case text-gray-400">(sentence fragments minted as Dish/Ingredient/Menu — archive these)</span>
+                  </h2>
+                  <button
+                    onClick={() => archiveFragments('all')}
+                    disabled={archiving}
+                    className="shrink-0 inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50"
+                  >
+                    <Archive size={12} />
+                    {archiving ? 'Archiving…' : `Archive all ${fragments.count}`}
+                  </button>
+                </div>
+                <div className="bg-white border border-gray-200 rounded divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                  {fragments.fragments.map((f) => (
+                    <div key={f.id} className="flex items-center gap-2 px-3 py-1.5 text-xs group">
+                      <span className="font-mono text-[10px] text-gray-400 w-20 shrink-0">{f.entityType}</span>
+                      <span className="text-gray-700 truncate flex-1" title={f.name}>{f.name}</span>
+                      <button
+                        onClick={() => archiveFragments([f.id])}
+                        disabled={archiving}
+                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
+                      >
+                        Archive
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Cross-type duplicates — the audit's main merge target */}
             <section>

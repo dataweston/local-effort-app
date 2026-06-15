@@ -10,6 +10,7 @@ const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { RELATIONSHIPS, validateRelationship } = require('./relationshipDictionary');
 const { canonicalName: canonicalEntityName, writeLedgerEvent } = require('./ledger');
+const { foodNameLooksValid, isFoodFragment, FOOD_ENTITY_TYPES: FOOD_TYPES_LIST } = require('./foodNameValidator');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -18,7 +19,7 @@ const VALID_TYPES = [
   'Vendor', 'Customer', 'Person', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event',
   'Shift', 'Resource', 'Group', 'StaffRole',
   'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
-  'PriceQuote', 'LedgerTransaction',
+  'PriceQuote', 'LedgerTransaction', 'PriceReference',
   // Business model
   'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
   // Operations
@@ -54,8 +55,6 @@ const FOOD_NOISE_PATTERNS = [
   /\bhttps?:\/\//i,
   /\bwww\./i,
 ];
-const FOOD_SIGNOFF_PREFIXES = /^(thanks|thank you|regards|best|cheers|sincerely|hello|hi)\b/i;
-
 function compactText(value, max = 900) {
   if (value == null) return '';
   const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
@@ -115,28 +114,6 @@ function sourceSummary(ledgerEvent) {
     excerpt,
     payload,
   };
-}
-
-function foodNameLooksValid(name, entityType) {
-  const value = compactText(name, 120);
-  if (!value) return false;
-  if (value.length < 3 || value.length > 90) return false;
-  if (/[@]|\bhttps?:\/\/|\bwww\./i.test(value)) return false;
-  if (/\d{3,}/.test(value)) return false;
-  if (FOOD_SIGNOFF_PREFIXES.test(value)) return false;
-
-  const wordCount = value.split(/\s+/).filter(Boolean).length;
-  if (entityType === 'Ingredient') {
-    if (wordCount > 6) return false;
-    if (!/^[a-zA-Z][a-zA-Z\s\-,'()&]+$/.test(value)) return false;
-  }
-  if (entityType === 'Dish') {
-    if (wordCount > 12) return false;
-  }
-  if (entityType === 'Menu') {
-    if (wordCount > 14) return false;
-  }
-  return true;
 }
 
 function assertionTouchesFood(assertion) {
@@ -1205,6 +1182,68 @@ function registerEntityRoutes(app, { logger } = {}) {
       });
     } catch (err) {
       logger?.error({ err }, 'brain: quality report error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // GET /api/brain/quality/fragments — food entities (Dish/Ingredient/Menu)
+  // whose names are gmail sentence-fragments. The "dishes" mess made visible.
+  app.get('/api/brain/quality/fragments', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const candidates = await prisma.brainEntity.findMany({
+        where: { entityType: { in: [...FOOD_TYPES_LIST] }, tombstonedAt: null },
+        select: { id: true, name: true, entityType: true, createdAt: true },
+        orderBy: { entityType: 'asc' },
+      });
+      const fragments = candidates
+        .filter(e => isFoodFragment(e.name, e.entityType))
+        .map(e => ({ id: e.id, name: e.name, entityType: e.entityType, createdAt: e.createdAt }));
+
+      return res.json({ ok: true, fragments, count: fragments.length });
+    } catch (err) {
+      logger?.error({ err }, 'brain: fragments list error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
+
+  // POST /api/brain/quality/fragments/archive — archive (reversible) the given
+  // fragment entity ids, or all detected fragments when { all: true }.
+  app.post('/api/brain/quality/fragments/archive', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      let ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(Boolean) : [];
+
+      if (req.body?.all === true) {
+        const candidates = await prisma.brainEntity.findMany({
+          where: { entityType: { in: [...FOOD_TYPES_LIST] }, tombstonedAt: null },
+          select: { id: true, name: true, entityType: true },
+        });
+        ids = candidates.filter(e => isFoodFragment(e.name, e.entityType)).map(e => e.id);
+      } else {
+        // Re-validate each id is genuinely a fragment before archiving — never
+        // archive an arbitrary id a client sends.
+        const rows = await prisma.brainEntity.findMany({
+          where: { id: { in: ids }, entityType: { in: [...FOOD_TYPES_LIST] }, tombstonedAt: null },
+          select: { id: true, name: true, entityType: true },
+        });
+        ids = rows.filter(e => isFoodFragment(e.name, e.entityType)).map(e => e.id);
+      }
+
+      if (!ids.length) return res.json({ ok: true, archived: 0 });
+
+      const { count } = await prisma.brainEntity.updateMany({
+        where: { id: { in: ids } },
+        data: { tombstonedAt: new Date(), status: 'archived', tombstoneReason: 'cleanup:food_fragment' },
+      });
+      logger?.info({ count }, 'brain: archived food fragments');
+      return res.json({ ok: true, archived: count });
+    } catch (err) {
+      logger?.error({ err }, 'brain: fragments archive error');
       return res.status(500).json({ error: 'internal-error' });
     }
   });

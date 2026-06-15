@@ -18,8 +18,12 @@ CSV format (CPW_Price_List_*.csv):
   COUNT/SIZE examples: "60 CT", "40 LB", "12/6 OZ", "3/.5 OZ", "10/5 LB"
 
 Assertions written:
-  - Ingredient → PRICED_AT (casePrice + perUnitPrice where derivable)
-  - Vendor     → PAYMENT_SENT (not written — this is a price list, not a receipt)
+  - PriceReference → PRICED_AT (casePrice + perUnitPrice where derivable)
+  - Vendor         → PAYMENT_SENT (not written — this is a price list, not a receipt)
+
+Note: items are stored as the PriceReference entity type, NOT Ingredient. This is a
+broad wholesale pricing resource for pro-forma / COGS estimation; we do not build
+recipes from it, so it is kept out of the Ingredient list.
 
 Notes:
   - Ingredient names are normalised: "APPLES OG COSMIC CRISP" → "Apples Cosmic Crisp"
@@ -193,10 +197,14 @@ def run(dry_run: bool = False) -> dict:
 
                 per_unit_price = round(case_price / units, 4) if units else None
 
-                ing_id, ing_created = find_or_create_entity('Ingredient', name)
+                # CPW items are a broad wholesale pricing resource for pro-forma /
+                # COGS estimation — NOT recipe ingredients. Store them as the
+                # distinct PriceReference type so they don't clutter the Ingredient
+                # list or get pulled into recipe building.
+                ing_id, ing_created = find_or_create_entity('PriceReference', name)
                 if ing_created:
                     ingredients_written += 1
-                    print(f'    [ingredient] {name}')
+                    print(f'    [price-reference] {name}')
 
                 meta = {
                     'source': 'cpw_price_list',

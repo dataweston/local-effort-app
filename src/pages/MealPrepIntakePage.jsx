@@ -176,6 +176,19 @@ const calculateMealPrepEstimate = (answers) => {
     });
   }
 
+  if (selected.includes("Kid's meals")) {
+    const days = getRequestedMealDays(details, "Kid's meals");
+    // Dedicated children's meals (e.g. school lunches): priced per kid, age-scaled off the $18 rate.
+    const subtotal = sumKidMeal(kidAges, 18, days);
+    lines.push({
+      id: 'kids_meals',
+      label: kids
+        ? `Kid's meals, ${kids} ${kids === 1 ? 'kid' : 'kids'} x ${days} ${days === 1 ? 'day' : 'days'}, age-based`
+        : `Kid's meals x ${days} ${days === 1 ? 'day' : 'days'}`,
+      subtotal,
+    });
+  }
+
   ['Additional meals', 'Snacks'].forEach((meal) => {
     if (selected.includes(meal)) notIncluded.push(meal);
   });
@@ -767,6 +780,9 @@ const MealPrepIntakePage = () => {
                       <span className="meal-prep-intake-checkbox">{isSelected ? 'x' : ''}</span>
                       <span>{option}</span>
                     </button>
+                    {field.optionHelp?.[option] && (
+                      <div className="meal-prep-intake-meal-help">{field.optionHelp[option]}</div>
+                    )}
                     {isSelected && (
                       <input
                         className="meal-prep-intake-input meal-detail-input"

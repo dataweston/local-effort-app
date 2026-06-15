@@ -79,6 +79,11 @@ function formatDate(value) {
   return parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+function formatMoneyCents(cents) {
+  const dollars = Number(cents || 0) / 100;
+  return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
 function formatTime(value) {
   if (!value) return '';
   const [hours, minutes] = String(value).split(':');
@@ -335,7 +340,81 @@ function ProfileSetup({ accessToken, inviteToken, onDone }) {
   );
 }
 
-function TodayView({ calendar, docs, conversations, shifts, setTab }) {
+const HOME_NOTEPAD_TEMPLATE = '#in season#\n- \n\n#events#\n- \n\n#important updates#\n- \n';
+
+function HomeNotepad({ accessToken }) {
+  const [body, setBody] = useState('');
+  const [loaded, setLoaded] = useState(false);
+  const [status, setStatus] = useState('');
+  const [preview, setPreview] = useState(false);
+  const lastSavedRef = useRef('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api('/api/hub/home-notepad', accessToken);
+        if (cancelled) return;
+        const next = res.note?.body || HOME_NOTEPAD_TEMPLATE;
+        setBody(next);
+        lastSavedRef.current = next;
+      } catch (err) {
+        if (!cancelled) setStatus(err.message || 'Unable to load notepad.');
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!loaded || body === lastSavedRef.current) return undefined;
+    setStatus('Saving...');
+    const timer = window.setTimeout(async () => {
+      try {
+        const saved = await api('/api/hub/home-notepad', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({ body }),
+        });
+        lastSavedRef.current = saved.note?.body ?? body;
+        setStatus(`Saved ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+      } catch (err) {
+        setStatus(err.message || 'Autosave failed.');
+      }
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [accessToken, body, loaded]);
+
+  return (
+    <Panel
+      title="House Notepad"
+      icon={FileText}
+      action={(
+        <div className="hub-button-row">
+          <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
+          <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
+        </div>
+      )}
+    >
+      <div className="hub-wordpad-tabs">
+        <span>{status || 'Shared with all staff. In season, events, and important updates.'}</span>
+      </div>
+      {preview ? (
+        <MarkdownPreview body={body || HOME_NOTEPAD_TEMPLATE} />
+      ) : (
+        <textarea
+          className="hub-wordpad"
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          spellCheck="true"
+          placeholder={HOME_NOTEPAD_TEMPLATE}
+        />
+      )}
+    </Panel>
+  );
+}
+
+function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken, isCustomer }) {
   const todaysItems = calendar.filter((item) => String(item.startsAt || '').startsWith(todayIso()));
   const openShifts = shifts.filter((shift) => shift.open).slice(0, 4);
   const recentDocs = docs.slice(0, 4);
@@ -343,6 +422,7 @@ function TodayView({ calendar, docs, conversations, shifts, setTab }) {
 
   return (
     <div className="hub-grid">
+      {!isCustomer && accessToken && <HomeNotepad accessToken={accessToken} />}
       <Panel title="Today" icon={Home} action={<button onClick={() => setTab('calendar')}>Open calendar</button>}>
         <div className="hub-list">
           {todaysItems.length === 0 && <p className="hub-empty">No scheduled items today.</p>}
@@ -768,6 +848,8 @@ function MarkdownPreview({ body }) {
   return (
     <div className="hub-markdown-preview">
       {lines.map((line, index) => {
+        const wrapped = line.trim().match(/^#(.+)#$/);
+        if (wrapped) return <h3 key={index}>{wrapped[1].trim()}</h3>;
         if (line.startsWith('### ')) return <h4 key={index}>{line.slice(4)}</h4>;
         if (line.startsWith('## ')) return <h3 key={index}>{line.slice(3)}</h3>;
         if (line.startsWith('# ')) return <h2 key={index}>{line.slice(2)}</h2>;
@@ -779,8 +861,42 @@ function MarkdownPreview({ body }) {
   );
 }
 
+function CustomerSpendCell({ customer, intakeDate }) {
+  const txns = customer.transactions || [];
+  const txnCount = customer.transactionCount || 0;
+  const total = customer.totalSpendCents || 0;
+  const emailThreads = customer.emailThreads || [];
+  const emailCount = customer.emailThreadCount || 0;
+
+  return (
+    <div className="hub-spend-cell">
+      <span>
+        <strong>{formatMoneyCents(total)}</strong>
+        {txnCount > 0 ? ` lifetime / ${txnCount} txn${txnCount === 1 ? '' : 's'}` : ' / no transactions'}
+      </span>
+      {txns.slice(0, 3).map((txn) => (
+        <small key={txn.id}>
+          {formatDate(String(txn.occurredAt).slice(0, 10))} — {formatMoneyCents(txn.amountCents)}
+          {txn.matchedBy === 'email' ? ' (email match)' : ''}
+        </small>
+      ))}
+      {emailCount > 0 ? (
+        <small className="hub-spend-emails">
+          ✉ {emailCount} email thread{emailCount === 1 ? '' : 's'}
+          {emailThreads[0]?.subject ? ` — latest: "${emailThreads[0].subject}"` : ''}
+        </small>
+      ) : (
+        <small className="hub-spend-emails">No email threads found</small>
+      )}
+      {intakeDate && (
+        <small>Intake: {formatDate(String(intakeDate).slice(0, 10))}</small>
+      )}
+    </div>
+  );
+}
+
 function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
-  const [data, setData] = useState({ customers: [], notes: [], mode: 'staff' });
+  const [data, setData] = useState({ customers: [], upcomingCustomers: [], notes: [], mode: 'staff' });
   const [activeTab, setActiveTab] = useState(null);
   const [noteBody, setNoteBody] = useState('');
   const [loading, setLoading] = useState(false);
@@ -868,6 +984,7 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
                 <th>Plan</th>
                 <th>Profile</th>
                 <th>Latest Order</th>
+                <th>Spend &amp; History</th>
                 <th>Brain Signals</th>
               </tr>
             </thead>
@@ -892,18 +1009,72 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
                     ) : 'No order yet'}
                   </td>
                   <td>
+                    <CustomerSpendCell customer={customer} />
+                  </td>
+                  <td>
                     <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
                     {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
                   </td>
                 </tr>
               ))}
               {!loading && data.customers.length === 0 && (
-                <tr><td colSpan="5">No customer profiles are linked yet.</td></tr>
+                <tr><td colSpan="6">No customer profiles are linked yet.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </Panel>
+
+      {data.mode !== 'customer' && (
+        <Panel
+          title="Upcoming Customers"
+          icon={Soup}
+          action={<span className="hub-pill">Intake submitted</span>}
+        >
+          <p className="hub-empty" style={{ marginTop: 0 }}>
+            New profiles created from the website meal-prep intake. They&apos;re not active customers yet.
+          </p>
+          <div className="hub-customer-table-wrap">
+            <table className="hub-customer-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Household</th>
+                  <th>Estimate</th>
+                  <th>Preferred Start</th>
+                  <th>History &amp; Emails</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.upcomingCustomers || []).map((customer) => (
+                  <tr key={customer.id}>
+                    <td>
+                      <strong>{customer.name}</strong>
+                      <span>{customer.email || customer.phone || '—'}</span>
+                    </td>
+                    <td>
+                      <span>{customer.householdSize || 'Household not set'}</span>
+                      <small>{customer.address || ''}</small>
+                    </td>
+                    <td>
+                      {customer.estimateWeeklyTotal != null
+                        ? `$${Number(customer.estimateWeeklyTotal).toLocaleString('en-US', { maximumFractionDigits: 2 })}/wk`
+                        : 'No estimate'}
+                    </td>
+                    <td>{customer.preferredStartDate ? formatDate(String(customer.preferredStartDate).slice(0, 10)) : 'Flexible'}</td>
+                    <td>
+                      <CustomerSpendCell customer={customer} intakeDate={customer.intakeSubmittedAt} />
+                    </td>
+                  </tr>
+                ))}
+                {!loading && (data.upcomingCustomers || []).length === 0 && (
+                  <tr><td colSpan="5">No upcoming customers yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
 
       <Panel
         title="Shared Prep Notes"
@@ -2188,7 +2359,7 @@ export default function HubPage() {
           <button onClick={loadShellData}><RefreshCw size={13} /> Refresh</button>
         </header>
 
-        {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} />}
+        {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} />}
         {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
@@ -2541,6 +2712,10 @@ const hubCss = `
   color: var(--hub-muted);
   font-size: 11px;
   margin-top: 2px;
+}
+.hub-spend-cell .hub-spend-emails {
+  margin-top: 4px;
+  color: var(--hub-accent, #5c7a4f);
 }
 .hub-wordpad-tabs {
   display: flex;

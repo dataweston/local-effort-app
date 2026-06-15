@@ -46,7 +46,10 @@ export const MEAL_PREP_INTAKE_QUESTIONS = [
         id: 'meal_requests',
         type: 'meal-request-picker',
         label: 'What kinds of meals should we prepare?',
-        options: ['Breakfast', 'Lunch', 'Dinner', 'Additional meals', 'Snacks'],
+        options: ['Breakfast', 'Lunch', 'Dinner', "Kid's meals", 'Additional meals', 'Snacks'],
+        optionHelp: {
+          "Kid's meals": 'Meals made specifically for children — like school lunches — rather than family-style meals where kids eat the same food as everyone else.',
+        },
       },
     ],
   },

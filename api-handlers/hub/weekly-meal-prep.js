@@ -140,6 +140,108 @@ function compactBrainEntity(entity) {
   };
 }
 
+// ── Transaction & email enrichment ──────────────────────────────────────────
+// Customer spend lives in the brain ledger as Square `order.placed` / `payment.completed`
+// events (payments OUT to vendors live in local-budget; this is revenue IN). Gmail
+// threads are `email.thread` events whose payload.participants list addresses. We pull
+// these once and bucket them per customer by Square customer id and by email.
+
+const TXN_EVENT_TYPES = ['order.placed', 'payment.completed'];
+const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+// Pull an amount in cents out of either event shape.
+function txnAmountCents(payload) {
+  const cents = payload?.totalCents ?? payload?.amountCents ?? 0;
+  return Number.isFinite(Number(cents)) ? Number(cents) : 0;
+}
+
+// Collect any email addresses a Square event payload might carry (buyer email, note, actor).
+function txnEmails(payload, actorId) {
+  const haystack = [
+    payload?.buyerEmail,
+    payload?.buyer_email_address,
+    payload?.merchantName, // squareIngest stores buyer email here as a fallback
+    actorId,
+  ].filter(Boolean).join(' ');
+  return (haystack.match(EMAIL_RE) || []).map(normalizeEmail);
+}
+
+// Build a per-customer enrichment index from the ledger. Returns a function that,
+// given a customer's { squareCustomerIds, emails }, yields { transactions, totalSpendCents,
+// transactionCount, emailThreads, emailThreadCount }.
+async function buildEnrichmentIndex({ squareCustomerIds, emails }) {
+  const sqIds = [...new Set(squareCustomerIds.filter(Boolean))];
+  const emailSet = new Set(emails.map(normalizeEmail).filter(Boolean));
+
+  // Transactions: fetch recent Square revenue events. We over-fetch then bucket in JS,
+  // because customerId/email live inside the JSON payload.
+  const txnEvents = await prisma.ledgerEvent.findMany({
+    where: { source: 'square', eventType: { in: TXN_EVENT_TYPES }, tombstonedAt: null },
+    orderBy: { occurredAt: 'desc' },
+    take: 2000,
+  });
+
+  // Email threads: fetch recent gmail threads, bucket by participant address.
+  const emailEvents = emailSet.size
+    ? await prisma.ledgerEvent.findMany({
+        where: { source: 'gmail', eventType: 'email.thread', tombstonedAt: null },
+        orderBy: { occurredAt: 'desc' },
+        take: 4000,
+      })
+    : [];
+
+  return function enrich({ squareCustomerIds: custSqIds = [], emails: custEmails = [] }) {
+    const idSet = new Set(custSqIds.filter(Boolean));
+    const mailSet = new Set(custEmails.map(normalizeEmail).filter(Boolean));
+
+    const transactions = [];
+    let totalSpendCents = 0;
+    for (const ev of txnEvents) {
+      const p = ev.payload || {};
+      const matchById = p.customerId && idSet.has(p.customerId);
+      const matchByEmail = mailSet.size && txnEmails(p, ev.actorId).some((e) => mailSet.has(e));
+      if (!matchById && !matchByEmail) continue;
+      const cents = txnAmountCents(p);
+      totalSpendCents += cents;
+      transactions.push({
+        id: ev.sourceId || ev.id,
+        occurredAt: asIso(ev.occurredAt),
+        amountCents: cents,
+        itemCount: p.itemCount ?? null,
+        type: ev.eventType,
+        matchedBy: matchById ? 'square_id' : 'email',
+      });
+    }
+
+    const emailThreads = [];
+    for (const ev of emailEvents) {
+      const p = ev.payload || {};
+      const parts = Array.isArray(p.participants) ? p.participants.join(' ') : '';
+      const addrs = ((`${parts} ${p.from || ''} ${p.to || ''}`).match(EMAIL_RE) || []).map(normalizeEmail);
+      if (!addrs.some((e) => mailSet.has(e))) continue;
+      emailThreads.push({
+        id: ev.sourceId || ev.id,
+        occurredAt: asIso(ev.occurredAt),
+        subject: p.subject || '(no subject)',
+        snippet: p.snippet || '',
+        messageCount: p.messageCount ?? null,
+      });
+    }
+
+    return {
+      transactionCount: transactions.length,
+      totalSpendCents,
+      transactions: transactions.slice(0, 5),
+      emailThreadCount: emailThreads.length,
+      emailThreads: emailThreads.slice(0, 5),
+    };
+  };
+}
+
 function summarizeRules(rawRules) {
   const rules = parseJson(rawRules, {});
   const sections = rules?.sectionRules || rules?.sections || {};
@@ -153,7 +255,7 @@ function summarizeRules(rawRules) {
   return [entrees, max].filter(Boolean).join('; ');
 }
 
-function publicCustomer(customer, brainEntity) {
+function publicCustomer(customer, brainEntity, enrichment = null) {
   const latestOrder = customer.orders?.[0] || null;
   const recentItems = (latestOrder?.items || []).map((item) => ({
     title: item.dish?.title || 'Unknown dish',
@@ -187,6 +289,7 @@ function publicCustomer(customer, brainEntity) {
         }
       : null,
     brain: compactBrainEntity(brainEntity),
+    ...(enrichment || { transactionCount: 0, totalSpendCents: 0, transactions: [], emailThreadCount: 0, emailThreads: [] }),
   };
 }
 
@@ -235,7 +338,65 @@ async function loadCustomers(auth) {
   });
   const brainByCustomerId = new Map(brainEntities.map((entity) => [entity.localEffortCustomerId, entity]));
 
-  return customers.map((customer) => publicCustomer(customer, brainByCustomerId.get(customer.id)));
+  // Gather identifiers for transaction/email matching across all customers.
+  const emailsFor = (customer) => (customer.users || []).map((u) => u.email).filter(Boolean);
+  const sqIdFor = (customer) => brainByCustomerId.get(customer.id)?.squareCustomerId || null;
+  const enrich = await buildEnrichmentIndex({
+    squareCustomerIds: customers.map(sqIdFor),
+    emails: customers.flatMap(emailsFor),
+  });
+
+  return customers.map((customer) => publicCustomer(
+    customer,
+    brainByCustomerId.get(customer.id),
+    enrich({ squareCustomerIds: [sqIdFor(customer)], emails: emailsFor(customer) }),
+  ));
+}
+
+// Upcoming customers: brain Customer entities created from a website intake that
+// have not yet been linked to a live (active) customer record. These are prospects
+// whose profile exists but who are not on the active roster.
+function publicUpcomingCustomer(entity, enrichment = null) {
+  const props = entity.properties || {};
+  const estimate = props.latestMealPrepEstimate || null;
+  return {
+    id: entity.id,
+    name: entity.name,
+    email: props.email || null,
+    phone: props.phone || null,
+    householdSize: props.householdSize || null,
+    address: props.address || null,
+    preferredStartDate: props.preferredStartDate || null,
+    deliveryPreference: props.deliveryPreference || null,
+    intakeSubmittedAt: props.latestMealPrepIntakeAt || asIso(entity.createdAt),
+    estimateWeeklyTotal: props.latestMealPrepEstimateWeeklyTotal ?? estimate?.weeklyTotal ?? null,
+    summary: props.latestMealPrepIntakeSummary || null,
+    ...(enrichment || { transactionCount: 0, totalSpendCents: 0, transactions: [], emailThreadCount: 0, emailThreads: [] }),
+  };
+}
+
+async function loadUpcomingCustomers() {
+  const entities = await prisma.brainEntity.findMany({
+    where: {
+      entityType: 'Customer',
+      tombstonedAt: null,
+      localEffortCustomerId: null,
+      properties: { path: ['mealPrepStage'], equals: 'upcoming' },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+  });
+
+  const emailFor = (entity) => [entity.properties?.email].filter(Boolean);
+  const enrich = await buildEnrichmentIndex({
+    squareCustomerIds: entities.map((e) => e.squareCustomerId).filter(Boolean),
+    emails: entities.flatMap(emailFor),
+  });
+
+  return entities.map((entity) => publicUpcomingCustomer(
+    entity,
+    enrich({ squareCustomerIds: [entity.squareCustomerId], emails: emailFor(entity) }),
+  ));
 }
 
 async function loadNotes() {
@@ -289,12 +450,18 @@ async function handler(req, res) {
       return res.status(200).json({ ok: true, note: { ...tab, document: publicDoc(doc) } });
     }
 
-    const [customers, notes] = await Promise.all([loadCustomers(auth), loadNotes()]);
+    const showUpcoming = !auth.isCustomer || auth.isPrivileged;
+    const [customers, upcomingCustomers, notes] = await Promise.all([
+      loadCustomers(auth),
+      showUpcoming ? loadUpcomingCustomers() : Promise.resolve([]),
+      loadNotes(),
+    ]);
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       mode: auth.isCustomer && !auth.isPrivileged ? 'customer' : auth.isPrivileged ? 'privileged' : 'staff',
       customers,
+      upcomingCustomers,
       notes,
     });
   } catch (err) {

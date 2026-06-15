@@ -275,6 +275,13 @@
   min-width: 0;
 }
 
+.meal-prep-intake-meal-help {
+  grid-column: 1 / -1;
+  color: #6f6a5f;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
 .meal-prep-intake-protein {
   display: grid;
   gap: 0.55rem;

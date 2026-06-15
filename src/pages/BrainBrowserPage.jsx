@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
-import { ChevronDown, ChevronUp, Database, FileText, RefreshCw, Search as SearchIcon, X } from 'lucide-react';
+import { FileText, RefreshCw, Search as SearchIcon } from 'lucide-react';
 import Graph from 'graphology';
 import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
@@ -13,7 +13,7 @@ import { BrainQualityPanel } from '../components/brain/BrainQualityPanel';
 const ENTITY_TYPES = [
   'Vendor', 'Customer', 'Dish', 'Ingredient', 'Menu', 'Product',
   'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
-  'PriceQuote', 'LedgerTransaction',
+  'PriceQuote', 'LedgerTransaction', 'PriceReference',
   'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
   'ProcessStep', 'Constraint', 'Asset', 'Opportunity', 'Risk', 'Metric',
   'NarrativeTheme', 'Supplier', 'Task', 'Note', 'Event',
@@ -36,6 +36,7 @@ const TYPE_COLORS = {
   Decision:       '#111827',
   PriceQuote:     '#0f766e',
   LedgerTransaction: '#475569',
+  PriceReference: '#8a8475',
   Supplier:       '#2d6a4f',
   // Business model
   BusinessLine:   '#0f4c81',
@@ -71,6 +72,7 @@ const REL_TYPE_COLORS = {
   MENU_SNAPSHOT:      'bg-indigo-100 text-indigo-800',
   APPEARS_ON:         'bg-violet-100 text-violet-800',
   GAVE_FEEDBACK:      'bg-pink-100 text-pink-800',
+  QUOTED:             'bg-emerald-100 text-emerald-800',
   // New ontology rel types
   GENERATES_REVENUE_FOR: 'bg-green-200 text-green-900',
   SERVES_SEGMENT:        'bg-blue-200 text-blue-900',
@@ -606,241 +608,6 @@ function EntityDetail({ id, accessToken, onClose, onUpdated, reviewMode = false 
 
 // ── Search bar ────────────────────────────────────────────────────────────────
 
-function compactValue(value) {
-  if (value == null || value === '') return null;
-  if (typeof value === 'number') return Number.isInteger(value) ? value.toLocaleString() : String(value);
-  if (typeof value === 'boolean') return value ? 'true' : 'false';
-  if (Array.isArray(value)) return value.length ? `${value.length} item${value.length === 1 ? '' : 's'}` : null;
-  if (typeof value === 'object') return Object.keys(value).length ? 'object' : null;
-  return String(value);
-}
-
-function PayloadSummary({ payload }) {
-  if (!payload) return <div className="text-xs text-gray-400">No compact ledger fields available.</div>;
-  const sections = [
-    ['Ledger entry', payload.ledgerEntry],
-    ['Definitions', payload.definitions],
-    ['Basis', payload.basis],
-    ['Equity transfers', payload.equityTransfers],
-    ['Resulting capitalization', payload.resultingCapitalization],
-  ].filter(([, value]) => value);
-
-  if (!sections.length) return <div className="text-xs text-gray-400">No compact ledger fields available.</div>;
-
-  return (
-    <div className="space-y-2">
-      {sections.map(([label, value]) => (
-        <div key={label} className="rounded border border-gray-100 bg-gray-50 p-2">
-          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{label}</div>
-          {Array.isArray(value) ? (
-            <div className="space-y-1">
-              {value.slice(0, 5).map((item, index) => (
-                <div key={`${label}-${index}`} className="text-xs text-gray-700">
-                  {typeof item === 'object' && item
-                    ? Object.entries(item).slice(0, 5).map(([k, v]) => `${k}: ${compactValue(v)}`).join('  |  ')
-                    : compactValue(item)}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-x-3 gap-y-1 sm:grid-cols-2">
-              {Object.entries(value).slice(0, 18).map(([k, v]) => {
-                const display = compactValue(v);
-                if (!display) return null;
-                return (
-                  <div key={k} className="min-w-0 text-xs">
-                    <span className="font-mono text-[10px] text-gray-400">{k}</span>
-                    <span className="ml-1 text-gray-800">{display}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LedgerLookupPanel({ accessToken, onSelectEntity }) {
-  const [open, setOpen] = useState(true);
-  const [query, setQuery] = useState('');
-  const [sourcePrefix, setSourcePrefix] = useState('equity-ledger-v1');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function runLookup(e) {
-    e?.preventDefault();
-    if (!query.trim() || !accessToken) return;
-    setLoading(true);
-    setError('');
-    try {
-      const params = new URLSearchParams({ q: query.trim(), limit: '120' });
-      if (sourcePrefix.trim()) params.set('sourcePrefix', sourcePrefix.trim());
-      const res = await fetch(`${API_BASE}/api/brain/ledger/lookup?${params}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Ledger lookup failed');
-      setResult(data);
-    } catch (err) {
-      setError(err.message || 'Ledger lookup failed');
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const entities = result?.entities || [];
-  const assertions = result?.assertions || [];
-  const ledgerEvents = result?.ledgerEvents || [];
-
-  return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3 shrink-0">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <Database size={15} className="text-gray-500" aria-hidden="true" />
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-700">Ledger lookup</div>
-            </div>
-            <div className="mt-0.5 text-xs text-gray-500">Name plus optional source prefix, returning ledger events and sourced assertions.</div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setOpen(v => !v)}
-            className="inline-flex items-center gap-1 rounded border border-gray-300 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50"
-          >
-            {open ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
-            {open ? 'Hide' : 'Show'}
-          </button>
-        </div>
-
-        {open && (
-          <div className="mt-3">
-            <form onSubmit={runLookup} className="grid gap-2 lg:grid-cols-[minmax(220px,1fr)_260px_auto_auto]">
-              <input
-                className="min-w-0 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
-                placeholder="Renee Owens"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-              />
-              <input
-                className="min-w-0 rounded border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-400"
-                placeholder="source prefix"
-                value={sourcePrefix}
-                onChange={e => setSourcePrefix(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={loading || !query.trim()}
-                className="inline-flex items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-              >
-                {loading ? <RefreshCw size={15} className="animate-spin" aria-hidden="true" /> : <SearchIcon size={15} aria-hidden="true" />}
-                Lookup
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSourcePrefix(''); setResult(null); }}
-                className="inline-flex items-center justify-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
-              >
-                <X size={15} aria-hidden="true" />
-                All sources
-              </button>
-            </form>
-
-            {error && <div className="mt-2 text-xs text-red-700">{error}</div>}
-
-            {result && (
-              <div className="mt-3 grid gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
-                <div className="rounded border border-gray-200 bg-gray-50 p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-gray-600">Matches</div>
-                    <div className="text-[10px] font-mono text-gray-400">
-                      {entities.length} entities | {assertions.length} links | {ledgerEvents.length} events
-                    </div>
-                  </div>
-                  <div className="max-h-56 space-y-1 overflow-y-auto">
-                    {entities.length ? entities.map(entity => (
-                      <button
-                        key={entity.id}
-                        type="button"
-                        onClick={() => onSelectEntity?.(entity.id)}
-                        className="block w-full rounded border border-gray-200 bg-white px-2 py-1.5 text-left hover:border-gray-400"
-                      >
-                        <span className="block truncate text-sm font-medium text-gray-900">{entity.name}</span>
-                        <span className="block truncate text-[10px] font-mono text-gray-400">{entity.entityType} | {entity.id}</span>
-                      </button>
-                    )) : (
-                      <div className="text-xs text-gray-500">No entity matches. Direct ledger event matches may still appear.</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <div className="rounded border border-gray-200 bg-white p-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
-                      <FileText size={14} aria-hidden="true" />
-                      Assertions
-                    </div>
-                    <div className="max-h-64 space-y-2 overflow-y-auto">
-                      {assertions.length ? assertions.map(assertion => (
-                        <div key={assertion.id} className="rounded border border-gray-100 p-2 text-xs">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {relBadge(assertion.relType, assertion.provisional)}
-                            <span className="text-gray-700">{assertion.src?.name}</span>
-                            <span className="text-gray-300">-&gt;</span>
-                            <span className="text-gray-900">{assertion.dst?.name}</span>
-                          </div>
-                          <div className="mt-1 font-mono text-[10px] text-gray-400">{assertion.ledgerSourceId || assertion.ledgerEventId}</div>
-                          {assertion.metadata && Object.keys(assertion.metadata).length > 0 && (
-                            <div className="mt-1 truncate text-gray-500">
-                              {Object.entries(assertion.metadata).slice(0, 4).map(([k, v]) => `${k}: ${compactValue(v)}`).join('  |  ')}
-                            </div>
-                          )}
-                        </div>
-                      )) : (
-                        <div className="text-xs text-gray-500">No assertions matched this entity/source filter.</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="rounded border border-gray-200 bg-white p-3">
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-600">Ledger events</div>
-                    <div className="max-h-64 space-y-2 overflow-y-auto">
-                      {ledgerEvents.length ? ledgerEvents.map(event => (
-                        <details key={event.id} className="rounded border border-gray-100 p-2 text-xs" defaultOpen={ledgerEvents.length === 1}>
-                          <summary className="cursor-pointer list-none">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <div className="truncate font-medium text-gray-900">{event.eventType}</div>
-                                <div className="truncate font-mono text-[10px] text-gray-400">{event.sourceId || event.id}</div>
-                              </div>
-                              <div className="shrink-0 text-[10px] text-gray-400">
-                                {event.occurredAt ? new Date(event.occurredAt).toLocaleDateString() : ''}
-                              </div>
-                            </div>
-                          </summary>
-                          <div className="mt-2">
-                            <PayloadSummary payload={event.compactPayload} />
-                          </div>
-                        </details>
-                      )) : (
-                        <div className="text-xs text-gray-500">No ledger events matched.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function SearchBar({ value, onChange, onSubmit }) {
   return (
     <form onSubmit={onSubmit} className="flex gap-2">
@@ -1328,13 +1095,6 @@ export default function BrainBrowserPage() {
         enabled={reviewMode}
         onApplied={handleRefresh}
       />
-
-      {!['explore', 'quality'].includes(viewMode) && (
-        <LedgerLookupPanel
-          accessToken={auth.accessToken}
-          onSelectEntity={id => setSelectedId(id)}
-        />
-      )}
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>

@@ -232,10 +232,22 @@ async function runTriagePass({ logger, limit = 30 } = {}) {
         SAFE_AUTO_ENTITY_TYPES.has(decision.entityType) &&
         decision.entityName
       ) {
-        const { entity, created } = await findOrCreateEntity({
+        const { entity, created, blocked, blockReason } = await findOrCreateEntity({
           entityType: decision.entityType,
           name: decision.entityName,
         });
+        // Self-identity guard refused this (business's own address/name minted
+        // as a counterparty). Don't crash the run — leave it as a hint instead.
+        if (blocked || !entity) {
+          logger?.info({ item: item.id, entityName: decision.entityName, blockReason }, 'brain/triage: skipped self-identity mint');
+          await prisma.brainInboxItem.update({
+            where: { id: item.id },
+            data: {
+              triageHint: { action: 'blocked', entityType: decision.entityType, entityName: decision.entityName, note: blockReason || 'self-identity guard' },
+            },
+          });
+          continue;
+        }
         await writeLedgerEvent({
           eventType: 'inbox.auto_triaged',
           source: 'node_triage',

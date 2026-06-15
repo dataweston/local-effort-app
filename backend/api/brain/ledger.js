@@ -4,6 +4,7 @@
  */
 
 const { getPrisma } = require('../utils/prisma');
+const { checkSelfIdentity } = require('./selfIdentity');
 
 function canonicalName(name) {
   return String(name || '')
@@ -56,6 +57,26 @@ async function writeLedgerEvent({
 
 async function findOrCreateEntity({ entityType, name, properties = null, status = 'active' }) {
   const prisma = getPrisma();
+
+  // Never mint the business's own identity as a counterparty (Customer/Vendor/
+  // Person). This is the single choke point for triage, intake, constraint, and
+  // inbox ingestion — see backend/api/brain/selfIdentity.js. Existing rows that
+  // match are still returned (so callers can re-link), but new ones are refused.
+  const self = checkSelfIdentity(entityType, name);
+  if (self.blocked) {
+    const existingSelf = await prisma.brainEntity.findFirst({
+      where: {
+        entityType,
+        tombstonedAt: null,
+        OR: [
+          { canonicalName: canonicalName(name) },
+          { name: { equals: name, mode: 'insensitive' } },
+        ],
+      },
+    });
+    return { entity: existingSelf || null, created: false, blocked: true, blockReason: self.reason };
+  }
+
   const normalized = canonicalName(name);
   const existing = await prisma.brainEntity.findFirst({
     where: {

@@ -197,7 +197,10 @@ function registerInboxRoutes(app, { logger } = {}) {
         });
 
         // Reuse an existing entity on name/alias match instead of minting duplicates
-        const { entity, created } = await findOrCreateEntity({ entityType, name, properties: properties || null });
+        const { entity, created, blocked, blockReason } = await findOrCreateEntity({ entityType, name, properties: properties || null });
+        if (blocked || !entity) {
+          return res.status(422).json({ error: 'self-identity guard', reason: blockReason || `${entityType} "${name}" looks like the business's own identity` });
+        }
         if (!created && properties && typeof properties === 'object') {
           await prisma.brainEntity.update({
             where: { id: entity.id },

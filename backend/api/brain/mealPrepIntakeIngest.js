@@ -202,6 +202,19 @@ async function ingestMealPrepIntake(formData, { logger } = {}) {
 
   let customer = await findCustomerByEmail(prisma, email);
   let created = false;
+
+  // mealPrepStage marks where this customer sits in the meal-prep lifecycle.
+  // A fresh intake is "upcoming" (profile created, not yet an active paying
+  // customer). Never demote someone already linked to a live customer or
+  // explicitly advanced past intake.
+  const isAlreadyActive = customer
+    && (customer.localEffortCustomerId
+      || ['active', 'paused', 'churned'].includes(customer.properties?.mealPrepStage));
+  const mealPrepStage = isAlreadyActive
+    ? (customer.properties?.mealPrepStage || 'active')
+    : 'upcoming';
+  customerProperties.mealPrepStage = mealPrepStage;
+
   if (!customer) {
     const result = await findOrCreateEntity({
       entityType: 'Customer',

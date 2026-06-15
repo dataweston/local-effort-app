@@ -16,10 +16,11 @@
 const { getPrisma } = require('../utils/prisma');
 
 const DECAY_RATES = {
-  PREFERS: 'slow',       // vendor relationship — stable
-  AVOIDS: 'medium',      // could resume ordering
-  CHURNING: 'fast',      // customer state changes quickly
+  PREFERS: 'slow',          // vendor relationship — stable
+  AVOIDS: 'medium',         // could resume ordering
+  CHURNING: 'fast',         // customer state changes quickly
   PRICE_DRIFT: 'medium',
+  REPEAT_CUSTOMER: 'slow',  // loyalty is a durable trait
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -187,6 +188,70 @@ async function computeChurning(prisma, now) {
   return results;
 }
 
+// ── REPEAT_CUSTOMER ─────────────────────────────────────────────────────────
+// Customer placed ≥2 orders in the last year — the positive counterpart to
+// CHURNING. Runs off order.placed (Square), which exists today. NOTE: most
+// Square tickets are anonymous (customerId null), so this only sees customers
+// Square attached an id to; that's a data-coverage limit, not a code one.
+// Unresolved ids still produce an inference (anchored to a Customer entity when
+// one matches; skipped only if truly unresolvable) so coverage stays visible.
+
+async function computeRepeatCustomer(prisma, now) {
+  const windowStart = daysAgo(365);
+
+  const events = await prisma.ledgerEvent.findMany({
+    where: {
+      eventType: { in: ['order.placed', 'payment.completed'] },
+      occurredAt: { gte: windowStart },
+      tombstonedAt: null,
+      source: { in: ['square', 'local_effort'] },
+    },
+    select: { id: true, payload: true, occurredAt: true },
+  });
+
+  // Bucket by customerId (the only customer key Square attaches to orders here)
+  const buckets = new Map();
+  for (const ev of events) {
+    const cid = ev.payload?.customerId || ev.payload?.customer_id;
+    if (!cid) continue; // anonymous ticket — can't attribute to a customer
+    if (!buckets.has(cid)) buckets.set(cid, []);
+    buckets.get(cid).push(ev);
+  }
+
+  const results = [];
+  for (const [cid, evs] of buckets) {
+    if (evs.length < 2) continue; // a single order isn't a repeat
+
+    // Resolve to a brain Customer. Widened: match squareCustomerId first, then
+    // fall back to any FK anchor or alias carrying the id, before giving up.
+    const entity = await prisma.brainEntity.findFirst({
+      where: {
+        entityType: 'Customer',
+        tombstonedAt: null,
+        status: 'active',
+        OR: [
+          { squareCustomerId: cid },
+          { properties: { path: ['squareCustomerId'], equals: cid } },
+          { aliases: { some: { alias: cid } } },
+        ],
+      },
+      select: { id: true, name: true },
+    });
+    if (!entity) continue; // no entity to anchor the inference to yet
+
+    const ordered = evs.map(e => new Date(e.occurredAt)).sort((a, b) => b - a);
+    const last = ordered[0];
+    const daysSinceLast = Math.floor((now - last) / 86_400_000);
+    // Confidence grows with order count, capped at 10 orders.
+    const conf = confidence(evs.length, 10);
+    const summary =
+      `Repeat customer — ${evs.length} orders in last 12 months` +
+      (daysSinceLast <= 45 ? ' (active)' : `, last ${daysSinceLast} days ago`);
+    results.push({ entity, evIds: evs.map(e => e.id), conf, summary });
+  }
+  return results;
+}
+
 // ── PRICE_DRIFT ───────────────────────────────────────────────────────────────
 // Avg payment to vendor shifted >15% in last 90 days vs prior 90 days
 
@@ -315,11 +380,35 @@ async function markStaleInferences(prisma, now) {
   return stale.length;
 }
 
+// ── Source-data diagnostics ─────────────────────────────────────────────────
+// Three of the four jobs read `payment.completed` ledger events, which the
+// data audit (docs/brain-data-audit.md) found to be ZERO — the Square payment
+// webhook ingest is gated off and Local Budget's payment export was never
+// wired up (see docs/local-budget-integration.md). When that source is empty
+// the jobs silently write nothing, which is why the inference layer looked
+// "dead". This makes the empty-source condition loud and explicit instead.
+
+const JOB_SOURCE = {
+  PREFERS:     { eventType: 'payment.completed' },
+  AVOIDS:      { eventType: 'payment.completed' },
+  PRICE_DRIFT: { eventType: 'payment.completed' },
+  CHURNING:        { eventType: { in: ['order.placed', 'payment.completed'] } },
+  REPEAT_CUSTOMER: { eventType: { in: ['order.placed', 'payment.completed'] } },
+};
+
+async function inputDiagnostics(prisma) {
+  const [payments, orders] = await Promise.all([
+    prisma.ledgerEvent.count({ where: { eventType: 'payment.completed', tombstonedAt: null } }),
+    prisma.ledgerEvent.count({ where: { eventType: 'order.placed', tombstonedAt: null } }),
+  ]);
+  return { payments, orders };
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 /**
  * Run the full nightly inference pass.
- * @returns {{ written: number, superseded: number, staleMarked: number, errors: string[] }}
+ * @returns {{ written, superseded, staleMarked, errors, diagnostics }}
  */
 async function runInferencePass({ logger } = {}) {
   const prisma = getPrisma();
@@ -328,11 +417,27 @@ async function runInferencePass({ logger } = {}) {
   let superseded = 0;
   const errors = [];
 
+  // Surface the root cause up front: which inputs actually exist tonight.
+  const diagnostics = await inputDiagnostics(prisma);
+  if (diagnostics.payments === 0) {
+    logger?.warn(
+      { ...diagnostics, blocked: ['PREFERS', 'AVOIDS', 'PRICE_DRIFT'] },
+      'brain/inference: 0 payment.completed events — PREFERS/AVOIDS/PRICE_DRIFT can produce nothing. ' +
+      'Root cause: no payment stream ingested (Square webhook gated off + Local Budget export unwired). ' +
+      'See docs/local-budget-integration.md.'
+    );
+  }
+  if (diagnostics.orders === 0) {
+    logger?.warn({ ...diagnostics, blocked: ['CHURNING', 'REPEAT_CUSTOMER'] },
+      'brain/inference: 0 order.placed events — CHURNING/REPEAT_CUSTOMER can produce nothing. Run the Square orders sync.');
+  }
+
   const jobs = [
-    { name: 'PREFERS',    fn: computePrefers },
-    { name: 'AVOIDS',     fn: computeAvoids },
-    { name: 'CHURNING',   fn: computeChurning },
-    { name: 'PRICE_DRIFT',fn: computePriceDrift },
+    { name: 'PREFERS',         fn: computePrefers },
+    { name: 'AVOIDS',          fn: computeAvoids },
+    { name: 'CHURNING',        fn: computeChurning },
+    { name: 'REPEAT_CUSTOMER', fn: computeRepeatCustomer },
+    { name: 'PRICE_DRIFT',     fn: computePriceDrift },
   ];
 
   for (const { name, fn } of jobs) {
@@ -358,7 +463,17 @@ async function runInferencePass({ logger } = {}) {
           logger?.warn({ err, entity: c.entity.id }, `brain/inference: write error for ${name}`);
         }
       }
-      logger?.info({ name, count: candidates.length }, 'brain/inference: job complete');
+      // Distinguish "ran but found nothing" from "no input data at all" so a
+      // zero result isn't mistaken for a healthy quiet night.
+      const ordersJob = name === 'CHURNING' || name === 'REPEAT_CUSTOMER';
+      const sourceEmpty =
+        (JOB_SOURCE[name]?.eventType === 'payment.completed' && diagnostics.payments === 0) ||
+        (ordersJob && diagnostics.payments === 0 && diagnostics.orders === 0);
+      if (candidates.length === 0 && sourceEmpty) {
+        logger?.warn({ name }, `brain/inference: ${name} produced 0 — its source ledger events do not exist (not a quiet night).`);
+      } else {
+        logger?.info({ name, count: candidates.length }, 'brain/inference: job complete');
+      }
     } catch (err) {
       errors.push(`${name}: ${err.message}`);
       logger?.error({ err, name }, 'brain/inference: job failed');
@@ -366,9 +481,9 @@ async function runInferencePass({ logger } = {}) {
   }
 
   const staleMarked = await markStaleInferences(prisma, now);
-  logger?.info({ written, superseded, staleMarked, errors: errors.length }, 'brain/inference: pass complete');
+  logger?.info({ written, superseded, staleMarked, errors: errors.length, diagnostics }, 'brain/inference: pass complete');
 
-  return { written, superseded, staleMarked, errors };
+  return { written, superseded, staleMarked, errors, diagnostics };
 }
 
 module.exports = { runInferencePass };

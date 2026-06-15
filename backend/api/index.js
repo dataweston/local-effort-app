@@ -1418,6 +1418,15 @@ app.all('/api/hub/weekly-meal-prep', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/home-notepad', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/home-notepad')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub home notepad handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/brain-publish', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/brain-publish')(req, res);

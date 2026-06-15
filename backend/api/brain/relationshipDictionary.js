@@ -41,6 +41,18 @@ const RELATIONSHIPS = {
     promote: 'never',
     description: 'A note is about an entity.',
   },
+  QUOTED: {
+    src: ['Customer', 'Person'],
+    dst: ['Offer', 'Menu'],
+    inverseLabel: 'QUOTED_TO',
+    selfEdge: false,
+    promote: 'when_thread_has_decisions',
+    description:
+      'A customer was quoted a price for an event/offer. metadata: ' +
+      'perGuestLowCents, perGuestHighCents, guestCount, totalLowCents, totalHighCents, ' +
+      'occurredAt, sourceSpan, extractor (deterministic|llm|manual). ' +
+      'Distinct from DISCUSSED_OFFER (which only records that an offer was discussed).',
+  },
   ASSIGNED_TO: {
     src: ['Task'],
     dst: ['Person', 'Customer', 'Vendor', 'StaffRole', 'Group'],
@@ -74,7 +86,7 @@ const RELATIONSHIPS = {
     description: 'A recipe/dish/product contains an ingredient.',
   },
   PRICED_AT: {
-    src: ['Ingredient', 'Product', 'Dish'],
+    src: ['Ingredient', 'Product', 'Dish', 'PriceReference'],
     dst: ['Vendor', 'Supplier', 'Channel'],
     inverseLabel: 'SELLS_AT_PRICE',
     selfEdge: false,
