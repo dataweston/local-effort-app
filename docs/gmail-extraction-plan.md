@@ -51,20 +51,30 @@ read the ledger.
 
 ## Extractor inventory (priority order)
 
+> **Executed 2026-06-15/16.** Results below. All new edges provisional;
+> precision spot-check 30/30 (100%, vs ≥90% target); all extractors idempotent
+> (re-run = 0 new); 0 active own-identity counterparties.
+
 | # | Extractor | relType emitted | Method | Status |
 |---|---|---|---|---|
-| 1 | **Event menu quote** | `QUOTED` Customer→Offer | deterministic ($N/person) | **built** |
-| 2 | **Dietary constraint** | `AVOIDS`/`PREFERS`/`MEDICAL_CONSTRAINT` | exists (`constraintMiner.js`) | built, gmail not wired |
-| 3 | **Inbound lead** | `EMAILED` Customer→(thread) + lead props | deterministic: real inquiry detection (date/venue/guest-count present) | new |
-| 4 | **Vendor invoice / bill** | `PAYMENT_SENT` / `SOURCED_FROM` Vendor | deterministic: invoice-shape + sender domain allowlist | new |
-| 5 | **Sales wording corpus** | `USES_WORDING` Person→Note | exists (works well) | keep |
-| 6 | **Occasion / seasonality** | `MENTIONED_OCCASION` | deterministic keyword + date | tighten (audit: wrong-occasion maps) |
+| 1 | **Event menu quote** | `QUOTED` Customer→Offer | deterministic ($N/person) | **DONE — 13 written** |
+| 2 | **Dietary constraint** | `AVOIDS`/`PREFERS`/`MEDICAL_CONSTRAINT` | `constraintMiner.js` (LLM) | **DEFERRED to #7** — free-text gmail needs the LLM; no API key + only 10 emails mention diet. Belongs in the gated residue pass, not deterministic. |
+| 3 | **Inbound lead** | `DISCUSSED_OFFER` Customer→Offer + lead props | deterministic: ≥2 of {guests,occasion,date} + inquiry verb | **DONE — 17 written** (shares Customer→Offer shape with QUOTED so a quote enriches the lead) |
+| 4 | **Vendor invoice / bill** | `EMAILED` Vendor→Person (contact/evidence, NOT payment) | deterministic: allowlist-only food-supply domains, SaaS/tax blocked | **DONE — 5 written** (Pohl Food, Bakers' Field/foodbuilding.com, Great Ciao, The Good Acre). Payment $ stays Local Budget's job. |
+| 5 | **Sales wording corpus** | `USES_WORDING` Person→Note | exists (works well) | keep as-is |
+| 6 | **Occasion / seasonality** | `MENTIONED_OCCASION` | deterministic keyword grounding | **DONE — cleaned**: retracted 13 ungrounded (flour pickup tagged "Holiday Gathering"); 66 grounded remain |
 | 7 | **Residue classifier** | any of the above | LLM, grounded, provisional-only | new, last |
 
 ## Hard guards (apply to every extractor)
 
 1. **Self-identity** (`checkSelfIdentity`) — never mint/resolve the business or
-   founder as a counterparty. Already centralized.
+   founder as a counterparty. Already centralized. **Refined 2026-06-16:** the
+   guard now distinguishes the BUSINESS ("Local Effort" — blocked from every
+   role incl. Person) from the FOUNDER ("Weston Smith" — blocked as
+   Customer/Vendor/Supplier but ALLOWED as Person, since he's the real operator
+   entity that vendor/contact edges point at). The first cut wrongly archived
+   the Person "Weston Smith"; it was restored. Lesson: "self" isn't one rule —
+   the business and a real human founder need different role allowances.
 2. **Sender allowlist/blocklist for typing.** 28% of `email.thread` senders are
    automated/marketing (weddingpro, narvar, intuit, faire, mailchimp — see
    audit). Maintain a domain blocklist so press/marketing/SaaS senders are NOT

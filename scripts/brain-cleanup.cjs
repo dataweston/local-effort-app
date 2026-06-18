@@ -15,6 +15,10 @@
  *   4. menusubjects (opt-in: --only=menusubjects) — Menu entities that look like
  *                   gmail subject lines ("Rent is PAST DUE"). LOWER confidence,
  *                   not in the default sweep — review before applying.
+ *   5. occasions  (opt-in: --only=occasions) — retract MENTIONED_OCCASION
+ *                   assertions whose source text has no keyword matching the
+ *                   assigned occasion (audit: flour pickup tagged "Holiday
+ *                   Gathering"). Conservative; keeps grounded ones.
  *
  * It deliberately does NOT touch:
  *   - Vendors with zero assertions (local-budget seeds; legit, just unenriched)
@@ -199,6 +203,7 @@ async function main() {
   if (only.includes('self')) totals.self = await passSelf(prisma, { apply, limit });
   if (only.includes('selfloops')) totals.selfloops = await passSelfLoops(prisma, { apply, limit });
   if (only.includes('menusubjects')) totals.menusubjects = await passMenuSubjects(prisma, { apply, limit });
+  if (only.includes('occasions')) totals.occasions = await passOccasions(prisma, { apply, limit });
 
   console.log('\n──────────────');
   console.log('Summary:', JSON.stringify(totals));
