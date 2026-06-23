@@ -18,7 +18,9 @@ import {
   ShieldCheck,
   ShoppingCart,
   Soup,
+  Table,
   Upload,
+  Utensils,
   UserPlus,
   UsersRound,
   X,
@@ -35,6 +37,7 @@ const tabs = [
 ];
 
 const mealPrepTab = { id: 'weeklyMealPrep', label: 'Weekly Meal Prep', icon: Soup };
+const foodInputsTab = { id: 'foodInputs', label: 'Food Inputs', icon: Utensils };
 
 const LOCALIST_CUSTOMER_OPTIONS = [
   { key: 'glutenFree', label: 'Gluten free' },
@@ -1108,6 +1111,234 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
           )
         ) : (
           <MarkdownPreview body={noteBody || 'No staff note published yet.'} />
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+const FOOD_INPUTS_MARKDOWN_PLACEHOLDER = '#dishes#\n- \n\n#ingredients#\n- \n\n#questions#\n- \n\n#quality notes#\n- \n';
+
+// Shared two-way log between the kitchen and the customer (David & Allison).
+// Week tabs across the top; toggle between a markdown notepad (default) and a
+// spreadsheet grid. Both views autosave. Mirrors the meal-prep notepad style.
+function FoodInputsView({ accessToken }) {
+  const [weeks, setWeeks] = useState([]);
+  const [activeTab, setActiveTab] = useState(null);
+  const [view, setView] = useState('markdown'); // 'markdown' | 'sheet'
+  const [markdown, setMarkdown] = useState('');
+  const [sheet, setSheet] = useState({ columns: [], rows: [] });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
+  const [preview, setPreview] = useState(false);
+
+  const activeTabRef = useRef(activeTab);
+  const lastSavedMdRef = useRef('');
+  const lastSavedSheetRef = useRef('');
+
+  const applyWeek = useCallback((week) => {
+    const md = week?.markdown || '';
+    const sheetValue = week?.sheet || { columns: [], rows: [] };
+    setMarkdown(md);
+    setSheet(sheetValue);
+    lastSavedMdRef.current = md;
+    lastSavedSheetRef.current = JSON.stringify(sheetValue);
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const next = await api('/api/hub/food-inputs', accessToken);
+      const list = next.weeks || [];
+      setWeeks(list);
+      const selected = list.find((week) => week.id === activeTabRef.current) || list[0];
+      if (selected) {
+        activeTabRef.current = selected.id;
+        setActiveTab(selected.id);
+        applyWeek(selected);
+      }
+      setStatus('');
+    } catch (err) {
+      setStatus(err.message || 'Unable to load food inputs.');
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, applyWeek]);
+
+  useEffect(() => { load().catch(() => {}); }, [load]);
+
+  // Autosave markdown.
+  useEffect(() => {
+    if (!activeTab || markdown === lastSavedMdRef.current) return undefined;
+    setStatus('Saving...');
+    const timer = window.setTimeout(async () => {
+      try {
+        const saved = await api('/api/hub/food-inputs', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({ tabId: activeTab, view: 'markdown', markdown }),
+        });
+        lastSavedMdRef.current = saved.week?.markdown ?? markdown;
+        setStatus(`Saved ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+      } catch (err) {
+        setStatus(err.message || 'Autosave failed.');
+      }
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [accessToken, activeTab, markdown]);
+
+  // Autosave spreadsheet.
+  useEffect(() => {
+    if (!activeTab) return undefined;
+    const serialized = JSON.stringify(sheet);
+    if (serialized === lastSavedSheetRef.current) return undefined;
+    setStatus('Saving...');
+    const timer = window.setTimeout(async () => {
+      try {
+        const saved = await api('/api/hub/food-inputs', accessToken, {
+          method: 'POST',
+          body: JSON.stringify({ tabId: activeTab, view: 'sheet', sheet }),
+        });
+        lastSavedSheetRef.current = saved.week?.sheet ? JSON.stringify(saved.week.sheet) : serialized;
+        if (saved.week?.sheet) setSheet(saved.week.sheet);
+        setStatus(`Saved ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+      } catch (err) {
+        setStatus(err.message || 'Autosave failed.');
+      }
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [accessToken, activeTab, sheet]);
+
+  const chooseTab = (tabId) => {
+    const next = weeks.find((week) => week.id === tabId);
+    activeTabRef.current = tabId;
+    setActiveTab(tabId);
+    if (next) applyWeek(next);
+  };
+
+  const setCell = (rowIndex, colIndex, value) => {
+    setSheet((prev) => {
+      const rows = prev.rows.map((row) => [...row]);
+      if (!rows[rowIndex]) return prev;
+      rows[rowIndex][colIndex] = value;
+      return { ...prev, rows };
+    });
+  };
+
+  const setColumn = (colIndex, value) => {
+    setSheet((prev) => {
+      const columns = [...prev.columns];
+      columns[colIndex] = value;
+      return { ...prev, columns };
+    });
+  };
+
+  const addRow = () => {
+    setSheet((prev) => ({ ...prev, rows: [...prev.rows, prev.columns.map(() => '')] }));
+  };
+
+  const addColumn = () => {
+    setSheet((prev) => ({
+      columns: [...prev.columns, `Column ${prev.columns.length + 1}`],
+      rows: prev.rows.map((row) => [...row, '']),
+    }));
+  };
+
+  const removeRow = (rowIndex) => {
+    setSheet((prev) => ({ ...prev, rows: prev.rows.filter((_, index) => index !== rowIndex) }));
+  };
+
+  return (
+    <div className="hub-meal-prep">
+      <Panel
+        title="Food Inputs"
+        icon={Utensils}
+        action={(
+          <div className="hub-button-row">
+            <button className={view === 'markdown' ? 'is-active' : ''} onClick={() => setView('markdown')}>
+              <FileText size={13} /> Notes
+            </button>
+            <button className={view === 'sheet' ? 'is-active' : ''} onClick={() => setView('sheet')}>
+              <Table size={13} /> Spreadsheet
+            </button>
+            <button onClick={() => load()}><RefreshCw size={13} /></button>
+          </div>
+        )}
+      >
+        <p className="hub-empty" style={{ marginTop: 0 }}>
+          Trade notes and track dishes, questions, ingredients, and quality inputs with the kitchen. Saves automatically.
+        </p>
+        <div className="hub-wordpad-tabs">
+          {weeks.map((week) => (
+            <button key={week.id} className={activeTab === week.id ? 'is-active' : ''} onClick={() => chooseTab(week.id)}>
+              {week.title}
+            </button>
+          ))}
+          <span>{loading ? 'Loading...' : status || 'Shared with the kitchen. Tabs follow each prep week.'}</span>
+        </div>
+
+        {view === 'markdown' ? (
+          <>
+            <div className="hub-button-row" style={{ padding: '8px 0' }}>
+              <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
+              <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
+            </div>
+            {preview ? (
+              <MarkdownPreview body={markdown || FOOD_INPUTS_MARKDOWN_PLACEHOLDER} />
+            ) : (
+              <textarea
+                className="hub-wordpad"
+                value={markdown}
+                onChange={(event) => setMarkdown(event.target.value)}
+                spellCheck="true"
+                placeholder={FOOD_INPUTS_MARKDOWN_PLACEHOLDER}
+              />
+            )}
+          </>
+        ) : (
+          <div className="hub-sheet">
+            <div className="hub-sheet-scroll">
+              <table className="hub-sheet-table">
+                <thead>
+                  <tr>
+                    <th className="hub-sheet-rownum" aria-hidden="true" />
+                    {sheet.columns.map((column, colIndex) => (
+                      <th key={colIndex}>
+                        <input
+                          value={column}
+                          onChange={(event) => setColumn(colIndex, event.target.value)}
+                          aria-label={`Column ${colIndex + 1} header`}
+                        />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sheet.rows.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      <td className="hub-sheet-rownum">
+                        <button type="button" onClick={() => removeRow(rowIndex)} aria-label={`Remove row ${rowIndex + 1}`}>
+                          <X size={12} />
+                        </button>
+                      </td>
+                      {sheet.columns.map((_, colIndex) => (
+                        <td key={colIndex}>
+                          <input
+                            value={row[colIndex] ?? ''}
+                            onChange={(event) => setCell(rowIndex, colIndex, event.target.value)}
+                            aria-label={`Row ${rowIndex + 1} ${sheet.columns[colIndex] || `column ${colIndex + 1}`}`}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="hub-button-row" style={{ padding: '10px 0 0' }}>
+              <button onClick={addRow}><Plus size={13} /> Add row</button>
+              <button onClick={addColumn}><Plus size={13} /> Add column</button>
+            </div>
+          </div>
         )}
       </Panel>
     </div>
@@ -2267,18 +2498,18 @@ export default function HubPage() {
   const navTabs = isLocalist
     ? [localistTab]
     : isCustomer
-    ? [mealPrepTab]
+    ? [mealPrepTab, foodInputsTab]
     : isPrivileged
-    ? [...tabs, mealPrepTab, adminTab, localistTab, securityTab]
-    : [...tabs, mealPrepTab, localistTab, securityTab];
+    ? [...tabs, mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
+    : [...tabs, mealPrepTab, foodInputsTab, localistTab, securityTab];
   const mobileNavTabs = isLocalist
     ? [localistTab]
     : isCustomer
-    ? [mealPrepTab]
+    ? [mealPrepTab, foodInputsTab]
     : isPrivileged
-    ? [tabs[0], tabs[1], mealPrepTab, tabs[3], adminTab, localistTab, securityTab]
-    : [tabs[0], tabs[1], mealPrepTab, tabs[2], tabs[3], localistTab, securityTab];
-  const activeTab = isLocalist ? 'localist' : isCustomer ? 'weeklyMealPrep' : tab;
+    ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
+    : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
+  const activeTab = isLocalist ? 'localist' : isCustomer ? (tab === 'foodInputs' ? 'foodInputs' : 'weeklyMealPrep') : tab;
 
   if (localistToken) {
     if (!localistAccess.loaded) {
@@ -2365,6 +2596,7 @@ export default function HubPage() {
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
+        {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
         {activeTab === 'security' && <SecurityView />}
@@ -2776,6 +3008,48 @@ const hubCss = `
   line-height: 1.55;
   white-space: pre-wrap;
 }
+
+/* ── Food Inputs spreadsheet ── */
+.hub-sheet { padding: 4px 0 2px; }
+.hub-sheet-scroll { overflow-x: auto; border: 1px solid var(--hub-border); border-radius: 6px; background: #fff; }
+.hub-sheet-table { border-collapse: collapse; width: 100%; min-width: 480px; }
+.hub-sheet-table th,
+.hub-sheet-table td {
+  border: 1px solid var(--hub-border-light);
+  padding: 0;
+  vertical-align: middle;
+}
+.hub-sheet-table th { background: var(--hub-bg); }
+.hub-sheet-table input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 7px 9px;
+  font: 13px/1.4 Inter, system-ui, sans-serif;
+  color: var(--hub-ink);
+}
+.hub-sheet-table th input { font-weight: 600; }
+.hub-sheet-table input:focus { background: var(--hub-accent-bg); }
+.hub-sheet-rownum {
+  width: 30px;
+  min-width: 30px;
+  text-align: center;
+  background: var(--hub-bg);
+}
+.hub-sheet-rownum button {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--hub-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.hub-sheet-rownum button:hover { background: rgba(0,0,0,0.06); color: #7a2f2f; }
 
 /* ── Misc ── */
 .hub-copy-box { padding: 0 14px 12px; display: grid; gap: 6px; }

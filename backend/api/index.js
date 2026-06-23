@@ -1427,6 +1427,15 @@ app.all('/api/hub/home-notepad', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/food-inputs', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/food-inputs')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub food inputs handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/brain-publish', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/brain-publish')(req, res);
