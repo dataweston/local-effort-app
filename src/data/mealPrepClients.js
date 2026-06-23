@@ -7,7 +7,7 @@ export const mealPrepClients = [
     name: 'David & Allison',
     clientName: 'David and Allison',
     emails: [
-      // 'david@example.com', 'allison@example.com'
+      'davelevy3@gmail.com', 'allisonlevy627@gmail.com',
     ],
   },
   {
