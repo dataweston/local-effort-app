@@ -30,7 +30,10 @@ try {
 
 const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';
-const FUTURE_WEEK_COUNT = 3;
+const FUTURE_WEEK_COUNT = 6;
+const PAST_WEEK_COUNT = 2;
+const SHEET_SOURCE_PREFIX = 'food-inputs:sheet:week-';
+const MD_SOURCE_PREFIX = 'food-inputs:md:week-';
 
 // A starter grid so a fresh sheet view is not blank. Headers the customer and
 // kitchen can rename; rows are added as needed.
@@ -79,20 +82,47 @@ function pairTitle(sundayIso) {
   return `${sundayLabel}/${mondayLabel}`;
 }
 
-// Same rolling Sunday/Monday week pairs as Weekly Meal Prep so the tabs line up
-// with the kitchen's prep rhythm. A week's tab stays through its Monday and
-// falls off on Tuesday; there are always FUTURE_WEEK_COUNT tabs.
-function activeWeekTabs() {
+// The Sunday that starts the Sun/Mon prep pair containing `dateIso`.
+function weekStartForDate(dateIso) {
+  const day = new Date(`${dateIso}T00:00:00`);
+  if (Number.isNaN(day.getTime())) return null;
+  const dayOfWeek = day.getDay(); // 0 = Sunday
+  return addDaysIso(dateIso, -dayOfWeek);
+}
+
+function weekTab(sunday) {
+  return { id: `week-${sunday}`, title: pairTitle(sunday), weekStart: sunday };
+}
+
+// The current prep week's Sunday: today's Sunday, but rolled forward once the
+// pair's Monday has passed (tabs fall off on Tuesday).
+function currentWeekStart() {
   const today = localToday();
-  const dayOfWeek = new Date(`${today}T00:00:00`).getDay(); // 0 = Sunday
-  let sunday = addDaysIso(today, -dayOfWeek);
+  let sunday = weekStartForDate(today);
   if (today > addDaysIso(sunday, 1)) sunday = addDaysIso(sunday, 7);
+  return sunday;
+}
+
+function currentWeekTab() {
+  return weekTab(currentWeekStart());
+}
+
+// Default rolling window of week-pair tabs, lined up with the kitchen's prep
+// rhythm: a couple of past weeks for reference plus several upcoming weeks.
+function defaultWeekTabs() {
+  const start = addDaysIso(currentWeekStart(), -7 * PAST_WEEK_COUNT);
   const tabs = [];
-  for (let i = 0; i < FUTURE_WEEK_COUNT; i += 1) {
-    tabs.push({ id: `week-${sunday}`, title: pairTitle(sunday), weekStart: sunday });
+  let sunday = start;
+  for (let i = 0; i < PAST_WEEK_COUNT + FUTURE_WEEK_COUNT; i += 1) {
+    tabs.push(weekTab(sunday));
     sunday = addDaysIso(sunday, 7);
   }
   return tabs;
+}
+
+// Back-compat alias used by the POST path / internals.
+function activeWeekTabs() {
+  return defaultWeekTabs();
 }
 
 function markdownSourceId(tabId) {
@@ -136,8 +166,51 @@ function sanitizeSheet(value) {
   return { columns, rows: rows.length ? rows : DEFAULT_SHEET.rows.map((row) => row.slice(0, width)) };
 }
 
-async function loadWeeks() {
-  const tabs = activeWeekTabs();
+const WEEK_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+// Parse the `pin` query/body param: a comma-separated list of dates (any day),
+// each resolved to its Sun/Mon week start. Lets the customer open any date and
+// have it become a tab even when the week is empty and outside the default window.
+function parsePinnedWeeks(value) {
+  if (!value) return [];
+  const raw = Array.isArray(value) ? value : String(value).split(',');
+  const starts = raw
+    .map((entry) => String(entry || '').trim())
+    .filter((entry) => WEEK_DATE_RE.test(entry))
+    .map((entry) => weekStartForDate(entry))
+    .filter(Boolean);
+  return [...new Set(starts)];
+}
+
+// Discover any week (past or future, inside or outside the default window) that
+// already has a saved Food Inputs doc, so saved history never disappears from
+// the tab strip.
+async function savedWeekStarts() {
+  const docs = await prisma.hubDocument.findMany({
+    where: {
+      source: NOTE_SOURCE,
+      status: 'published',
+      OR: [
+        { sourceId: { startsWith: MD_SOURCE_PREFIX } },
+        { sourceId: { startsWith: SHEET_SOURCE_PREFIX } },
+      ],
+    },
+    select: { sourceId: true },
+  });
+  const starts = docs
+    .map((doc) => /week-(\d{4}-\d{2}-\d{2})$/.exec(doc.sourceId)?.[1])
+    .filter(Boolean);
+  return [...new Set(starts)];
+}
+
+async function loadWeeks(pinnedWeeks = []) {
+  const starts = new Set([
+    ...defaultWeekTabs().map((tab) => tab.weekStart),
+    ...pinnedWeeks,
+    ...(await savedWeekStarts()),
+  ]);
+  const tabs = [...starts].sort().map(weekTab);
+
   const sourceIds = tabs.flatMap((tab) => [markdownSourceId(tab.id), sheetSourceId(tab.id)]);
   const docs = await prisma.hubDocument.findMany({
     where: { source: NOTE_SOURCE, sourceId: { in: sourceIds }, status: 'published' },
@@ -184,10 +257,14 @@ async function handler(req, res) {
 
   try {
     if (req.method === 'POST') {
-      const tabs = activeWeekTabs();
-      const tabId = cleanString(req.body?.tabId, 40) || tabs[0].id;
-      const tab = tabs.find((entry) => entry.id === tabId);
-      if (!tab) return res.status(400).json({ error: 'Unknown week tab' });
+      const tabId = cleanString(req.body?.tabId, 40) || currentWeekTab().id;
+      // Accept any valid Sun/Mon week-start tab id, so a customer can write to a
+      // week they reached via the calendar even if it's outside the default window.
+      const weekMatch = /^week-(\d{4}-\d{2}-\d{2})$/.exec(tabId);
+      if (!weekMatch || weekStartForDate(weekMatch[1]) !== weekMatch[1]) {
+        return res.status(400).json({ error: 'Unknown or non-aligned week tab' });
+      }
+      const tab = weekTab(weekMatch[1]);
       const view = req.body?.view === 'sheet' ? 'sheet' : 'markdown';
       const userId = auth.viewer.userId || null;
 
@@ -213,12 +290,13 @@ async function handler(req, res) {
         });
       }
 
-      const weeks = await loadWeeks();
+      const weeks = await loadWeeks([tab.weekStart]);
       const week = weeks.find((entry) => entry.id === tab.id) || null;
       return res.status(200).json({ ok: true, week });
     }
 
-    const weeks = await loadWeeks();
+    const pinned = parsePinnedWeeks(req.query?.pin);
+    const weeks = await loadWeeks(pinned);
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
@@ -232,4 +310,17 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-module.exports._internals = { activeWeekTabs, loadWeeks, pairTitle, sanitizeSheet, parseSheet, DEFAULT_SHEET, MARKDOWN_PLACEHOLDER };
+module.exports._internals = {
+  activeWeekTabs,
+  defaultWeekTabs,
+  weekStartForDate,
+  weekTab,
+  currentWeekStart,
+  parsePinnedWeeks,
+  loadWeeks,
+  pairTitle,
+  sanitizeSheet,
+  parseSheet,
+  DEFAULT_SHEET,
+  MARKDOWN_PLACEHOLDER,
+};

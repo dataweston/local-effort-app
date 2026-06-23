@@ -1119,6 +1119,34 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
 
 const FOOD_INPUTS_MARKDOWN_PLACEHOLDER = '#dishes#\n- \n\n#ingredients#\n- \n\n#questions#\n- \n\n#quality notes#\n- \n';
 
+const FOOD_INPUTS_DATE_TZ = 'America/Chicago';
+
+function foodInputsTodayIso() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: FOOD_INPUTS_DATE_TZ });
+}
+
+// Parse a Food Inputs note into spreadsheet rows. `#section#` headers (and
+// markdown `#`/`##`/`###` headings) become the value of a "Section" column;
+// each `- ` bullet (or any other non-empty, non-heading line) becomes one row
+// tagged with the section it falls under. Returns { columns, rows }.
+function noteToSheet(markdown) {
+  const columns = ['Section', 'Item'];
+  const rows = [];
+  let section = '';
+  String(markdown || '').split('\n').forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) return;
+    const wrapped = line.match(/^#(.+)#$/);          // #dishes#
+    const heading = line.match(/^#{1,3}\s+(.+)$/);   // ## Dishes
+    if (wrapped) { section = wrapped[1].trim(); return; }
+    if (heading) { section = heading[1].trim(); return; }
+    const item = line.replace(/^[-*]\s+/, '').trim(); // strip bullet marker
+    if (!item) return;
+    rows.push([section, item]);
+  });
+  return { columns, rows: rows.length ? rows : [['', '']] };
+}
+
 // Shared two-way log between the kitchen and the customer (David & Allison).
 // Week tabs across the top; toggle between a markdown notepad (default) and a
 // spreadsheet grid. Both views autosave. Mirrors the meal-prep notepad style.
@@ -1131,6 +1159,10 @@ function FoodInputsView({ accessToken }) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [preview, setPreview] = useState(false);
+
+  const [pinnedDates, setPinnedDates] = useState([]); // extra week-dates reached via calendar
+  const [datePick, setDatePick] = useState(foodInputsTodayIso());
+  const pendingSelectDateRef = useRef(null); // date whose week tab to select after next load
 
   const activeTabRef = useRef(activeTab);
   const lastSavedMdRef = useRef('');
@@ -1145,13 +1177,29 @@ function FoodInputsView({ accessToken }) {
     lastSavedSheetRef.current = JSON.stringify(sheetValue);
   }, []);
 
-  const load = useCallback(async () => {
+  // `selectId` lets a caller (e.g. the calendar) force a specific week tab to
+  // become active once the data for it has loaded.
+  const load = useCallback(async ({ pins = [], selectId = null } = {}) => {
     setLoading(true);
     try {
-      const next = await api('/api/hub/food-inputs', accessToken);
+      const query = pins.length ? `?pin=${encodeURIComponent(pins.join(','))}` : '';
+      const next = await api(`/api/hub/food-inputs${query}`, accessToken);
       const list = next.weeks || [];
       setWeeks(list);
-      const selected = list.find((week) => week.id === activeTabRef.current) || list[0];
+      // If a calendar pick is pending, prefer the week that contains that date.
+      const pendingDate = pendingSelectDateRef.current;
+      const weekForDate = pendingDate
+        ? list.find((week) => {
+            const start = new Date(`${week.weekStart}T00:00:00`);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            const picked = new Date(`${pendingDate}T00:00:00`);
+            return picked >= start && picked <= end;
+          })
+        : null;
+      pendingSelectDateRef.current = null;
+      const wantId = weekForDate?.id || selectId || activeTabRef.current;
+      const selected = list.find((week) => week.id === wantId) || list[0];
       if (selected) {
         activeTabRef.current = selected.id;
         setActiveTab(selected.id);
@@ -1165,7 +1213,7 @@ function FoodInputsView({ accessToken }) {
     }
   }, [accessToken, applyWeek]);
 
-  useEffect(() => { load().catch(() => {}); }, [load]);
+  useEffect(() => { load({ pins: pinnedDates }).catch(() => {}); }, [load, pinnedDates]);
 
   // Autosave markdown.
   useEffect(() => {
@@ -1247,6 +1295,60 @@ function FoodInputsView({ accessToken }) {
     setSheet((prev) => ({ ...prev, rows: prev.rows.filter((_, index) => index !== rowIndex) }));
   };
 
+  const weekContaining = (dateIso) => weeks.find((week) => {
+    const start = new Date(`${week.weekStart}T00:00:00`);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const picked = new Date(`${dateIso}T00:00:00`);
+    return picked >= start && picked <= end;
+  });
+
+  // Calendar pick: if the date's week is already a tab, just select it.
+  // Otherwise pin the date — the load effect refetches with the pin and the
+  // pending-select ref makes that week's tab active once it arrives.
+  const goToDate = (dateIso) => {
+    if (!dateIso) return;
+    const existing = weekContaining(dateIso);
+    if (existing) {
+      chooseTab(existing.id);
+      return;
+    }
+    pendingSelectDateRef.current = dateIso;
+    setPinnedDates((prev) => (prev.includes(dateIso) ? prev : [...prev, dateIso]));
+  };
+
+  // Convert the current note into spreadsheet rows. Asks append vs replace so
+  // existing sheet cells are never silently discarded.
+  const convertNoteToSheet = () => {
+    const parsed = noteToSheet(markdown);
+    if (!parsed.rows.length) return;
+    const hasSheetData = sheet.rows.some((row) => row.some((cell) => String(cell || '').trim()));
+    let mode = 'replace';
+    if (hasSheetData) {
+      // eslint-disable-next-line no-alert
+      const append = window.confirm(
+        'Add the note rows below your existing spreadsheet rows?\n\nOK = append to current sheet\nCancel = replace the sheet with the note',
+      );
+      mode = append ? 'append' : 'replace';
+    }
+    setSheet((prev) => {
+      if (mode === 'append') {
+        // Keep current columns; map parsed rows onto current width.
+        const width = prev.columns.length || parsed.columns.length;
+        const columns = prev.columns.length ? prev.columns : parsed.columns;
+        const newRows = parsed.rows.map((row) => {
+          const cells = row.slice(0, width);
+          while (cells.length < width) cells.push('');
+          return cells;
+        });
+        return { columns, rows: [...prev.rows, ...newRows] };
+      }
+      return parsed;
+    });
+    setView('sheet');
+    setStatus('Converted note to spreadsheet.');
+  };
+
   return (
     <div className="hub-meal-prep">
       <Panel
@@ -1260,20 +1362,36 @@ function FoodInputsView({ accessToken }) {
             <button className={view === 'sheet' ? 'is-active' : ''} onClick={() => setView('sheet')}>
               <Table size={13} /> Spreadsheet
             </button>
-            <button onClick={() => load()}><RefreshCw size={13} /></button>
+            <button onClick={() => load({ pins: pinnedDates })}><RefreshCw size={13} /></button>
           </div>
         )}
       >
         <p className="hub-empty" style={{ marginTop: 0 }}>
           Trade notes and track dishes, questions, ingredients, and quality inputs with the kitchen. Saves automatically.
         </p>
-        <div className="hub-wordpad-tabs">
-          {weeks.map((week) => (
-            <button key={week.id} className={activeTab === week.id ? 'is-active' : ''} onClick={() => chooseTab(week.id)}>
-              {week.title}
-            </button>
-          ))}
-          <span>{loading ? 'Loading...' : status || 'Shared with the kitchen. Tabs follow each prep week.'}</span>
+        <div className="hub-foodinputs-datebar">
+          <div className="hub-foodinputs-tabs">
+            {weeks.map((week) => (
+              <button key={week.id} className={activeTab === week.id ? 'is-active' : ''} onClick={() => chooseTab(week.id)}>
+                {week.title}
+              </button>
+            ))}
+          </div>
+          <label className="hub-foodinputs-datepick">
+            <CalendarDays size={13} aria-hidden="true" />
+            <span>Go to date</span>
+            <input
+              type="date"
+              value={datePick}
+              onChange={(event) => {
+                setDatePick(event.target.value);
+                goToDate(event.target.value);
+              }}
+            />
+          </label>
+        </div>
+        <div className="hub-foodinputs-status">
+          <span>{loading ? 'Loading...' : status || 'Shared with the kitchen. Pick any date to open its week.'}</span>
         </div>
 
         {view === 'markdown' ? (
@@ -1281,6 +1399,9 @@ function FoodInputsView({ accessToken }) {
             <div className="hub-button-row" style={{ padding: '8px 0' }}>
               <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
               <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
+              <button onClick={convertNoteToSheet} title="Turn these notes into spreadsheet rows">
+                <Table size={13} /> Convert to spreadsheet
+              </button>
             </div>
             {preview ? (
               <MarkdownPreview body={markdown || FOOD_INPUTS_MARKDOWN_PLACEHOLDER} />
@@ -3019,6 +3140,67 @@ const hubCss = `
   line-height: 1.55;
   white-space: pre-wrap;
 }
+
+/* ── Food Inputs date bar ── */
+.hub-foodinputs-datebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  border-bottom: 1px solid var(--hub-border-light);
+  padding-bottom: 6px;
+}
+.hub-foodinputs-tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+.hub-foodinputs-tabs button {
+  flex: 0 0 auto;
+  height: 28px;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
+  color: var(--hub-ink);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hub-foodinputs-tabs button:hover { background: var(--hub-row-hover); }
+.hub-foodinputs-tabs button.is-active {
+  background: var(--hub-accent-bg);
+  color: var(--hub-accent);
+  border-color: #b9d1c8;
+  font-weight: 600;
+}
+.hub-foodinputs-datepick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  border: 1px solid var(--hub-border);
+  border-radius: 5px;
+  background: var(--hub-panel);
+  padding: 0 8px;
+  height: 28px;
+  font-size: 12px;
+  color: var(--hub-muted);
+}
+.hub-foodinputs-datepick input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: 12px Inter, system-ui, sans-serif;
+  color: var(--hub-ink);
+}
+.hub-foodinputs-status { padding: 6px 0 2px; }
+.hub-foodinputs-status span { color: var(--hub-muted); font-size: 11px; }
 
 /* ── Food Inputs spreadsheet ── */
 .hub-sheet { padding: 4px 0 2px; }
