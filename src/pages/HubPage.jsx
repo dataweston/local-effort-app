@@ -2423,10 +2423,11 @@ export default function HubPage() {
   const localistToken = new URLSearchParams(window.location.search).get('localist') || '';
   const hubPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
   const isSecurityRoute = hubPath === '/hub/security';
+  const isInputsRoute = hubPath === '/hub/inputs';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState(isSecurityRoute ? 'security' : 'today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : 'today');
   const [people, setPeople] = useState([]);
   const [docs, setDocs] = useState([]);
   const [calendar, setCalendar] = useState([]);
@@ -2495,21 +2496,31 @@ export default function HubPage() {
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
-  const navTabs = isLocalist
+  const navTabs = isInputsRoute
+    ? [foodInputsTab]
+    : isLocalist
     ? [localistTab]
     : isCustomer
     ? [mealPrepTab, foodInputsTab]
     : isPrivileged
     ? [...tabs, mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
     : [...tabs, mealPrepTab, foodInputsTab, localistTab, securityTab];
-  const mobileNavTabs = isLocalist
+  const mobileNavTabs = isInputsRoute
+    ? [foodInputsTab]
+    : isLocalist
     ? [localistTab]
     : isCustomer
     ? [mealPrepTab, foodInputsTab]
     : isPrivileged
     ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
     : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
-  const activeTab = isLocalist ? 'localist' : isCustomer ? (tab === 'foodInputs' ? 'foodInputs' : 'weeklyMealPrep') : tab;
+  const activeTab = isInputsRoute
+    ? 'foodInputs'
+    : isLocalist
+    ? 'localist'
+    : isCustomer
+    ? (tab === 'foodInputs' ? 'foodInputs' : 'weeklyMealPrep')
+    : tab;
 
   if (localistToken) {
     if (!localistAccess.loaded) {
