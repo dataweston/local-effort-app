@@ -19,11 +19,15 @@ import '../../styles/le-checkout.css';
 
 /* ─── Config (mirrors backend) ────────────────────────────────────────────── */
 
+// Shared pricing fields MUST stay in sync with backend/api/routes/smallEvents.js
+// (SMALL_EVENT_CONFIG). UI-only fields: description, maxGuests.
 const SMALL_EVENT_CONFIG = {
   dinner: {
     label: 'Dinner party',
     description: 'Chef-led, multi-course dinner at your home.',
-    baseRate: 85,
+    baseRate: 95,
+    baseRateFloor: 65,
+    baseRateTaperPerGuest: 1.0,
     staffingGuestsPer: 8,
     staffingHourly: 45,
     staffingHours: 4,
@@ -36,7 +40,9 @@ const SMALL_EVENT_CONFIG = {
   pizza: {
     label: 'Pizza party',
     description: 'Wood-fired pizza, full service at your location.',
-    baseRate: 85,
+    baseRate: 55,
+    baseRateFloor: 38,
+    baseRateTaperPerGuest: 0.6,
     staffingGuestsPer: 8,
     staffingHourly: 45,
     staffingHours: 4,
@@ -46,23 +52,12 @@ const SMALL_EVENT_CONFIG = {
     rangeMin: 0.9,
     rangeMax: 1.2,
   },
-  weddings: {
-    label: 'Wedding / shower',
-    description: 'Rehearsal dinners, receptions, and late-night bites.',
-    baseRate: 140,
-    staffingGuestsPer: 12,
-    staffingHourly: 55,
-    staffingHours: 6,
-    minimumTotal: 3200,
-    minGuests: 10,
-    maxGuests: 50,
-    rangeMin: 0.92,
-    rangeMax: 1.25,
-  },
   holiday: {
     label: 'Small event / holiday',
     description: 'Corporate, milestone, or holiday hosting.',
     baseRate: 70,
+    baseRateFloor: 48,
+    baseRateTaperPerGuest: 0.4,
     staffingGuestsPer: 15,
     staffingHourly: 40,
     staffingHours: 4,
@@ -77,13 +72,31 @@ const SMALL_EVENT_CONFIG = {
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
 
+// Meal style scales the per-guest food rate. Mirrors backend smallEvents.js.
+const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
+const MEAL_STYLE_OPTIONS = [
+  { value: 'full', label: 'Full meal', sub: 'Multi-course, sit-down' },
+  { value: 'between', label: 'Somewhere in between', sub: 'Substantial spread' },
+  { value: 'light', label: 'Light snacks', sub: 'Bites & grazing' },
+];
+const DEFAULT_MEAL_STYLE = 'full';
+
 /* ─── Pricing helper ───────────────────────────────────────────────────────── */
 
-function calcEstimate(type, guests) {
+// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
+// Mirrors effectiveBaseRate in backend/api/routes/smallEvents.js.
+function effectiveBaseRate(cfg, guests) {
+  const over = Math.max(0, guests - (cfg.minGuests || 1));
+  const rate = cfg.baseRate - (cfg.baseRateTaperPerGuest || 0) * over;
+  return Math.max(cfg.baseRateFloor ?? cfg.baseRate, rate);
+}
+
+function calcEstimate(type, guests, mealStyle = DEFAULT_MEAL_STYLE) {
   const cfg = SMALL_EVENT_CONFIG[type];
   if (!cfg || !guests || guests < 1) return null;
+  const styleMult = MEAL_STYLE_MULTIPLIER[mealStyle] ?? 1;
   const staffCount = Math.ceil(guests / cfg.staffingGuestsPer);
-  const base = cfg.baseRate * guests;
+  const base = effectiveBaseRate(cfg, guests) * guests * styleMult;
   const staffing = staffCount * cfg.staffingHourly * cfg.staffingHours;
   const raw = base + staffing;
   const mid = Math.max(raw, cfg.minimumTotal);
@@ -127,8 +140,9 @@ function toDateString(year, month, day) {
 
 const INITIAL_STATE = {
   step: 1,
-  type: null,         // 'dinner' | 'pizza' | 'weddings' | 'holiday'
+  type: null,         // 'dinner' | 'pizza' | 'holiday'
   guests: '',
+  mealStyle: DEFAULT_MEAL_STYLE, // 'full' | 'between' | 'light'
   date: '',           // 'YYYY-MM-DD'
   location: '',
   kitchenAccess: true,
@@ -191,8 +205,8 @@ export default function SmallEventsWizard({ initialType, onClose }) {
 
   const estimate = useMemo(() => {
     const g = parseInt(state.guests, 10);
-    return g > 0 ? calcEstimate(state.type, g) : null;
-  }, [state.type, state.guests]);
+    return g > 0 ? calcEstimate(state.type, g, state.mealStyle) : null;
+  }, [state.type, state.guests, state.mealStyle]);
 
   const openSlotDates = useMemo(() => new Set(slots.filter((s) => s.status === 'open').map((s) => s.date)), [slots]);
 
@@ -212,6 +226,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
         contactEmail: state.email,
         contactPhone: state.phone,
         guestCount: g,
+        mealStyle: state.mealStyle,
         eventDate: state.date || undefined,
         location: state.location,
         kitchenAccess: state.kitchenAccess,
@@ -447,6 +462,32 @@ export default function SmallEventsWizard({ initialType, onClose }) {
           </div>
           {tooFew && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Minimum {cfg.minGuests} guests for this event type.</div>}
           {tooMany && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Maximum {cfg.maxGuests} guests for this event type.</div>}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '1rem' }}>
+          <span className="le-checkout-label">How much food?</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#d9d0c6', border: '1px solid #d9d0c6' }}>
+            {MEAL_STYLE_OPTIONS.map((opt) => {
+              const selected = state.mealStyle === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set({ mealStyle: opt.value })}
+                  aria-pressed={selected}
+                  style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.7rem 0.9rem', background: selected ? '#111' : '#fff', border: 'none',
+                    cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s',
+                  }}
+                >
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: selected ? '#fff' : '#111' }}>{opt.label}</span>
+                    <span style={{ fontSize: '0.75rem', color: selected ? 'rgba(255,255,255,0.7)' : '#6b655d' }}>{opt.sub}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <Nav nextDisabled={!canAdvance} />
       </WizardCard>
@@ -693,6 +734,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
           ['Event', SMALL_EVENT_CONFIG[state.type]?.label],
           ['Date', dateLabel],
           ['Guests', state.guests],
+          ['Food', MEAL_STYLE_OPTIONS.find((o) => o.value === state.mealStyle)?.label],
           ['Location', state.location || '—'],
           ['Kitchen', state.kitchenAccess ? 'Full access' : 'Limited'],
           state.dietary ? ['Dietary', state.dietary] : null,

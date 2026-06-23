@@ -198,7 +198,33 @@ const PizzaPartyPage = () => {
   const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
 
   const basePrice = 75; // Deposit amount
-  const estimatedTotal = 450; // Estimated total for 15 guests
+  // Estimated total mirrors the pizza costing in the small-events estimator
+  // (backend/api/routes/smallEvents.js → SMALL_EVENT_CONFIG.pizza). Keep in sync.
+  const PIZZA_PRICING = {
+    baseRate: 55,
+    baseRateFloor: 38,
+    baseRateTaperPerGuest: 0.6,
+    minGuests: 4,
+    minimumTotal: 850,
+    staffingGuestsPer: 8,
+    staffingHourly: 45,
+    staffingHours: 4,
+    rangeMid: 1.0, // midpoint of rangeMin 0.9 / rangeMax 1.2
+  };
+  const estimatePizzaTotal = (guests) => {
+    const g = Math.max(0, Number(guests) || 0);
+    if (!g) return 0;
+    const over = Math.max(0, g - PIZZA_PRICING.minGuests);
+    const perGuest = Math.max(
+      PIZZA_PRICING.baseRateFloor,
+      PIZZA_PRICING.baseRate - PIZZA_PRICING.baseRateTaperPerGuest * over,
+    );
+    const staffCount = Math.max(1, Math.ceil(g / PIZZA_PRICING.staffingGuestsPer));
+    const staffing = staffCount * PIZZA_PRICING.staffingHourly * PIZZA_PRICING.staffingHours;
+    const subtotal = Math.max(g * perGuest + staffing, PIZZA_PRICING.minimumTotal);
+    return Math.round(subtotal * PIZZA_PRICING.rangeMid);
+  };
+  const estimatedTotal = estimatePizzaTotal(guestCount);
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
   const grandTotal = basePrice + addOnTotal;
 
@@ -475,7 +501,7 @@ const PizzaPartyPage = () => {
                 <div className="text-center space-y-2">
                   <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">${basePrice}</div>
                   <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Deposit to Reserve</div>
-                  <div className="text-sm text-neutral-600">Est. ${estimatedTotal} for 15 guests</div>
+                  <div className="text-sm text-neutral-600">Est. ${estimatedTotal} for {guestCount} guests</div>
                 </div>
                 <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Book / Pay Deposit</button>
               </div>
@@ -680,7 +706,7 @@ const PizzaPartyPage = () => {
                       <span>${grandTotal}</span>
                     </div>
                     <div className="flex items-center justify-between text-neutral-600 text-xs">
-                      <span>Estimated total (15 guests)</span>
+                      <span>Estimated total ({guestCount} guests)</span>
                       <span>${estimatedTotal}</span>
                     </div>
                   </div>

@@ -26,7 +26,9 @@ import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
 const SMALL_EVENT_CONFIG = {
   dinner: {
     label: 'Dinner party',
-    baseRate: 85,
+    baseRate: 95,
+    baseRateFloor: 65,
+    baseRateTaperPerGuest: 1.0,
     minimumTotal: 0,
     minGuests: 4,
     maxGuests: 16,
@@ -38,7 +40,9 @@ const SMALL_EVENT_CONFIG = {
   },
   pizza: {
     label: 'Pizza Party',
-    baseRate: 85,
+    baseRate: 55,
+    baseRateFloor: 38,
+    baseRateTaperPerGuest: 0.6,
     minimumTotal: 0,
     minGuests: 4,
     maxGuests: 16,
@@ -48,21 +52,13 @@ const SMALL_EVENT_CONFIG = {
     rangeMin: 0.9,
     rangeMax: 1.2,
   },
-  weddings: {
-    label: 'Weddings',
-    baseRate: 45,
-    minimumTotal: 0,
-    maxGuests: 50,
-    staffingGuestsPer: 12,
-    staffingHourly: 55,
-    staffingHours: 6,
-    rangeMin: 0.92,
-    rangeMax: 1.25,
-  },
   holiday: {
     label: 'Small events',
-    baseRate: 45,
+    baseRate: 70,
+    baseRateFloor: 48,
+    baseRateTaperPerGuest: 0.4,
     minimumTotal: 0,
+    minGuests: 6,
     maxGuests: 75,
     staffingGuestsPer: 15,
     staffingHourly: 40,
@@ -84,8 +80,7 @@ const BUSINESS_CONTACT_OPTIONS = {
 };
 const SMALL_EVENTS_CONTACT_OPTIONS = {
   dinner: 'Dinner at your home',
-  weddings: 'Weddings and showers',
-  holiday: 'Small events and holiday parties',
+  holiday: 'Small events like office and holiday parties, baby or wedding showers',
 };
 const ABOUT_INFO_BLOCKS = [
   {
@@ -179,6 +174,7 @@ const createSmallEventDefaults = (type) => ({
   eventTime: '',
   alternateDates: '',
   guestCount: '',
+  mealStyle: 'full',
   location: '',
   serviceStyle: '',
   menuNotes: '',
@@ -222,13 +218,10 @@ const buildInitialAvailability = () => {
     makeSlot(6, 'holiday', 'open', 'Weeknight availability'),
     makeSlot(8, 'dinner', 'blocked', 'Staffing hold'),
     makeSlot(9, 'pizza', 'open', 'Friday night'),
-    makeSlot(10, 'weddings', 'open', 'Preferred Saturday'),
     makeSlot(12, 'holiday', 'open', 'Corporate-friendly'),
-    makeSlot(15, 'weddings', 'blocked', 'Venue conflict'),
     makeSlot(18, 'dinner', 'open', 'Weekend window'),
     makeSlot(19, 'pizza', 'blocked', 'Private event'),
     makeSlot(21, 'holiday', 'open', 'Holiday week'),
-    makeSlot(24, 'weddings', 'open', 'Saturday or Sunday'),
   ];
 };
 
@@ -350,7 +343,6 @@ const FullPageDemoPage = () => {
   const [smallEventForms, setSmallEventForms] = useState(() => ({
     dinner: createSmallEventDefaults('dinner'),
     pizza: createSmallEventDefaults('pizza'),
-    weddings: createSmallEventDefaults('weddings'),
     holiday: createSmallEventDefaults('holiday'),
   }));
   const [availabilitySlots, setAvailabilitySlots] = useState(() => buildInitialAvailability());
@@ -508,6 +500,24 @@ const clampGuestCount = (value, config) => {
   return count;
 };
 
+// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
+// Mirrors effectiveBaseRate in backend/api/routes/smallEvents.js.
+const effectiveBaseRate = (config, guestCount) => {
+  const over = Math.max(0, guestCount - (config.minGuests || 1));
+  const rate = config.baseRate - (config.baseRateTaperPerGuest || 0) * over;
+  return Math.max(config.baseRateFloor ?? config.baseRate, rate);
+};
+
+// Meal style scales the per-guest food rate. Mirrors backend smallEvents.js.
+const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
+const MEAL_STYLE_OPTIONS = [
+  { value: 'full', label: 'Full meal' },
+  { value: 'between', label: 'Somewhere in between' },
+  { value: 'light', label: 'Light snacks' },
+];
+const normalizeMealStyle = (value) =>
+  Object.prototype.hasOwnProperty.call(MEAL_STYLE_MULTIPLIER, value) ? value : 'full';
+
   const getDepositPercent = (form) => {
     const override = parseFloat(form.depositOverridePercent);
     if (!Number.isNaN(override) && override > 0) return override / 100;
@@ -585,11 +595,6 @@ const clampGuestCount = (value, config) => {
       addLine('Kitchen access', form.kitchenAccess);
     }
 
-    if (type === 'weddings') {
-      addLine('Planner or contact', form.plannerInfo);
-      addLine('Meal moments', form.celebrationType);
-    }
-
     if (type === 'holiday') {
       addLine('Occasion', form.celebrationType);
       addLine('Setup needs', form.kitchenAccess);
@@ -597,9 +602,6 @@ const clampGuestCount = (value, config) => {
 
     if (estimate && (guestCount || form.guestCount)) {
       addLine('Estimate range', `${formatCurrency(estimate.estimateMin)} - ${formatCurrency(estimate.estimateMax)}`);
-      if (type === 'weddings' && estimate.coordinationFee) {
-        addLine('Event coordination (5%)', formatCurrency(estimate.coordinationFee));
-      }
       addLine(
         'Deposit',
         `${depositLabel} (${formatCurrency(estimate.depositAmount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
@@ -666,10 +668,9 @@ const clampGuestCount = (value, config) => {
     const guestCount = clampGuestCount(form.guestCount, config);
     const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
     const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
-    const foodCost = guestCount * config.baseRate;
-    const baseSubtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
-    const coordinationFee = type === 'weddings' ? baseSubtotal * 0.05 : 0;
-    const subtotal = baseSubtotal + coordinationFee;
+    const mealStyle = normalizeMealStyle(form.mealStyle);
+    const foodCost = guestCount * effectiveBaseRate(config, guestCount) * MEAL_STYLE_MULTIPLIER[mealStyle];
+    const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
     const estimateMin = subtotal * config.rangeMin;
     const estimateMax = subtotal * config.rangeMax;
     const depositPercent = getDepositPercent(form);
@@ -681,7 +682,6 @@ const clampGuestCount = (value, config) => {
       guestCount,
       staffingCount,
       staffingCost,
-      coordinationFee,
       subtotal,
       estimateMin,
       estimateMax,
@@ -696,7 +696,6 @@ const clampGuestCount = (value, config) => {
       guestCount: estimate.guestCount || 0,
       staffingCount: estimate.staffingCount || 0,
       staffingCost: centsToDollars(estimate.staffingCostCents || 0),
-      coordinationFee: centsToDollars(estimate.coordinationFeeCents || 0),
       subtotal: centsToDollars(estimate.subtotalCents || 0),
       estimateMin: centsToDollars(estimate.estimateMinCents || 0),
       estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
@@ -725,7 +724,6 @@ const clampGuestCount = (value, config) => {
       guestCount: estimate.guestCount || 0,
       staffingCount: estimate.staffingCount || 0,
       staffingCost: centsToDollars(estimate.staffingCostCents || 0),
-      coordinationFee: centsToDollars(estimate.coordinationFeeCents || 0),
       subtotal: centsToDollars(estimate.subtotalCents || 0),
       estimateMin: centsToDollars(estimate.estimateMinCents || 0),
       estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
@@ -741,6 +739,7 @@ const clampGuestCount = (value, config) => {
         contactEmail: estimate.contactEmail || '',
         contactPhone: estimate.contactPhone || '',
         guestCount: estimate.guestCount || '',
+        mealStyle: normalizeMealStyle(estimate.serviceStyle),
         eventDate: estimate.eventDate || '',
         eventTime: estimate.eventTime || '',
         alternateDates: estimate.alternateDates || '',
@@ -778,6 +777,7 @@ const clampGuestCount = (value, config) => {
         contactEmail: form.contactEmail,
         contactPhone: form.contactPhone,
         guestCount: form.guestCount,
+        mealStyle: form.mealStyle,
         eventDate: form.eventDate,
         eventTime: form.eventTime,
         alternateDates: form.alternateDates,
@@ -1007,10 +1007,6 @@ const clampGuestCount = (value, config) => {
         title: 'Plan a Pizza Party',
         subtitle: 'Tell us the basics and we will bring the pizza party plan.',
       },
-      weddings: {
-        title: 'Plan the celebration feast',
-        subtitle: 'From welcome bites to late-night snacks, we help map the flow.',
-      },
       holiday: {
         title: 'Plan your small event',
         subtitle: 'Tell us the vibe and we will craft the menu around it.',
@@ -1169,6 +1165,18 @@ const clampGuestCount = (value, config) => {
                   placeholder="ex: 18"
                 />
               </div>
+              <div>
+                <label className="form-fun-label">How much food?</label>
+                <select
+                  className="mt-1"
+                  value={form.mealStyle}
+                  onChange={(e) => updateSmallEventForm(type, 'mealStyle', e.target.value)}
+                >
+                  {MEAL_STYLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1205,38 +1213,6 @@ const clampGuestCount = (value, config) => {
                     value={form.kitchenAccess}
                     onChange={(e) => updateSmallEventForm(type, 'kitchenAccess', e.target.value)}
                     placeholder="Full kitchen, limited oven, etc."
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {type === 'weddings' && (
-            <div className="form-fun-card">
-              <div className="form-fun-header">
-                <div className="form-fun-title">Wedding details</div>
-                <span className="form-fun-tag">Celebrate</span>
-              </div>
-              <p className="form-fun-help">Let us know who is coordinating and the flow.</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="form-fun-label">Planner or point of contact</label>
-                  <input
-                    type="text"
-                    className="mt-1"
-                    value={form.plannerInfo}
-                    onChange={(e) => updateSmallEventForm(type, 'plannerInfo', e.target.value)}
-                    placeholder="Planner name or role"
-                  />
-                </div>
-                <div>
-                  <label className="form-fun-label">Meal moments</label>
-                  <input
-                    type="text"
-                    className="mt-1"
-                    value={form.celebrationType}
-                    onChange={(e) => updateSmallEventForm(type, 'celebrationType', e.target.value)}
-                    placeholder="Rehearsal, reception, late-night bites"
                   />
                 </div>
               </div>
@@ -1433,11 +1409,6 @@ const clampGuestCount = (value, config) => {
             <div className="mt-2 text-xs text-slate-600">
               Based on {estimate?.guestCount || 0} guests, {estimate?.staffingCount || 0} staff.
             </div>
-            {type === 'weddings' && estimate?.coordinationFee > 0 && (
-              <div className="text-xs text-slate-600">
-                Includes a 5% event coordination line item ({formatCurrency(estimate.coordinationFee)}).
-              </div>
-            )}
             <div className="text-xs text-slate-500">
               Rentals, tax, and bar packages are estimated separately.
             </div>
@@ -3138,9 +3109,8 @@ const clampGuestCount = (value, config) => {
                 with 100% Minnesota-sourced ingredients. Book today — deposit holds your date.
               </p>
               <ul>
-                <li>Private dinner parties at your home — 4 to 16 guests, multi-course seasonal menus from $85/guest</li>
-                <li>Wedding and shower catering — up to 50 guests, custom menus and full service from $45/guest</li>
-                <li>Small events and holiday parties — up to 75 guests, corporate-friendly, from $45/guest</li>
+                <li>Private dinner parties at your home — 4 to 16 guests, multi-course seasonal menus from $95/guest</li>
+                <li>Small events like office and holiday parties, baby or wedding showers — up to 75 guests, corporate-friendly</li>
               </ul>
               <p>Contact: yum@localeffortfood.com | Minneapolis, MN</p>
             </div>
@@ -3178,21 +3148,11 @@ const clampGuestCount = (value, config) => {
                       <div style={{ display: 'table-cell' }}>
                         <button
                           type="button"
-                          onClick={() => setSmallEventsDialog('weddings')}
-                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                          style={{ fontFamily: "'Office Code Pro', monospace" }}
-                        >
-                          weddings
-                        </button>
-                      </div>
-                      <div style={{ display: 'table-cell' }}>
-                        <button
-                          type="button"
                           onClick={() => setSmallEventsDialog('holiday')}
                           className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
                           style={{ fontFamily: "'Office Code Pro', monospace" }}
                         >
-                          small events and holiday parties
+                          small events like office and holiday parties, baby or wedding showers
                         </button>
                       </div>
                     </div>
@@ -3240,20 +3200,6 @@ const clampGuestCount = (value, config) => {
                     </div>
                   </article>
                   <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
-                    <meta itemProp="serviceType" content="Wedding catering" />
-                    <meta itemProp="areaServed" content="Twin Cities Metro, Minnesota" />
-                    <button
-                      type="button"
-                      className="partnerships-title partnerships-title-link"
-                      onClick={() => openSmallEventsContact('weddings')}
-                    >
-                      <span itemProp="name">weddings and showers</span>
-                    </button>
-                    <div className="partnerships-copy" itemProp="description">
-                      Farm-to-table wedding and shower catering for up to 50 guests. Custom menus and full professional service.
-                    </div>
-                  </article>
-                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
                     <meta itemProp="serviceType" content="Event catering" />
                     <meta itemProp="areaServed" content="Minneapolis-St. Paul, Minnesota" />
                     <button
@@ -3261,7 +3207,7 @@ const clampGuestCount = (value, config) => {
                       className="partnerships-title partnerships-title-link"
                       onClick={() => openSmallEventsContact('holiday')}
                     >
-                      <span itemProp="name">small events and holiday parties</span>
+                      <span itemProp="name">small events like office and holiday parties, baby or wedding showers</span>
                     </button>
                     <div className="partnerships-copy" itemProp="description">
                       Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal, locally sourced menus.
@@ -4085,11 +4031,6 @@ const clampGuestCount = (value, config) => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={smallEventsDialog === 'weddings'} onOpenChange={(open) => setSmallEventsDialog(open ? 'weddings' : null)}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
-          <SmallEventsWizard initialType="weddings" onClose={() => setSmallEventsDialog(null)} />
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={smallEventsDialog === 'holiday'} onOpenChange={(open) => setSmallEventsDialog(open ? 'holiday' : null)}>
         <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">

@@ -84,19 +84,22 @@ const getRequestedMealDays = (details, meal) => {
 };
 
 const KID_FLAT_MEAL_RATE = 11;
+// Base per-meal rate for kids under 13, before any age-based scaling.
+const KID_BASE_RATE = 14.5;
 
-// Per-child pricing as a function of age and the adult per-person rate for that meal:
+// Per-child pricing as a function of age. Under 13 scales off KID_BASE_RATE
+// (the kid base rate before age is taken into account); 13+ is priced as an adult.
 //   under 1 -> free
 //   1-4     -> flat $11/meal
-//   5-9     -> 50% off the adult rate
-//   10-12   -> 25% off the adult rate
+//   5-9     -> 50% of the kid base rate
+//   10-12   -> 75% of the kid base rate
 //   13+     -> full adult price
 const kidMealPrice = (age, adultRate) => {
   if (age == null || Number.isNaN(age)) return adultRate; // unknown age priced as adult
   if (age < 1) return 0;
   if (age <= 4) return KID_FLAT_MEAL_RATE;
-  if (age <= 9) return adultRate * 0.5;
-  if (age <= 12) return adultRate * 0.75;
+  if (age <= 9) return KID_BASE_RATE * 0.5;
+  if (age <= 12) return KID_BASE_RATE * 0.75;
   return adultRate;
 };
 

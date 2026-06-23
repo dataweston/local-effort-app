@@ -7,10 +7,17 @@ const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 
+// baseRate is the per-guest food rate at the minimum guest count. It tapers
+// down by baseRateTaperPerGuest for each guest above minGuests (floored at
+// baseRateFloor) because larger parties get bulk efficiency and staffing is
+// already billed separately below.
 const SMALL_EVENT_CONFIG = {
   dinner: {
     label: 'Dinner party',
     baseRate: 95,
+    baseRateFloor: 65,
+    baseRateTaperPerGuest: 1.0,
+    minGuests: 4,
     minimumTotal: 850,
     staffingGuestsPer: 8,
     staffingHourly: 45,
@@ -20,7 +27,10 @@ const SMALL_EVENT_CONFIG = {
   },
   pizza: {
     label: 'Pizza Party',
-    baseRate: 95,
+    baseRate: 55,
+    baseRateFloor: 38,
+    baseRateTaperPerGuest: 0.6,
+    minGuests: 4,
     minimumTotal: 850,
     staffingGuestsPer: 8,
     staffingHourly: 45,
@@ -28,19 +38,12 @@ const SMALL_EVENT_CONFIG = {
     rangeMin: 0.9,
     rangeMax: 1.2,
   },
-  weddings: {
-    label: 'Weddings',
-    baseRate: 140,
-    minimumTotal: 3200,
-    staffingGuestsPer: 12,
-    staffingHourly: 55,
-    staffingHours: 6,
-    rangeMin: 0.92,
-    rangeMax: 1.25,
-  },
   holiday: {
     label: 'Small events',
     baseRate: 70,
+    baseRateFloor: 48,
+    baseRateTaperPerGuest: 0.4,
+    minGuests: 6,
     minimumTotal: 1200,
     staffingGuestsPer: 15,
     staffingHourly: 40,
@@ -51,6 +54,13 @@ const SMALL_EVENT_CONFIG = {
 };
 
 const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
+
+// Meal style scales the per-guest food rate. 'full' is the reference (100%).
+const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
+const DEFAULT_MEAL_STYLE = 'full';
+const normalizeMealStyle = (value) =>
+  Object.prototype.hasOwnProperty.call(MEAL_STYLE_MULTIPLIER, value) ? value : DEFAULT_MEAL_STYLE;
+
 const ADMIN_TOKEN = process.env.SMALL_EVENTS_ADMIN_TOKEN || process.env.EVENTS_ADMIN_TOKEN || '';
 
 const normalizeString = (value, limit = 400) => {
@@ -85,13 +95,21 @@ const addHours = (date, hours) => {
   return next;
 };
 
+// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
+const effectiveBaseRate = (config, guestCount) => {
+  const over = Math.max(0, guestCount - (config.minGuests || 1));
+  const rate = config.baseRate - (config.baseRateTaperPerGuest || 0) * over;
+  return Math.max(config.baseRateFloor ?? config.baseRate, rate);
+};
+
 const computeEstimate = (type, payload) => {
   const config = SMALL_EVENT_CONFIG[type];
   if (!config) return null;
   const guestCount = Math.max(0, parseIntSafe(payload.guestCount));
+  const mealStyle = normalizeMealStyle(payload.mealStyle ?? payload.serviceStyle);
   const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
   const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
-  const foodCost = guestCount * config.baseRate;
+  const foodCost = guestCount * effectiveBaseRate(config, guestCount) * MEAL_STYLE_MULTIPLIER[mealStyle];
   const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
   const estimateMin = subtotal * config.rangeMin;
   const estimateMax = subtotal * config.rangeMax;
@@ -107,6 +125,7 @@ const computeEstimate = (type, payload) => {
 
   return {
     guestCount,
+    mealStyle,
     staffingCount,
     staffingCostCents: toCents(staffingCost),
     subtotalCents: toCents(subtotal),
@@ -209,7 +228,8 @@ const sanitizeEstimatePayload = (payload) => ({
   eventTime: normalizeString(payload.eventTime, 80) || null,
   alternateDates: normalizeString(payload.alternateDates, 200) || null,
   location: normalizeString(payload.location, 200) || null,
-  serviceStyle: normalizeString(payload.serviceStyle, 80) || null,
+  // Meal style (full | between | light) is persisted in serviceStyle.
+  serviceStyle: normalizeMealStyle(payload.mealStyle ?? payload.serviceStyle),
   budgetRange: normalizeString(payload.budgetRange, 80) || null,
   menuNotes: normalizeString(payload.menuNotes, 600) || null,
   dietary: normalizeString(payload.dietary, 600) || null,
