@@ -1,5 +1,51 @@
+const { getSanityClient } = require('../../backend/api/sanityClient');
+
 const SECURITY_PICKUP_WINDOW = 'Security at Neon';
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
+// Subtract purchased quantities from each item's Sanity inventoryCount.
+// Only touches items that already track inventory and never goes below zero.
+// Callers must gate this on the first transition into "paid" so duplicate
+// confirmations (checkout.success event + Square webhook) can't double-subtract.
+async function decrementInventoryForOrder(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (!items.length) return;
+
+  const client = getSanityClient();
+  if (!client) return;
+
+  const quantityById = new Map();
+  for (const line of items) {
+    const id = typeof line?.id === 'string' ? line.id.trim() : '';
+    const qty = Number(line?.quantity);
+    if (!id || !Number.isInteger(qty) || qty < 1) continue;
+    quantityById.set(id, (quantityById.get(id) || 0) + qty);
+  }
+  if (!quantityById.size) return;
+
+  let current = [];
+  try {
+    current = await client.fetch('*[_id in $ids]{ _id, inventoryCount }', {
+      ids: Array.from(quantityById.keys()),
+    });
+  } catch (err) {
+    console.warn('[localistOrderBrain] inventory lookup failed', err?.message);
+    return;
+  }
+
+  await Promise.all((Array.isArray(current) ? current : []).map(async (doc) => {
+    const count = Number(doc?.inventoryCount);
+    if (!Number.isFinite(count)) return; // item does not track inventory
+    const qty = quantityById.get(doc._id) || 0;
+    if (qty < 1) return;
+    const next = Math.max(0, Math.round(count) - qty);
+    try {
+      await client.patch(doc._id).set({ inventoryCount: next }).commit();
+    } catch (err) {
+      console.warn('[localistOrderBrain] inventory decrement failed', doc._id, err?.message);
+    }
+  }));
+}
 
 function notificationEmail() {
   return process.env.LOCALIST_ORDER_NOTIFY_EMAIL
@@ -417,6 +463,13 @@ async function markLocalistOrderPaidFromSquare(prisma, payment) {
       squareReceiptUrl: existing.squareReceiptUrl || paymentField(payment, 'receipt_url', 'receiptUrl') || null,
     },
   });
+
+  if (existing.status !== 'paid') {
+    await decrementInventoryForOrder(updated).catch((err) => {
+      console.warn('[localistOrderBrain] inventory update failed', err?.message);
+    });
+  }
+
   await writeOrderBrainRecords(prisma, updated, { paid: true });
   return updated;
 }
@@ -430,4 +483,5 @@ module.exports = {
   sendPaidOrderEmails,
   writeOrderBrainRecords,
   markLocalistOrderPaidFromSquare,
+  decrementInventoryForOrder,
 };

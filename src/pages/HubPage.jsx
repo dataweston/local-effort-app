@@ -2073,8 +2073,12 @@ function LocalistView({
                       </span>
                     </strong>
                     {tracksInventory && (
-                      <span className={`hub-localist-inventory${soldOut ? ' is-sold-out' : ''}`}>
-                        {roundedInventoryCount} available{soldOut ? ' - sold out' : ''}
+                      <span className={`hub-localist-inventory${soldOut ? ' is-sold-out' : ''}${!soldOut && roundedInventoryCount <= 3 ? ' is-low' : ''}`}>
+                        {soldOut
+                          ? 'Sold out'
+                          : roundedInventoryCount === 1
+                            ? 'Only 1 left'
+                            : `${roundedInventoryCount} remaining`}
                       </span>
                     )}
                     {item.description && <span>{item.description}</span>}
@@ -2747,7 +2751,8 @@ export default function HubPage() {
 }
 
 const hubCss = `
-.hub-app {
+.hub-app,
+.hub-auth-screen {
   --hub-bg: #f5f3ee;
   --hub-panel: #ffffff;
   --hub-ink: #1a1d1b;
@@ -2758,6 +2763,8 @@ const hubCss = `
   --hub-accent-bg: #eaf1ee;
   --hub-accent-text: #ffffff;
   --hub-row-hover: #f8f6f1;
+}
+.hub-app {
   min-height: 100vh;
   display: flex;
   background: var(--hub-bg);
@@ -3380,6 +3387,9 @@ const hubCss = `
   font-size: 11px;
   font-weight: 700;
 }
+.hub-localist-inventory.is-low {
+  color: #b4611a;
+}
 .hub-localist-inventory.is-sold-out {
   color: #9b2f2f;
 }
@@ -3876,6 +3886,8 @@ const hubCss = `
   font-weight: 700;
   color: var(--color-text-muted, rgba(58, 46, 63, 0.6));
 }
+.hub-menu-paper .hub-localist-inventory.is-low { color: #b4611a; }
+.hub-menu-paper .hub-localist-inventory.is-sold-out { color: #9b2f2f; }
 .hub-menu-paper .hub-localist-flags span {
   border: 1px solid var(--color-border-default, #C0BECF);
   border-radius: 999px;

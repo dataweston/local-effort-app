@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
-const { writeOrderBrainRecords } = require('./_localistOrderBrain');
+const { writeOrderBrainRecords, decrementInventoryForOrder } = require('./_localistOrderBrain');
 
 let prisma = null;
 try {
@@ -87,6 +87,15 @@ async function markLocalistOrderPaid(payload, occurredAt) {
       squarePaymentId: existing.squarePaymentId || squarePaymentId || null,
     },
   });
+
+  // Decrement Sanity inventory only on the first transition into paid so
+  // duplicate checkout.success events can't double-subtract.
+  if (existing.status !== 'paid') {
+    await decrementInventoryForOrder(updated).catch((err) => {
+      console.warn('[hub/localist-activity] inventory update failed', err?.message);
+    });
+  }
+
   await writeOrderBrainRecords(prisma, updated, { paid: true });
 }
 
