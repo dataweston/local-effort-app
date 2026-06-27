@@ -15,6 +15,9 @@ const cases = [
   ['POST', 'feedback', '../api-handlers/hub/feedback', {}],
   ['POST', 'checkins', '../api-handlers/hub/checkins', {}],
   ['POST', 'push-register', '../api-handlers/hub/push-register', {}],
+  ['POST', 'resolve-dish', '../api-handlers/hub/resolve-dish', { name: 'test' }],
+  ['GET', 'master-menu', '../api-handlers/hub/master-menu', {}],
+  ['GET', 'house-notepad-canon', '../api-handlers/hub/house-notepad-canon', {}],
 ];
 
 function createReq(method, body) {

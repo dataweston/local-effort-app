@@ -9,7 +9,11 @@ try {
   prisma = null;
 }
 
-const TARGET_CUSTOMER_SLUGS = ['levy-family', 'sanjay-roy', 'katie-ferguson', 'tyler-cooper'];
+// Active weekly meal-prep customers that exist as Customer table rows. Tyler is
+// paused (excluded). Samantha lives only in the knowledge graph (intake + Square,
+// no Customer row), so she's surfaced via the brain mealPrepStage path below
+// rather than this slug list. See loadActiveBrainCustomers().
+const TARGET_CUSTOMER_SLUGS = ['levy-family'];
 const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';
 const FUTURE_WEEK_COUNT = 3;
@@ -399,6 +403,60 @@ async function loadUpcomingCustomers() {
   ));
 }
 
+// Active-roster customers that live ONLY in the knowledge graph (intake + Square),
+// without a Customer table row — e.g. Samantha. Driven by mealPrepStage so the
+// active roster is data, not a hardcoded slug list. 'active' shows in the active
+// roster; 'paused' (e.g. Tyler) is surfaced but flagged, not dropped silently.
+async function loadActiveBrainCustomers() {
+  const entities = await prisma.brainEntity.findMany({
+    where: {
+      entityType: 'Customer',
+      tombstonedAt: null,
+      localEffortCustomerId: null, // table-row customers already come via loadCustomers
+      // JSON path filters don't support `in`; OR two equals checks instead.
+      OR: [
+        { properties: { path: ['mealPrepStage'], equals: 'active' } },
+        { properties: { path: ['mealPrepStage'], equals: 'paused' } },
+      ],
+    },
+    orderBy: { name: 'asc' },
+    take: 100,
+  });
+
+  const emailFor = (entity) => [entity.properties?.email].filter(Boolean);
+  const enrich = await buildEnrichmentIndex({
+    squareCustomerIds: entities.map((e) => e.squareCustomerId).filter(Boolean),
+    emails: entities.flatMap(emailFor),
+  });
+
+  // Shape these like table-row customers so the UI renders them in one list, but
+  // mark their brain origin and lifecycle stage.
+  return entities.map((entity) => {
+    const props = entity.properties || {};
+    const enrichment = enrich({ squareCustomerIds: [entity.squareCustomerId], emails: emailFor(entity) });
+    return {
+      id: entity.id,
+      slug: null,
+      name: entity.name,
+      source: 'brain',
+      mealPrepStage: props.mealPrepStage || 'active',
+      priceTierDefault: null,
+      planSummary: props.latestMealPrepIntakeSummary || '',
+      profile: {
+        householdSize: props.householdSize || '',
+        phone: props.phone || '',
+        address: props.address || '',
+        deliveryNotes: props.deliveryPreference || '',
+        intakeSurvey: null,
+      },
+      users: props.email ? [{ id: null, email: props.email, role: 'subscriber' }] : [],
+      latestOrder: null,
+      brain: compactBrainEntity(entity),
+      ...enrichment,
+    };
+  });
+}
+
 async function loadNotes() {
   const tabs = activeWeekTabs();
   await archiveExpiredWeekNotes(tabs);
@@ -450,12 +508,19 @@ async function handler(req, res) {
       return res.status(200).json({ ok: true, note: { ...tab, document: publicDoc(doc) } });
     }
 
-    const showUpcoming = !auth.isCustomer || auth.isPrivileged;
-    const [customers, upcomingCustomers, notes] = await Promise.all([
+    const showRoster = !auth.isCustomer || auth.isPrivileged;
+    const [tableCustomers, brainCustomers, upcomingCustomers, notes] = await Promise.all([
       loadCustomers(auth),
-      showUpcoming ? loadUpcomingCustomers() : Promise.resolve([]),
+      showRoster ? loadActiveBrainCustomers() : Promise.resolve([]),
+      showRoster ? loadUpcomingCustomers() : Promise.resolve([]),
       loadNotes(),
     ]);
+    // Merge table-row and brain-only active customers into one roster; active
+    // first, paused last, then by name.
+    const stageRank = (c) => (c.mealPrepStage === 'paused' ? 1 : 0);
+    const customers = [...tableCustomers, ...brainCustomers].sort(
+      (a, b) => stageRank(a) - stageRank(b) || String(a.name || '').localeCompare(String(b.name || '')),
+    );
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),

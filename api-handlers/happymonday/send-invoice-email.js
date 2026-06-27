@@ -60,8 +60,8 @@ module.exports = async function handler(req, res) {
 
     // Get items data (hardcoded item list - you may want to make this dynamic)
     const ITEMS = [
-      { id: 1, name: "Egg Salad Sandwich", price: 5.1, category: "Sandwiches" },
-      { id: 2, name: "Turkey Breast", price: 6.1, category: "Sandwiches" },
+      { id: 1, name: "Egg Salad Sandwich", price: 5.85, category: "Sandwiches" },
+      { id: 2, name: "Turkey Breast", price: 7.1, category: "Sandwiches" },
       { id: 3, name: "Roast Beef", price: 7.1, category: "Sandwiches" },
       { id: 4, name: "Pastrami", price: 7.1, category: "Sandwiches" },
       { id: 5, name: "Mortadella", price: 7.1, category: "Sandwiches" },

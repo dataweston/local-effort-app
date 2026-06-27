@@ -1436,6 +1436,33 @@ app.all('/api/hub/food-inputs', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/resolve-dish', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/resolve-dish')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub resolve dish handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/master-menu', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/master-menu')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub master menu handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/house-notepad-canon', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/house-notepad-canon')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub house notepad canon handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/brain-publish', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/brain-publish')(req, res);

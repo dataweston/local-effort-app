@@ -349,8 +349,28 @@ function HomeNotepad({ accessToken }) {
   const [body, setBody] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState('');
-  const [preview, setPreview] = useState(false);
+  const [mode, setMode] = useState('edit'); // 'edit' | 'preview' | 'canon'
+  const [canon, setCanon] = useState(null);
+  const [canonBusy, setCanonBusy] = useState(false);
   const lastSavedRef = useRef('');
+
+  // Parse the notepad's #in season# options into canonical dish matches.
+  // commit=true creates any missing dishes in the knowledge graph.
+  const loadCanon = useCallback(async (commit = false) => {
+    setCanonBusy(true);
+    try {
+      const res = await api('/api/hub/house-notepad-canon', accessToken, commit ? { method: 'POST', body: '{}' } : undefined);
+      setCanon(res);
+      if (commit) {
+        const created = (res.sections?.inSeason || []).filter((d) => d.created).length;
+        setStatus(created ? `Canonicalized · ${created} new dish${created === 1 ? '' : 'es'} created` : 'Canonicalized · all matched');
+      }
+    } catch (err) {
+      setStatus(err.message || 'Unable to canonicalize.');
+    } finally {
+      setCanonBusy(false);
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     let cancelled = false;
@@ -388,23 +408,30 @@ function HomeNotepad({ accessToken }) {
     return () => window.clearTimeout(timer);
   }, [accessToken, body, loaded]);
 
+  const inSeason = canon?.sections?.inSeason || [];
+
   return (
     <Panel
       title="House Notepad"
       icon={FileText}
       action={(
         <div className="hub-button-row">
-          <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
-          <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
+          <button className={mode === 'edit' ? 'is-active' : ''} onClick={() => setMode('edit')}>Edit</button>
+          <button className={mode === 'preview' ? 'is-active' : ''} onClick={() => setMode('preview')}>Preview</button>
+          <button
+            className={mode === 'canon' ? 'is-active' : ''}
+            onClick={() => { setMode('canon'); loadCanon(false); }}
+          >
+            <CheckCircle2 size={13} /> Canon
+          </button>
         </div>
       )}
     >
       <div className="hub-wordpad-tabs">
-        <span>{status || 'Shared with all staff. In season, events, and important updates.'}</span>
+        <span>{status || 'Shared on every Today tab. In season, events, and important updates.'}</span>
       </div>
-      {preview ? (
-        <MarkdownPreview body={body || HOME_NOTEPAD_TEMPLATE} />
-      ) : (
+      {mode === 'preview' && <MarkdownPreview body={body || HOME_NOTEPAD_TEMPLATE} />}
+      {mode === 'edit' && (
         <textarea
           className="hub-wordpad"
           value={body}
@@ -412,6 +439,39 @@ function HomeNotepad({ accessToken }) {
           spellCheck="true"
           placeholder={HOME_NOTEPAD_TEMPLATE}
         />
+      )}
+      {mode === 'canon' && (
+        <div className="hub-canon">
+          <div className="hub-button-row" style={{ padding: '6px 0' }}>
+            <span className="hub-empty" style={{ margin: 0, flex: 1 }}>
+              <strong>#in season#</strong> in-stock options, matched to canonical dishes.
+            </span>
+            <button onClick={() => loadCanon(true)} disabled={canonBusy}>
+              {canonBusy ? 'Working…' : 'Canonicalize (create missing)'}
+            </button>
+          </div>
+          {inSeason.length > 0 ? (
+            <ul className="hub-rollup-packaging">
+              {inSeason.map((d, i) => (
+                <li key={`${d.dishEntityId || d.text}-${i}`} className={d.resolved ? '' : 'is-unresolved'}>
+                  {d.resolved
+                    ? <CheckCircle2 size={14} className="hub-rollup-ok" aria-label="Matched" />
+                    : <span className="hub-rollup-qty" aria-hidden>•</span>}
+                  <span>
+                    {d.text}
+                    {d.created && <em className="hub-rollup-canon"> (new)</em>}
+                    {!d.created && d.resolved && d.canonicalName
+                      && d.canonicalName.toLowerCase() !== d.text.toLowerCase()
+                      && <em className="hub-rollup-canon"> → {d.canonicalName}</em>}
+                  </span>
+                  {!d.resolved && <span className="hub-pill">{d.candidates?.length ? 'review' : 'new'}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="hub-empty">{canonBusy ? 'Loading…' : 'No #in season# options yet.'}</p>
+          )}
+        </div>
       )}
     </Panel>
   );
@@ -898,7 +958,116 @@ function CustomerSpendCell({ customer, intakeDate }) {
   );
 }
 
-function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
+// Derive the prep week's Sunday from a note tab id ("week-2026-06-28"), so the
+// menu panel parses the correct week's notepad.
+function weekStartFromTabId(tabId) {
+  const match = /week-(\d{4}-\d{2}-\d{2})$/.exec(String(tabId || ''));
+  return match ? match[1] : null;
+}
+
+const MENU_MEAL_ORDER = ['dinner', 'lunch', 'breakfast', 'kids'];
+const MENU_MEAL_LABEL = { dinner: 'Dinners', lunch: 'Lunches', breakfast: 'Breakfasts', kids: 'Kids meals' };
+
+// Staff-only view of the week's MENU and its formalized canonical dishes.
+// Source: the active week's Weekly Meal Prep notepad, parsed via
+// /api/hub/master-menu. Dishes are grouped by meal category (the subheading they
+// sit under: #dinners# #lunches# #breakfasts# #kids meals#), and each is matched
+// to a knowledge-graph Dish entity. Counts, stations, and chef assignment are a
+// later prep-breakdown step, not shown here.
+function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
+  const [menu, setMenu] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const query = weekStart ? `?weekStart=${encodeURIComponent(weekStart)}` : '';
+      const next = await api(`/api/hub/master-menu${query}`, accessToken);
+      setMenu(next);
+    } catch (err) {
+      setError(err.message || 'Unable to parse menu.');
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, weekStart]);
+
+  useEffect(() => { load().catch(() => {}); }, [load]);
+
+  const dishes = menu?.dishes || [];
+  const summary = menu?.summary;
+  // Group dishes by meal, preserving the canonical meal order.
+  const byMeal = MENU_MEAL_ORDER
+    .map((meal) => ({ meal, dishes: dishes.filter((d) => d.meal === meal) }))
+    .filter((group) => group.dishes.length > 0);
+
+  return (
+    <Panel
+      title="This Week&apos;s Menu"
+      icon={ClipboardList}
+      action={(
+        <div className="hub-button-row">
+          <button onClick={() => load()}><RefreshCw size={13} /></button>
+        </div>
+      )}
+    >
+      <p className="hub-empty" style={{ marginTop: 0 }}>
+        Parsed from {weekLabel ? <strong>{weekLabel}</strong> : 'this week'}&apos;s prep notepad
+        below, under <code>#dinners# #lunches# #breakfasts# #kids meals#</code>. Each dish is matched
+        to a canonical dish in the knowledge graph.
+      </p>
+      <div className="hub-foodinputs-status">
+        <span>
+          {loading
+            ? 'Parsing menu...'
+            : error
+            || (summary
+              ? `${summary.total} dishes · ${summary.resolved} matched · ${summary.unresolved} unmatched`
+              : 'No menu yet.')}
+        </span>
+      </div>
+
+      {byMeal.length > 0 ? (
+        byMeal.map((group) => (
+          <div key={group.meal} className="hub-menu-meal">
+            <h5>{MENU_MEAL_LABEL[group.meal]}</h5>
+            <ul className="hub-rollup-packaging">
+              {group.dishes.map((dish, i) => (
+                <li key={`${dish.dishEntityId || dish.text}-${i}`} className={dish.resolved ? '' : 'is-unresolved'}>
+                  {dish.resolved
+                    ? <CheckCircle2 size={14} className="hub-rollup-ok" aria-label="Matched" />
+                    : <span className="hub-rollup-qty" aria-hidden>•</span>}
+                  <span>
+                    {dish.text}
+                    {dish.resolved && dish.canonicalName
+                      && dish.canonicalName.toLowerCase() !== dish.text.toLowerCase()
+                      && <em className="hub-rollup-canon"> → {dish.canonicalName}</em>}
+                  </span>
+                  {!dish.resolved && (
+                    <span className="hub-pill" title="No confident canonical dish match">
+                      {dish.candidates?.length ? 'review' : 'new'}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      ) : (
+        !loading && (
+          <p className="hub-empty">
+            Write this week&apos;s menu in the prep notepad below under
+            {' '}<code>#dinners#</code>, <code>#lunches#</code>, <code>#breakfasts#</code>,
+            {' '}<code>#kids meals#</code>, then refresh.
+          </p>
+        )
+      )}
+    </Panel>
+  );
+}
+
+function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
   const [data, setData] = useState({ customers: [], upcomingCustomers: [], notes: [], mode: 'staff' });
   const [activeTab, setActiveTab] = useState(null);
   const [noteBody, setNoteBody] = useState('');
@@ -908,7 +1077,9 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
   const lastSavedRef = useRef('');
   const activeTabRef = useRef(activeTab);
 
-  const canEditNotes = data.mode !== 'customer';
+  // Customer view is read-only. Respect both the backend mode and a privileged
+  // user's "preview as customer" toggle so the preview is faithful.
+  const canEditNotes = data.mode !== 'customer' && !isCustomer;
 
   const load = useCallback(async ({ keepStatus = false } = {}) => {
     setLoading(true);
@@ -960,7 +1131,7 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
     lastSavedRef.current = body;
   };
 
-  const customerLabel = profile?.accessLevel === 'customer'
+  const customerLabel = isCustomer
     ? 'Customer view'
     : isPrivileged
     ? 'Privileged view: staff and customer'
@@ -996,7 +1167,9 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
                 <tr key={customer.id}>
                   <td>
                     <strong>{customer.name}</strong>
-                    <span>{customer.users.map((user) => user.email).join(', ') || customer.slug}</span>
+                    {customer.mealPrepStage === 'paused' && <span className="hub-pill hub-pill-muted">paused</span>}
+                    {customer.source === 'brain' && customer.mealPrepStage !== 'paused' && <span className="hub-pill">from intake</span>}
+                    <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
                   </td>
                   <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                   <td>
@@ -1079,6 +1252,14 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
         </Panel>
       )}
 
+      {canEditNotes && (
+        <MasterMenuPanel
+          accessToken={accessToken}
+          weekStart={weekStartFromTabId(activeTab)}
+          weekLabel={(data.notes || []).find((note) => note.id === activeTab)?.title || ''}
+        />
+      )}
+
       <Panel
         title="Shared Prep Notes"
         icon={FileText}
@@ -1106,7 +1287,7 @@ function WeeklyMealPrepView({ accessToken, profile, isPrivileged }) {
               value={noteBody}
               onChange={(event) => setNoteBody(event.target.value)}
               spellCheck="true"
-              placeholder={"# Menu\n- Dishes for this week\n\n# Production\n- Prep notes\n\n# Packout / Delivery\n- Questions and changes"}
+              placeholder={"#dinners#\n- \n\n#lunches#\n- \n\n#breakfasts#\n- \n\n#kids meals#\n- "}
             />
           )
         ) : (
@@ -2553,6 +2734,10 @@ export default function HubPage() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
   const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : 'today');
+  // Privileged-only "view as" override: see the whole Hub as a staff or customer
+  // would. null = view with your real (privileged) access. Production-safe: only
+  // a genuinely privileged profile can set this; it never elevates access.
+  const [viewAs, setViewAs] = useState(null); // null | 'staff' | 'customer'
   const [people, setPeople] = useState([]);
   const [docs, setDocs] = useState([]);
   const [calendar, setCalendar] = useState([]);
@@ -2615,9 +2800,18 @@ export default function HubPage() {
   useEffect(() => { loadProfile().catch(() => setProfileLoaded(true)); }, [loadProfile]);
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
 
-  const isPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
+  // Real access from the profile (the source of truth for what's permitted).
+  const actualIsPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
   const isLocalist = !!profile && profile.accessLevel === 'localist';
-  const isCustomer = !!profile && profile.accessLevel === 'customer';
+  const actualIsCustomer = !!profile && profile.accessLevel === 'customer';
+
+  // Effective role used to RENDER the Hub. A privileged user can preview the Hub
+  // as staff or customer via `viewAs`; this only ever narrows what they see, never
+  // grants access. Non-privileged users always render at their real role.
+  const canViewAs = actualIsPrivileged;
+  const effectiveViewAs = canViewAs ? viewAs : null;
+  const isPrivileged = actualIsPrivileged && !effectiveViewAs;
+  const isCustomer = actualIsCustomer || effectiveViewAs === 'customer';
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
@@ -2721,17 +2915,30 @@ export default function HubPage() {
         <header className="hub-topbar">
           <div>
             <h1>{navTabs.find((item) => item.id === activeTab)?.label || 'Hub'}</h1>
-            <p>{isLocalist ? 'Localist view' : isCustomer ? 'Customer view' : isPrivileged ? 'Privileged view' : 'Staff view'}</p>
+            <p>
+              {isLocalist ? 'Localist view' : isCustomer ? 'Customer view' : isPrivileged ? 'Privileged view' : 'Staff view'}
+              {effectiveViewAs && <span className="hub-pill" style={{ marginLeft: 8 }}>previewing as {effectiveViewAs}</span>}
+            </p>
           </div>
-          <button onClick={loadShellData}><RefreshCw size={13} /> Refresh</button>
+          <div className="hub-button-row">
+            {canViewAs && (
+              <div className="hub-button-row hub-viewas" title="Preview the Hub as a staff or customer would see it">
+                <button className={!viewAs ? 'is-active' : ''} onClick={() => setViewAs(null)}>Privileged</button>
+                <button className={viewAs === 'staff' ? 'is-active' : ''} onClick={() => setViewAs('staff')}>Staff</button>
+                <button className={viewAs === 'customer' ? 'is-active' : ''} onClick={() => setViewAs('customer')}>Customer</button>
+              </div>
+            )}
+            <button onClick={loadShellData}><RefreshCw size={13} /> Refresh</button>
+          </div>
         </header>
 
         {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} />}
+        {/* Privileged "view as customer" hides the staff House Notepad via isCustomer above. */}
         {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
-        {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
+        {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} isPrivileged={isPrivileged} isCustomer={isCustomer} />}
         {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
@@ -3208,6 +3415,68 @@ const hubCss = `
 }
 .hub-foodinputs-status { padding: 6px 0 2px; }
 .hub-foodinputs-status span { color: var(--hub-muted); font-size: 11px; }
+
+/* ── Prep & Packaging rollup ── */
+.hub-rollup-unresolved {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border: 1px solid #e6c89b;
+  background: #fdf4e3;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #7a5a1e;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hub-rollup-packaging { list-style: none; margin: 8px 0 0; padding: 0; }
+.hub-rollup-packaging li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--hub-border-light);
+  font-size: 14px;
+  text-transform: capitalize;
+}
+.hub-rollup-packaging li.is-unresolved { color: var(--hub-muted); }
+.hub-rollup-qty {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--hub-accent);
+}
+.hub-rollup-ok { color: var(--hub-accent); flex: 0 0 auto; }
+.hub-rollup-canon { color: var(--hub-muted); font-style: italic; }
+.hub-pill-muted { background: var(--hub-bg); color: var(--hub-muted); }
+.hub-viewas { border: 1px solid var(--hub-border); border-radius: 6px; padding: 2px; margin-right: 6px; }
+.hub-viewas button { font-size: 11px; }
+.hub-canon { padding: 4px 0; }
+.hub-menu-meal { margin-top: 6px; }
+.hub-menu-meal h5 {
+  margin: 8px 0 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hub-muted);
+}
+.hub-rollup-cook, .hub-rollup-bags { margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
+.hub-rollup-chef, .hub-rollup-bag {
+  border: 1px solid var(--hub-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #fff;
+}
+.hub-rollup-chef h4, .hub-rollup-bag h4 { margin: 0 0 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.hub-rollup-day { margin: 6px 0 0 8px; }
+.hub-rollup-day h5 { margin: 0 0 4px; font-size: 12px; color: var(--hub-muted); }
+.hub-rollup-station { display: flex; gap: 8px; align-items: flex-start; margin: 4px 0; }
+.hub-rollup-station ul, .hub-rollup-bag ul { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.hub-rollup-station li, .hub-rollup-bag li { padding: 2px 0; }
+@media print {
+  .hub-button-row, .hub-foodinputs-status, .hub-empty { display: none !important; }
+}
 
 /* ── Food Inputs spreadsheet ── */
 .hub-sheet { padding: 4px 0 2px; }
