@@ -21,6 +21,7 @@ const { classify } = require('./classify');
 const { writeLedgerEvent, findOrCreateEntity, createInboxItem, canonicalName } = require('../ledger');
 const { applyConstraintCorrection } = require('../constraintCorrection');
 const { setPricing } = require('../ontologyHelpers');
+const { resolveEntity } = require('../resolver');
 
 // Confidence at/above which a commit auto-applies without an explicit confirm.
 const AUTO_APPLY_THRESHOLD = {
@@ -33,39 +34,10 @@ const AUTO_APPLY_THRESHOLD = {
   needs_human: 1.1, // never auto-applies
 };
 
-// ── resolve helpers ─────────────────────────────────────────────────────────
-
-async function resolveCustomerByName(prisma, name) {
-  if (!name) return null;
-  return prisma.brainEntity.findFirst({
-    where: {
-      entityType: 'Customer', tombstonedAt: null,
-      OR: [
-        { name: { equals: name, mode: 'insensitive' } },
-        { canonicalName: canonicalName(name) },
-        { aliases: { some: { alias: { equals: name, mode: 'insensitive' } } } },
-      ],
-    },
-    select: { id: true, name: true },
-  });
-}
-
-async function resolveByTypeName(prisma, entityType, name) {
-  if (!name) return null;
-  return prisma.brainEntity.findFirst({
-    where: {
-      entityType, tombstonedAt: null,
-      OR: [
-        { name: { equals: name, mode: 'insensitive' } },
-        { canonicalName: canonicalName(name) },
-        { aliases: { some: { alias: { equals: name, mode: 'insensitive' } } } },
-      ],
-    },
-    select: { id: true, name: true },
-  });
-}
-
-// ── STAGE 2: resolve — bind named refs to existing entities ────────────────────
+// ── STAGE 2: resolve — bind named refs via the shared resolver ─────────────────
+// Uses resolveEntity (FK anchor → alias → canonicalName, with backfill) so every
+// capture binds to the same canonical node the projectors and syncs use, and
+// each match enriches the entity (alias/FK) for cheaper future resolution.
 
 async function resolve(prisma, intent, fields, ctx) {
   const resolved = {};
@@ -74,13 +46,14 @@ async function resolve(prisma, intent, fields, ctx) {
       const c = await prisma.brainEntity.findFirst({ where: { id: ctx.customerId, entityType: 'Customer', tombstonedAt: null }, select: { id: true, name: true } });
       resolved.customer = c || null;
     } else {
-      resolved.customer = await resolveCustomerByName(prisma, fields.customerRef);
+      const r = await resolveEntity({ type: 'Customer', name: fields.customerRef });
+      resolved.customer = r.entity;
     }
   } else if (intent === 'vendor_price') {
-    resolved.ingredient = await resolveByTypeName(prisma, 'Ingredient', fields.item);
-    resolved.vendor = fields.vendorRef ? await resolveByTypeName(prisma, 'Vendor', fields.vendorRef) : null;
+    resolved.ingredient = (await resolveEntity({ type: 'Ingredient', name: fields.item })).entity;
+    resolved.vendor = fields.vendorRef ? (await resolveEntity({ type: 'Vendor', name: fields.vendorRef })).entity : null;
   } else if (intent === 'new_entity') {
-    resolved.existing = await resolveByTypeName(prisma, fields.entityType, fields.name);
+    resolved.existing = (await resolveEntity({ type: fields.entityType, name: fields.name })).entity;
   }
   return resolved;
 }
@@ -157,18 +130,31 @@ async function apply(prisma, intent, fields, resolved, ctx) {
     }
     case 'task': {
       const event = await writeLedgerEvent({ eventType: 'task.captured', source: ctx?.source || 'ingest', actorType: 'founder', payload: { title: fields.title } });
-      const task = await prisma.brainEntity.create({ data: { entityType: 'Task', name: fields.title, properties: { status: 'open', source: ctx?.source || 'ingest' }, status: 'active' } });
+      const task = await prisma.brainEntity.create({ data: { entityType: 'Task', name: fields.title, properties: { status: 'open', dueDate: fields.dueDate || null, source: ctx?.source || 'ingest' }, status: 'active' } });
+      // Optional link to a subject entity (ASSIGNED_TO), used by manual inbox triage.
+      if (fields.entityId) {
+        await prisma.brainAssertion.create({ data: { srcId: task.id, dstId: fields.entityId, relType: 'ASSIGNED_TO', confidence: 1.0, sourceType: 'manual', createdBy: actor } });
+      }
       return { kind: 'task', taskId: task.id, ledgerEventId: event.id };
     }
     case 'new_entity': {
       if (resolved.existing) return { kind: 'new_entity', existing: true, entityId: resolved.existing.id };
-      const { entity, blocked, blockReason } = await findOrCreateEntity({ entityType: fields.entityType, name: fields.name, properties: { source: 'ingest', note: fields.note || null } });
+      const { entity, created, blocked, blockReason } = await findOrCreateEntity({ entityType: fields.entityType, name: fields.name, properties: fields.properties || { source: 'ingest', note: fields.note || null } });
       if (blocked || !entity) return { kind: 'new_entity', error: blockReason || 'self-identity guard' };
-      return { kind: 'new_entity', entityId: entity.id };
+      // Merge supplied properties onto an existing match (parity with old inbox route).
+      if (!created && fields.properties && typeof fields.properties === 'object') {
+        await prisma.brainEntity.update({ where: { id: entity.id }, data: { properties: { ...(entity.properties || {}), ...fields.properties } } });
+      }
+      return { kind: 'new_entity', entityId: entity.id, created };
     }
     case 'append_note': {
+      // Attach a Note to an existing entity (fields.entityId) via ABOUT, or create
+      // a standalone Note when no target is given.
       const note = await prisma.brainEntity.create({ data: { entityType: 'Note', name: (fields.note || '').slice(0, 80), properties: { content: fields.note, source: ctx?.source || 'ingest' }, status: 'active' } });
-      return { kind: 'append_note', noteId: note.id };
+      if (fields.entityId) {
+        await prisma.brainAssertion.create({ data: { srcId: note.id, dstId: fields.entityId, relType: 'ABOUT', confidence: 1.0, sourceType: 'manual', createdBy: actor } });
+      }
+      return { kind: 'append_note', noteId: note.id, attachedTo: fields.entityId || null };
     }
     case 'trash':
       return { kind: 'trash' };
@@ -214,7 +200,12 @@ async function process(text, ctx = {}, { commit = false } = {}) {
     }
   }
 
-  // Not auto-appliable (or errored): capture to inbox so nothing is lost.
+  // Not auto-appliable (or errored). Callers that are themselves draining an
+  // existing inbox item (the triage cron) pass noInboxFallback to avoid minting
+  // a duplicate row — they annotate the original item with the returned parse.
+  if (ctx.noInboxFallback) {
+    return { ...base, committed: false, capturedToInbox: false };
+  }
   const ledgerEvent = await writeLedgerEvent({
     eventType: 'inbox.captured', source: ctx.source || 'ingest', actorType: 'founder',
     payload: { rawContent: text, intent: cls.intent, confidence: cls.confidence, preview, needsConfirmReason: reason },
@@ -228,4 +219,21 @@ async function process(text, ctx = {}, { commit = false } = {}) {
   return { ...base, committed: false, capturedToInbox: true, inboxItemId: item.id, ledgerEventId: ledgerEvent.id };
 }
 
-module.exports = { process, AUTO_APPLY_THRESHOLD };
+/**
+ * Direct apply — for callers that already know the intent + fields (e.g. a
+ * founder's manual inbox-triage click). Skips classification. Resolves refs,
+ * runs the canonical apply, writes an ingest.applied ledger event.
+ * Returns { ok, applied } or throws.
+ */
+async function applyDirect(intent, fields, ctx = {}) {
+  const prisma = getPrisma();
+  const resolved = await resolve(prisma, intent, fields, ctx);
+  const applied = await apply(prisma, intent, fields, resolved, ctx);
+  await writeLedgerEvent({
+    eventType: 'ingest.applied', source: ctx.source || 'ingest', actorType: 'founder',
+    payload: { intent, applied, direct: true },
+  });
+  return { ok: true, applied };
+}
+
+module.exports = { process, applyDirect, apply, resolve, AUTO_APPLY_THRESHOLD };

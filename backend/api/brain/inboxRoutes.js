@@ -14,7 +14,8 @@
 const crypto = require('crypto');
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
-const { writeLedgerEvent, createInboxItem, findOrCreateEntity } = require('./ledger');
+const { writeLedgerEvent, createInboxItem } = require('./ledger');
+const { applyDirect } = require('./ingest/engine');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -174,8 +175,6 @@ function registerInboxRoutes(app, { logger } = {}) {
       if (!item) return res.status(404).json({ error: 'not found' });
       if (item.status !== 'pending') return res.status(400).json({ error: 'already processed' });
 
-      let resultEntityId = null;
-
       if (action === 'trash') {
         await prisma.brainInboxItem.update({
           where: { id },
@@ -184,92 +183,37 @@ function registerInboxRoutes(app, { logger } = {}) {
         return res.json({ ok: true, action: 'trashed' });
       }
 
+      // All non-trash actions go through the single ingest apply path (no
+      // duplicated write logic). Map the legacy inbox action shapes onto engine
+      // intents + fields.
+      const p = triagePayload || {};
+      let intent = null;
+      let fields = null;
       if (action === 'new_entity') {
-        const { entityType, name, properties } = triagePayload || {};
-        if (!entityType || !name) return res.status(400).json({ error: 'entityType and name required' });
-
-        await writeLedgerEvent({
-          eventType: 'inbox.captured',
-          occurredAt: new Date(),
-          source: 'admin_ux',
-          actorType: 'founder',
-          payload: { inboxItemId: id, action: 'new_entity', entityType, name },
-        });
-
-        // Reuse an existing entity on name/alias match instead of minting duplicates
-        const { entity, created, blocked, blockReason } = await findOrCreateEntity({ entityType, name, properties: properties || null });
-        if (blocked || !entity) {
-          return res.status(422).json({ error: 'self-identity guard', reason: blockReason || `${entityType} "${name}" looks like the business's own identity` });
+        if (!p.entityType || !p.name) return res.status(400).json({ error: 'entityType and name required' });
+        intent = 'new_entity';
+        fields = { entityType: p.entityType, name: p.name, properties: p.properties || null };
+      } else if (action === 'append_entity') {
+        if (!p.entityId) return res.status(400).json({ error: 'entityId required' });
+        const target = await prisma.brainEntity.findUnique({ where: { id: p.entityId }, select: { id: true } });
+        if (!target) return res.status(404).json({ error: 'entity not found' });
+        if (!p.note) { // attach nothing → just mark triaged against the entity
+          await prisma.brainInboxItem.update({ where: { id }, data: { status: 'triaged', processedAt: new Date(), resultEntityId: p.entityId } });
+          return res.json({ ok: true, action, resultEntityId: p.entityId });
         }
-        if (!created && properties && typeof properties === 'object') {
-          await prisma.brainEntity.update({
-            where: { id: entity.id },
-            data: { properties: { ...(entity.properties || {}), ...properties } },
-          });
-        }
-        resultEntityId = entity.id;
+        intent = 'append_note';
+        fields = { note: p.note, entityId: p.entityId };
+      } else if (action === 'new_task') {
+        if (!p.title) return res.status(400).json({ error: 'title required' });
+        intent = 'task';
+        fields = { title: p.title, dueDate: p.dueDate || null, entityId: p.entityId || null };
+      } else {
+        return res.status(400).json({ error: `unknown action: ${action}` });
       }
 
-      if (action === 'append_entity') {
-        const { entityId, note } = triagePayload || {};
-        if (!entityId) return res.status(400).json({ error: 'entityId required' });
-
-        const entity = await prisma.brainEntity.findUnique({ where: { id: entityId } });
-        if (!entity) return res.status(404).json({ error: 'entity not found' });
-
-        if (note) {
-          // Create a Note entity linked to the target
-          const noteEntity = await prisma.brainEntity.create({
-            data: {
-              entityType: 'Note',
-              name: note.slice(0, 80),
-              properties: { content: note, source: item.source },
-              status: 'active',
-            },
-          });
-          await prisma.brainAssertion.create({
-            data: {
-              srcId: noteEntity.id,
-              dstId: entityId,
-              relType: 'ABOUT',
-              confidence: 1.0,
-              sourceType: 'manual',
-              createdBy: 'founder',
-            },
-          });
-          resultEntityId = noteEntity.id;
-        } else {
-          resultEntityId = entityId;
-        }
-      }
-
-      if (action === 'new_task') {
-        const { title, dueDate, entityId } = triagePayload || {};
-        if (!title) return res.status(400).json({ error: 'title required' });
-
-        const task = await prisma.brainEntity.create({
-          data: {
-            entityType: 'Task',
-            name: title,
-            properties: { dueDate: dueDate || null, status: 'open' },
-            status: 'active',
-          },
-        });
-
-        if (entityId) {
-          await prisma.brainAssertion.create({
-            data: {
-              srcId: task.id,
-              dstId: entityId,
-              relType: 'ASSIGNED_TO',
-              confidence: 1.0,
-              sourceType: 'manual',
-              createdBy: 'founder',
-            },
-          });
-        }
-        resultEntityId = task.id;
-      }
+      const { applied } = await applyDirect(intent, fields, { source: 'admin_ux', actor: 'founder' });
+      if (applied?.error) return res.status(422).json({ error: applied.error });
+      const resultEntityId = applied.entityId || applied.taskId || applied.noteId || null;
 
       await prisma.brainInboxItem.update({
         where: { id },

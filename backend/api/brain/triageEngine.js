@@ -1,148 +1,25 @@
 /**
- * Brain inbox triage — Node port of brain-sidecar/jobs/triage_inbox.py.
- *
- * Runs in the deployed backend (no Python required), so triage hints and
- * auto-actions happen on a Vercel cron instead of only when the founder's
- * desktop runs the sidecar.
- *
- * Per pending BrainInboxItem without a triageHint:
- *   1. Classify with Claude (structured output) into:
- *      new_entity | append_entity | new_task | trash | needs_human
- *   2. Auto-act on high-confidence clear cases:
- *      - trash       (confidence >= 0.85)
- *      - new_entity  (confidence >= 0.85, safe entity types, via findOrCreateEntity)
- *   3. Everything else keeps status=pending with a structured triageHint for
- *      the inbox drawer. rawContent is never mutated.
+ * Brain inbox triage — Vercel cron that drains pending BrainInboxItems through
+ * the SINGLE ingest engine (backend/api/brain/ingest/). This module no longer
+ * classifies or applies on its own; it calls `ingestEngine.process(commit)` per
+ * item and handles inbox bookkeeping:
+ *   - engine applied it       -> mark triaged, write inbox.auto_triaged, route to Hub
+ *   - high-confidence trash    -> mark trashed
+ *   - otherwise                -> leave pending with the engine's parse as a
+ *                                 triageHint for the drawer. rawContent is never mutated.
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
 const { Prisma } = require('@prisma/client');
 const { getPrisma } = require('../utils/prisma');
-const { writeLedgerEvent, findOrCreateEntity } = require('./ledger');
+const { writeLedgerEvent } = require('./ledger');
+const { process: ingestProcess } = require('./ingest/engine');
 
 const AUTO_ACT_THRESHOLD = 0.85;
-const SAFE_AUTO_ENTITY_TYPES = new Set(['Vendor', 'Ingredient', 'Customer']);
 const OPS_SOURCES = new Set(['gmail', 'square', 'Obsidian']);
-const MODEL = process.env.BRAIN_TRIAGE_MODEL || 'claude-opus-4-8';
 
-const SOURCE_HINTS = {
-  gmail:
-    'Came from Gmail. Likely a vendor quote, supplier invoice, customer inquiry, payment confirmation, ' +
-    'or a food-industry contact. Vendor and Ingredient entities are common here. ' +
-    'SaaS receipts, marketing emails, and personal emails -> trash.',
-  square:
-    'Came from Square. This is a payment or transaction record. ' +
-    'Likely a Customer payment or event sale. Financial data -> needs_human unless clearly a routine payment.',
-  admin_ux:
-    'Manually typed by the founder in the web app. Could be anything: a vendor name to remember, ' +
-    'a task, a quick note, a customer name, or a business idea. Read literally - capture exactly what was typed.',
-  Drafts:
-    'Came from Apple Drafts (iOS notes app). Likely a quick capture during physical kitchen work: ' +
-    'vendor contact, ingredient price overheard, task reminder, or meeting note.',
-  Obsidian:
-    'Came from Obsidian (structured notes). Likely a longer note, meeting summary, business decision, ' +
-    'or research finding. Note and Task entities are common here.',
-  Shortcut:
-    'Came from an iOS Shortcut (quick capture button). Very brief, single-idea captures. ' +
-    'Often a vendor name, ingredient, or to-do.',
-  portal:
-    'Came from the customer menu feedback portal. Usually a disliked dish with optional notes. ' +
-    'Customer and Dish entities are common here.',
-};
-
-const TRIAGE_SCHEMA = {
-  type: 'object',
-  properties: {
-    action: { type: 'string', enum: ['new_entity', 'append_entity', 'new_task', 'trash', 'needs_human'] },
-    entityType: { type: ['string', 'null'], description: 'Entity type for new_entity/append_entity, e.g. Vendor, Customer, Ingredient, Dish, Note' },
-    entityName: { type: ['string', 'null'], description: 'Exact entity name for new_entity, or the known entity to append to' },
-    note: { type: ['string', 'null'], description: 'For append_entity: the note text to attach' },
-    taskTitle: { type: ['string', 'null'], description: 'For new_task: short imperative task title' },
-    confidence: { type: 'number', description: 'Confidence 0.1-0.95' },
-    rationale: { type: 'string', description: 'One sentence explaining the decision' },
-  },
-  required: ['action', 'entityType', 'entityName', 'note', 'taskTitle', 'confidence', 'rationale'],
-  additionalProperties: false,
-};
-
-let anthropicClient = null;
-function getAnthropic() {
-  if (!anthropicClient) anthropicClient = new Anthropic();
-  return anthropicClient;
-}
-
-async function loadEntityContext(prisma) {
-  try {
-    const rows = await prisma.brainEntity.findMany({
-      where: { tombstonedAt: null },
-      orderBy: [{ entityType: 'asc' }, { name: 'asc' }],
-      take: 500,
-      select: { entityType: true, name: true },
-    });
-    const byType = new Map();
-    for (const r of rows) {
-      if (!byType.has(r.entityType)) byType.set(r.entityType, []);
-      byType.get(r.entityType).push(r.name);
-    }
-    const lines = ['Known entities in the knowledge graph:'];
-    for (const [etype, names] of [...byType.entries()].sort()) {
-      lines.push(`  ${etype}s: ${names.slice(0, 40).join(', ')}`);
-    }
-    return lines.join('\n');
-  } catch {
-    return 'No existing entities available.';
-  }
-}
-
-function buildPrompt(rawContent, source, entityContext) {
-  const sourceHint = SOURCE_HINTS[source] || `Source: ${source}.`;
-  return `You are triaging captured notes for Local Effort Food's knowledge graph.
-
-BUSINESS CONTEXT:
-Local Effort Food is a small Minneapolis food business run by Weston Smith.
-Revenue lines: Weekly Meal Subscription (household meal boxes), Private Dinners & Events,
-Local Effort Pizza (pop-up events), Happy Monday wholesale, and Catering.
-Key entity types: Vendor (food suppliers), Customer (subscribers/event clients),
-Ingredient, Dish, Menu, Task, Note, Event, StaffRole.
-
-SOURCE HINT:
-${sourceHint}
-
-${entityContext}
-
-RULES:
-- If entityName closely matches a known entity above -> prefer append_entity over new_entity.
-- If content is a to-do, reminder, or action for the founder -> new_task.
-- If content names a person, company, or ingredient not in the known list -> new_entity.
-- If content is clearly noise, a duplicate, or unrelated to the food business -> trash.
-- If you are unsure about anything - stakes, category, or match -> needs_human.
-- Financial decisions, legal documents, or content affecting multiple parties -> needs_human.
-
-CONTENT:
-${rawContent}`;
-}
-
-async function classifyItem(rawContent, source, entityContext) {
-  const client = getAnthropic();
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 1024,
-    messages: [{ role: 'user', content: buildPrompt(rawContent, source, entityContext) }],
-    output_config: { format: { type: 'json_schema', schema: TRIAGE_SCHEMA } },
-  });
-  const text = response.content.find((b) => b.type === 'text')?.text;
-  if (!text) throw new Error('triage: empty model response');
-  const decision = JSON.parse(text);
-  decision.confidence = Math.min(0.95, Math.max(0.1, Number(decision.confidence) || 0.5));
-  return decision;
-}
-
-function validateDecision(decision) {
-  const errors = [];
-  if (decision.action === 'new_entity' && !decision.entityName) errors.push('entityName required for new_entity');
-  if (decision.action === 'new_task' && !decision.taskTitle) errors.push('taskTitle required for new_task');
-  return errors;
-}
+// Classification + apply now live in the single ingest engine
+// (backend/api/brain/ingest/). This module only drives it per pending inbox
+// item and handles inbox-status bookkeeping + Hub routing.
 
 // Mirror of brain-sidecar/hub.py post_to_space — surfaces triage activity in the hub.
 async function routeToHub(prisma, { source, action, raw, entityName }, logger) {
@@ -195,107 +72,45 @@ async function runTriagePass({ logger, limit = 30 } = {}) {
   });
   if (!items.length) return { acted: 0, deferred: 0, errors: [] };
 
-  const entityContext = await loadEntityContext(prisma);
   let acted = 0;
   let deferred = 0;
   const errors = [];
 
   for (const item of items) {
     try {
-      const decision = await classifyItem(item.rawContent, item.source, entityContext);
+      // Single ingest engine: classify → resolve → apply (commit). The engine
+      // auto-applies confident/safe results and otherwise leaves the item
+      // pending with a triageHint (it writes nothing on needs_human/low-conf).
+      const r = await ingestProcess(item.rawContent, { source: item.source || 'node_triage', actor: 'system', noInboxFallback: true }, { commit: true });
 
-      if (validateDecision(decision).length > 0) {
-        deferred += 1;
-        continue;
-      }
-
-      // Auto-trash high-confidence noise
-      if (decision.action === 'trash' && decision.confidence >= AUTO_ACT_THRESHOLD) {
-        await prisma.brainInboxItem.update({
-          where: { id: item.id },
-          data: { status: 'trashed', processedAt: new Date() },
-        });
-        await writeLedgerEvent({
-          eventType: 'inbox.auto_triaged',
-          source: 'node_triage',
-          sourceId: item.id,
-          payload: { action: 'trash', confidence: decision.confidence, rationale: decision.rationale },
-        });
+      // trash is classification-only in the engine (never applied) — handle the
+      // high-confidence auto-trash here so noise still clears the queue.
+      if (r.intent === 'trash' && r.confidence >= AUTO_ACT_THRESHOLD) {
+        await prisma.brainInboxItem.update({ where: { id: item.id }, data: { status: 'trashed', processedAt: new Date() } });
+        await writeLedgerEvent({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { action: 'trash', confidence: r.confidence } });
         acted += 1;
         continue;
       }
 
-      // Auto-create safe entity types
-      if (
-        decision.action === 'new_entity' &&
-        decision.confidence >= AUTO_ACT_THRESHOLD &&
-        SAFE_AUTO_ENTITY_TYPES.has(decision.entityType) &&
-        decision.entityName
-      ) {
-        const { entity, created, blocked, blockReason } = await findOrCreateEntity({
-          entityType: decision.entityType,
-          name: decision.entityName,
-        });
-        // Self-identity guard refused this (business's own address/name minted
-        // as a counterparty). Don't crash the run — leave it as a hint instead.
-        if (blocked || !entity) {
-          logger?.info({ item: item.id, entityName: decision.entityName, blockReason }, 'brain/triage: skipped self-identity mint');
-          await prisma.brainInboxItem.update({
-            where: { id: item.id },
-            data: {
-              triageHint: { action: 'blocked', entityType: decision.entityType, entityName: decision.entityName, note: blockReason || 'self-identity guard' },
-            },
-          });
-          continue;
-        }
-        await writeLedgerEvent({
-          eventType: 'inbox.auto_triaged',
-          source: 'node_triage',
-          sourceId: item.id,
-          payload: {
-            action: 'new_entity',
-            entityType: decision.entityType,
-            entityName: decision.entityName,
-            entityId: entity.id,
-            created,
-            confidence: decision.confidence,
-            rationale: decision.rationale,
-          },
-        });
-        await prisma.brainInboxItem.update({
-          where: { id: item.id },
-          data: { status: 'triaged', processedAt: new Date(), resultEntityId: entity.id },
-        });
-        await routeToHub(prisma, { source: item.source, action: decision.action, raw: item.rawContent, entityName: decision.entityName }, logger);
+      if (r.committed && r.applied && !r.applied.error) {
+        // The engine applied it. Mark this inbox item triaged + route to Hub.
+        const resultEntityId = r.applied.entityId || r.applied.taskId || r.applied.noteId
+          || r.applied.results?.[0]?.itemEntityId || null;
+        await prisma.brainInboxItem.update({ where: { id: item.id }, data: { status: 'triaged', processedAt: new Date(), resultEntityId } });
+        await writeLedgerEvent({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { intent: r.intent, confidence: r.confidence, applied: r.applied } });
+        await routeToHub(prisma, { source: item.source, action: r.intent, raw: item.rawContent, entityName: r.preview?.summary }, logger);
         acted += 1;
         continue;
       }
 
-      // Otherwise leave pending with a structured hint for the drawer
-      const hint = {
-        action: decision.action,
-        entityType: decision.entityType || null,
-        entityName: decision.entityName || null,
-        note: decision.note || null,
-        taskTitle: decision.taskTitle || null,
-        confidence: decision.confidence,
-        rationale: decision.rationale,
-        matchedEntityId: null,
-      };
-      if (decision.action === 'append_entity' && decision.entityName) {
-        const matched = await prisma.brainEntity.findFirst({
-          where: { name: { equals: decision.entityName, mode: 'insensitive' }, tombstonedAt: null },
-          select: { id: true },
-        });
-        if (matched) hint.matchedEntityId = matched.id;
-      }
-      await prisma.brainInboxItem.update({ where: { id: item.id }, data: { triageHint: hint } });
-      await routeToHub(prisma, {
-        source: item.source,
-        action: decision.action,
-        raw: item.rawContent,
-        entityName: decision.entityName || decision.taskTitle,
-      }, logger);
+      // Not applied: leave a structured hint for the drawer (engine already
+      // captured a fallback inbox item if commit produced one; here we annotate
+      // THIS item so the founder sees what the engine understood).
+      await prisma.brainInboxItem.update({
+        where: { id: item.id },
+        data: { triageHint: { intent: r.intent, confidence: r.confidence, preview: r.preview, reason: r.needsConfirmReason, fields: r.fields, via: r.via } },
+      });
+      await routeToHub(prisma, { source: item.source, action: r.intent, raw: item.rawContent, entityName: r.preview?.summary }, logger);
       deferred += 1;
     } catch (err) {
       errors.push(`${item.id}: ${err.message}`);
