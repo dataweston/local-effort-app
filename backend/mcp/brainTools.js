@@ -820,7 +820,14 @@ function registerBrainMenuTools(server) {
           where: { id: cid, entityType: 'Customer', tombstonedAt: null },
           include: {
             srcAssertions: {
-              where: { relType: { in: ['PREFERS', 'AVOIDS', 'MEDICAL_CONSTRAINT'] }, retractedAt: null, knownUntil: null },
+              where: {
+                relType: { in: ['PREFERS', 'AVOIDS', 'MEDICAL_CONSTRAINT'] },
+                retractedAt: null,
+                knownUntil: null,
+                // Honor time-boxed corrections (validUntil) — see menuRoutes.checkConstraints.
+                OR: [{ validUntil: null }, { validUntil: { gt: new Date() } }],
+                validFrom: { lte: new Date() },
+              },
               include: { dst: { select: { id: true, name: true } } },
             },
           },

@@ -41,7 +41,6 @@ const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
-const SubscriberPortalPage = lazy(() => import('./pages/SubscriberPortalPage'));
 const MealPrepIntakePage = lazy(() => import('./pages/MealPrepIntakePage'));
 const NativeMobileHubPage = lazy(() => import('./pages/NativeMobileHubPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
@@ -253,22 +252,11 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route
-                  path="/weekly-order/portal"
-                  element={
-                    <AnimatedPage>
-                      <SubscriberPortalPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/weekly-order/:customerSlug/portal"
-                  element={
-                    <AnimatedPage>
-                      <SubscriberPortalPage />
-                    </AnimatedPage>
-                  }
-                />
+                {/* Subscriber Portal retired — superseded by the Hub customer
+                    view (profile, this-week menu + feedback, intake, chat).
+                    Redirect old bookmarks to /hub. Archived page in docs/archive. */}
+                <Route path="/weekly-order/portal" element={<Navigate to="/hub" replace />} />
+                <Route path="/weekly-order/:customerSlug/portal" element={<Navigate to="/hub" replace />} />
                 <Route
                   path="/weeklydemo"
                   element={

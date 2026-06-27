@@ -16,6 +16,10 @@ const cases = [
   ['POST', 'checkins', '../api-handlers/hub/checkins', {}],
   ['POST', 'push-register', '../api-handlers/hub/push-register', {}],
   ['POST', 'resolve-dish', '../api-handlers/hub/resolve-dish', { name: 'test' }],
+  ['GET', 'meal-prep-rollup', '../api-handlers/hub/meal-prep-rollup', {}],
+  ['GET', 'meal-prep-labels', '../api-handlers/hub/meal-prep-labels', {}],
+  ['GET', 'customer-profile', '../api-handlers/hub/customer-profile', {}],
+  ['GET', 'customer-week', '../api-handlers/hub/customer-week', {}],
   ['GET', 'master-menu', '../api-handlers/hub/master-menu', {}],
   ['GET', 'house-notepad-canon', '../api-handlers/hub/house-notepad-canon', {}],
 ];

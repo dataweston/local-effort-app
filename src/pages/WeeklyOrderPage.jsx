@@ -738,7 +738,7 @@ const WeeklyOrderPage = () => {
             </div>
             <div className="weekly-order-meta-row">
               <span className="weekly-order-customer">{data?.customer?.name || 'Weekly Menu'}</span>
-              <Link to={`/weekly-order/${effectiveSlug}/portal`}>
+              <Link to="/hub">
                 <Button variant="outline" size="sm">My Portal</Button>
               </Link>
               <Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>

@@ -71,11 +71,9 @@ const { registerTriageRoutes } = require('./brain/triageRoutes');
 const { registerCockpitRoutes } = require('./brain/cockpitRoutes');
 const { registerExploreRoutes } = require('./brain/exploreRoutes');
 const { registerSquareOrdersRoutes } = require('./brain/squareOrdersSync');
+const { registerOrderProjectionRoutes } = require('./brain/orderGraphProjector');
+const { registerConstraintCorrectionRoutes } = require('./brain/constraintCorrection');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
-const weeklyOrderProfileHandler = require('../../api-handlers/weekly-order/profile');
-const weeklyOrderHistoryHandler = require('../../api-handlers/weekly-order/history');
-const weeklyOrderFeedbackHandler = require('../../api-handlers/weekly-order/feedback');
-const weeklyOrderChefNoteHandler = require('../../api-handlers/weekly-order/chef-note');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
@@ -574,6 +572,8 @@ registerTriageRoutes(app, { logger });
 registerCockpitRoutes(app, { logger });
 registerExploreRoutes(app, { logger });
 registerSquareOrdersRoutes(app, { logger });
+registerOrderProjectionRoutes(app, { logger });
+registerConstraintCorrectionRoutes(app, { logger });
 
 // Nightly brain jobs run via Vercel crons (see vercel.json):
 //   /api/brain/triage/run, /api/brain/inference/run, /api/brain/hypothesis/run
@@ -1445,6 +1445,42 @@ app.all('/api/hub/resolve-dish', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/meal-prep-rollup', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/meal-prep-rollup')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub meal prep rollup handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/meal-prep-labels', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/meal-prep-labels')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub meal prep labels handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/customer-profile', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/customer-profile')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub customer profile handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/customer-week', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/customer-week')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub customer week handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/master-menu', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/master-menu')(req, res);
@@ -1589,23 +1625,23 @@ app.all('/api/hub/push/register', async (req, res, next) => {
   }
 });
 
-app.all('/api/weekly-order/active', async (req, res, next) => {
-  try {
-    await require('../../api-handlers/weekly-order/active')(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order active handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/weekly-order/upcoming', async (req, res, next) => {
-  try {
-    await require('../../api-handlers/weekly-order/upcoming')(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order upcoming handler failed');
-    next(err);
-  }
-});
+// Subscriber Portal routes retired — superseded by the Hub customer view.
+// active/upcoming/profile/history/feedback/chef-note now answer 410 Gone and
+// point callers at the Hub equivalents. Handlers archived in
+// docs/archive/subscriber-portal. Admin pipeline + checkout remain below.
+const RETIRED_PORTAL_ROUTES = {
+  active: '/hub',
+  upcoming: '/api/hub/customer-week',
+  profile: '/api/hub/customer-profile',
+  history: '/hub',
+  feedback: '/api/hub/customer-week',
+  'chef-note': '/api/hub/conversations',
+};
+for (const [name, replacement] of Object.entries(RETIRED_PORTAL_ROUTES)) {
+  app.all(`/api/weekly-order/${name}`, (req, res) => {
+    res.status(410).json({ error: 'Subscriber Portal retired; use the Hub', replacement });
+  });
+}
 
 app.all('/api/weekly-order/checkout', async (req, res, next) => {
   try {
@@ -1621,42 +1657,6 @@ app.all('/api/weekly-order/checkout-link', async (req, res, next) => {
     await weeklyOrderCheckoutLinkHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order checkout link handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/weekly-order/profile', async (req, res, next) => {
-  try {
-    await weeklyOrderProfileHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order profile handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/weekly-order/history', async (req, res, next) => {
-  try {
-    await weeklyOrderHistoryHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order history handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/weekly-order/feedback', async (req, res, next) => {
-  try {
-    await weeklyOrderFeedbackHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order feedback handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/weekly-order/chef-note', async (req, res, next) => {
-  try {
-    await weeklyOrderChefNoteHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'weekly order chef-note handler failed');
     next(err);
   }
 });

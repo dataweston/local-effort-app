@@ -477,6 +477,149 @@ function HomeNotepad({ accessToken }) {
   );
 }
 
+// Customer's home: their plan, this week's menu (with thumbs feedback), editable
+// profile, and a read-only intake summary. Replaces the old Subscriber Portal
+// Dashboard / This Week / Profile / Past-Menus tabs. Strictly their own data.
+function CustomerHomeView({ accessToken, setTab }) {
+  const [profileData, setProfileData] = useState(null);
+  const [week, setWeek] = useState(null);
+  const [form, setForm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [p, w] = await Promise.all([
+        api('/api/hub/customer-profile', accessToken),
+        api('/api/hub/customer-week', accessToken),
+      ]);
+      setProfileData(p);
+      setForm({
+        name: p?.customer?.name || '',
+        householdSize: p?.profile?.householdSize || '',
+        phone: p?.profile?.phone || '',
+        address: p?.profile?.address || '',
+        deliveryNotes: p?.profile?.deliveryNotes || '',
+      });
+      setWeek(w);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, [accessToken]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    setSaving(true); setSaved(false);
+    try {
+      await api('/api/hub/customer-profile', accessToken, { method: 'PUT', body: JSON.stringify(form) });
+      setSaved(true);
+    } catch { /* ignore */ }
+    finally { setSaving(false); }
+  };
+
+  const sendFeedback = async (dishId, thumbsUp) => {
+    if (!week?.menuWeek) return;
+    try {
+      await api('/api/hub/customer-week', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ dishId, menuWeekId: week.menuWeek.id, thumbsUp }),
+      });
+      setWeek((prev) => ({
+        ...prev,
+        items: prev.items.map((it) => it.dishId === dishId
+          ? { ...it, feedback: { ...(it.feedback || {}), thumbsUp } }
+          : it),
+      }));
+    } catch { /* ignore */ }
+  };
+
+  if (loading) return <p className="hub-empty">Loading your meal prep…</p>;
+  const plan = profileData?.plan;
+  const survey = profileData?.intakeSurvey;
+
+  return (
+    <div className="hub-grid">
+      {plan && (
+        <Panel title="Your Plan" icon={Soup} action={<button onClick={() => setTab('weeklyMealPrep')}>Weekly Meal Prep</button>}>
+          <div className="hub-list">
+            {plan.items.map((item) => (
+              <div className="hub-row" key={item.key}>
+                <strong>{item.label}</strong>
+                <span>
+                  {item.open ? 'as needed' : item.qty != null ? `${item.qty}/week` : ''}
+                  {item.serves ? ` · serves ${item.serves.adults} adult${item.serves.kids ? ` + ${item.serves.kids} kids` : ''}` : ''}
+                  {item.style ? ` · ${item.style}` : ''}
+                </span>
+              </div>
+            ))}
+            {plan.billing && <div className="hub-row"><strong>Billing</strong><span>{plan.billing.cadence} · food {plan.billing.fulfillment}</span></div>}
+          </div>
+        </Panel>
+      )}
+
+      <Panel title="This Week's Menu" icon={Utensils}>
+        {!week?.menuWeek && <p className="hub-empty">No menu published yet.</p>}
+        {week?.menuWeek && week.items.length === 0 && <p className="hub-empty">No dishes on this week's menu.</p>}
+        <div className="hub-list">
+          {(week?.items || []).map((item) => (
+            <div className="hub-row" key={item.dishId} style={{ alignItems: 'flex-start' }}>
+              <div>
+                <strong>{item.title}</strong>
+                {item.description && <span>{item.description}</span>}
+                {item.allergens?.length > 0 && <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Allergens: {item.allergens.join(', ')}</span>}
+              </div>
+              <div className="hub-button-row">
+                <button
+                  className={item.feedback?.thumbsUp === true ? 'is-active' : ''}
+                  title="Thumbs up"
+                  onClick={() => sendFeedback(item.dishId, true)}
+                >👍</button>
+                <button
+                  className={item.feedback?.thumbsUp === false ? 'is-active' : ''}
+                  title="Thumbs down"
+                  onClick={() => sendFeedback(item.dishId, false)}
+                >👎</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Your Info" icon={UsersRound}>
+        {form && (
+          <form onSubmit={saveProfile} className="hub-form">
+            <label>Name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
+            <label>Household Size<input value={form.householdSize} onChange={(e) => setForm({ ...form, householdSize: e.target.value })} /></label>
+            <label>Phone<input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label>
+            <label>Address<input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></label>
+            <label>Delivery Notes<textarea value={form.deliveryNotes} onChange={(e) => setForm({ ...form, deliveryNotes: e.target.value })} /></label>
+            <div className="hub-button-row">
+              <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Profile'}</button>
+              {saved && <span className="hub-pill">Saved</span>}
+            </div>
+          </form>
+        )}
+      </Panel>
+
+      {survey && typeof survey === 'object' && (
+        <Panel title="Intake Survey" icon={FileText}>
+          <div className="hub-list">
+            {Object.entries(survey).map(([key, val]) => (
+              <div className="hub-row" key={key}>
+                <strong>{key}</strong>
+                <span>{Array.isArray(val) ? val.join(', ') : String(val)}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
+    </div>
+  );
+}
+
 function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken, isCustomer }) {
   const todaysItems = calendar.filter((item) => String(item.startsAt || '').startsWith(todayIso()));
   const openShifts = shifts.filter((shift) => shift.open).slice(0, 4);
@@ -1140,11 +1283,11 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
   return (
     <div className="hub-meal-prep">
       <Panel
-        title="Active Customer Profiles"
+        title={isCustomer ? 'Your Meal Prep Profile' : 'Active Customer Profiles'}
         icon={Soup}
         action={(
           <div className="hub-button-row">
-            <span className="hub-pill">{customerLabel}</span>
+            {!isCustomer && <span className="hub-pill">{customerLabel}</span>}
             <button onClick={() => load()}><RefreshCw size={13} /></button>
           </div>
         )}
@@ -2815,12 +2958,16 @@ export default function HubPage() {
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
+  // Customer-visible tabs: Today, Weekly Meal Prep, Chat (only their own data).
+  const todayTab = tabs[0];
+  const chatTab = tabs.find((t) => t.id === 'chat');
+  const customerTabs = [todayTab, mealPrepTab, chatTab];
   const navTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
     ? [localistTab]
     : isCustomer
-    ? [mealPrepTab, foodInputsTab]
+    ? customerTabs
     : isPrivileged
     ? [...tabs, mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
     : [...tabs, mealPrepTab, foodInputsTab, localistTab, securityTab];
@@ -2829,16 +2976,18 @@ export default function HubPage() {
     : isLocalist
     ? [localistTab]
     : isCustomer
-    ? [mealPrepTab, foodInputsTab]
+    ? customerTabs
     : isPrivileged
     ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
     : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
+  // Tabs a customer is allowed to land on; anything else falls back to Today.
+  const customerTabIds = new Set(customerTabs.map((t) => t.id));
   const activeTab = isInputsRoute
     ? 'foodInputs'
     : isLocalist
     ? 'localist'
     : isCustomer
-    ? (tab === 'foodInputs' ? 'foodInputs' : 'weeklyMealPrep')
+    ? (customerTabIds.has(tab) ? tab : 'today')
     : tab;
 
   if (localistToken) {
@@ -2932,7 +3081,8 @@ export default function HubPage() {
           </div>
         </header>
 
-        {activeTab === 'today' && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} />}
+        {activeTab === 'today' && isCustomer && <CustomerHomeView accessToken={auth.accessToken} setTab={setTab} />}
+        {activeTab === 'today' && !isCustomer && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} />}
         {/* Privileged "view as customer" hides the staff House Notepad via isCustomer above. */}
         {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}

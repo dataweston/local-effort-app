@@ -41,6 +41,12 @@ async function checkConstraints(prisma, customerId, dishNames) {
           relType: { in: ['PREFERS', 'AVOIDS', 'MEDICAL_CONSTRAINT'] },
           retractedAt: null,
           knownUntil: null,
+          // Honor time-boxed corrections (e.g. "no legumes this month"): an
+          // assertion with a validUntil in the past is expired and must not
+          // block. validFrom is non-nullable (defaults to now) so a simple
+          // lte guard keeps not-yet-in-effect assertions out.
+          OR: [{ validUntil: null }, { validUntil: { gt: new Date() } }],
+          validFrom: { lte: new Date() },
         },
         include: {
           dst: { select: { id: true, name: true, entityType: true } },
