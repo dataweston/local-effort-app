@@ -997,3 +997,25 @@ model BrainSeedReview {
   resolvedBy  String?
   createdAt   DateTime  @default(now())
 }
+
+// Durable record of each recurring job run. Lets a freshness check alarm when a
+// "daily" job has not had a successful run within its expected cadence — the
+// crons previously kept only process-local state, so a silently-dead job was
+// invisible. One row per run; `expectedIntervalHours` defines the SLA.
+model BrainJobRun {
+  id                    String    @id @default(uuid())
+  jobName               String
+  status                String    // 'success' | 'error' | 'partial'
+  startedAt             DateTime  @default(now())
+  finishedAt            DateTime?
+  durationMs            Int?
+  itemsProcessed        Int?
+  itemsWritten          Int?
+  errorCount            Int       @default(0)
+  expectedIntervalHours Int?      // SLA: flag stale if no success within this window
+  detail                Json?
+  createdAt             DateTime  @default(now())
+
+  @@index([jobName, startedAt])
+  @@index([status])
+}

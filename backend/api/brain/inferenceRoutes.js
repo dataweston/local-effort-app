@@ -39,8 +39,9 @@ function registerInferenceRoutes(app, { logger } = {}) {
       }
 
       running = true;
+      const { withJobRun } = require('./jobRuns');
       // Run async so the HTTP response returns immediately
-      runInferencePass({ logger })
+      withJobRun('inference-run', () => runInferencePass({ logger }))
         .then(result => {
           lastRun = { completedAt: new Date().toISOString(), ...result };
           logger?.info(lastRun, 'brain/inference: pass finished');

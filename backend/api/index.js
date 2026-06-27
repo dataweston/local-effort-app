@@ -73,6 +73,7 @@ const { registerExploreRoutes } = require('./brain/exploreRoutes');
 const { registerSquareOrdersRoutes } = require('./brain/squareOrdersSync');
 const { registerOrderProjectionRoutes } = require('./brain/orderGraphProjector');
 const { registerConstraintCorrectionRoutes } = require('./brain/constraintCorrection');
+const { registerIngestRoutes } = require('./brain/ingest/routes');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
@@ -574,6 +575,7 @@ registerExploreRoutes(app, { logger });
 registerSquareOrdersRoutes(app, { logger });
 registerOrderProjectionRoutes(app, { logger });
 registerConstraintCorrectionRoutes(app, { logger });
+registerIngestRoutes(app, { logger });
 
 // Nightly brain jobs run via Vercel crons (see vercel.json):
 //   /api/brain/triage/run, /api/brain/inference/run, /api/brain/hypothesis/run
@@ -627,6 +629,24 @@ try {
   };
   const requireBearerForUcp = /^(1|true|yes)$/i.test(process.env.MCP_REQUIRE_BEARER_FOR_UCP || '');
 
+  // Brain MCP tools (registered via registerBrainTools) expose private business
+  // and customer data plus a provisional-write path. They were previously
+  // dispatched with NO auth — only checkout tools were gated. Require a bearer
+  // token with brain:read (reads) or brain:write (mutations) for every brain.* tool.
+  const BRAIN_WRITE_TOOLS = new Set([
+    'brain.assert.provisional',
+    'brain.entity.create',
+    'brain.recipe.create',
+    'brain.batch.record',
+    'brain.menu.create',
+    'brain.menu.broadcast',
+    'brain.hypothesis.create',
+  ]);
+  const brainRequiredScope = (toolName) => {
+    if (typeof toolName !== 'string' || !toolName.startsWith('brain.')) return null;
+    return BRAIN_WRITE_TOOLS.has(toolName) ? 'brain:write' : 'brain:read';
+  };
+
   const normalizeMcpScopes = (value) => {
     if (Array.isArray(value)) {
       return value
@@ -672,6 +692,8 @@ try {
         CHECKOUT_SCOPES.update,
         CHECKOUT_SCOPES.complete,
         CHECKOUT_SCOPES.cancel,
+        'brain:read',
+        'brain:write',
       ].join(',')
     );
     const addToken = (token, config) => {
@@ -881,8 +903,18 @@ try {
         const tool = mcpServer?._registeredTools?.[toolName];
         if (!tool || tool.enabled === false) return res.status(404).json({ error: 'tool-not-found' });
         let finalToolParams = toolParams;
-        if (ucpCheckoutTools.has(toolName)) {
-          const requiredScope = ucpRequiredScopes[toolName] || null;
+        const brainScope = brainRequiredScope(toolName);
+        if (ucpCheckoutTools.has(toolName) || brainScope) {
+          const requiredScope = brainScope || ucpRequiredScopes[toolName] || null;
+          // Brain tools are bearer-only: a configured Authorization: Bearer token
+          // is required. Reject the self-asserted x-ucp-* header path that UCP
+          // permits, so private graph data can't be read by spoofing headers.
+          if (brainScope) {
+            const authHeader = (req.headers.authorization || '').toString().trim();
+            if (!authHeader.startsWith('Bearer ')) {
+              return res.status(401).json({ error: 'mcp-bearer-token-required', requiredScope });
+            }
+          }
           const authResult = resolveMcpToolAuth(req, toolParams, requiredScope);
           if (!authResult.ok) {
             return res.status(authResult.statusCode || 401).json({
@@ -890,10 +922,11 @@ try {
               requiredScope: authResult.requiredScope || requiredScope || undefined,
             });
           }
-          finalToolParams = {
-            ...toolParams,
-            auth: authResult.auth,
-          };
+          // Brain tool callbacks don't accept an injected auth arg; only UCP
+          // checkout tools consume params.auth. Keep brain params untouched.
+          if (ucpCheckoutTools.has(toolName)) {
+            finalToolParams = { ...toolParams, auth: authResult.auth };
+          }
         }
         const result = await tool.callback(finalToolParams);
         return res.json({ id, result });

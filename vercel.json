@@ -39,6 +39,10 @@
     {
       "path": "/api/brain/order-projection/run",
       "schedule": "45 2 * * *"
+    },
+    {
+      "path": "/api/brain/jobs/freshness",
+      "schedule": "0 13 * * *"
     }
   ],
   "headers": [

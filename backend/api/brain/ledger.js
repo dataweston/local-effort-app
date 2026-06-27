@@ -41,18 +41,33 @@ async function writeLedgerEvent({
     });
     if (existing) return { ...existing, _existing: true };
   }
-  return prisma.ledgerEvent.create({
-    data: {
-      eventType,
-      schemaVersion,
-      occurredAt: occurredAt ? new Date(occurredAt) : new Date(),
-      source,
-      sourceId: sourceId ? String(sourceId) : null,
-      actorType,
-      actorId: actorId ? String(actorId) : null,
-      payload,
-    },
-  });
+  try {
+    return await prisma.ledgerEvent.create({
+      data: {
+        eventType,
+        schemaVersion,
+        occurredAt: occurredAt ? new Date(occurredAt) : new Date(),
+        source,
+        sourceId: sourceId ? String(sourceId) : null,
+        actorType,
+        actorId: actorId ? String(actorId) : null,
+        payload,
+      },
+    });
+  } catch (err) {
+    // A concurrent writer may have inserted the same (eventType, source, sourceId)
+    // between the findFirst above and this create. The partial unique index
+    // (20260627000100_brain_unique_constraints) now enforces this; treat the
+    // race as a dedupe hit rather than an error.
+    if (err?.code === 'P2002' && sourceId) {
+      const existing = await prisma.ledgerEvent.findFirst({
+        where: { eventType, source, sourceId: String(sourceId), tombstonedAt: null },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (existing) return { ...existing, _existing: true };
+    }
+    throw err;
+  }
 }
 
 async function findOrCreateEntity({ entityType, name, properties = null, status = 'active' }) {

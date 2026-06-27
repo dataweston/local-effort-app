@@ -150,7 +150,8 @@ function registerSquareOrdersRoutes(app, { logger } = {}) {
 
       const daysBack = Math.min(Math.max(parseInt(req.body?.daysBack || req.query?.daysBack) || 7, 1), 730);
       running = true;
-      runSquareOrdersSync({ logger, daysBack })
+      const { withJobRun } = require('./jobRuns');
+      withJobRun('square-orders-sync', () => runSquareOrdersSync({ logger, daysBack }))
         .then((result) => {
           lastRun = { completedAt: new Date().toISOString(), daysBack, ...result };
           logger?.info(lastRun, 'brain/square-orders: run finished');

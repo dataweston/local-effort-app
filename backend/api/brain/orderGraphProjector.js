@@ -30,6 +30,7 @@ const { createAdminVerifier } = require('../utils/adminVerifier');
 const { getPrisma } = require('../utils/prisma');
 const { canonicalName, writeLedgerEvent } = require('./ledger');
 const { validateRelationship } = require('./relationshipDictionary');
+const { withJobRun } = require('./jobRuns');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -227,7 +228,10 @@ function registerOrderProjectionRoutes(app, { logger } = {}) {
       const dryRun = String(req.body?.dryRun ?? req.query?.dryRun) === 'true';
 
       running = true;
-      runOrderGraphProjection({ logger, daysBack, dryRun })
+      const exec = dryRun
+        ? runOrderGraphProjection({ logger, daysBack, dryRun })
+        : withJobRun('order-projection', () => runOrderGraphProjection({ logger, daysBack, dryRun }));
+      exec
         .then((result) => { lastRun = { completedAt: new Date().toISOString(), daysBack, dryRun, ...result }; })
         .catch((err) => logger?.error({ err }, 'brain/order-projection: run error'))
         .finally(() => { running = false; });
@@ -240,6 +244,24 @@ function registerOrderProjectionRoutes(app, { logger } = {}) {
   };
   app.post('/api/brain/order-projection/run', runHandler);
   app.get('/api/brain/order-projection/run', runHandler);
+
+  // GET /api/brain/jobs/freshness — per-job last-success + SLA staleness alarm.
+  app.get('/api/brain/jobs/freshness', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      const isCron = req.headers['x-vercel-cron'] === '1'
+        || String(req.headers['user-agent'] || '').startsWith('vercel-cron');
+      if (!admin && !isCron && !hasBrainAdminHeader(req)) {
+        return res.status(403).json({ error: 'admin only' });
+      }
+      const { jobFreshness } = require('./jobRuns');
+      const report = await jobFreshness(getPrisma());
+      return res.json({ ok: true, ...report });
+    } catch (err) {
+      logger?.error({ err }, 'brain/jobs-freshness: error');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  });
 }
 
 module.exports = { runOrderGraphProjection, registerOrderProjectionRoutes };

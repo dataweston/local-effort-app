@@ -183,6 +183,123 @@ async function applyConstraintCorrection({
   };
 }
 
+// ── Free-text parser (founder quick-capture) ────────────────────────────────
+// Turns a quick note like "Samantha: no legumes this month" or
+// "for Dave Levy avoid shellfish (allergy)" into one or more structured
+// corrections. Deterministic — no LLM. Returns { customerRef, corrections[] }.
+
+const AVOID_WORDS = /\b(no|avoid|avoids|exclude|excludes|excluding|without|skip|hold the|leave out|cut|drop|can't have|cannot have|allergic to|stop)\b/i;
+const PREFER_WORDS = /\b(likes?|loves?|wants?|prefers?|add|include|more|enjoys?|ok with|okay with|fine with)\b/i;
+const MEDICAL_WORDS = /\b(allerg(y|ic)|anaphyla|celiac|intoleran|medical|cannot have|can't have)\b/i;
+
+function parseDuration(text, now = new Date()) {
+  const t = text.toLowerCase();
+  // An explicit "until <date>" always wins over a relative window.
+  const until = t.match(/until\s+(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/);
+  if (until) {
+    const raw = until[1];
+    let d;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) d = new Date(raw + 'T00:00:00Z');
+    else {
+      const [mo, da, yr] = raw.split('/');
+      const year = yr ? (yr.length === 2 ? 2000 + Number(yr) : Number(yr)) : now.getUTCFullYear();
+      d = new Date(Date.UTC(year, Number(mo) - 1, Number(da)));
+    }
+    if (!isNaN(d)) return d.toISOString();
+  }
+  // "this month" / "for the month" / "rest of the month" → end of current month
+  if (/\b(this month|the month|rest of the month|for the month)\b/.test(t)) {
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
+  }
+  // "this week" → next Monday (UTC)
+  if (/\b(this week|the week|for the week)\b/.test(t)) {
+    const d = new Date(now); const day = d.getUTCDay(); const add = ((8 - day) % 7) || 7;
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + add)).toISOString();
+  }
+  return null;
+}
+
+const STOP_ITEM_WORDS = new Set(['this', 'the', 'for', 'a', 'an', 'and', 'or', 'to', 'of', 'month', 'week', 'please', 'her', 'his', 'their', 'diet', 'meals', 'meal', 'more', 'some', 'any', 'all']);
+
+function stripLeadingStopwords(s) {
+  let out = s;
+  let prev;
+  do { prev = out; out = out.replace(/^(more|some|any|all|of|the)\s+/i, ''); } while (out !== prev);
+  return out;
+}
+
+function parseCorrectionText(text, now = new Date()) {
+  const raw = String(text || '').trim();
+  if (!raw) return { customerRef: null, corrections: [], error: 'empty text' };
+
+  // Customer ref: "Name: ..." / "Name - ..." (preferred, explicit delimiter), or
+  // "for Name <verb> ..." where the name runs up to the first direction word.
+  let customerRef = null;
+  let body = raw;
+  const colon = raw.match(/^\s*([A-Za-z][\w.'\- ]{1,60}?)\s*[:\-–]\s*(.+)$/);
+  if (colon) {
+    customerRef = colon[1].trim();
+    body = colon[2].trim();
+  } else {
+    // "for <Name words...> <avoid|no|likes|...> <items>" — split the name at the verb.
+    const forMatch = raw.match(/^\s*for\s+(.+)$/i);
+    if (forMatch) {
+      const rest = forMatch[1];
+      const verb = rest.search(new RegExp(`(${AVOID_WORDS.source}|${PREFER_WORDS.source})`, 'i'));
+      if (verb > 0) {
+        customerRef = rest.slice(0, verb).trim().replace(/[,]+$/, '');
+        body = rest.slice(verb).trim();
+      }
+    }
+  }
+
+  const direction = AVOID_WORDS.test(body) ? 'avoids' : (PREFER_WORDS.test(body) ? 'prefers' : 'avoids');
+  const severity = direction === 'prefers'
+    ? 'preference'
+    : (MEDICAL_WORDS.test(body) ? 'medical' : 'avoid');
+  const validUntil = parseDuration(body, now);
+
+  // Items: strip the direction/duration words, split on commas/and/or.
+  let itemText = body
+    .replace(AVOID_WORDS, ' ').replace(PREFER_WORDS, ' ')
+    .replace(/\b(this month|the month|rest of the month|for the month|this week|the week|for the week)\b/gi, ' ')
+    .replace(/until\s+(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/gi, ' ')
+    .replace(/\((?:allerg[^)]*|medical[^)]*)\)/gi, ' ')
+    .replace(/[.!?]+$/g, '');
+  const items = itemText
+    .split(/[,;]|\band\b|\bor\b|\//i)
+    .map(s => stripLeadingStopwords(s.trim().toLowerCase()))
+    .filter(s => s.length >= 2 && s.length <= 40 && !STOP_ITEM_WORDS.has(s));
+
+  const corrections = items.map(item => ({ item, kind: 'ingredient', direction, severity, validUntil }));
+  return { customerRef, corrections, parsedFrom: raw };
+}
+
+/**
+ * Apply a free-text quick-capture correction (one note, possibly multiple items).
+ * Resolves the customer by the parsed name. Returns per-item results.
+ */
+async function applyCorrectionFromText({ text, customerId = null, note = null, actor = 'founder', logger } = {}) {
+  const parsed = parseCorrectionText(text);
+  if (parsed.error) throw new Error(parsed.error);
+  if (!parsed.corrections.length) throw new Error('no constraint items found in text');
+  if (!customerId && !parsed.customerRef) {
+    throw new Error('could not identify a customer — prefix with "Name:" or pass customerId');
+  }
+
+  const results = [];
+  for (const c of parsed.corrections) {
+    const r = await applyConstraintCorrection({
+      customerId: customerId || undefined,
+      name: customerId ? undefined : parsed.customerRef,
+      item: c.item, kind: c.kind, direction: c.direction, severity: c.severity,
+      validUntil: c.validUntil, note: note || parsed.parsedFrom, actor, logger,
+    });
+    results.push(r);
+  }
+  return { ok: true, customerRef: parsed.customerRef, count: results.length, results };
+}
+
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 function registerConstraintCorrectionRoutes(app, { logger } = {}) {
@@ -210,6 +327,36 @@ function registerConstraintCorrectionRoutes(app, { logger } = {}) {
       return res.status(status).json({ ok: false, error: msg });
     }
   });
+
+  // POST /api/brain/constraints/quick-capture — founder quick-capture.
+  // Body: { text: "Samantha: no legumes this month", customerId?, dryRun? }
+  // Parses free text → one or more corrections and applies them. With dryRun,
+  // returns the parse without writing (lets a Hub field preview before commit).
+  app.post('/api/brain/constraints/quick-capture', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+
+      const { text, customerId = null, note = null, dryRun = false } = req.body || {};
+      if (!text || !String(text).trim()) return res.status(400).json({ ok: false, error: 'text is required' });
+
+      if (dryRun) {
+        return res.json({ ok: true, dryRun: true, parsed: parseCorrectionText(text) });
+      }
+      const result = await applyCorrectionFromText({ text, customerId, note, actor: 'founder', logger });
+      return res.json(result);
+    } catch (err) {
+      const msg = err?.message || 'internal-error';
+      const status = /required|must be|not found|could not|no constraint/.test(msg) ? 400 : 500;
+      if (status === 500) logger?.error({ err }, 'brain/constraint-quick-capture: error');
+      return res.status(status).json({ ok: false, error: msg });
+    }
+  });
 }
 
-module.exports = { applyConstraintCorrection, registerConstraintCorrectionRoutes };
+module.exports = {
+  applyConstraintCorrection,
+  applyCorrectionFromText,
+  parseCorrectionText,
+  registerConstraintCorrectionRoutes,
+};

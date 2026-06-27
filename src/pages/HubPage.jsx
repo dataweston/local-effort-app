@@ -15,6 +15,7 @@ import {
   Plus,
   RefreshCw,
   Send,
+  Sparkles,
   ShieldCheck,
   ShoppingCart,
   Soup,
@@ -620,6 +621,141 @@ function CustomerHomeView({ accessToken, setTab }) {
   );
 }
 
+function QuickCapturePanel({ accessToken }) {
+  const [text, setText] = useState('');
+  const [customer, setCustomer] = useState(null);
+  const [custQuery, setCustQuery] = useState('');
+  const [custResults, setCustResults] = useState([]);
+  const [preview, setPreview] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(null);
+
+  // Customer search (optional — picking one removes the hardest parse: "who?")
+  useEffect(() => {
+    if (!custQuery.trim() || custQuery.trim().length < 2 || !accessToken) { setCustResults([]); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ q: custQuery.trim(), type: 'Customer', limit: '6' });
+        const data = await api(`/api/brain/entities?${params}`, accessToken);
+        if (!cancelled) setCustResults(data.entities || []);
+      } catch { if (!cancelled) setCustResults([]); }
+    }, 200);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [custQuery, accessToken]);
+
+  function reset() { setText(''); setPreview(null); setError(''); setDone(null); }
+
+  async function runPreview() {
+    setBusy(true); setError(''); setDone(null);
+    try {
+      const data = await api('/api/brain/capture', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ text, customerId: customer?.id || null, commit: false }),
+      });
+      setPreview(data);
+    } catch (e) { setError(e.message || 'Could not parse'); }
+    finally { setBusy(false); }
+  }
+
+  async function commit({ force = false } = {}) {
+    setBusy(true); setError('');
+    try {
+      const data = await api('/api/brain/capture', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ text, customerId: customer?.id || null, commit: true, force }),
+      });
+      if (data.committed) setDone({ kind: 'applied', detail: data.applied, preview: data.preview });
+      else if (data.capturedToInbox) setDone({ kind: 'inbox', preview: data.preview });
+      else setDone({ kind: 'other' });
+      setText(''); setPreview(null);
+    } catch (e) { setError(e.message || 'Could not apply'); }
+    finally { setBusy(false); }
+  }
+
+  const medical = preview?.fields?.corrections?.some((c) => c.severity === 'medical');
+
+  return (
+    <Panel title="Quick Capture" icon={Sparkles}>
+      {customer ? (
+        <div className="hub-row" style={{ alignItems: 'center', gap: 8 }}>
+          <strong>For: {customer.name}</strong>
+          <button onClick={() => setCustomer(null)} style={{ marginLeft: 'auto' }}>change</button>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 8 }}>
+          <input
+            placeholder="Customer (optional — sharpens parsing)"
+            value={custQuery}
+            onChange={(e) => setCustQuery(e.target.value)}
+          />
+          {custResults.length > 0 && (
+            <div className="hub-list" style={{ maxHeight: 120, overflowY: 'auto' }}>
+              {custResults.map((c) => (
+                <button key={c.id} className="hub-row" onClick={() => { setCustomer(c); setCustQuery(''); setCustResults([]); }}>
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <textarea
+        className="hub-wordpad"
+        style={{ minHeight: 56 }}
+        rows={2}
+        placeholder='e.g. "no legumes this month" · "price: carrots $1.20/lb from CPW" · "task: call flour vendor"'
+        value={text}
+        onChange={(e) => { setText(e.target.value); setPreview(null); setDone(null); }}
+      />
+
+      <div className="hub-button-row" style={{ marginTop: 6 }}>
+        <button onClick={runPreview} disabled={busy || !text.trim()}>{busy ? '…' : 'Preview'}</button>
+        {preview && !preview.needsConfirm && (
+          <button onClick={() => commit()} disabled={busy}>Apply</button>
+        )}
+        {text && <button onClick={reset} disabled={busy}>Clear</button>}
+      </div>
+
+      {error && <p className="hub-empty" style={{ color: 'var(--brand-rose, #b00)' }}>{error}</p>}
+
+      {preview && (
+        <div className="hub-canon" style={{ marginTop: 8 }}>
+          <div className="hub-row">
+            <strong>{preview.intent.replace(/_/g, ' ')}</strong>
+            <span>{Math.round((preview.confidence || 0) * 100)}% · {preview.via}</span>
+          </div>
+          <p style={{ margin: '4px 0' }}>{preview.preview?.summary}</p>
+          {preview.needsConfirm && (
+            <>
+              <p className="hub-empty">
+                {medical ? '⚠ Medical/allergy — confirm carefully.'
+                  : preview.needsConfirmReason === 'customer-unresolved' ? 'Customer not matched — pick one above or confirm anyway.'
+                  : 'Lower confidence — confirm to apply.'}
+              </p>
+              <div className="hub-button-row">
+                <button onClick={() => commit({ force: true })} disabled={busy || (preview.needsConfirmReason === 'customer-unresolved' && !customer)}>
+                  Confirm & apply
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {done && (
+        <div className="hub-canon" style={{ marginTop: 8 }}>
+          {done.kind === 'applied' && <p>✓ Applied: {done.preview?.summary}</p>}
+          {done.kind === 'inbox' && <p>↪ Captured to brain inbox for review: {done.preview?.summary}</p>}
+          {done.kind === 'other' && <p>Captured.</p>}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken, isCustomer }) {
   const todaysItems = calendar.filter((item) => String(item.startsAt || '').startsWith(todayIso()));
   const openShifts = shifts.filter((shift) => shift.open).slice(0, 4);
@@ -629,6 +765,7 @@ function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken,
   return (
     <div className="hub-grid">
       {!isCustomer && accessToken && <HomeNotepad accessToken={accessToken} />}
+      {!isCustomer && accessToken && <QuickCapturePanel accessToken={accessToken} />}
       <Panel title="Today" icon={Home} action={<button onClick={() => setTab('calendar')}>Open calendar</button>}>
         <div className="hub-list">
           {todaysItems.length === 0 && <p className="hub-empty">No scheduled items today.</p>}
