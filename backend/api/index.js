@@ -75,6 +75,7 @@ const { registerOrderProjectionRoutes } = require('./brain/orderGraphProjector')
 const { registerConstraintCorrectionRoutes } = require('./brain/constraintCorrection');
 const { registerIngestRoutes } = require('./brain/ingest/routes');
 const { registerLocalBudgetRoutes } = require('./brain/localBudgetSync');
+const { registerCogsRollupRoutes } = require('./brain/cogsRollup');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
@@ -578,6 +579,7 @@ registerOrderProjectionRoutes(app, { logger });
 registerConstraintCorrectionRoutes(app, { logger });
 registerIngestRoutes(app, { logger });
 registerLocalBudgetRoutes(app, { logger });
+registerCogsRollupRoutes(app, { logger });
 
 // Nightly brain jobs run via Vercel crons (see vercel.json):
 //   /api/brain/triage/run, /api/brain/inference/run, /api/brain/hypothesis/run

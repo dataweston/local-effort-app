@@ -45,6 +45,10 @@
       "schedule": "50 2 * * *"
     },
     {
+      "path": "/api/brain/cogs-rollup/run",
+      "schedule": "55 2 * * *"
+    },
+    {
       "path": "/api/brain/jobs/freshness",
       "schedule": "0 13 * * *"
     }

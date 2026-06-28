@@ -47,6 +47,13 @@ attach a normalized vendor to each transaction. If LB exposes a stable
 matching — eliminating the duplicate-vendor problem at the source. This is the
 single biggest data-quality win for the brain's vendor graph.
 
+**Live evidence (2026-06-27 COGS rollup):** the brain split Eastside's food
+spend into "Eastside Food Cooperative" ($9,689) AND "Eastside Food Cooperati"
+($4,140) — same vendor, different bank truncation, so name-cleaning couldn't
+merge them. True Eastside COGS is ~$13,800. Same for "Amazon"/"AMAZON
+MARKETPLACE", "Costco"/"COSTCO WHSE". A stable per-transaction `vendorId` from
+LB makes this exact at the source.
+
 ### 3. Income counterparty (the reason LB beats Square)
 LB income rows have **no `merchantName`/payer** — all blank (415 INCOME rows).
 The founder's point: LB is the source of truth *because* it has income sources
