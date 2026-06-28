@@ -73,8 +73,8 @@ resolved entityId rather than re-deriving from strings.
 - Resolver in ingest → every Hub/Drafts capture binds to the canonical entity (no new duplicates; the 49 cross-type identity collisions stop growing).
 
 ## Sequence
-1. **Resolver layer** (`resolveEntity` + backfill) — shared module. ← build first
-2. Wire into ingest engine `resolve()` + order projector.
-3. Alias-enrichment pass for the 132 alias-less vendors (normalized names + Local Budget vendor names once that DB is live).
-4. entityId-on-payload backfill + point both inference engines at the resolved key.
-5. (source coverage / Track B) is the separate, partly-external half.
+1. **Resolver layer** (`resolveEntity` + backfill) — shared module. ✅ DONE
+2. Wire into ingest engine `resolve()`. ✅ DONE (projector skipped — it only sees customerId, which is already resolver step 1)
+3. ~~Alias-enrichment pass for the 132 alias-less vendors~~ → **REFRAMED.** Analysis (2026-06-27) showed the *useful* vendor aliases are bank-statement descriptors ("Debit Card EASTSIDE FOOD COOPERATI", "Debit Card WAL-MART #3404") that originally came from Local Budget. A blind "add canonical name as alias" pass is redundant — the resolver already matches canonicalName. The real enrichment = **derive aliases from Local Budget `transactions.merchantName`**, which folds into Track B (LB data not yet imported). Deferred to Track B, not a standalone pass.
+4. **entityId-on-payload backfill** + point both inference engines at the resolved key. ✅ DONE — `scripts/backfill-entity-ids.cjs` wrote customerEntityId onto 31 events + vendorEntityId onto 25; inferenceEngine + hypothesisEngine now both read the resolved id (added `bucketVendorEvents`/`resolveVendor` helpers; CHURNING/REPEAT_CUSTOMER prefer customerEntityId). Hypothesis engine no longer resolves to 0.
+5. (source coverage / Track B) is the separate, partly-external half — LB schema connected, data import pending.

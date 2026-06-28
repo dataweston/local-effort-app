@@ -18,6 +18,7 @@ const { getPrisma } = require('../utils/prisma');
 const JOB_SLA = {
   'square-orders-sync': 24,
   'order-projection': 24,
+  'local-budget-sync': 24,
   'inference-run': 24,
   'hypothesis-run': 24,
   'triage-run': 24, // runs twice daily; 24h window tolerates one miss

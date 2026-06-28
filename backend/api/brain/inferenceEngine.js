@@ -33,6 +33,35 @@ function confidence(score, max) {
   return Math.min(1.0, score / max);
 }
 
+// Bucket payment events by the resolved vendorEntityId when the entity-id
+// backfill has stamped it, else by normalised merchantName. Preferring the
+// resolved id makes the vendor inference jobs agree with the hypothesis engine.
+function bucketVendorEvents(events) {
+  const buckets = new Map();
+  for (const ev of events) {
+    const entityId = ev.payload?.vendorEntityId || null;
+    const name = ev.payload?.merchantName;
+    const key = entityId || (name ? name.toLowerCase().trim() : null);
+    if (!key) continue;
+    if (!buckets.has(key)) buckets.set(key, { evs: [], entityId, name: name || null });
+    buckets.get(key).evs.push(ev);
+  }
+  return buckets;
+}
+
+async function resolveVendor(prisma, key, entityId) {
+  if (entityId) {
+    return prisma.brainEntity.findFirst({
+      where: { id: entityId, entityType: 'Vendor', tombstonedAt: null, status: 'active' },
+      select: { id: true, name: true },
+    });
+  }
+  return prisma.brainEntity.findFirst({
+    where: { entityType: 'Vendor', tombstonedAt: null, status: 'active', aliases: { some: { alias: key } } },
+    select: { id: true, name: true },
+  });
+}
+
 // ── PREFERS ──────────────────────────────────────────────────────────────────
 // Vendor paid ≥3 times in last 90 days
 
@@ -49,30 +78,14 @@ async function computePrefers(prisma, now) {
     select: { id: true, payload: true, occurredAt: true },
   });
 
-  // Bucket by normalised merchant name
-  const buckets = new Map();
-  for (const ev of events) {
-    const name = ev.payload?.merchantName;
-    if (!name) continue;
-    const key = name.toLowerCase().trim();
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(ev);
-  }
+  // Bucket by resolved vendorEntityId when present, else normalised merchant name.
+  const buckets = bucketVendorEvents(events);
 
   const results = [];
-  for (const [name, evs] of buckets) {
+  for (const [key, { evs, entityId }] of buckets) {
     if (evs.length < 3) continue;
 
-    // Resolve entity
-    const entity = await prisma.brainEntity.findFirst({
-      where: {
-        entityType: 'Vendor',
-        tombstonedAt: null,
-        status: 'active',
-        aliases: { some: { alias: name } },
-      },
-      select: { id: true, name: true },
-    });
+    const entity = await resolveVendor(prisma, key, entityId);
     if (!entity) continue;
 
     const conf = confidence(evs.length, 12);
@@ -99,30 +112,15 @@ async function computeAvoids(prisma, now) {
     orderBy: { occurredAt: 'desc' },
   });
 
-  const buckets = new Map();
-  for (const ev of events) {
-    const name = ev.payload?.merchantName;
-    if (!name) continue;
-    const key = name.toLowerCase().trim();
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(ev);
-  }
+  const buckets = bucketVendorEvents(events);
 
   const results = [];
-  for (const [name, evs] of buckets) {
+  for (const [key, { evs, entityId }] of buckets) {
     if (evs.length < 2) continue;
     const latest = new Date(evs[0].occurredAt);
     if (latest >= recentCutoff) continue; // still active
 
-    const entity = await prisma.brainEntity.findFirst({
-      where: {
-        entityType: 'Vendor',
-        tombstonedAt: null,
-        status: 'active',
-        aliases: { some: { alias: name } },
-      },
-      select: { id: true, name: true },
-    });
+    const entity = await resolveVendor(prisma, key, entityId);
     if (!entity) continue;
 
     const daysSince = Math.floor((now - latest) / 86_400_000);
@@ -150,12 +148,15 @@ async function computeChurning(prisma, now) {
     select: { id: true, payload: true, occurredAt: true },
   });
 
-  // Bucket by customerId
+  // Bucket by the resolved customer entity id when present (written by the
+  // entity-id backfill / ingest resolver), else by the raw Square customerId.
+  // Preferring customerEntityId makes this engine agree with the hypothesis
+  // engine, which keys on the same resolved id.
   const buckets = new Map();
   for (const ev of events) {
-    const cid = ev.payload?.customerId || ev.payload?.customer_id;
+    const cid = ev.payload?.customerEntityId || ev.payload?.customerId || ev.payload?.customer_id;
     if (!cid) continue;
-    if (!buckets.has(cid)) buckets.set(cid, { prior: [], recent: [] });
+    if (!buckets.has(cid)) buckets.set(cid, { prior: [], recent: [], resolved: !!ev.payload?.customerEntityId });
     const d = new Date(ev.occurredAt);
     if (d < period2Start) {
       buckets.get(cid).prior.push(ev);
@@ -165,15 +166,15 @@ async function computeChurning(prisma, now) {
   }
 
   const results = [];
-  for (const [cid, { prior, recent }] of buckets) {
+  for (const [cid, { prior, recent, resolved }] of buckets) {
     if (prior.length < 2) continue;
     if (recent.length * 2 >= prior.length) continue; // not churning
 
     const entity = await prisma.brainEntity.findFirst({
       where: {
-        squareCustomerId: cid,
         tombstonedAt: null,
         status: 'active',
+        ...(resolved ? { id: cid } : { squareCustomerId: cid }),
       },
       select: { id: true, name: true },
     });
@@ -209,32 +210,36 @@ async function computeRepeatCustomer(prisma, now) {
     select: { id: true, payload: true, occurredAt: true },
   });
 
-  // Bucket by customerId (the only customer key Square attaches to orders here)
+  // Bucket by the resolved customer entity id when present, else raw Square id.
+  // The customerEntityId (from the entity-id backfill / resolver) is the shared
+  // key the hypothesis engine also reads.
   const buckets = new Map();
   for (const ev of events) {
-    const cid = ev.payload?.customerId || ev.payload?.customer_id;
+    const cid = ev.payload?.customerEntityId || ev.payload?.customerId || ev.payload?.customer_id;
     if (!cid) continue; // anonymous ticket — can't attribute to a customer
-    if (!buckets.has(cid)) buckets.set(cid, []);
-    buckets.get(cid).push(ev);
+    if (!buckets.has(cid)) buckets.set(cid, { evs: [], resolved: !!ev.payload?.customerEntityId });
+    buckets.get(cid).evs.push(ev);
   }
 
   const results = [];
-  for (const [cid, evs] of buckets) {
+  for (const [cid, { evs, resolved }] of buckets) {
     if (evs.length < 2) continue; // a single order isn't a repeat
 
-    // Resolve to a brain Customer. Widened: match squareCustomerId first, then
-    // fall back to any FK anchor or alias carrying the id, before giving up.
+    // Resolve to a brain Customer. If the id is already a resolved entity id,
+    // match by primary key; else fall back to squareCustomerId/alias.
     const entity = await prisma.brainEntity.findFirst({
-      where: {
-        entityType: 'Customer',
-        tombstonedAt: null,
-        status: 'active',
-        OR: [
-          { squareCustomerId: cid },
-          { properties: { path: ['squareCustomerId'], equals: cid } },
-          { aliases: { some: { alias: cid } } },
-        ],
-      },
+      where: resolved
+        ? { id: cid, entityType: 'Customer', tombstonedAt: null, status: 'active' }
+        : {
+            entityType: 'Customer',
+            tombstonedAt: null,
+            status: 'active',
+            OR: [
+              { squareCustomerId: cid },
+              { properties: { path: ['squareCustomerId'], equals: cid } },
+              { aliases: { some: { alias: cid } } },
+            ],
+          },
       select: { id: true, name: true },
     });
     if (!entity) continue; // no entity to anchor the inference to yet
@@ -270,10 +275,11 @@ async function computePriceDrift(prisma, now) {
 
   const buckets = new Map();
   for (const ev of events) {
+    const entityId = ev.payload?.vendorEntityId || null;
     const name = ev.payload?.merchantName;
-    if (!name) continue;
-    const key = name.toLowerCase().trim();
-    if (!buckets.has(key)) buckets.set(key, { prior: [], recent: [] });
+    const key = entityId || (name ? name.toLowerCase().trim() : null);
+    if (!key) continue;
+    if (!buckets.has(key)) buckets.set(key, { prior: [], recent: [], entityId });
     const d = new Date(ev.occurredAt);
     if (d < period2Start) {
       buckets.get(key).prior.push(ev);
@@ -283,7 +289,7 @@ async function computePriceDrift(prisma, now) {
   }
 
   const results = [];
-  for (const [name, { prior, recent }] of buckets) {
+  for (const [key, { prior, recent, entityId }] of buckets) {
     if (prior.length < 2 || recent.length < 2) continue;
 
     const avg = arr => arr.reduce((s, e) => s + (e.payload?.amountCents || 0), 0) / arr.length;
@@ -294,15 +300,7 @@ async function computePriceDrift(prisma, now) {
     const drift = (recentAvg - priorAvg) / priorAvg;
     if (Math.abs(drift) < 0.15) continue;
 
-    const entity = await prisma.brainEntity.findFirst({
-      where: {
-        entityType: 'Vendor',
-        tombstonedAt: null,
-        status: 'active',
-        aliases: { some: { alias: name } },
-      },
-      select: { id: true, name: true },
-    });
+    const entity = await resolveVendor(prisma, key, entityId);
     if (!entity) continue;
 
     const pct = Math.round(drift * 100);
