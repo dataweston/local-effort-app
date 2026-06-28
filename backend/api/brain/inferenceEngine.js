@@ -478,6 +478,18 @@ async function runInferencePass({ logger } = {}) {
     }
   }
 
+  // Business-level inferences (cashflow, COGS ratio, seasonality, dish demand) —
+  // computed from the now-live payment + order streams.
+  try {
+    const { runBusinessInferences } = require('./businessInferences');
+    const biz = await runBusinessInferences({ logger });
+    written += biz.written;
+    for (const e of biz.errors) errors.push(`business:${e}`);
+  } catch (err) {
+    errors.push(`business: ${err.message}`);
+    logger?.error({ err }, 'brain/inference: business inferences failed');
+  }
+
   const staleMarked = await markStaleInferences(prisma, now);
   logger?.info({ written, superseded, staleMarked, errors: errors.length, diagnostics }, 'brain/inference: pass complete');
 
