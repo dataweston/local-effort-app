@@ -1,27 +1,24 @@
 /**
- * Hub meal-prep labels — turn one week's prep breakdown into Brother QL-series
- * labels, in-repo. One *package* gets one label — so a row of qty 3 expands into
- * 3 identical labels (each physical container needs its own sticker).
+ * Hub meal-prep labels — turn one week's prep breakdown into Brother QL800 / DK
+ * labels, in-repo, so there's no copy-paste into an external Python script.
  *
- * Each label carries: customer · dish (canonical) · meal · diet · day. That's the
- * bag/packout sticker the kitchen sticks on a container.
+ * Source: the same per-week prep rows the rollup reads (via meal-prep-rollup's
+ * line-item builder). One *package* gets one label — so a row of qty 3 expands
+ * into 3 identical labels (each physical container needs its own sticker).
  *
- * Source: the same per-week line items the rollup reads (via meal-prep-rollup's
- * buildLineItems) — a saved prep-breakdown (per-customer) when present, else the
- * flat menu.
+ * Each label carries: customer · dish (canonical) · meal · diet · day. That's
+ * the bag/packout sticker the kitchen sticks on a container.
  *
- * Output shapes, selected by `?format=`:
- *   - csv (default): one row per physical label, for Brother P-touch Editor
- *     mail-merge (import as a database onto a DK-1209 template). Header row +
- *     data rows: customer,dish,meal,diet,day,copy,of,week
- *   - structured: JSON label objects → render in-repo (preview/print)
- *   - text: legacy block format (lines per label, blank line between)
- *   - dk: a render-ready spec per label sized for DK-1209 die-cut address labels
- *     (29mm × 62mm), consumable by an in-repo renderer
+ * Three output shapes from one source, selected by `?format=`:
+ *   - structured (default): JSON label objects → render in-repo (PDF/preview/print)
+ *   - text: the legacy `input.txt` block format that make_stickers.py consumes,
+ *     so the existing QL800 DK pipeline still works unchanged if you want it
+ *   - dk: a render-ready spec per label sized for the DK tape (mm + lines),
+ *     consumable by an in-repo QL800 renderer
  *
  * Staff-only.
  *
- *   GET /api/hub/meal-prep-labels?weekStart=YYYY-MM-DD&format=csv|structured|text|dk
+ *   GET /api/hub/meal-prep-labels?weekStart=YYYY-MM-DD&format=structured|text|dk
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -39,10 +36,9 @@ try {
 
 const NOTE_SOURCE = 'drafts';
 
-// Brother DK-1209 small die-cut address labels: 29mm tall × 62mm wide, fixed
-// size (not continuous), 800 per roll. Printed on a QL-series printer. We render
-// landscape: 62mm wide × 29mm tall, a compact 3-line stub.
-const DK_LABEL = { media: 'DK-1209', widthMm: 62, heightMm: 29 };
+// Brother QL800 with DK-22205 continuous 62mm tape: usable print width ~59mm.
+// Length is variable on continuous tape; we target a compact 3-4 line stub.
+const DK_LABEL = { tapeWidthMm: 62, printWidthMm: 59, defaultLengthMm: 40 };
 
 function addDaysIso(iso, days) {
   const date = new Date(`${iso}T00:00:00`);
@@ -105,48 +101,21 @@ function labelLines(label) {
   return [line1, line2, line3].filter(Boolean);
 }
 
-// Legacy block format: lines per label, blank line between.
+// Legacy make_stickers.py block format: lines per label, blank line between.
 function buildStickerText(labels) {
   return labels.map((l) => labelLines(l).join('\n')).join('\n\n');
 }
 
-// CSV for Brother P-touch Editor mail-merge. One row per PHYSICAL label so a
-// qty-3 row already became 3 rows upstream. Import this as a database in P-touch
-// and drop the fields onto a DK-1209 template. RFC-4180 quoting.
-const CSV_COLUMNS = ['customer', 'dish', 'meal', 'diet', 'day', 'copy', 'of', 'week'];
-function csvCell(value) {
-  const s = value == null ? '' : String(value);
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-function buildCsv(labels) {
-  const rows = [CSV_COLUMNS.join(',')];
-  for (const l of labels) {
-    rows.push([
-      l.customer,
-      l.dish,
-      l.meal && l.meal !== 'other' ? l.meal : '',
-      l.diet || '',
-      l.day || '',
-      l.copy,
-      l.of,
-      l.weekStart,
-    ].map(csvCell).join(','));
-  }
-  // CRLF line endings: Excel/P-touch on Windows are happiest with these.
-  return rows.join('\r\n');
-}
-
-// Render-ready DK-1209 spec: one entry per physical label (62mm × 29mm die-cut).
+// Render-ready DK spec: one entry per physical label.
 function buildDkSpec(labels) {
   return {
-    printer: 'Brother QL series',
-    media: DK_LABEL.media,
-    widthMm: DK_LABEL.widthMm,
-    heightMm: DK_LABEL.heightMm,
+    printer: 'Brother QL800',
+    media: 'DK-22205',
+    tapeWidthMm: DK_LABEL.tapeWidthMm,
+    printWidthMm: DK_LABEL.printWidthMm,
     count: labels.length,
     labels: labels.map((l) => ({
-      widthMm: DK_LABEL.widthMm,
-      heightMm: DK_LABEL.heightMm,
+      lengthMm: DK_LABEL.defaultLengthMm,
       lines: labelLines(l),
       meta: { customer: l.customer, dish: l.dish, meal: l.meal, diet: l.diet, day: l.day, copy: l.copy, of: l.of },
     })),
@@ -167,20 +136,14 @@ async function handler(req, res) {
     : weekStartForDate(new Date().toISOString().slice(0, 10));
   if (!weekStart) return res.status(400).json({ error: 'Invalid weekStart (expected YYYY-MM-DD)' });
 
-  const format = (cleanString(req.query?.format, 16) || 'csv').toLowerCase();
+  const format = (cleanString(req.query?.format, 16) || 'structured').toLowerCase();
 
   try {
     const body = await loadMenuBody(weekStart);
     // buildLineItems is exported on the rollup's _internals and resolves dishes.
-    // Pass weekStart so it prefers the saved per-customer prep-breakdown.
-    const items = await rollup._internals.buildLineItems({ weekStart, body });
+    const items = await rollup._internals.buildLineItems({ body });
     const labels = buildLabels(items, weekStart);
 
-    if (format === 'csv') {
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="meal-prep-labels-${weekStart}.csv"`);
-      return res.status(200).send(buildCsv(labels));
-    }
     if (format === 'text') {
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       return res.status(200).send(buildStickerText(labels));
@@ -202,4 +165,4 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-module.exports._internals = { buildLabels, labelLines, buildStickerText, buildCsv, buildDkSpec, weekStartForDate, CSV_COLUMNS };
+module.exports._internals = { buildLabels, labelLines, buildStickerText, buildDkSpec, weekStartForDate };

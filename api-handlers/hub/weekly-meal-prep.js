@@ -9,12 +9,11 @@ try {
   prisma = null;
 }
 
-// Active weekly meal-prep customers that exist as Customer table rows. Both Levy
-// and Samantha now have a Customer row AND a linked brain entity (made symmetric
-// by scripts/link-meal-prep-customers.js, 2026-06-27), so both come through here.
-// Tyler is brain-only + paused; he's surfaced via the brain mealPrepStage path
-// below (loadBrainRosterCustomers) and bucketed into the paused list.
-const TARGET_CUSTOMER_SLUGS = ['levy-family', 'samantha-bailey'];
+// Active weekly meal-prep customers that exist as Customer table rows. Tyler is
+// paused (excluded). Samantha lives only in the knowledge graph (intake + Square,
+// no Customer row), so she's surfaced via the brain mealPrepStage path below
+// rather than this slug list. See loadActiveBrainCustomers().
+const TARGET_CUSTOMER_SLUGS = ['levy-family'];
 const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';
 const FUTURE_WEEK_COUNT = 3;
@@ -404,11 +403,11 @@ async function loadUpcomingCustomers() {
   ));
 }
 
-// Roster customers that live ONLY in the knowledge graph (intake + Square),
-// without a Customer table row — e.g. Tyler. Driven by mealPrepStage so the
-// roster is data, not a hardcoded slug list. Returns both 'active' and 'paused';
-// the caller buckets paused out of the active roster into its own list.
-async function loadBrainRosterCustomers() {
+// Active-roster customers that live ONLY in the knowledge graph (intake + Square),
+// without a Customer table row — e.g. Samantha. Driven by mealPrepStage so the
+// active roster is data, not a hardcoded slug list. 'active' shows in the active
+// roster; 'paused' (e.g. Tyler) is surfaced but flagged, not dropped silently.
+async function loadActiveBrainCustomers() {
   const entities = await prisma.brainEntity.findMany({
     where: {
       entityType: 'Customer',
@@ -512,22 +511,21 @@ async function handler(req, res) {
     const showRoster = !auth.isCustomer || auth.isPrivileged;
     const [tableCustomers, brainCustomers, upcomingCustomers, notes] = await Promise.all([
       loadCustomers(auth),
-      showRoster ? loadBrainRosterCustomers() : Promise.resolve([]),
+      showRoster ? loadActiveBrainCustomers() : Promise.resolve([]),
       showRoster ? loadUpcomingCustomers() : Promise.resolve([]),
       loadNotes(),
     ]);
-    // Paused customers (e.g. Tyler) belong in their own list, not the active
-    // roster. Split them out so the active table stays current-roster only.
-    const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || ''));
-    const isPaused = (c) => c.mealPrepStage === 'paused';
-    const customers = [...tableCustomers, ...brainCustomers].filter((c) => !isPaused(c)).sort(byName);
-    const pausedCustomers = [...tableCustomers, ...brainCustomers].filter(isPaused).sort(byName);
+    // Merge table-row and brain-only active customers into one roster; active
+    // first, paused last, then by name.
+    const stageRank = (c) => (c.mealPrepStage === 'paused' ? 1 : 0);
+    const customers = [...tableCustomers, ...brainCustomers].sort(
+      (a, b) => stageRank(a) - stageRank(b) || String(a.name || '').localeCompare(String(b.name || '')),
+    );
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       mode: auth.isCustomer && !auth.isPrivileged ? 'customer' : auth.isPrivileged ? 'privileged' : 'staff',
       customers,
-      pausedCustomers,
       upcomingCustomers,
       notes,
     });

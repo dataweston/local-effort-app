@@ -1500,15 +1500,6 @@ app.all('/api/hub/meal-prep-labels', async (req, res, next) => {
   }
 });
 
-app.all('/api/hub/meal-prep-breakdown', async (req, res, next) => {
-  try {
-    await require('../../api-handlers/hub/meal-prep-breakdown')(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'hub meal prep breakdown handler failed');
-    next(err);
-  }
-});
-
 app.all('/api/hub/customer-profile', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/customer-profile')(req, res);

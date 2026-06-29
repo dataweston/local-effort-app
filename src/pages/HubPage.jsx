@@ -1257,7 +1257,6 @@ const MENU_MEAL_LABEL = { dinner: 'Dinners', lunch: 'Lunches', breakfast: 'Break
 function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
   const [menu, setMenu] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [committing, setCommitting] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -1274,29 +1273,10 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
     }
   }, [accessToken, weekStart]);
 
-  // Commit = POST: create canonical Dish entities for any unmatched lines, then
-  // reload so they show as matched.
-  const commit = useCallback(async () => {
-    setCommitting(true);
-    setError('');
-    try {
-      await api('/api/hub/master-menu', accessToken, {
-        method: 'POST',
-        body: JSON.stringify({ weekStart }),
-      });
-      await load();
-    } catch (err) {
-      setError(err.message || 'Unable to formalize dishes.');
-    } finally {
-      setCommitting(false);
-    }
-  }, [accessToken, weekStart, load]);
-
   useEffect(() => { load().catch(() => {}); }, [load]);
 
   const dishes = menu?.dishes || [];
   const summary = menu?.summary;
-  const unmatched = summary?.unresolved || 0;
   // Group dishes by meal, preserving the canonical meal order.
   const byMeal = MENU_MEAL_ORDER
     .map((meal) => ({ meal, dishes: dishes.filter((d) => d.meal === meal) }))
@@ -1308,11 +1288,6 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
       icon={ClipboardList}
       action={(
         <div className="hub-button-row">
-          {dishes.length > 0 && (
-            <button onClick={() => commit()} disabled={committing || loading} title="Create canonical dishes for unmatched lines">
-              {committing ? 'Formalizing…' : unmatched > 0 ? `Formalize ${unmatched} dish${unmatched === 1 ? '' : 'es'}` : 'Re-formalize'}
-            </button>
-          )}
           <button onClick={() => load()}><RefreshCw size={13} /></button>
         </div>
       )}
@@ -1372,326 +1347,13 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
   );
 }
 
-// Per-customer prep breakdown: an editable grid that turns the flat menu into
-// per-customer dishes with counts, station, chef, and day. Auto-scaffolded from
-// each customer's plan; staff assign the menu dish + tags per line and save.
-// Saving makes the rollup and labels per-customer. Source: /api/hub/meal-prep-breakdown.
-function PrepBreakdownPanel({ accessToken, weekStart, onSaved }) {
-  const [data, setData] = useState(null);
-  const [lines, setLines] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState('');
-
-  const load = useCallback(async () => {
-    if (!weekStart) return;
-    setLoading(true);
-    setStatus('');
-    try {
-      const next = await api(`/api/hub/meal-prep-breakdown?weekStart=${encodeURIComponent(weekStart)}`, accessToken);
-      setData(next);
-      setLines(next.lines || []);
-      setStatus(next.saved ? `Saved breakdown loaded${next.savedAt ? ` (${new Date(next.savedAt).toLocaleString()})` : ''}` : 'Scaffolded from plans — assign dishes and save.');
-    } catch (err) {
-      setStatus(err.message || 'Unable to load breakdown.');
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, weekStart]);
-
-  useEffect(() => { load().catch(() => {}); }, [load]);
-
-  const updateLine = (id, patch) => setLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
-  const removeLine = (id) => setLines((prev) => prev.filter((l) => l.id !== id));
-  const addLine = () => setLines((prev) => [...prev, {
-    id: `new-${Date.now().toString(36)}-${prev.length}`,
-    client: data?.customers?.[0]?.name || '', customerSlug: data?.customers?.[0]?.slug || '',
-    menuCategory: 'dinner', dish: '', qty: 1, diet: '', station: '', chef: '', day: '', notes: '',
-  }]);
-
-  const save = async () => {
-    setSaving(true);
-    setStatus('Saving…');
-    try {
-      const res = await api('/api/hub/meal-prep-breakdown', accessToken, {
-        method: 'POST',
-        body: JSON.stringify({ weekStart, lines }),
-      });
-      setStatus(`Saved ${res.lineCount} line${res.lineCount === 1 ? '' : 's'}.`);
-      if (onSaved) onSaved();
-      await load();
-    } catch (err) {
-      setStatus(err.message || 'Save failed.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Menu dishes for the datalist, optionally narrowed to a line's meal category.
-  const menuByMeal = (meal) => (data?.menu || []).filter((d) => !meal || d.meal === meal);
-  const customers = data?.customers || [];
-  const stations = data?.stations || [];
-  const chefs = data?.chefs || [];
-  const days = data?.days || [];
-
-  return (
-    <Panel
-      title="Prep Breakdown"
-      icon={Table}
-      action={(
-        <div className="hub-button-row">
-          <button onClick={() => addLine()}>+ Line</button>
-          <button className="is-active" onClick={() => save()} disabled={saving || loading}>{saving ? 'Saving…' : 'Save'}</button>
-          <button onClick={() => load()}><RefreshCw size={13} /></button>
-        </div>
-      )}
-    >
-      <p className="hub-empty" style={{ marginTop: 0 }}>
-        Per-customer counts, station, chef and day. Scaffolded from each plan; assign the menu dish per line.
-        Saving feeds the cook/bag lists and labels below.
-      </p>
-      <div className="hub-foodinputs-status"><span>{loading ? 'Loading…' : status}</span></div>
-      <div className="hub-customer-table-wrap">
-        <table className="hub-customer-table hub-breakdown-table">
-          <thead>
-            <tr>
-              <th>Customer</th><th>Meal</th><th>Dish</th><th>Qty</th>
-              <th>Diet</th><th>Station</th><th>Chef</th><th>Day</th><th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map((line) => (
-              <tr key={line.id} className={line.dish ? '' : 'is-unresolved'}>
-                <td>
-                  <select value={line.customerSlug || ''} onChange={(e) => {
-                    const c = customers.find((x) => x.slug === e.target.value);
-                    updateLine(line.id, { customerSlug: e.target.value, client: c?.name || line.client });
-                  }}>
-                    {customers.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-                  </select>
-                </td>
-                <td>
-                  <select value={line.menuCategory} onChange={(e) => updateLine(line.id, { menuCategory: e.target.value })}>
-                    {MENU_MEAL_ORDER.map((m) => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </td>
-                <td>
-                  <input list={`menu-${line.menuCategory}`} value={line.dish}
-                    placeholder="dish…"
-                    onChange={(e) => updateLine(line.id, { dish: e.target.value })} />
-                  {line.dish && line.canonicalName && line.canonicalName.toLowerCase() !== line.dish.toLowerCase()
-                    && <small className="hub-rollup-canon">→ {line.canonicalName}</small>}
-                </td>
-                <td><input type="number" min="0" className="hub-qty-input" value={line.qty}
-                  onChange={(e) => updateLine(line.id, { qty: Number(e.target.value) })} /></td>
-                <td><input className="hub-diet-input" value={line.diet} placeholder="—"
-                  onChange={(e) => updateLine(line.id, { diet: e.target.value })} /></td>
-                <td>
-                  <select value={line.station || ''} onChange={(e) => updateLine(line.id, { station: e.target.value })}>
-                    <option value="">—</option>
-                    {stations.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </td>
-                <td>
-                  <select value={line.chef || ''} onChange={(e) => updateLine(line.id, { chef: e.target.value })}>
-                    <option value="">—</option>
-                    {chefs.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </td>
-                <td>
-                  <select value={line.day || ''} onChange={(e) => updateLine(line.id, { day: e.target.value })}>
-                    <option value="">—</option>
-                    {days.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </td>
-                <td><button className="hub-icon-btn" onClick={() => removeLine(line.id)} title="Remove line"><X size={13} /></button></td>
-              </tr>
-            ))}
-            {!loading && lines.length === 0 && (
-              <tr><td colSpan="9">No lines. Add the menu above, then refresh to scaffold from plans.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      {/* One datalist per meal category so the dish input suggests that week's menu. */}
-      {MENU_MEAL_ORDER.map((meal) => (
-        <datalist key={meal} id={`menu-${meal}`}>
-          {menuByMeal(meal).map((d, i) => <option key={`${d.text}-${i}`} value={d.text} />)}
-        </datalist>
-      ))}
-    </Panel>
-  );
-}
-
-// Kitchen working lists derived from the breakdown (or flat menu): packaging
-// counts, cook lists (chef→day→station), bag lists (per customer). Read-only.
-function MealPrepRollupPanel({ accessToken, weekStart, refreshKey }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const load = useCallback(async () => {
-    if (!weekStart) return;
-    setLoading(true);
-    setError('');
-    try {
-      setData(await api(`/api/hub/meal-prep-rollup?weekStart=${encodeURIComponent(weekStart)}`, accessToken));
-    } catch (err) {
-      setError(err.message || 'Unable to build rollup.');
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, weekStart]);
-
-  useEffect(() => { load().catch(() => {}); }, [load, refreshKey]);
-
-  const bagLists = data?.bagLists || [];
-  const cookLists = data?.cookLists || [];
-
-  return (
-    <Panel
-      title="Cook &amp; Bag Lists"
-      icon={ClipboardList}
-      action={<div className="hub-button-row"><button onClick={() => load()}><RefreshCw size={13} /></button></div>}
-    >
-      <div className="hub-foodinputs-status">
-        <span>{loading ? 'Building…' : error || (data ? `${data.lineCount} lines · ${bagLists.length} bag list${bagLists.length === 1 ? '' : 's'}` : 'No data yet.')}</span>
-      </div>
-      {bagLists.length > 0 && (
-        <div className="hub-menu-meal">
-          <h5>Bags by customer</h5>
-          {bagLists.map((bag) => (
-            <div key={bag.client} className="hub-bag">
-              <strong>{bag.client}</strong> <span className="hub-pill">{bag.itemCount}</span>
-              <ul className="hub-rollup-packaging">
-                {bag.dishes.map((d, i) => (
-                  <li key={`${d.name}-${i}`}>
-                    <span className="hub-rollup-qty">{d.qty}×</span>
-                    <span>{d.name}{d.meal && d.meal !== 'other' ? ` (${d.meal})` : ''}{d.diet ? ` · ${d.diet}` : ''}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
-      {cookLists.length > 0 && (
-        <div className="hub-menu-meal">
-          <h5>Cook lists</h5>
-          {cookLists.map((chef) => (
-            <div key={chef.chef} className="hub-bag">
-              <strong>{chef.chef}</strong>
-              {chef.days.map((day) => (
-                <div key={day.day} className="hub-cook-day">
-                  <em>{day.day}</em>
-                  {day.stations.map((st) => (
-                    <div key={st.station} className="hub-cook-station">
-                      <span className="hub-pill hub-pill-muted">{st.station}</span>
-                      {st.dishes.map((d, i) => (
-                        <span key={`${d.name}-${i}`} className="hub-cook-dish">{d.qty}× {d.name}</span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-    </Panel>
-  );
-}
-
-// Labels: download the week's stickers as CSV for Brother P-touch Editor
-// mail-merge (DK-1209), with a live count and preview.
-function MealPrepLabelsPanel({ accessToken, weekStart, refreshKey }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const load = useCallback(async () => {
-    if (!weekStart) return;
-    setLoading(true);
-    setError('');
-    try {
-      // structured gives the count + a preview without downloading.
-      setData(await api(`/api/hub/meal-prep-labels?weekStart=${encodeURIComponent(weekStart)}&format=structured`, accessToken));
-    } catch (err) {
-      setError(err.message || 'Unable to build labels.');
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, weekStart]);
-
-  useEffect(() => { load().catch(() => {}); }, [load, refreshKey]);
-
-  // CSV download needs the raw text + auth header, so fetch then save a blob.
-  const downloadCsv = async () => {
-    try {
-      const devApiRoot = import.meta.env.DEV && typeof window !== 'undefined'
-        ? `${window.location.protocol}//${window.location.hostname}:3001` : '';
-      const res = await fetch(`${devApiRoot}/api/hub/meal-prep-labels?weekStart=${encodeURIComponent(weekStart)}&format=csv`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (!res.ok) throw new Error('Download failed');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `meal-prep-labels-${weekStart}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err.message || 'Download failed.');
-    }
-  };
-
-  const labels = data?.labels || [];
-
-  return (
-    <Panel
-      title="Labels"
-      icon={Table}
-      action={(
-        <div className="hub-button-row">
-          <button className="is-active" onClick={() => downloadCsv()} disabled={!labels.length}><Upload size={13} /> CSV</button>
-          <button onClick={() => load()}><RefreshCw size={13} /></button>
-        </div>
-      )}
-    >
-      <p className="hub-empty" style={{ marginTop: 0 }}>
-        One row per container. Download the CSV and import it into Brother P-touch Editor
-        as a database (mail-merge) onto a <code>DK-1209</code> (29×62mm) template.
-      </p>
-      <div className="hub-foodinputs-status">
-        <span>{loading ? 'Building…' : error || `${labels.length} label${labels.length === 1 ? '' : 's'}`}</span>
-      </div>
-      {labels.length > 0 && (
-        <ul className="hub-rollup-packaging hub-label-preview">
-          {labels.slice(0, 8).map((l, i) => (
-            <li key={i}>
-              <span>{l.customer} · {l.dish}{l.meal && l.meal !== 'other' ? ` (${l.meal})` : ''}{l.diet ? ` · ${l.diet}` : ''}{l.day ? ` · ${l.day}` : ''}{l.of > 1 ? ` · ${l.copy}/${l.of}` : ''}</span>
-            </li>
-          ))}
-          {labels.length > 8 && <li><small>…and {labels.length - 8} more</small></li>}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
 function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
-  const [data, setData] = useState({ customers: [], pausedCustomers: [], upcomingCustomers: [], notes: [], mode: 'staff' });
+  const [data, setData] = useState({ customers: [], upcomingCustomers: [], notes: [], mode: 'staff' });
   const [activeTab, setActiveTab] = useState(null);
   const [noteBody, setNoteBody] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [preview, setPreview] = useState(false);
-  const [showPaused, setShowPaused] = useState(false);
-  // Bumped when the breakdown is saved, to refresh the rollup + labels panels.
-  const [prepRefreshKey, setPrepRefreshKey] = useState(0);
   const lastSavedRef = useRef('');
   const activeTabRef = useRef(activeTab);
 
@@ -1762,11 +1424,6 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
         icon={Soup}
         action={(
           <div className="hub-button-row">
-            {!isCustomer && (data.pausedCustomers || []).length > 0 && (
-              <button className={showPaused ? 'is-active' : ''} onClick={() => setShowPaused((v) => !v)}>
-                {showPaused ? 'Hide paused' : `Show paused (${data.pausedCustomers.length})`}
-              </button>
-            )}
             {!isCustomer && <span className="hub-pill">{customerLabel}</span>}
             <button onClick={() => load()}><RefreshCw size={13} /></button>
           </div>
@@ -1792,35 +1449,6 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
                     <strong>{customer.name}</strong>
                     {customer.mealPrepStage === 'paused' && <span className="hub-pill hub-pill-muted">paused</span>}
                     {customer.source === 'brain' && customer.mealPrepStage !== 'paused' && <span className="hub-pill">from intake</span>}
-                    <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
-                  </td>
-                  <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
-                  <td>
-                    <span>{customer.profile.householdSize || 'Household not set'}</span>
-                    <small>{customer.profile.deliveryNotes || customer.profile.address || ''}</small>
-                  </td>
-                  <td>
-                    {customer.latestOrder ? (
-                      <>
-                        <span>{formatDate(String(customer.latestOrder.weekStart).slice(0, 10))} / {customer.latestOrder.itemCount} items</span>
-                        <small>{customer.latestOrder.items.slice(0, 3).map((item) => `${item.quantity}x ${item.title}`).join('; ')}</small>
-                      </>
-                    ) : 'No order yet'}
-                  </td>
-                  <td>
-                    <CustomerSpendCell customer={customer} />
-                  </td>
-                  <td>
-                    <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
-                    {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
-                  </td>
-                </tr>
-              ))}
-              {showPaused && (data.pausedCustomers || []).map((customer) => (
-                <tr key={customer.id} className="hub-row-muted">
-                  <td>
-                    <strong>{customer.name}</strong>
-                    <span className="hub-pill hub-pill-muted">paused</span>
                     <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
                   </td>
                   <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
@@ -1910,26 +1538,6 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
           weekStart={weekStartFromTabId(activeTab)}
           weekLabel={(data.notes || []).find((note) => note.id === activeTab)?.title || ''}
         />
-      )}
-
-      {canEditNotes && (
-        <>
-          <PrepBreakdownPanel
-            accessToken={accessToken}
-            weekStart={weekStartFromTabId(activeTab)}
-            onSaved={() => setPrepRefreshKey((k) => k + 1)}
-          />
-          <MealPrepRollupPanel
-            accessToken={accessToken}
-            weekStart={weekStartFromTabId(activeTab)}
-            refreshKey={prepRefreshKey}
-          />
-          <MealPrepLabelsPanel
-            accessToken={accessToken}
-            weekStart={weekStartFromTabId(activeTab)}
-            refreshKey={prepRefreshKey}
-          />
-        </>
       )}
 
       <Panel
@@ -4129,20 +3737,6 @@ const hubCss = `
 .hub-rollup-ok { color: var(--hub-accent); flex: 0 0 auto; }
 .hub-rollup-canon { color: var(--hub-muted); font-style: italic; }
 .hub-pill-muted { background: var(--hub-bg); color: var(--hub-muted); }
-.hub-row-muted td { opacity: 0.6; }
-.hub-breakdown-table td { vertical-align: middle; }
-.hub-breakdown-table select,
-.hub-breakdown-table input { width: 100%; min-width: 64px; font-size: 12px; padding: 3px 4px; border: 1px solid var(--hub-border); border-radius: 4px; background: var(--hub-card, #fff); color: inherit; }
-.hub-breakdown-table .hub-qty-input { width: 56px; min-width: 0; }
-.hub-breakdown-table .hub-diet-input { width: 72px; min-width: 0; }
-.hub-breakdown-table tr.is-unresolved input[list] { border-color: var(--brand-rose, #c66); }
-.hub-icon-btn { border: none; background: none; cursor: pointer; color: var(--hub-muted); padding: 2px; }
-.hub-icon-btn:hover { color: var(--brand-rose, #c66); }
-.hub-bag { margin: 6px 0 10px; }
-.hub-cook-day { margin: 3px 0 3px 10px; }
-.hub-cook-station { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0 2px 10px; }
-.hub-cook-dish { font-size: 12px; color: var(--hub-muted); }
-.hub-label-preview li { font-size: 12px; }
 .hub-viewas { border: 1px solid var(--hub-border); border-radius: 6px; padding: 2px; margin-right: 6px; }
 .hub-viewas button { font-size: 11px; }
 .hub-canon { padding: 4px 0; }

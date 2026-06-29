@@ -17,13 +17,13 @@
  *   2. cookLists — group by Chef → Day → Station (see caveat below)
  *   3. bagLists  — group by Client (see caveat below)
  *
- * TWO-STAGE SOURCE: when a prep-breakdown is saved for the week
- * (prep-breakdown:week-<sunday>, see meal-prep-breakdown.js), `buildLineItems`
- * reads THAT — real per-customer Client/Qty/Diet/Station/Chef/Day — so cook lists,
- * bag lists, and labels are per-customer. Until a breakdown is saved, it falls
- * back to the FLAT menu: cookLists/bagLists collapse under "Unassigned" and
- * packaging counts are per menu line (qty 1). `buildLineItems` is the single swap
- * point; the three view-builders and the resolver do not change.
+ * CAVEAT — menu-bridge stage: the Weekly Meal Prep menu is a FLAT dish list. It
+ * has NO per-customer Client, Qty, Diet, Station, Chef, or Day — those are the
+ * job of the prep-breakdown stage (prep-breakdown:week-<sunday>), which isn't
+ * built yet. Until it is, cookLists/bagLists collapse under "Unassigned" and
+ * packaging counts are per menu line (qty 1). `buildLineItems` is the single
+ * function that swaps to read the structured breakdown doc once it exists; the
+ * three view-builders and the resolver do not change.
  *
  * Do NOT read the Food Inputs sheet here — that is the per-customer notes space,
  * never a menu/prep source. See memory meal-prep-pipeline-surfaces.
@@ -100,24 +100,11 @@ async function loadMenuBody(weekStart) {
   return doc?.body || '';
 }
 
-// Load the week's saved prep-breakdown lines, or null when none saved. This is
-// the per-customer source that supersedes the flat menu once staff fill it in.
-async function loadBreakdownLines(weekStart) {
-  const doc = await prisma.hubDocument.findUnique({
-    where: { source_sourceId: { source: NOTE_SOURCE, sourceId: `prep-breakdown:week-${weekStart}` } },
-  });
-  if (!doc?.body) return null;
-  try {
-    const parsed = typeof doc.body === 'object' ? doc.body : JSON.parse(doc.body);
-    return Array.isArray(parsed?.lines) ? parsed.lines : null;
-  } catch (_err) {
-    return null;
-  }
-}
-
-// Raw (pre-resolution) line items from the flat menu — one per dish line, with
-// no per-customer detail. The pre-breakdown fallback.
-function rawLinesFromMenu(body) {
+// Turn the menu notepad into dish-resolved line items. Each dish line under a
+// recognized meal subheading (#dinners# etc.) becomes one line, tagged with the
+// meal from its subheading. Client/Qty/Diet/Station/Chef/Day don't exist on the
+// menu yet (prep-breakdown stage) — they default to Unassigned / 1 / ''.
+async function buildLineItems({ body }) {
   const raw = [];
   for (const { section, items } of sectionsFromNotepad(body)) {
     const meal = mealForSection(section);
@@ -135,43 +122,6 @@ function rawLinesFromMenu(body) {
         notes: '',
       });
     }
-  }
-  return raw;
-}
-
-// Raw line items from a saved prep-breakdown — real per-customer Client/Qty/Diet/
-// Station/Chef/Day. Lines with no dish assigned yet are skipped (nothing to cook
-// or label). Empty tag values map to "Unassigned" so the groupers stay stable.
-function rawLinesFromBreakdown(lines) {
-  const orUnassigned = (v) => (v && String(v).trim() ? String(v).trim() : 'Unassigned');
-  return lines
-    .filter((line) => line && String(line.dish || '').trim())
-    .map((line) => ({
-      dishText: String(line.dish).trim(),
-      client: orUnassigned(line.client),
-      meal: String(line.menuCategory || 'dinner').trim() || 'dinner',
-      qty: Number.isFinite(Number(line.qty)) && Number(line.qty) > 0 ? Math.floor(Number(line.qty)) : 1,
-      diet: line.diet ? String(line.diet).trim() : '',
-      station: orUnassigned(line.station),
-      chef: orUnassigned(line.chef),
-      day: orUnassigned(line.day),
-      notes: line.notes ? String(line.notes).trim() : '',
-    }));
-}
-
-// Turn the week into dish-resolved line items. Prefers a saved prep-breakdown
-// (per-customer) and falls back to the flat menu. Pass `weekStart` (so it can
-// load the breakdown) and/or `body` (the menu, to avoid a re-fetch). Each item
-// carries a stable dishKey for grouping.
-async function buildLineItems({ weekStart, body } = {}) {
-  let raw = null;
-  if (weekStart) {
-    const breakdown = await loadBreakdownLines(weekStart);
-    if (breakdown && breakdown.length) raw = rawLinesFromBreakdown(breakdown);
-  }
-  if (!raw) {
-    const menuBody = body != null ? body : (weekStart ? await loadMenuBody(weekStart) : '');
-    raw = rawLinesFromMenu(menuBody);
   }
 
   // Resolve every dish name once, in a batch, then attach identity to each line.
@@ -275,7 +225,7 @@ async function handler(req, res) {
 
   try {
     const body = await loadMenuBody(weekStart);
-    const items = await buildLineItems({ weekStart, body });
+    const items = await buildLineItems({ body });
     const unresolved = items
       .filter((item) => !item.dishEntityId)
       .map((item) => ({ dishText: item.dishText, candidates: item.candidates, confidence: item.matchConfidence }));
@@ -300,5 +250,4 @@ module.exports = handler;
 module.exports._internals = {
   mealForSection, packagingLabel,
   buildPackaging, buildCookLists, buildBagLists, buildLineItems, weekStartForDate,
-  loadBreakdownLines, rawLinesFromMenu, rawLinesFromBreakdown,
 };
