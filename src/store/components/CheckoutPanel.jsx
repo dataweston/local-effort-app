@@ -9,12 +9,19 @@ import '../../styles/le-checkout.css';
 const fmt = (cents) => `$${((Number(cents) || 0) / 100).toFixed(2)}`;
 const PROFILE_STORAGE_KEY = 'le:storeCheckoutProfile';
 
+// Stores using the unified Wednesday pickup windows + flat local-delivery fee.
+const UNIFIED_FULFILLMENT_STORES = new Set(['sale']);
+const PICKUP_TIME_WINDOWS = ['2pm-4pm', '4pm-6pm'];
+const DEFAULT_PICKUP_WINDOW = PICKUP_TIME_WINDOWS[0];
+
 const blankAddress = { line1: '', line2: '', city: '', state: 'MN', postal: '' };
 const blankProfile = {
   customer: { name: '', email: '', phone: '' },
   pickup: true,
   address: blankAddress,
   deliveryInstructions: '',
+  pickupWindow: DEFAULT_PICKUP_WINDOW,
+  customerNotes: '',
 };
 
 const normalizePhone = (value) => String(value || '').replace(/\D/g, '').slice(0, 10);
@@ -42,6 +49,10 @@ const loadProfile = () => {
       pickup: parsed?.pickup !== false,
       address: { ...blankAddress, ...(parsed?.address || {}) },
       deliveryInstructions: parsed?.deliveryInstructions || '',
+      pickupWindow: PICKUP_TIME_WINDOWS.includes(parsed?.pickupWindow)
+        ? parsed.pickupWindow
+        : DEFAULT_PICKUP_WINDOW,
+      customerNotes: parsed?.customerNotes || '',
     };
   } catch (_) {
     return blankProfile;
@@ -57,20 +68,24 @@ const buildCartPayload = (items) => items.map((item) => ({
   title: item.title,
 }));
 
-function useServerPricing(items, localSubtotal) {
+function useServerPricing(items, localSubtotal, store, pickup) {
   const [pricing, setPricing] = useState({
     loading: false,
     error: '',
     subtotal: null,
+    fulfillmentFee: 0,
     lines: [],
     pricedAt: null,
   });
 
-  const payloadKey = useMemo(() => JSON.stringify(buildCartPayload(items)), [items]);
+  const payloadKey = useMemo(
+    () => JSON.stringify({ items: buildCartPayload(items), store, pickup }),
+    [items, store, pickup],
+  );
 
   useEffect(() => {
     if (!items.length) {
-      setPricing({ loading: false, error: '', subtotal: null, lines: [], pricedAt: null });
+      setPricing({ loading: false, error: '', subtotal: null, fulfillmentFee: 0, lines: [], pricedAt: null });
       return undefined;
     }
 
@@ -80,7 +95,7 @@ function useServerPricing(items, localSubtotal) {
     fetch('/api/store/price', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: buildCartPayload(items) }),
+      body: JSON.stringify({ items: buildCartPayload(items), store, pickup }),
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -90,6 +105,7 @@ function useServerPricing(items, localSubtotal) {
           loading: false,
           error: '',
           subtotal: Number.isInteger(data?.subtotal) ? data.subtotal : null,
+          fulfillmentFee: Number.isInteger(data?.fulfillmentFee) ? data.fulfillmentFee : 0,
           lines: Array.isArray(data?.lines) ? data.lines : [],
           pricedAt: data?.pricedAt || null,
         });
@@ -100,17 +116,21 @@ function useServerPricing(items, localSubtotal) {
           loading: false,
           error: error?.message || 'Unable to confirm order total.',
           subtotal: null,
+          fulfillmentFee: 0,
           lines: [],
           pricedAt: null,
         });
       });
 
     return () => controller.abort();
-  }, [payloadKey, items]);
+  }, [payloadKey, items, store, pickup]);
 
+  const resolvedSubtotal = pricing.subtotal ?? localSubtotal;
   return {
     ...pricing,
-    subtotal: pricing.subtotal ?? localSubtotal,
+    subtotal: resolvedSubtotal,
+    // total includes the local-delivery fee when one applies.
+    total: resolvedSubtotal + (pricing.fulfillmentFee || 0),
     confirmed: pricing.subtotal !== null && !pricing.error,
   };
 }
@@ -122,14 +142,17 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const [pickup, setPickup] = useState(loadedProfile.pickup);
   const [address, setAddress] = useState(loadedProfile.address);
   const [deliveryInstructions, setDeliveryInstructions] = useState(loadedProfile.deliveryInstructions);
+  const [pickupWindow, setPickupWindow] = useState(loadedProfile.pickupWindow);
+  const [customerNotes, setCustomerNotes] = useState(loadedProfile.customerNotes);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [orderResult, setOrderResult] = useState(null);
   const checkoutAttemptRef = useRef('');
   const attemptStorageKey = `le:checkoutAttempt:store:${store}`;
 
-  const pricing = useServerPricing(items, subtotal);
-  const amountCents = pricing.subtotal;
+  const usesUnifiedFulfillment = UNIFIED_FULFILLMENT_STORES.has(store);
+  const pricing = useServerPricing(items, subtotal, store, pickup);
+  const amountCents = pricing.total;
   const deliveryAvailable = useMemo(() => items.every((item) => !!item.allowsDelivery), [items]);
   const enabled = open && items.length > 0 && status !== 'success';
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer, reset } = useSquareCard(
@@ -187,11 +210,13 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
         pickup,
         address,
         deliveryInstructions,
+        pickupWindow,
+        customerNotes,
       }));
     } catch (_) {
       // Storage is a convenience only.
     }
-  }, [address, customer, deliveryInstructions, pickup]);
+  }, [address, customer, customerNotes, deliveryInstructions, pickup, pickupWindow]);
 
   useEffect(() => {
     if (!open) {
@@ -241,6 +266,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
         pickup,
         address: pickup ? null : address,
         deliveryInstructions,
+        pickupWindow: pickup && usesUnifiedFulfillment ? pickupWindow : undefined,
+        customerNotes: customerNotes.trim(),
         items: buildCartPayload(items),
         token,
         verificationToken,
@@ -261,6 +288,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       name: customer.name.trim(),
       email: customer.email.trim(),
       pickup,
+      pickupWindow: pickup && usesUnifiedFulfillment ? pickupWindow : null,
       amountCents: data?.amountCents || amountCents,
       paymentId: data?.paymentId || '',
     });
@@ -273,11 +301,14 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     clear,
     clearCheckoutAttempt,
     customer,
+    customerNotes,
     deliveryInstructions,
     items,
     pickup,
+    pickupWindow,
     resolveCheckoutAttemptId,
     store,
+    usesUnifiedFulfillment,
   ]);
 
   const handleSubmit = useCallback(async (event) => {
@@ -362,8 +393,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
             </p>
             <p className="le-checkout-success-copy">
               {orderResult.pickup
-                ? 'Pickup details will be sent separately.'
-                : 'Delivery details will be sent separately.'}
+                ? `Pickup is at Neon Kitchens, 2103 W Broadway, Minneapolis${orderResult.pickupWindow ? ` on Wednesday ${orderResult.pickupWindow}` : ''}.`
+                : 'Local delivery details will be sent separately.'}
             </p>
             <div className="le-checkout-success-meta">
               {fmt(orderResult.amountCents)} paid{orderResult.paymentId ? ` - ${orderResult.paymentId}` : ''}
@@ -409,6 +440,18 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                 </span>
               </div>
             ))}
+            {pricing.fulfillmentFee > 0 && (
+              <>
+                <div className="le-checkout-summary" style={{ marginTop: '0.5rem' }}>
+                  <span className="le-checkout-summary-label">Subtotal</span>
+                  <span className="le-checkout-summary-value">{fmt(pricing.subtotal)}</span>
+                </div>
+                <div className="le-checkout-summary">
+                  <span className="le-checkout-summary-label">Local delivery</span>
+                  <span className="le-checkout-summary-value">{fmt(pricing.fulfillmentFee)}</span>
+                </div>
+              </>
+            )}
             <div className="le-checkout-summary" style={{ marginTop: '0.5rem' }}>
               <span className="le-checkout-summary-label">
                 Total{pricing.confirmed ? '' : ' est.'}
@@ -487,12 +530,51 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                     onClick={() => setPickup(false)}
                     aria-pressed={!pickup}
                   >
-                    Local delivery
+                    Local delivery{usesUnifiedFulfillment ? ' (+$6)' : ''}
                   </button>
                 </div>
               ) : (
                 <p className="le-checkout-footnote" style={{ margin: 0 }}>Pickup only</p>
               )}
+
+              {pickup && usesUnifiedFulfillment && (
+                <div className="le-checkout-field">
+                  <span className="le-checkout-label" id="co-pickup-window-label">
+                    Pickup time (Wednesday)
+                  </span>
+                  <div
+                    className="le-checkout-pickup-selector"
+                    role="group"
+                    aria-labelledby="co-pickup-window-label"
+                  >
+                    {PICKUP_TIME_WINDOWS.map((window) => (
+                      <button
+                        key={window}
+                        type="button"
+                        className={`le-checkout-pickup-pill${pickupWindow === window ? ' is-selected' : ''}`}
+                        onClick={() => setPickupWindow(window)}
+                        aria-pressed={pickupWindow === window}
+                      >
+                        {window}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="le-checkout-field">
+                <label className="le-checkout-label" htmlFor="co-customer-notes">
+                  {pickup ? 'Pickup notes' : 'Notes for us'}
+                </label>
+                <textarea
+                  id="co-customer-notes"
+                  className="le-checkout-textarea"
+                  value={customerNotes}
+                  onChange={(event) => setCustomerNotes(event.target.value)}
+                  autoComplete="off"
+                  placeholder={pickup ? 'Anything we should know about your pickup? (optional)' : 'Anything we should know? (optional)'}
+                />
+              </div>
 
               {!pickup && (
                 <>

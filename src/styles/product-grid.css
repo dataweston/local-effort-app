@@ -314,6 +314,23 @@
   display: block;
 }
 
+.le-tile-expand {
+  position: absolute;
+  right: 0.6rem;
+  top: 0.6rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.82);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .le-tile-badge {
   position: absolute;
   left: 0.75rem;
@@ -794,7 +811,8 @@
   }
 
   .le-grid {
-    grid-template-columns: repeat(2, 1fr);
+    /* Single column on phones so each product photo is large and tappable. */
+    grid-template-columns: 1fr;
   }
 
   .le-detail-overlay {
@@ -820,15 +838,24 @@
 
   .le-detail-images {
     position: static;
-    max-height: 56vw;
+    /* Give the opened photo real height on mobile instead of a thin strip. */
+    max-height: none;
+  }
+
+  .le-detail-main-img-wrap {
+    /* Tall, near-square viewport so the whole product photo is visible. */
+    height: 88vw;
+    max-height: 70vh;
+  }
+
+  .le-detail-main-img {
+    /* Show the entire image rather than cropping it. */
+    object-fit: contain;
+    background: #f2f2f0;
   }
 
   .le-detail-info {
     padding: 1.5rem 1.25rem 2rem;
-  }
-
-  .le-detail-facts {
-    grid-template-columns: 1fr;
   }
 }
 

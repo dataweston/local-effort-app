@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T20:07:32.337Z",
+  "generatedAt": "2026-06-30T14:35:09.191Z",
   "page": {
     "title": "local effort sales",
     "subheading": "sale",
@@ -7,18 +7,18 @@
   },
   "products": [
     {
-      "id": "2ae482d9-9e96-4431-8f8e-d701d4ea575f",
-      "title": "Ice Cream - Fior di Latte - Pint",
-      "slug": "ice-cream-fior-di-latte-pint",
+      "id": "f857fde2-8250-4816-9982-b4f8ea245ba8",
+      "title": "Ice Cream - Mountain Mint - Pint",
+      "slug": "ice-cream-mountain-mint-pint",
       "shortDescription": "Highlighting the flavor of local dairy",
       "longDescription": null,
       "longDescriptionBlocks": [
         {
-          "_key": "8afd4cdd7d75",
+          "_key": "f0806f51cb4c",
           "_type": "block",
           "children": [
             {
-              "_key": "74d23ded93f4",
+              "_key": "0263a2f82303",
               "_type": "span",
               "marks": [],
               "text": "Autumnwood Dairy from Forest Lake provides the milk and cream for this perfectly simple custard-style ice cream. "
@@ -28,11 +28,11 @@
           "style": "normal"
         },
         {
-          "_key": "7a3967508bd7",
+          "_key": "4904a4d84eae",
           "_type": "block",
           "children": [
             {
-              "_key": "d11cc13c5ac3",
+              "_key": "29dc581287fc",
               "_type": "span",
               "marks": [],
               "text": ""
@@ -42,42 +42,14 @@
           "style": "normal"
         },
         {
-          "_key": "ee6ff924e4ec",
+          "_key": "2f5569bfb5c5",
           "_type": "block",
           "children": [
             {
-              "_key": "74d23ded93f4",
+              "_key": "72b9f42434fc",
               "_type": "span",
               "marks": [],
-              "text": "Fior di Latte is an italian tradition of Milk Flavored Ice Cream."
-            }
-          ],
-          "markDefs": [],
-          "style": "normal"
-        },
-        {
-          "_key": "fe6f7f456010",
-          "_type": "block",
-          "children": [
-            {
-              "_key": "15bb20f0da9c",
-              "_type": "span",
-              "marks": [],
-              "text": ""
-            }
-          ],
-          "markDefs": [],
-          "style": "normal"
-        },
-        {
-          "_key": "c03c9f07d515",
-          "_type": "block",
-          "children": [
-            {
-              "_key": "e145e1a9c5ea",
-              "_type": "span",
-              "marks": [],
-              "text": "milk, cream, panela, honey, egg yolks. "
+              "text": "milk, cream, panela, honey, egg yolks, mountain mint"
             }
           ],
           "markDefs": [],
@@ -86,9 +58,175 @@
       ],
       "images": [
         "https://cdn.sanity.io/images/d6l9d0ea/localeffort/d6a397a0a1fd10febf59d3c830a3a950c7d3b650-3024x4032.jpg",
-        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0337b7545adb19b50d3b8b2276ee5dd4e457fd7d-4284x5712.jpg"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0337b7545adb19b50d3b8b2276ee5dd4e457fd7d-4284x5712.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/851da1699844d85c99872c24cadf1e43620d40f0-3024x4032.jpg"
       ],
-      "price": 800,
+      "price": 900,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    },
+    {
+      "id": "43289a7a-4ab1-40ed-82b6-acd8727164eb",
+      "title": "Kimchi - Early Spring",
+      "slug": "kimchi-early-spring",
+      "shortDescription": "sweet and bitter",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "24323b5b2583",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "2b245cdcdba8",
+              "_type": "span",
+              "marks": [],
+              "text": "Quite delicious. 2 weeks age. Half pint mason."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "cac81b7bab99",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "3b35cd235615",
+              "_type": "span",
+              "marks": [],
+              "text": ""
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "d4c22e6c84d4",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "2b245cdcdba8",
+              "_type": "span",
+              "marks": [],
+              "text": "Mustard greens, turnip and radish greens, ramps, chili, apricot and honey, a little fish sauce. "
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "056ced910102",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "d3d8b7687344",
+              "_type": "span",
+              "marks": [],
+              "text": "Definitely add some honey to restart it. Definitely use it to start your next batch."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/cba68c4d03aae3fe30a867261c5b372bb7233e8b-4284x5712.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/e9ff2f742e357d453759aca55dcbc3585165871f-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/1757ff136b74e6c3a5aa429bbf2c708ff8f9d721-4284x5712.jpg"
+      ],
+      "price": 1400,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    },
+    {
+      "id": "6c5a8dce-43bd-4dac-aff4-f981b20fec3d",
+      "title": "Ramp Oil",
+      "slug": null,
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "7261f10b261c",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "9659b2a06aad",
+              "_type": "span",
+              "marks": [],
+              "text": "dirty chef secret. extra nice olive oil and blanched wild ramps blended for a pantry crusher that will carry you until autumn.\n\nhalf pint mason. green."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [],
+      "price": 2400,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ]
+    },
+    {
+      "id": "0091442a-902e-4879-970c-9aba4bb6937e",
+      "title": "Vanilla Tart with Currants",
+      "slug": "I like it because it's not sweet",
+      "shortDescription": "actually not sweet, a dense buttery treat.",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "dd6ea54acc6e",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "66f760ebc9a2",
+              "_type": "span",
+              "marks": [],
+              "text": "maria made vanilla custard from nissa’s hawaiian vanilla, baked them in ‘rough puff’ and provided whipped cream for the tart red currants. i uh, we uh, yeah, these are in 2 packs, 2 available. "
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/a3338ec185e142696a2588fdead04bf9f9c3bbe9-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/cc2e9deda738b9078950dd2f1b8a0e65c52a7d83-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/ea065dabefd324d0767adb123c8dfc879242cf1b-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0be5dc9d1353b6b01808b854c4ecd0561325dcf2-4284x5712.jpg"
+      ],
+      "price": 2600,
       "salePrice": null,
       "priceDisplay": null,
       "inventoryManaged": false,

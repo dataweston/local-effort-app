@@ -6,6 +6,12 @@ const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
+const {
+  pickupByStore,
+  resolveFulfillmentFee,
+  normalizePickupWindow,
+  storeUsesUnifiedFulfillment,
+} = require('./_fulfillment');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -114,33 +120,6 @@ const normalizeAddress = (address) => {
   };
 };
 
-const pickupByStore = {
-  'tiny-diner': {
-    name: 'Tiny Diner',
-    date: 'October 31, 2025',
-    time: '4-7pm',
-    address: '1024 E 38th St, Minneapolis',
-  },
-  'happy-monday': {
-    name: 'Happy Monday Coffee',
-    date: 'October 23, 2025',
-    time: '4-7pm',
-    address: '2420 Cleveland Ave N, Roseville',
-  },
-  sale: {
-    name: 'Local Effort',
-    date: 'TBD',
-    time: 'TBD',
-    address: 'Details will be sent separately',
-  },
-  'chez-garage': {
-    name: 'Chez Garage',
-    date: 'TBD',
-    time: 'TBD',
-    address: 'Details will be sent separately',
-  },
-};
-
 module.exports = async (req, res) => {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -155,6 +134,8 @@ module.exports = async (req, res) => {
       pickup = true,
       address,
       deliveryInstructions = '',
+      pickupWindow,
+      customerNotes = '',
       verificationToken,
       checkoutAttemptId,
     } = req.body || {};
@@ -201,9 +182,20 @@ module.exports = async (req, res) => {
       return res.status(422).json({ error: 'Invalid order total' });
     }
 
+    const subtotal = amount;
+    // Local delivery adds a flat fee, recomputed server-side from the same
+    // helper the pricing endpoint uses so the charge matches what was shown.
+    const deliveryFee = resolveFulfillmentFee(store, pickup);
+    amount = subtotal + deliveryFee;
+
     const pickupDetails = pickupByStore[store] || pickupByStore.sale;
     const fulfillment = pickup ? 'pickup' : 'local_delivery';
     const normalizedAddress = pickup ? null : normalizeAddress(address);
+    // Resolve the chosen Wednesday pickup window for unified-fulfillment stores.
+    const resolvedPickupWindow =
+      pickup && storeUsesUnifiedFulfillment(store) ? normalizePickupWindow(pickupWindow) : null;
+    const trimmedCustomerNotes =
+      typeof customerNotes === 'string' ? customerNotes.trim().slice(0, 1000) : '';
     const idempotencyKey =
       sanitizeIdempotencyKey(checkoutAttemptId) ||
       `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -237,11 +229,15 @@ module.exports = async (req, res) => {
             phone: customer?.phone || '',
           },
           items: pricedLines,
+          subtotal,
+          deliveryFee,
           amount,
           amountUsd: (amount / 100).toFixed(2),
           fulfillment,
           deliveryAddress: normalizedAddress,
           deliveryInstructions: typeof deliveryInstructions === 'string' ? deliveryInstructions.slice(0, 1000) : '',
+          customerNotes: trimmedCustomerNotes,
+          pickupWindow: resolvedPickupWindow,
           pickup: pickupDetails,
           createdAt: new Date().toISOString(),
           createdAtMs: Date.now(),
@@ -261,7 +257,12 @@ module.exports = async (req, res) => {
         const options = line.optionSummary ? ` (${line.optionSummary})` : '';
         return `- ${line.title}${options} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
       }).join('\n');
+      const subtotalUsd = (subtotal / 100).toFixed(2);
       const totalUsd = (amount / 100).toFixed(2);
+      // Show a delivery-fee line only when one was charged.
+      const totalsBlock = deliveryFee > 0
+        ? `Subtotal: $${subtotalUsd}\nLocal delivery: $${(deliveryFee / 100).toFixed(2)}\nTotal: $${totalUsd}`
+        : `Total: $${totalUsd}`;
       const deliveryAddress = normalizedAddress
         ? [
             normalizedAddress.line1,
@@ -269,11 +270,16 @@ module.exports = async (req, res) => {
             [normalizedAddress.city, normalizedAddress.state, normalizedAddress.postal].filter(Boolean).join(', '),
           ].filter(Boolean).join('\n')
         : '';
+      // Pickup "When" prefers the customer's chosen Wednesday window.
+      const pickupWhen = resolvedPickupWindow
+        ? `${pickupDetails.date} ${resolvedPickupWindow}`
+        : `${pickupDetails.date} at ${pickupDetails.time}`;
+      const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
       const fulfillmentInfo = pickup
-        ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupDetails.date} at ${pickupDetails.time}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}\n`
-        : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nLOCAL DELIVERY:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nNotes: ${deliveryInstructions}` : ''}\n`;
-      const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${summary}\n\nTotal: $${totalUsd}${fulfillmentInfo}\nWe'll be in touch.\n\n- Local Effort`;
-      const teamBody = `NEW ORDER - ${pickupDetails.name.toUpperCase()}\nStore: ${store}\n\nPayment: ${paymentId || ''}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${summary}\n\nTotal: $${totalUsd}${fulfillmentInfo}`;
+        ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`
+        : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nLOCAL DELIVERY:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}\n`;
+      const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${summary}\n\n${totalsBlock}${fulfillmentInfo}\nWe'll be in touch.\n\n- Local Effort`;
+      const teamBody = `NEW ORDER - ${pickupDetails.name.toUpperCase()}\nStore: ${store}\n\nPayment: ${paymentId || ''}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${summary}\n\n${totalsBlock}${fulfillmentInfo}`;
       const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
 
       try {
@@ -309,7 +315,14 @@ module.exports = async (req, res) => {
       }
     }
 
-    return res.status(200).json({ ok: true, paymentId, amountCents: amount, lines: pricedLines });
+    return res.status(200).json({
+      ok: true,
+      paymentId,
+      amountCents: amount,
+      subtotalCents: subtotal,
+      deliveryFeeCents: deliveryFee,
+      lines: pricedLines,
+    });
   } catch (error) {
     const msg = (error?.errors && JSON.stringify(error.errors)) || error?.message || 'Checkout failed';
     return res.status(500).json({ error: msg });

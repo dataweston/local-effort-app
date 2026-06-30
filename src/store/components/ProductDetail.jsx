@@ -85,12 +85,6 @@ export default function ProductDetail({ product, sku, onClose }) {
     if (!text) return '';
     return text.length > 220 ? `${text.slice(0, 217).trim()}...` : text;
   }, [product]);
-  const availabilityLabel = isOutOfStock
-    ? 'Out of stock'
-    : product.inventoryManaged && typeof product.inventory === 'number'
-      ? `${Math.max(0, product.inventory - inCartQty)} available`
-      : 'Available now';
-
   const handleAdd = useCallback(() => {
     if (isOutOfStock) return;
     add({
@@ -212,28 +206,9 @@ export default function ProductDetail({ product, sku, onClose }) {
 
             {leadText && <p className="le-detail-lead">{leadText}</p>}
 
-            <div className="le-detail-facts" aria-label="Product details">
-              <div className="le-detail-fact">
-                <span className="le-detail-fact-label">Availability</span>
-                <strong className="le-detail-fact-value">{availabilityLabel}</strong>
-              </div>
-              <div className="le-detail-fact">
-                <span className="le-detail-fact-label">Fulfillment</span>
-                <strong className="le-detail-fact-value">Pickup or local delivery</strong>
-              </div>
-              {(hasVariants || hasAddOns) && (
-                <div className="le-detail-fact">
-                  <span className="le-detail-fact-label">Options</span>
-                  <strong className="le-detail-fact-value">{hasAddOns ? product.addOns.length : product.variants.length}</strong>
-                </div>
-              )}
-              {product.offerDairyFree && (
-                <div className="le-detail-fact">
-                  <span className="le-detail-fact-label">Dairy-free</span>
-                  <strong className="le-detail-fact-value">Available</strong>
-                </div>
-              )}
-            </div>
+            {/* "Availability" and "Fulfillment" fact boxes removed — fulfillment
+                is chosen at checkout and stock is conveyed by the add-to-bag
+                state, so these were redundant design artifacts. */}
 
             {/* Variant selector */}
             {hasVariants && (

@@ -11,7 +11,6 @@
 
 import React, { useMemo, useRef } from 'react';
 import { useCart } from '../cart/CartContext';
-import { ptToHtml } from '../data/ptToHtml';
 
 const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
 
@@ -22,28 +21,20 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
   const primary = Array.isArray(product.images) ? product.images[0] : null;
   const displayPrice = product.salePrice ?? product.price;
   const displayPriceLabel = product.priceDisplay || fmt(displayPrice);
+  // Previews use the short description only; the long description is reserved
+  // for the detail overlay so it never appears twice.
   const summary = useMemo(() => {
-    const text = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const text = String(product?.shortDescription || '').replace(/\s+/g, ' ').trim();
     if (!text) return '';
     return text.length > 150 ? `${text.slice(0, 147).trim()}...` : text;
   }, [product]);
+  // Availability label: show the real count when inventory is tracked,
+  // otherwise stay quiet rather than inventing copy.
   const detailBits = useMemo(() => {
-    const bits = [];
     if (product.inventoryManaged && typeof product.inventory === 'number') {
-      bits.push(product.inventory > 0 ? `${product.inventory} left` : 'Sold out');
-    } else {
-      bits.push('Limited drop');
+      return product.inventory > 0 ? `${product.inventory} available` : 'Sold out';
     }
-    if (Array.isArray(product.addOns) && product.addOns.length > 0) {
-      bits.push(`${product.addOns.length} add-on${product.addOns.length === 1 ? '' : 's'}`);
-    } else if (Array.isArray(product.variants) && product.variants.length > 0) {
-      bits.push(`${product.variants.length} option${product.variants.length === 1 ? '' : 's'}`);
-    } else {
-      bits.push('Open for details');
-    }
-    return bits.join(' | ');
+    return '';
   }, [product]);
 
   // Check if anything from this product is in the cart
@@ -70,6 +61,7 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
         )}
         {inCart && <span className="le-tile-in-cart" aria-label="In bag" />}
         {product.salePrice && <span className="le-tile-badge">Sale</span>}
+        {primary && <span className="le-tile-expand" aria-hidden="true">⤢</span>}
       </span>
       <span className="le-tile-meta">
         {showSku ? <span className="le-tile-sku">{sku}</span> : <span />}
@@ -93,6 +85,7 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
             <span className="le-tile-detail-link">View details</span>
           </span>
         ) : null}
+        {/* detailBits intentionally empty when inventory is untracked */}
       </span>
     </button>
   );

@@ -16,9 +16,11 @@ import ProductTile from './ProductTile';
 import ProductDetail from './ProductDetail';
 import { SITE_URL } from '../../config/siteMetadata';
 import { ptToHtml } from '../data/ptToHtml';
+import { productCode } from '../data/productCode';
 import '../../styles/product-grid.css';
 
-const padded = (n) => String(n).padStart(2, '0');
+// Schema.org `description` metadata still uses the fullest text available;
+// the visible tile preview uses the short description (see ProductTile).
 const getProductSummary = (product) => {
   const summary = (ptToHtml(product?.longDescriptionBlocks) || product?.longDescription || product?.shortDescription || '')
     .replace(/\s+/g, ' ')
@@ -69,9 +71,7 @@ export default function ProductGrid({
     if (onClose) onClose();
   };
 
-  const selectedSku = selected
-    ? `${skuPrefix}-${padded(products.indexOf(selected) + 1)}`
-    : null;
+  const selectedSku = selected ? productCode(selected, skuPrefix) : null;
 
   return (
     <>
@@ -81,8 +81,8 @@ export default function ProductGrid({
         <div className="le-grid-empty">No products available.</div>
       ) : (
         <ul className="le-grid" aria-label="Products">
-          {products.map((product, i) => {
-            const sku = `${skuPrefix}-${padded(i + 1)}`;
+          {products.map((product) => {
+            const sku = productCode(product, skuPrefix);
             const availability = product.inventoryManaged && (product.inventory ?? 0) <= 0
               ? 'https://schema.org/OutOfStock'
               : 'https://schema.org/InStock';

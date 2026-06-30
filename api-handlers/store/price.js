@@ -14,6 +14,7 @@
 
 const sanity = require('@sanity/client');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
+const { LOCAL_DELIVERY_FEE_CENTS, resolveFulfillmentFee } = require('./_fulfillment');
 
 const projectId =
   process.env.VITE_APP_SANITY_PROJECT_ID ||
@@ -92,7 +93,7 @@ const resolveUnitPrice = (doc, variationId, addOnIndices, dairyFree) => {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { items } = req.body || {};
+  const { items, store = 'sale', pickup = true } = req.body || {};
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'items required' });
   }
@@ -143,12 +144,16 @@ module.exports = async (req, res) => {
       });
     }
 
+    // Local delivery adds a flat fee; pickup is always free. The same helper
+    // is used by /api/store/checkout so the displayed total matches the charge.
+    const fulfillmentFee = resolveFulfillmentFee(store, pickup !== false);
+
     return res.status(200).json({
       lines,
       subtotal,
-      // fulfillmentFee is 0 here — resolved at checkout time once address is known
-      fulfillmentFee: 0,
-      total: subtotal,
+      fulfillmentFee,
+      total: subtotal + fulfillmentFee,
+      localDeliveryFee: LOCAL_DELIVERY_FEE_CENTS,
       currency: 'USD',
       pricedAt: new Date().toISOString(),
     });
