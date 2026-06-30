@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T15:19:45.987Z",
+  "generatedAt": "2026-06-30T15:52:21.300Z",
   "page": {
     "title": "local effort sales",
     "subheading": "sale",
@@ -61,7 +61,7 @@
         "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0337b7545adb19b50d3b8b2276ee5dd4e457fd7d-4284x5712.jpg",
         "https://cdn.sanity.io/images/d6l9d0ea/localeffort/851da1699844d85c99872c24cadf1e43620d40f0-3024x4032.jpg"
       ],
-      "price": 900,
+      "price": 1100,
       "salePrice": null,
       "priceDisplay": null,
       "inventoryManaged": true,
@@ -74,7 +74,8 @@
       "dairyFreeCost": 0,
       "stores": [
         "sale"
-      ]
+      ],
+      "allowsDelivery": true
     },
     {
       "id": "43289a7a-4ab1-40ed-82b6-acd8727164eb",
@@ -158,13 +159,14 @@
       "dairyFreeCost": 0,
       "stores": [
         "sale"
-      ]
+      ],
+      "allowsDelivery": true
     },
     {
       "id": "6c5a8dce-43bd-4dac-aff4-f981b20fec3d",
       "title": "Ramp Oil",
-      "slug": null,
-      "shortDescription": "",
+      "slug": "ramp-oil",
+      "shortDescription": "dirty chef secret. ",
       "longDescription": null,
       "longDescriptionBlocks": [
         {
@@ -175,14 +177,16 @@
               "_key": "9659b2a06aad",
               "_type": "span",
               "marks": [],
-              "text": "dirty chef secret. extra nice olive oil and blanched wild ramps blended for a pantry crusher that will carry you until autumn.\n\nhalf pint mason. green."
+              "text": "extra nice olive oil and blanched wild ramps blended for a pantry crusher that will carry you until autumn.\n\nhalf pint mason. green."
             }
           ],
           "markDefs": [],
           "style": "normal"
         }
       ],
-      "images": [],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/15912827f326b51e2697ffb67b4ebdf4f8fa3190-3024x4032.jpg"
+      ],
       "price": 2400,
       "salePrice": null,
       "priceDisplay": null,
@@ -196,7 +200,8 @@
       "dairyFreeCost": 0,
       "stores": [
         "sale"
-      ]
+      ],
+      "allowsDelivery": true
     },
     {
       "id": "0091442a-902e-4879-970c-9aba4bb6937e",
@@ -239,7 +244,8 @@
       "dairyFreeCost": 0,
       "stores": [
         "sale"
-      ]
+      ],
+      "allowsDelivery": true
     }
   ]
 }

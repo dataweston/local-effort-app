@@ -18,15 +18,24 @@
  *       4. card FINGERPRINT → a stable synthetic "Square card buyer" cluster so
  *          anonymous repeat purchases group to one node (promotable to a real
  *          Customer once any order in the cluster reveals a name/email).
- *     Email/phone match EXISTING directory entities only — a bare name never
+ *       5. CSV-import customerName → match an existing Customer by name/alias.
+ *          The `extraction.square_csv` stream (same Square txns, joined by
+ *          txnId==orderId) carries the buyer name the order.placed line often
+ *          lacks. Match-only, never mints.
+ *     Email/phone/name match EXISTING directory entities only — a bare name never
  *     mints a Customer (self-identity guard / founder decision #4).
  *   - Orders with no usable signal are attributed to a single
  *     "Square Walk-in (unattributed)" placeholder Customer so line-item demand
  *     stays complete and honestly labeled.
  *   - line item → existing Product or Dish by exact/canonical name match.
  *     Square catalog object ids are NOT stored on brain entities today, so
- *     matching is name-based. UNMATCHED LINE ITEMS ARE LOGGED, NEVER MINTED —
- *     the report is the catalog-normalization worklist.
+ *     matching is name-based. UNMATCHED named line items ARE LOGGED, NEVER MINTED —
+ *     the report is the catalog-normalization worklist. BUT unnamed/uncatalogued
+ *     line items ("Custom Amount", null) that the CSV import confirms are a real
+ *     sale (carries a dollar `amount`) are attributed to the synthetic
+ *     "Uncatalogued Square sale" Dish using the CSV amount — recovering revenue
+ *     that was previously dropped (the systemic undercount fixed 2026-06-30).
+ *     No double-count: we never project the csv events separately, only join them.
  *
  * Idempotent: an ORDERED assertion is keyed on (srcId, dstId, sourceId=ledgerEventId,
  * metadata.lineItemName). Re-running writes nothing new.
@@ -65,6 +74,39 @@ async function findByAlias(prisma, value, cache) {
   const c = hit?.entity || null;
   cache.byAlias.set(key, c);
   return c;
+}
+
+// Backfill recovered contact info onto a resolved Customer. The buyer email /
+// payment-level customerId often arrive in identitySignals AFTER the entity was
+// created (e.g. a card-fingerprint cluster that later receives an email-receipt
+// order). Without this, that email stays in the ledger and never reaches the
+// entity, so the customer looks "anonymous" to any email-based segmentation.
+// Writes the email as an alias and sets the squareCustomerId FK when missing.
+// Idempotent: skips aliases that already exist; never overwrites a set FK.
+async function enrichResolvedCustomer(prisma, customer, sig, cache) {
+  if (!customer?.id || !sig) return { aliasesAdded: 0, fkSet: false };
+  let aliasesAdded = 0, fkSet = false;
+  const emails = [...new Set([...(sig.buyerEmails || []), ...(sig.recipientEmails || [])].map(e => String(e || '').trim().toLowerCase()).filter(Boolean))];
+  for (const email of emails) {
+    const exists = await prisma.brainEntityAlias.findFirst({ where: { entityId: customer.id, alias: { equals: email, mode: 'insensitive' } }, select: { id: true } });
+    if (exists) continue;
+    try {
+      await prisma.brainEntityAlias.create({ data: { entityId: customer.id, alias: email, source: 'square_buyer_email' } });
+      aliasesAdded++;
+      cache.byAlias.set(email, { id: customer.id, name: customer.name });
+    } catch { /* unique race — alias already present */ }
+  }
+  // Adopt a real payment-level squareCustomerId when the entity lacks one.
+  const sqId = (sig.paymentCustomerIds || [])[0] || sig.orderCustomerId || null;
+  if (sqId) {
+    const ent = await prisma.brainEntity.findUnique({ where: { id: customer.id }, select: { squareCustomerId: true } });
+    if (ent && !ent.squareCustomerId) {
+      await prisma.brainEntity.update({ where: { id: customer.id }, data: { squareCustomerId: sqId } }).catch(() => {});
+      cache.bySquareId.set(sqId, { id: customer.id, name: customer.name });
+      fkSet = true;
+    }
+  }
+  return { aliasesAdded, fkSet };
 }
 
 // Card-fingerprint cluster: a stable synthetic Customer keyed on the card
@@ -162,8 +204,64 @@ async function resolveCustomer(prisma, payload, cache) {
     if (c) return { customer: c, matchedBy: 'cardFingerprint' };
   }
 
-  // 5. labeled placeholder.
+  // 5. CSV-import customer name (extraction.square_csv carries customerName the
+  //    order.placed event lacks). Match to an existing Customer only — never mint.
+  if (payload._csvCustomerName) {
+    const c = await resolveCustomerByName(prisma, payload._csvCustomerName, cache);
+    if (c) return { customer: c, matchedBy: 'csvName' };
+  }
+
+  // 6. labeled placeholder.
   return { customer: await getPlaceholder(prisma, cache), matchedBy: 'placeholder' };
+}
+
+// Match a free-text customer name to an EXISTING Customer (alias then canonicalName).
+// Never mints — same founder rule as everywhere else. Bare emails are routed
+// through the alias path too. Used to recover the buyer from the CSV-import
+// stream (`extraction.square_csv` carries `customerName`, which the matching
+// `order.placed` event usually lacks).
+async function resolveCustomerByName(prisma, name, cache) {
+  const raw = String(name || '').trim();
+  if (!raw || raw.length < 2) return null;
+  const key = `name:${raw.toLowerCase()}`;
+  if (cache.byAlias.has(key)) return cache.byAlias.get(key);
+  // alias match first
+  let c = await findByAlias(prisma, raw, cache);
+  if (!c) {
+    const norm = canonicalName(raw);
+    if (norm) {
+      c = await prisma.brainEntity.findFirst({
+        where: { entityType: 'Customer', tombstonedAt: null, OR: [{ canonicalName: norm }, { name: { equals: raw, mode: 'insensitive' } }] },
+        select: { id: true, name: true },
+      });
+    }
+  }
+  cache.byAlias.set(key, c || null);
+  return c || null;
+}
+
+// Generic target for real sales whose Square line item has no catalog name
+// ("Custom Amount" / null line items). We attribute the dollar amount to the
+// customer against this single labeled Dish rather than dropping the sale or
+// minting a per-string Product. find-or-create (stable synthetic).
+const UNCATALOGUED_SALE_NAME = 'Uncatalogued Square sale';
+async function getUncataloguedTarget(prisma, cache) {
+  if (cache.uncatalogued) return cache.uncatalogued;
+  let d = await prisma.brainEntity.findFirst({
+    where: { entityType: 'Dish', tombstonedAt: null, canonicalName: canonicalName(UNCATALOGUED_SALE_NAME) },
+    select: { id: true, name: true, entityType: true },
+  });
+  if (!d) {
+    d = await prisma.brainEntity.create({
+      data: {
+        entityType: 'Dish', name: UNCATALOGUED_SALE_NAME, canonicalName: canonicalName(UNCATALOGUED_SALE_NAME),
+        status: 'active', properties: { synthetic: true, role: 'uncatalogued-sale-target' },
+      },
+      select: { id: true, name: true, entityType: true },
+    });
+  }
+  cache.uncatalogued = d;
+  return d;
 }
 
 async function resolveSaleable(prisma, name, cache) {
@@ -197,7 +295,37 @@ async function runOrderGraphProjection({ logger, daysBack = null, dryRun = false
     orderBy: { occurredAt: 'desc' },
   });
 
-  const cache = { bySquareId: new Map(), byAlias: new Map(), byFingerprint: new Map(), bySaleable: new Map(), placeholder: null };
+  // CSV-import enrichment index. `extraction.square_csv` events are the SAME Square
+  // transactions (txnId == order.placed orderId) but carry `customerName` + a real
+  // `amount`, which the order.placed line items often lack (name=null "Custom
+  // Amount" sales). We DON'T project the csv events separately (that would double-
+  // count); instead we join by txnId to (a) recover the buyer and (b) still emit an
+  // ORDERED edge for a real sale whose line item is unnamed/uncatalogued, attributed
+  // to the "Uncatalogued Square sale" Dish. See order-projector-csv-catalog-gap-brief.
+  // (extraction.square_catalog is the menu/price catalog, NOT sales — left untouched.)
+  const csvEvents = await prisma.ledgerEvent.findMany({
+    where: { eventType: 'extraction.square_csv', tombstonedAt: null },
+    select: { payload: true },
+  });
+  const csvByTxn = new Map();
+  for (const c of csvEvents) {
+    const txn = c.payload?.txnId;
+    if (txn && !csvByTxn.has(txn)) csvByTxn.set(txn, c.payload);
+  }
+
+  // Customers whose revenue was set by a MANUAL substantiation (e.g.
+  // hm_substantiation, built from the customer's COMPLETE Square payment list).
+  // Those edges are keyed by squarePaymentId, not the order.placed event, so the
+  // normal idempotency check can't see them — re-projecting that customer's
+  // order.placed events would double-count hand-corrected revenue. Skip them.
+  const substantiatedCustomerIds = new Set();
+  const subEdges = await prisma.brainAssertion.findMany({
+    where: { relType: 'ORDERED', retractedAt: null, sourceType: { not: 'order_projection' } },
+    select: { srcId: true },
+  });
+  for (const e of subEdges) substantiatedCustomerIds.add(e.srcId);
+
+  const cache = { bySquareId: new Map(), byAlias: new Map(), byFingerprint: new Map(), bySaleable: new Map(), placeholder: null, uncatalogued: null };
   const stats = {
     ordersSeen: orders.length,
     lineItemsSeen: 0,
@@ -205,46 +333,80 @@ async function runOrderGraphProjection({ logger, daysBack = null, dryRun = false
     edgesExisting: 0,
     customersResolved: 0,
     customersUnattributed: 0,
-    // attribution breakdown by recovery method (Track 2)
+    // attribution breakdown by recovery method (Track 2 + csv recovery)
     bySquareCustomerId: 0,
     byEmail: 0,
     byPhone: 0,
     byCardFingerprint: 0,
+    byCsvName: 0,
     lineItemsMatched: 0,
     lineItemsUnmatched: 0,
     lineItemsUnnamed: 0,
+    csvRecoveredSales: 0, // unnamed/uncatalogued line items rescued via csv amount
   };
   const MATCH_STAT = {
-    squareCustomerId: 'bySquareCustomerId', email: 'byEmail', phone: 'byPhone', cardFingerprint: 'byCardFingerprint',
+    squareCustomerId: 'bySquareCustomerId', email: 'byEmail', phone: 'byPhone', cardFingerprint: 'byCardFingerprint', csvName: 'byCsvName',
   };
   const unmatched = new Map(); // canonicalName → { name, count, qty, totalCents, sampleOrderIds }
 
   for (const ev of orders) {
     const pl = ev.payload || {};
+    // Join the CSV-import record (by Square order id) so resolveCustomer can use
+    // its customerName and the line-item loop can rescue unnamed sales by amount.
+    const csv = pl.orderId ? csvByTxn.get(pl.orderId) : null;
+    if (csv?.customerName) pl._csvCustomerName = csv.customerName;
     const { customer, matchedBy } = await resolveCustomer(prisma, pl, cache);
     if (matchedBy !== 'placeholder') {
       stats.customersResolved++;
       if (MATCH_STAT[matchedBy]) stats[MATCH_STAT[matchedBy]]++;
+      // Backfill recovered email/FK onto the resolved entity (esp. fingerprint
+      // clusters that carry a buyer email but were never made emailable).
+      const enriched = await enrichResolvedCustomer(prisma, customer, pl.identitySignals || {}, cache);
+      stats.emailsBackfilled = (stats.emailsBackfilled || 0) + enriched.aliasesAdded;
+      stats.squareIdsBackfilled = (stats.squareIdsBackfilled || 0) + (enriched.fkSet ? 1 : 0);
     } else {
       stats.customersUnattributed++;
+    }
+
+    // Skip customers whose revenue is hand-substantiated (avoid double-count).
+    if (customer && substantiatedCustomerIds.has(customer.id)) {
+      stats.ordersSkippedSubstantiated = (stats.ordersSkippedSubstantiated || 0) + 1;
+      continue;
     }
 
     for (const li of pl.lineItems || []) {
       stats.lineItemsSeen++;
       const liName = (li.name || '').trim();
-      if (!liName) { stats.lineItemsUnnamed++; continue; }
 
-      const saleable = await resolveSaleable(prisma, liName, cache);
+      // Resolve the saleable target. Named line items match a Product/Dish exactly.
+      // Unnamed/uncatalogued lines ("Custom Amount", null) that the CSV import
+      // confirms are a real sale get attributed to the "Uncatalogued Square sale"
+      // Dish using the CSV amount — recovering revenue the projector used to drop.
+      let saleable = liName ? await resolveSaleable(prisma, liName, cache) : null;
+      let effectiveCents = Number(li.totalCents || 0);
+      let recoveredViaCsv = false;
       if (!saleable) {
-        stats.lineItemsUnmatched++;
-        const k = canonicalName(liName);
-        const rec = unmatched.get(k) || { name: liName, count: 0, qty: 0, totalCents: 0, sampleOrderIds: [] };
-        rec.count++; rec.qty += Number(li.quantity || 1); rec.totalCents += Number(li.totalCents || 0);
-        if (rec.sampleOrderIds.length < 3) rec.sampleOrderIds.push(pl.orderId || ev.id);
-        unmatched.set(k, rec);
-        continue;
+        const csvCents = csv ? Math.round(Number(csv.amount || 0) * 100) : 0;
+        if (csvCents > 0) {
+          // Real sale, just uncatalogued — rescue it rather than logging/dropping.
+          saleable = await getUncataloguedTarget(prisma, cache);
+          if (!effectiveCents) effectiveCents = csvCents;
+          recoveredViaCsv = true;
+          stats.csvRecoveredSales++;
+        } else if (!liName) {
+          stats.lineItemsUnnamed++; continue;
+        } else {
+          stats.lineItemsUnmatched++;
+          const k = canonicalName(liName);
+          const rec = unmatched.get(k) || { name: liName, count: 0, qty: 0, totalCents: 0, sampleOrderIds: [] };
+          rec.count++; rec.qty += Number(li.quantity || 1); rec.totalCents += Number(li.totalCents || 0);
+          if (rec.sampleOrderIds.length < 3) rec.sampleOrderIds.push(pl.orderId || ev.id);
+          unmatched.set(k, rec);
+          continue;
+        }
       }
       stats.lineItemsMatched++;
+      const edgeLineName = liName || (recoveredViaCsv ? UNCATALOGUED_SALE_NAME : '');
 
       if (dryRun) { stats.edgesWritten++; continue; }
 
@@ -253,7 +415,7 @@ async function runOrderGraphProjection({ logger, daysBack = null, dryRun = false
         where: {
           srcId: customer.id, dstId: saleable.id, relType: 'ORDERED',
           sourceId: ev.id, retractedAt: null,
-          metadata: { path: ['lineItemName'], equals: liName },
+          metadata: { path: ['lineItemName'], equals: edgeLineName },
         },
         select: { id: true },
       });
@@ -270,12 +432,13 @@ async function runOrderGraphProjection({ logger, daysBack = null, dryRun = false
           dstId: saleable.id,
           relType: 'ORDERED',
           metadata: {
-            lineItemName: liName,
+            lineItemName: edgeLineName,
             quantity: Number(li.quantity || 1),
-            totalCents: Number(li.totalCents || 0),
+            totalCents: effectiveCents,
             orderId: pl.orderId || null,
             attributed: matchedBy !== 'placeholder',
             attributedBy: matchedBy,
+            ...(recoveredViaCsv ? { recoveredViaCsv: true } : {}),
             ...(validation.warnings.length ? { relationshipWarnings: validation.warnings } : {}),
           },
           validFrom: ev.occurredAt,

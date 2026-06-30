@@ -86,7 +86,8 @@ async function fetchSalePageData() {
       addOns[]{name, additionalCost, squareModifierId, defaultSelected},
       offerDairyFree,
       dairyFreeCost,
-      stores
+      stores,
+      allowsDelivery
     }
   }`;
 
@@ -124,6 +125,7 @@ async function fetchSalePageData() {
       offerDairyFree: Boolean(product.offerDairyFree),
       dairyFreeCost: typeof product.dairyFreeCost === 'number' ? product.dairyFreeCost : 0,
       stores: Array.isArray(product.stores) ? product.stores : [],
+      allowsDelivery: Boolean(product.allowsDelivery),
     })),
   };
 }
