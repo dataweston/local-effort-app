@@ -78,8 +78,8 @@ async function fetchSalePageData() {
       price,
       salePrice,
       priceDisplay,
-      inventoryManaged,
-      inventory,
+      inventoryMode,
+      manualQty,
       squareItemId,
       squareVariationId,
       variants[]{name, squareVariationId, price},
@@ -112,8 +112,11 @@ async function fetchSalePageData() {
       price: typeof product.price === 'number' ? product.price : 0,
       salePrice: typeof product.salePrice === 'number' ? product.salePrice : null,
       priceDisplay: product.priceDisplay || null,
-      inventoryManaged: Boolean(product.inventoryManaged),
-      inventory: typeof product.inventory === 'number' ? product.inventory : null,
+      // Inventory is configured as inventoryMode + manualQty in Sanity.
+      inventoryManaged: product.inventoryMode === 'manual',
+      inventory: product.inventoryMode === 'manual' && typeof product.manualQty === 'number'
+        ? product.manualQty
+        : null,
       squareItemId: product.squareItemId || null,
       squareVariationId: product.squareVariationId || null,
       variants: Array.isArray(product.variants) ? product.variants : [],

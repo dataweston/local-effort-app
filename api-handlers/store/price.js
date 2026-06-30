@@ -43,8 +43,8 @@ const fetchProducts = async (ids) => {
     addOns[]{name, additionalCost},
     offerDairyFree,
     dairyFreeCost,
-    inventoryManaged,
-    inventory
+    inventoryMode,
+    manualQty
   }`;
   const docs = await client.fetch(query, { ids });
   return {

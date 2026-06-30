@@ -187,6 +187,20 @@ async function computeDishDemand(prisma, now) {
     b.cents += Number(a.metadata?.totalCents || 0);
   }
 
+  // Drop dishes flagged excludeFromDemand (phantom/unverified items whose sales
+  // are one-off artifacts — e.g. the 2025-11-09 pop-up "Smoked chicken" whose
+  // catalogObjectId no longer maps to any current Square catalog item). They
+  // are excluded BEFORE totalQty so demand shares reflect real, sellable dishes.
+  const dishEntities = await prisma.brainEntity.findMany({
+    where: { id: { in: [...byDish.keys()] }, tombstonedAt: null },
+    select: { id: true, name: true, properties: true },
+  });
+  const dishById = new Map(dishEntities.map((e) => [e.id, e]));
+  for (const [dishId] of byDish) {
+    const e = dishById.get(dishId);
+    if (!e || e.properties?.excludeFromDemand === true) byDish.delete(dishId);
+  }
+
   // Demand rank within this set (1 = most ordered).
   const ranked = [...byDish.entries()].sort((a, b) => b[1].qty - a[1].qty);
   const totalQty = ranked.reduce((s, [, d]) => s + d.qty, 0) || 1;
@@ -195,7 +209,7 @@ async function computeDishDemand(prisma, now) {
   let rank = 0;
   for (const [dishId, d] of ranked) {
     rank++;
-    const dish = await prisma.brainEntity.findFirst({ where: { id: dishId, tombstonedAt: null }, select: { id: true, name: true } });
+    const dish = dishById.get(dishId);
     if (!dish) continue;
 
     // NOTE: there is no per-dish rating data in the brain today — GAVE_FEEDBACK

@@ -49,8 +49,8 @@ module.exports = async (req, res) => {
       price,
       salePrice,
       priceDisplay,
-      inventoryManaged,
-      inventory,
+      inventoryMode,
+      manualQty,
       squareItemId,
       squareVariationId,
       variants[]{name, squareVariationId, price},
@@ -74,7 +74,13 @@ module.exports = async (req, res) => {
       subheading: raw.page.subheading || null,
       introText: extractPortableText(raw.page.intro) || null,
     } : fallbackPage;
-    const products = (docs || []).map((d) => ({
+    const products = (docs || []).map((d) => {
+      // Inventory is configured in Sanity as inventoryMode + manualQty.
+      // 'manual' tracks a fixed quantity; 'unmanaged'/'square' are not
+      // count-managed here, so they show no quantity on the storefront.
+      const inventoryManaged = d.inventoryMode === 'manual';
+      const inventory = inventoryManaged && typeof d.manualQty === 'number' ? d.manualQty : null;
+      return {
       id: d._id,
       title: d.title,
       slug: d.slug?.current,
@@ -85,8 +91,8 @@ module.exports = async (req, res) => {
       price: d.price ?? 0, // Already in cents from Sanity
       salePrice: d.salePrice ?? null, // Already in cents from Sanity
       priceDisplay: d.priceDisplay || null,
-      inventoryManaged: !!d.inventoryManaged,
-      inventory: typeof d.inventory === 'number' ? d.inventory : null,
+      inventoryManaged,
+      inventory,
       squareItemId: d.squareItemId || null,
       squareVariationId: d.squareVariationId || null,
       variants: Array.isArray(d.variants) ? d.variants : [],
@@ -95,7 +101,8 @@ module.exports = async (req, res) => {
       dairyFreeCost: d.dairyFreeCost ?? 0,
       stores: Array.isArray(d.stores) ? d.stores : [],
       allowsDelivery: d.allowsDelivery ?? false,
-    }));
+      };
+    });
     res.status(200).json({
       products: products.length ? products : fallbackProducts,
       page: livePage,
