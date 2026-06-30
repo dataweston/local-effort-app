@@ -1245,8 +1245,14 @@ function weekStartFromTabId(tabId) {
   return match ? match[1] : null;
 }
 
-const MENU_MEAL_ORDER = ['dinner', 'lunch', 'breakfast', 'kids'];
-const MENU_MEAL_LABEL = { dinner: 'Dinners', lunch: 'Lunches', breakfast: 'Breakfasts', kids: 'Kids meals' };
+const MENU_MEAL_ORDER = ['dinner', 'lunch', 'breakfast', 'kids', 'snacks'];
+const MENU_MEAL_LABEL = { dinner: 'Dinners', lunch: 'Lunches', breakfast: 'Breakfasts', kids: 'Kids', snacks: 'Snacks' };
+
+// Permanent category headings seeded into a blank Weekly Meal Prep week. Mirrors
+// MENU_TEMPLATE in api-handlers/hub/_mealMenuParse.js (keep in sync). Under each
+// heading: a dish NAME line (main component), then prose description/side lines.
+const MEAL_MENU_TEMPLATE = ['Dinners', 'Lunches', 'Breakfasts', 'Kids', 'Snacks']
+  .map((h) => `${h}\n`).join('\n');
 
 // Staff-only view of the week's MENU and its formalized canonical dishes.
 // Source: the active week's Weekly Meal Prep notepad, parsed via
@@ -1294,8 +1300,9 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
     >
       <p className="hub-empty" style={{ marginTop: 0 }}>
         Parsed from {weekLabel ? <strong>{weekLabel}</strong> : 'this week'}&apos;s prep notepad
-        below, under <code>#dinners# #lunches# #breakfasts# #kids meals#</code>. Each dish is matched
-        to a canonical dish in the knowledge graph.
+        below, under <code>Dinners / Lunches / Breakfasts / Kids / Snacks</code>. Write each dish as a
+        name line (the main component) then a line or two of sides &amp; ingredients. Each dish name is
+        matched to a canonical dish in the knowledge graph.
       </p>
       <div className="hub-foodinputs-status">
         <span>
@@ -1323,6 +1330,7 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
                     {dish.resolved && dish.canonicalName
                       && dish.canonicalName.toLowerCase() !== dish.text.toLowerCase()
                       && <em className="hub-rollup-canon"> → {dish.canonicalName}</em>}
+                    {dish.description && <small className="hub-dish-desc">{dish.description}</small>}
                   </span>
                   {!dish.resolved && (
                     <span className="hub-pill" title="No confident canonical dish match">
@@ -1338,8 +1346,9 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
         !loading && (
           <p className="hub-empty">
             Write this week&apos;s menu in the prep notepad below under
-            {' '}<code>#dinners#</code>, <code>#lunches#</code>, <code>#breakfasts#</code>,
-            {' '}<code>#kids meals#</code>, then refresh.
+            {' '}<code>Dinners</code>, <code>Lunches</code>, <code>Breakfasts</code>,
+            {' '}<code>Kids</code>, <code>Snacks</code> — one dish name per line with sides
+            beneath — then refresh.
           </p>
         )
       )}
@@ -1370,7 +1379,9 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
       if (selected) {
         activeTabRef.current = selected.id;
         setActiveTab(selected.id);
-        const body = selected.document?.body || '';
+        // Seed the permanent category headings into a blank week so the menu
+        // always has Dinners/Lunches/Breakfasts/Kids/Snacks to write under.
+        const body = selected.document?.body || (next.mode !== 'customer' ? MEAL_MENU_TEMPLATE : '');
         setNoteBody(body);
         lastSavedRef.current = body;
       }
@@ -1406,7 +1417,8 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
     const next = data.notes.find((note) => note.id === tabId);
     activeTabRef.current = tabId;
     setActiveTab(tabId);
-    const body = next?.document?.body || '';
+    // Blank week → seed the permanent category headings (staff only).
+    const body = next?.document?.body || (canEditNotes ? MEAL_MENU_TEMPLATE : '');
     setNoteBody(body);
     lastSavedRef.current = body;
   };
@@ -1567,7 +1579,7 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
               value={noteBody}
               onChange={(event) => setNoteBody(event.target.value)}
               spellCheck="true"
-              placeholder={"#dinners#\n- \n\n#lunches#\n- \n\n#breakfasts#\n- \n\n#kids meals#\n- "}
+              placeholder={MEAL_MENU_TEMPLATE}
             />
           )
         ) : (
@@ -3736,6 +3748,7 @@ const hubCss = `
 }
 .hub-rollup-ok { color: var(--hub-accent); flex: 0 0 auto; }
 .hub-rollup-canon { color: var(--hub-muted); font-style: italic; }
+.hub-dish-desc { display: block; color: var(--hub-muted); font-size: 11px; margin-top: 1px; }
 .hub-pill-muted { background: var(--hub-bg); color: var(--hub-muted); }
 .hub-viewas { border: 1px solid var(--hub-border); border-radius: 6px; padding: 2px; margin-right: 6px; }
 .hub-viewas button { font-size: 11px; }

@@ -7,6 +7,17 @@
  * local-budget, but customer sales never reached the brain. CHURNING
  * inference reads `order.placed` events with payload.customerId directly.
  *
+ * IDENTITY RECOVERY (Track 1): order.customerId is sparse (~33/299 orders).
+ * Square holds the buyer identity in several OTHER places we now harvest into
+ * an `identitySignals` block on the payload so the projector's multi-signal
+ * resolver (Track 2) can recover the customer:
+ *   - tenders[]            → cardFingerprint, tender-level customerId
+ *   - payments (fetched)   → buyer_email_address, payment-level customerId
+ *   - fulfillments[]       → recipient display name / email / phone
+ * Money is NOT re-ingested here — local-budget stays the revenue source of
+ * truth. This sync only supplies the WHO and the WHAT (structure), never a
+ * `payment.received` event. No double-count is possible.
+ *
  * Idempotent — writeLedgerEvent dedupes on (eventType, source, sourceId).
  *
  * Routes:
@@ -35,6 +46,84 @@ async function listLocationIds(client) {
     .map((l) => l.id);
 }
 
+const norm = (s) => (s == null ? null : String(s).trim() || null);
+const lc = (s) => { const v = norm(s); return v ? v.toLowerCase() : null; };
+
+/**
+ * Fetch a Square payment and pull the identity it carries — the buyer email,
+ * a payment-level customerId (present even when the parent order has none),
+ * and the card fingerprint (stable per physical card → clusters anonymous
+ * repeat buyers). Returns null on any error; identity recovery never breaks
+ * the order sync.
+ */
+async function fetchPaymentIdentity(client, paymentId, cache) {
+  if (!paymentId) return null;
+  if (cache.payments.has(paymentId)) return cache.payments.get(paymentId);
+  let identity = null;
+  try {
+    const { result } = await client.paymentsApi.getPayment(paymentId);
+    const p = result?.payment;
+    if (p) {
+      identity = {
+        paymentId: p.id || paymentId,
+        customerId: norm(p.customerId),
+        buyerEmail: lc(p.buyerEmailAddress),
+        cardFingerprint: norm(p.cardDetails?.card?.fingerprint),
+        cardLast4: norm(p.cardDetails?.card?.last4),
+        receiptNumber: norm(p.receiptNumber),
+      };
+    }
+  } catch {
+    identity = null;
+  }
+  cache.payments.set(paymentId, identity);
+  return identity;
+}
+
+/**
+ * Collapse every identity signal an order carries into a single normalized
+ * block. Arrays are deduped; the projector tries them in confidence order.
+ */
+function buildIdentitySignals(order, paymentIdentities) {
+  const paymentCustomerIds = new Set();
+  const buyerEmails = new Set();
+  const cardFingerprints = new Set();
+  const recipientNames = new Set();
+  const recipientEmails = new Set();
+  const recipientPhones = new Set();
+
+  for (const t of order.tenders || []) {
+    if (t.customerId) paymentCustomerIds.add(norm(t.customerId));
+    const fp = t.cardDetails?.card?.fingerprint;
+    if (fp) cardFingerprints.add(norm(fp));
+  }
+  for (const pi of paymentIdentities) {
+    if (!pi) continue;
+    if (pi.customerId) paymentCustomerIds.add(pi.customerId);
+    if (pi.buyerEmail) buyerEmails.add(pi.buyerEmail);
+    if (pi.cardFingerprint) cardFingerprints.add(pi.cardFingerprint);
+  }
+  for (const f of order.fulfillments || []) {
+    const r = f.pickupDetails?.recipient || f.deliveryDetails?.recipient
+      || f.shipmentDetails?.recipient || null;
+    if (!r) continue;
+    if (r.displayName) recipientNames.add(norm(r.displayName));
+    if (r.emailAddress) recipientEmails.add(lc(r.emailAddress));
+    if (r.phoneNumber) recipientPhones.add(norm(r.phoneNumber));
+  }
+
+  const arr = (s) => [...s].filter(Boolean);
+  return {
+    orderCustomerId: norm(order.customerId),
+    paymentCustomerIds: arr(paymentCustomerIds),
+    buyerEmails: arr(buyerEmails),
+    cardFingerprints: arr(cardFingerprints),
+    recipientNames: arr(recipientNames),
+    recipientEmails: arr(recipientEmails),
+    recipientPhones: arr(recipientPhones),
+  };
+}
+
 async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
   const prisma = getPrisma();
   const { client } = getSquareClient();
@@ -52,10 +141,13 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
 
   let ordersSeen = 0;
   let eventsWritten = 0;
+  let eventsEnriched = 0;    // existing events that gained the identitySignals block
   let customersMatched = 0;
+  let identityRecovered = 0; // orders that gained a usable signal beyond order.customerId
   const errors = [];
   let cursor = undefined;
   let pages = 0;
+  const cache = { payments: new Map() };
 
   do {
     const { result } = await client.ordersApi.searchOrders({
@@ -86,6 +178,26 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
           catalogObjectId: li.catalogObjectId || null,
         }));
 
+        // Identity recovery: gather the payment ids attached to this order, fetch
+        // each payment's buyer email / customerId / card fingerprint, then collapse
+        // every signal (tenders, payments, fulfillment recipients) into one block.
+        const paymentIds = new Set([
+          ...((order.tenders || []).map((t) => t.paymentId).filter(Boolean)),
+        ]);
+        const paymentIdentities = [];
+        for (const pid of paymentIds) {
+          paymentIdentities.push(await fetchPaymentIdentity(client, pid, cache));
+        }
+        const identitySignals = buildIdentitySignals(order, paymentIdentities);
+        const hasExtraSignal = !!(
+          identitySignals.paymentCustomerIds.length
+          || identitySignals.buyerEmails.length
+          || identitySignals.cardFingerprints.length
+          || identitySignals.recipientEmails.length
+          || identitySignals.recipientPhones.length
+        );
+        if (hasExtraSignal) identityRecovered += 1;
+
         const event = await writeLedgerEvent({
           eventType: 'order.placed',
           occurredAt,
@@ -93,6 +205,9 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
           sourceId: order.id,
           actorType: 'customer',
           actorId: order.customerId || null,
+          // Enrich existing events: earlier syncs wrote order.placed without an
+          // identitySignals block, so merge it in on backfill rather than skip.
+          updatePayload: true,
           payload: {
             orderId: order.id,
             locationId: order.locationId || null,
@@ -102,10 +217,12 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
             currency: order.totalMoney?.currency || 'USD',
             lineItems,
             itemCount: lineItems.reduce((s, li) => s + li.quantity, 0),
+            identitySignals,
             syncedBy: 'square_orders_sync',
           },
         });
         if (!event._existing) eventsWritten += 1;
+        else if (event._updated) eventsEnriched += 1;
 
         if (order.customerId) {
           const matched = await prisma.brainEntity.count({
@@ -120,8 +237,8 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
     }
   } while (cursor && pages < 30);
 
-  logger?.info({ ordersSeen, eventsWritten, customersMatched, pages, daysBack }, 'brain/square-orders: sync complete');
-  return { ordersSeen, eventsWritten, customersMatched, pages, errors };
+  logger?.info({ ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, pages, daysBack }, 'brain/square-orders: sync complete');
+  return { ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, pages, errors };
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────

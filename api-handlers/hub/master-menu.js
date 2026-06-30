@@ -31,7 +31,7 @@ const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { resolveDishNames, resolveOrCreateDishes } = require('../../backend/api/brain/dishResolver');
-const { sectionsFromNotepad } = require('./_notepadParse');
+const { parseMealMenu } = require('./_mealMenuParse');
 
 let prisma = null;
 try {
@@ -108,25 +108,22 @@ async function handler(req, res) {
 
   try {
     const body = await loadMenuBody(weekStart);
-    const sections = sectionsFromNotepad(body);
+    // Parse the menu in the format Weston writes: permanent category headings
+    // (Dinners/Lunches/Breakfasts/Kids/Snacks), each dish a NAME line (main
+    // component) followed by prose description/side lines. The dish NAME is what
+    // resolves to a canonical Dish; the description is carried for context.
+    const parsed = parseMealMenu(body);
 
-    // Flatten lines under recognized meal subheadings, tagging each with its meal.
-    const lines = [];
-    for (const { section, items } of sections) {
-      const meal = mealForSection(section);
-      if (!meal) continue;
-      for (const text of items) lines.push({ text, meal });
-    }
-
-    const names = lines.map((l) => l.text);
+    const names = parsed.map((d) => d.name);
     const resolutions = commit
       ? await resolveOrCreateDishes(names, { prisma, createdBy: auth.viewer.email || 'staff', menuContext: { weekStart } })
       : await resolveDishNames(names, { prisma });
 
-    const dishes = lines.map((line, i) => {
+    const dishes = parsed.map((line, i) => {
       const r = resolutions[i] || {};
       return {
-        text: line.text,
+        text: line.name,
+        description: line.description || '',
         meal: line.meal,
         dishEntityId: r.dishEntityId || null,
         canonicalName: r.name || null,

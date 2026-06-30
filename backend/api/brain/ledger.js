@@ -14,6 +14,15 @@ function canonicalName(name) {
     .trim();
 }
 
+// Order-insensitive deep equality via stable-key JSON. Used so payload-merge
+// backfills don't rewrite a row whose values are unchanged but whose stored
+// key order differs from a freshly-built object.
+function stableStringify(v) {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+  return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(v[k])}`).join(',')}}`;
+}
+
 /**
  * Write an immutable ledger event. Returns the created row.
  * All ingestion paths must call this before writing any BrainAssertion or BrainInboxItem.
@@ -27,6 +36,10 @@ async function writeLedgerEvent({
   actorType = null,
   actorId = null,
   payload,
+  updatePayload = false, // when an event already exists, merge `payload` into it
+                         // instead of skipping. Used by enrichment backfills that
+                         // add new fields (e.g. identitySignals, customerEntityId)
+                         // to events written by an earlier sync. New keys win.
 }) {
   const prisma = getPrisma();
   if (sourceId) {
@@ -39,7 +52,21 @@ async function writeLedgerEvent({
       },
       orderBy: { createdAt: 'desc' },
     });
-    if (existing) return { ...existing, _existing: true };
+    if (existing) {
+      if (updatePayload && payload && typeof payload === 'object') {
+        const merged = { ...(existing.payload || {}), ...payload };
+        // Only write if something actually changed — keeps re-runs no-op.
+        // Order-insensitive compare: stored key order differs from a fresh build.
+        if (stableStringify(merged) !== stableStringify(existing.payload || {})) {
+          const updated = await prisma.ledgerEvent.update({
+            where: { id: existing.id },
+            data: { payload: merged },
+          });
+          return { ...updated, _existing: true, _updated: true };
+        }
+      }
+      return { ...existing, _existing: true };
+    }
   }
   try {
     return await prisma.ledgerEvent.create({

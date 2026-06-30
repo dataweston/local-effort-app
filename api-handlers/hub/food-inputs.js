@@ -34,6 +34,10 @@ const FUTURE_WEEK_COUNT = 6;
 const PAST_WEEK_COUNT = 2;
 const SHEET_SOURCE_PREFIX = 'food-inputs:sheet:week-';
 const MD_SOURCE_PREFIX = 'food-inputs:md:week-';
+// Base prefixes WITHOUT the `week-` segment, so a `<slug>:` customer scope can be
+// inserted between the base and `week-` (see scopePrefix / savedWeekStarts).
+const SHEET_SOURCE_PREFIX_BASE = 'food-inputs:sheet:';
+const MD_SOURCE_PREFIX_BASE = 'food-inputs:md:';
 
 // A starter grid so a fresh sheet view is not blank. Headers the customer and
 // kitchen can rename; rows are added as needed.
@@ -125,12 +129,25 @@ function activeWeekTabs() {
   return defaultWeekTabs();
 }
 
-function markdownSourceId(tabId) {
-  return `food-inputs:md:${tabId}`;
+// Food Inputs are now scoped PER CUSTOMER so one customer can't see another's
+// notes. The customer scope is embedded in the sourceId. For backward-compat,
+// Levy's existing docs were saved WITHOUT a scope (`food-inputs:md:week-…`), so
+// the default customer (Levy) keeps using the un-scoped key — see scopePrefix().
+const DEFAULT_CUSTOMER_SLUG = 'levy-family';
+
+// The sourceId fragment for a customer's docs. Levy (the default) maps to '' to
+// preserve her existing un-scoped docs; every other customer gets `:<slug>`.
+function scopePrefix(customerSlug) {
+  const slug = String(customerSlug || DEFAULT_CUSTOMER_SLUG);
+  return slug === DEFAULT_CUSTOMER_SLUG ? '' : `${slug}:`;
 }
 
-function sheetSourceId(tabId) {
-  return `food-inputs:sheet:${tabId}`;
+function markdownSourceId(tabId, customerSlug) {
+  return `food-inputs:md:${scopePrefix(customerSlug)}${tabId}`;
+}
+
+function sheetSourceId(tabId, customerSlug) {
+  return `food-inputs:sheet:${scopePrefix(customerSlug)}${tabId}`;
 }
 
 function parseSheet(body) {
@@ -183,16 +200,16 @@ function parsePinnedWeeks(value) {
 }
 
 // Discover any week (past or future, inside or outside the default window) that
-// already has a saved Food Inputs doc, so saved history never disappears from
-// the tab strip.
-async function savedWeekStarts() {
+// already has a saved Food Inputs doc FOR THIS CUSTOMER, so saved history never
+// disappears from the tab strip — but never leaks another customer's weeks.
+async function savedWeekStarts(customerSlug) {
   const docs = await prisma.hubDocument.findMany({
     where: {
       source: NOTE_SOURCE,
       status: 'published',
       OR: [
-        { sourceId: { startsWith: MD_SOURCE_PREFIX } },
-        { sourceId: { startsWith: SHEET_SOURCE_PREFIX } },
+        { sourceId: { startsWith: `${MD_SOURCE_PREFIX_BASE}${scopePrefix(customerSlug)}week-` } },
+        { sourceId: { startsWith: `${SHEET_SOURCE_PREFIX_BASE}${scopePrefix(customerSlug)}week-` } },
       ],
     },
     select: { sourceId: true },
@@ -203,22 +220,22 @@ async function savedWeekStarts() {
   return [...new Set(starts)];
 }
 
-async function loadWeeks(pinnedWeeks = []) {
+async function loadWeeks(pinnedWeeks = [], customerSlug) {
   const starts = new Set([
     ...defaultWeekTabs().map((tab) => tab.weekStart),
     ...pinnedWeeks,
-    ...(await savedWeekStarts()),
+    ...(await savedWeekStarts(customerSlug)),
   ]);
   const tabs = [...starts].sort().map(weekTab);
 
-  const sourceIds = tabs.flatMap((tab) => [markdownSourceId(tab.id), sheetSourceId(tab.id)]);
+  const sourceIds = tabs.flatMap((tab) => [markdownSourceId(tab.id, customerSlug), sheetSourceId(tab.id, customerSlug)]);
   const docs = await prisma.hubDocument.findMany({
     where: { source: NOTE_SOURCE, sourceId: { in: sourceIds }, status: 'published' },
   });
   const bySourceId = new Map(docs.map((doc) => [doc.sourceId, doc]));
   return tabs.map((tab) => {
-    const md = bySourceId.get(markdownSourceId(tab.id));
-    const sheet = bySourceId.get(sheetSourceId(tab.id));
+    const md = bySourceId.get(markdownSourceId(tab.id, customerSlug));
+    const sheet = bySourceId.get(sheetSourceId(tab.id, customerSlug));
     return {
       ...tab,
       markdown: md?.body || '',
@@ -251,9 +268,24 @@ async function handler(req, res) {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  // Staff, privileged, AND customers can read and write — this is a shared log.
+  // Staff, privileged, AND customers can read and write — but each customer only
+  // their OWN inputs.
   const denied = requireHubAccess(auth, { allowedAccess: ['staff', 'privileged', 'customer'] });
   if (denied) return res.status(denied.status).json({ error: denied.error });
+
+  // Resolve whose Food Inputs this request targets. A plain customer is HARD-
+  // SCOPED to their own slug (a `customerSlug` param from them is ignored, so
+  // they can never read/write another customer's log). Staff/privileged may
+  // target a specific customer via `customerSlug` (body on POST, query on GET),
+  // defaulting to Levy to preserve existing behavior.
+  let customerSlug;
+  if (auth.isCustomer && !auth.isPrivileged) {
+    customerSlug = auth.customer?.slug || null;
+    if (!customerSlug) return res.status(404).json({ error: 'No customer profile linked to this account' });
+  } else {
+    const requested = cleanString(req.method === 'POST' ? req.body?.customerSlug : req.query?.customerSlug, 120);
+    customerSlug = requested || DEFAULT_CUSTOMER_SLUG;
+  }
 
   try {
     if (req.method === 'POST') {
@@ -272,7 +304,7 @@ async function handler(req, res) {
         const sheet = sanitizeSheet(req.body?.sheet);
         await upsertDoc({
           source: NOTE_SOURCE,
-          sourceId: sheetSourceId(tab.id),
+          sourceId: sheetSourceId(tab.id, customerSlug),
           title: `Food Inputs (sheet) — ${tab.title}`,
           body: JSON.stringify(sheet),
           summary: 'Shared food-inputs spreadsheet between the kitchen and the customer.',
@@ -282,7 +314,7 @@ async function handler(req, res) {
         const markdown = typeof req.body?.markdown === 'string' ? req.body.markdown.slice(0, 40_000) : '';
         await upsertDoc({
           source: NOTE_SOURCE,
-          sourceId: markdownSourceId(tab.id),
+          sourceId: markdownSourceId(tab.id, customerSlug),
           title: `Food Inputs — ${tab.title}`,
           body: markdown,
           summary: 'Shared food-inputs notes between the kitchen and the customer.',
@@ -290,17 +322,18 @@ async function handler(req, res) {
         });
       }
 
-      const weeks = await loadWeeks([tab.weekStart]);
+      const weeks = await loadWeeks([tab.weekStart], customerSlug);
       const week = weeks.find((entry) => entry.id === tab.id) || null;
       return res.status(200).json({ ok: true, week });
     }
 
     const pinned = parsePinnedWeeks(req.query?.pin);
-    const weeks = await loadWeeks(pinned);
+    const weeks = await loadWeeks(pinned, customerSlug);
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       mode: auth.isCustomer && !auth.isPrivileged ? 'customer' : auth.isPrivileged ? 'privileged' : 'staff',
+      customerSlug,
       weeks,
     });
   } catch (err) {

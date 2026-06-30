@@ -6,7 +6,7 @@ Extracts email marketing data from Brevo (formerly Sendinblue):
   - Sent email campaigns (12) → Note entities capturing campaign name/subject/date
 
 Assertions written:
-  - Customer → GAVE_FEEDBACK  (subscription event — best approximation for "opted into list")
+  - Customer → SUBSCRIBED_TO → Channel "Brevo Email List"  (opted into the list)
   - Note     → ABOUT          (campaign metadata: subject, send date, recipients)
 """
 
@@ -91,6 +91,12 @@ def run(dry_run: bool = False) -> dict:
 
     print(f'[extract_brevo] {len(contacts)} contacts found')
 
+    # Single Channel entity the whole list subscribes to. List subscription is
+    # NOT feedback — emit SUBSCRIBED_TO -> Channel, never GAVE_FEEDBACK self-loop.
+    channel_id = None
+    if not dry_run and contacts:
+        channel_id, _ = find_or_create_entity('Channel', 'Brevo Email List')
+
     for contact in contacts:
         brevo_id   = contact.get('id')
         email      = (contact.get('email') or '').strip().lower()
@@ -142,10 +148,12 @@ def run(dry_run: bool = False) -> dict:
             customers_written += 1
             print(f'  [customer] {full_name} <{email}>')
 
-        # Record their subscription as GAVE_FEEDBACK (opted in / engaged with brand)
+        # Record their email-list opt-in as SUBSCRIBED_TO -> Channel.
+        # (Previously mis-recorded as a GAVE_FEEDBACK self-loop, which conflated
+        # list membership with real feedback; migrated 2026-06-29.)
         write_assertion(
-            src_id=customer_id, dst_id=customer_id,
-            rel_type='GAVE_FEEDBACK',
+            src_id=customer_id, dst_id=channel_id,
+            rel_type='SUBSCRIBED_TO',
             ledger_event_id=ledger_id,
             confidence=0.9,
             metadata={

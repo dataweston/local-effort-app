@@ -49,6 +49,10 @@
       "schedule": "55 2 * * *"
     },
     {
+      "path": "/api/brain/square-reconcile/run",
+      "schedule": "58 2 * * *"
+    },
+    {
       "path": "/api/brain/jobs/freshness",
       "schedule": "0 13 * * *"
     }

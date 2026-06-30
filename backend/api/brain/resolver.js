@@ -42,9 +42,13 @@ const ALL_FK_FIELDS = ['squareCustomerId', 'localEffortCustomerId', 'localBudget
  * @param {string[]} [opts.aliases] extra alias strings to attach on match
  * @param {boolean} [opts.create]   create a new entity if nothing matches (default false)
  * @param {object} [opts.properties] properties for a created entity
+ * @param {boolean} [opts.mergeProperties] when matching an EXISTING entity, merge
+ *   `properties` onto it (existing keys win on conflict, so we enrich without
+ *   clobbering). Off by default — resolution shouldn't mutate matched entities
+ *   unless the caller is doing an enrichment import.
  * @returns {Promise<{entity, matchedBy, created, blocked?, blockReason?}>}
  */
-async function resolveEntity({ type, name = null, ids = {}, aliases = [], create = false, properties = null } = {}) {
+async function resolveEntity({ type, name = null, ids = {}, aliases = [], create = false, properties = null, mergeProperties = false } = {}) {
   const prisma = getPrisma();
   if (!type) throw new Error('resolveEntity: type is required');
 
@@ -106,6 +110,12 @@ async function resolveEntity({ type, name = null, ids = {}, aliases = [], create
     // set any missing FK anchor we now know
     for (const field of ALL_FK_FIELDS) {
       if (ids?.[field] && !entity[field]) update[field] = String(ids[field]);
+    }
+    // enrichment imports: merge new properties, but never clobber existing keys.
+    if (mergeProperties && properties && typeof properties === 'object') {
+      const existing = entity.properties || {};
+      const merged = { ...properties, ...existing };
+      if (JSON.stringify(merged) !== JSON.stringify(existing)) update.properties = merged;
     }
     if (Object.keys(update).length) {
       entity = await prisma.brainEntity.update({ where: { id: entity.id }, data: update });

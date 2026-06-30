@@ -371,6 +371,14 @@ const RELATIONSHIPS = {
     promote: 'never',
     description: 'A saleable item is listed on a sales channel such as Square.',
   },
+  SUBSCRIBED_TO: {
+    src: ['Customer', 'Person'],
+    dst: ['Channel'],
+    inverseLabel: 'HAS_SUBSCRIBER',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A customer opted into an email/SMS marketing list (e.g. Brevo). metadata: email, subscribed, subscribedAt. NOT feedback — distinct from GAVE_FEEDBACK.',
+  },
   CONSTRAINED_BY: {
     src: ['Offer', 'BusinessLine', 'ProcessStep', 'Menu', 'Recipe', 'LedgerTransaction', 'Decision', 'Asset', 'EquityClass'],
     dst: ['Constraint'],

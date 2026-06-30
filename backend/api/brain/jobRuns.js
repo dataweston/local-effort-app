@@ -20,6 +20,7 @@ const JOB_SLA = {
   'order-projection': 24,
   'local-budget-sync': 24,
   'cogs-rollup': 24,
+  'square-reconcile': 24,
   'inference-run': 24,
   'hypothesis-run': 24,
   'triage-run': 24, // runs twice daily; 24h window tolerates one miss
