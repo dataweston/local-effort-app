@@ -48,9 +48,19 @@ and the form. All three already load globally.
    dietary/music. Square card + express pay, unchanged mechanics.
 5. **Coda** — one line, goodbye.
 
-Stacking: photos (z3) sit above prose but below the hero (z5), margin notes and
-booking panel (z4); `.jd-scene` sets no z-index so the hero escapes the photo layer.
-Hovered/dragged photos jump to 40–50 above everything, on purpose.
+Stacking: photos (z3) sit above prose but below the caption and booking panel (z4)
+and the hero card (z60 — protected: paper backing, padding, outranks even hovered
+z40 / dragged z50 photos); `.jd-scene` sets no z-index so the hero escapes the
+photo layer. `.july-dinner-page` is `isolation: isolate` with a fixed `::before`
+at z-1: the Cloudinary table photo (`lgzhr0ardp6xzvzvtz3b`) at 5.5% opacity,
+partially desaturated — the "subtle background" from the round-3 notes.
+
+Round-3 revisions (2026-07-03): dishes moved to the LEFT shore only (path t
+0.07–0.48, top middle → bottom middle) with deterministic jitter so nothing sits
+perfectly centered; the figure is a grumpy older man in a ball cap with a beard
+("hrmph… lake…"); photo count trimmed to 12 desktop / 6 mobile, favoring the right
+side; the hint + illustrate-for-equity link live inside the hero card; the site
+back-link was removed at the client's request.
 
 ## Motion budget
 

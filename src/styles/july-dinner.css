@@ -23,11 +23,24 @@
   --jd-wobble-sm: 125px 10px 115px 10px / 10px 115px 10px 125px;
 
   position: relative;
+  isolation: isolate;
   overflow-x: clip;
   min-height: 100vh;
   background: var(--jd-paper);
   color: var(--jd-ink);
   font-family: var(--font-body);
+}
+
+/* subtle set table under everything (Cloudinary, faint, desaturated) */
+.july-dinner-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url('https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto,w_1400/lgzhr0ardp6xzvzvtz3b') center bottom / cover no-repeat;
+  opacity: 0.055;
+  filter: grayscale(0.35);
+  pointer-events: none;
 }
 
 .july-dinner-page ::selection {
@@ -46,24 +59,6 @@
   position: relative;
 }
 
-.jd-back {
-  position: absolute;
-  top: 1rem;
-  left: 1.25rem;
-  z-index: 6;
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  color: var(--jd-ink-soft);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: color var(--jd-dur-1) var(--jd-ease), border-color var(--jd-dur-1) var(--jd-ease);
-}
-
-.jd-back:hover {
-  color: var(--jd-ink);
-  border-bottom-color: var(--jd-water);
-}
-
 /* ── The scene: lake first, hero on its shore ────────────── */
 
 .jd-scene {
@@ -74,18 +69,17 @@
   padding: 3rem 0.5rem 0;
 }
 
+/* the hero is protected: paper backing, padding, and it outranks every photo
+   state (hover 40 / drag 50), so it is always readable and clickable */
 .jd-hero {
   position: absolute;
   top: 3%;
   right: 2.5%;
-  z-index: 5;
-  width: min(360px, 34%);
-}
-
-.jd-hero > * {
-  text-shadow:
-    0 0 8px var(--jd-paper),
-    0 0 16px var(--jd-paper);
+  z-index: 60;
+  width: min(380px, 36%);
+  padding: 1.25rem 1.5rem 1.35rem;
+  background: rgba(250, 250, 248, 0.85);
+  border-radius: var(--jd-wobble-sm);
 }
 
 .jd-title {
@@ -137,6 +131,47 @@
   background: var(--jd-accent);
   border-color: var(--jd-accent);
   transform: translateY(-1px) rotate(-0.5deg);
+}
+
+/* margin scribbles inside the hero card */
+.jd-hint {
+  margin: 1.1rem 0 0.5rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.88rem;
+  color: var(--jd-water-deep);
+  transform: rotate(-0.8deg);
+}
+
+.jd-artist-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--jd-ink);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--jd-water);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-artist-link:hover {
+  color: var(--jd-water-deep);
+}
+
+.jd-artist-copy {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--jd-ink);
+}
+
+.jd-artist-copy a {
+  color: var(--jd-water-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ── The lake ────────────────────────────────────────────── */
@@ -302,7 +337,7 @@
   font-family: var(--font-yomogi);
   font-size: clamp(0.8rem, 2.4vw, 1.55rem);
   line-height: 1.15;
-  text-align: center;
+  text-align: left;
   color: var(--jd-ink);
   text-shadow:
     0 0 8px var(--jd-paper),
@@ -368,64 +403,6 @@
   text-shadow:
     0 0 6px var(--jd-paper),
     0 0 12px var(--jd-paper);
-}
-
-/* ── Margin notes: the photos move; artists welcome ──────── */
-
-.jd-margin-notes {
-  position: relative;
-  z-index: 4;
-  max-width: 32rem;
-  margin: 1rem auto 0;
-  padding: 1rem 1.5rem 0.75rem;
-  background: var(--jd-paper);
-  border-radius: var(--jd-wobble-sm);
-  text-align: center;
-}
-
-.jd-margin-notes > * {
-  text-shadow:
-    0 0 6px var(--jd-paper),
-    0 0 12px var(--jd-paper);
-}
-
-.jd-hint {
-  margin: 0 0 0.9rem;
-  font-family: var(--font-yomogi);
-  font-size: 1rem;
-  color: var(--jd-water-deep);
-}
-
-.jd-artist-link {
-  padding: 0;
-  border: none;
-  background: transparent;
-  font-family: var(--font-body);
-  font-size: 0.92rem;
-  color: var(--jd-ink);
-  text-decoration: underline;
-  text-decoration-color: var(--jd-water);
-  text-underline-offset: 3px;
-  cursor: pointer;
-  transition: color var(--jd-dur-1) var(--jd-ease);
-}
-
-.jd-artist-link:hover {
-  color: var(--jd-water-deep);
-}
-
-.jd-artist-copy {
-  margin: 0.9rem auto 0;
-  max-width: 28rem;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--jd-ink);
-}
-
-.jd-artist-copy a {
-  color: var(--jd-water-deep);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* ── The booking ─────────────────────────────────────────── */
@@ -850,6 +827,10 @@
 
   .jd-title {
     font-size: clamp(2rem, 9vw, 2.6rem);
+  }
+
+  .jd-dish-text {
+    font-size: 0.7rem;
   }
 
   .jd-lede {

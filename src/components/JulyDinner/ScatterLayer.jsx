@@ -5,29 +5,22 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 // text on purpose. Hover enlarges; pointer-drag moves them anywhere, like the
 // home page gallery. Positions are % of the page so they ride the full height.
 // `wide: true` slots only render at >=1024px — the ones kept on mobile hug the
-// edges below the title block so snapshots never bury the headline or the form.
-// Sizes are deliberately irregular: some snapshots landed harder than others.
+// edges so snapshots never bury the headline or the form. Sizes deliberately
+// irregular. The dishes live on the LEFT shore now, so photos favor the right
+// side and the far-left gutter, with room to breathe.
 const SLOTS = [
-  { top: '2.5%', left: '4%', w: 170, rot: -7, wide: true },
-  { top: '4%', left: '85%', w: 125, rot: 5, wide: true },
-  { top: '13%', left: '4%', w: 120, rot: 3 },
-  { top: '17%', left: '80%', w: 185, rot: -4, wide: true },
-  { top: '30%', left: '3%', w: 150, rot: 6 },
-  { top: '31%', left: '87%', w: 115, rot: -6 },
-  { top: '42%', left: '7%', w: 190, rot: -3 },
-  { top: '48%', left: '83%', w: 135, rot: 7 },
-  { top: '56%', left: '4%', w: 115, rot: 4, wide: true },
-  { top: '62%', left: '86%', w: 165, rot: -5 },
-  { top: '71%', left: '6%', w: 140, rot: -8, wide: true },
-  { top: '76%', left: '84%', w: 180, rot: 4, wide: true },
-  { top: '89%', left: '9%', w: 155, rot: 6 },
-  { top: '93%', left: '79%', w: 120, rot: -4 },
-  { top: '35%', left: '45%', w: 105, rot: 2, wide: true },
-  { top: '82%', left: '30%', w: 115, rot: -3, wide: true },
-  { top: '9%', left: '58%', w: 105, rot: 8, wide: true },
-  { top: '22%', left: '30%', w: 100, rot: -5, wide: true },
-  { top: '66%', left: '38%', w: 110, rot: 5, wide: true },
-  { top: '52%', left: '55%', w: 100, rot: -7, wide: true },
+  { top: '4%', left: '56%', w: 110, rot: -5, wide: true },
+  { top: '10%', left: '2%', w: 125, rot: -7 },
+  { top: '24%', left: '81%', w: 145, rot: 4, wide: true },
+  { top: '38%', left: '2%', w: 100, rot: 6, wide: true },
+  { top: '35%', left: '85%', w: 115, rot: -6 },
+  { top: '48%', left: '58%', w: 105, rot: -7, wide: true },
+  { top: '54%', left: '86%', w: 160, rot: 5 },
+  { top: '68%', left: '55%', w: 100, rot: 3, wide: true },
+  { top: '72%', left: '84%', w: 130, rot: -4 },
+  { top: '76%', left: '3%', w: 110, rot: -8, wide: true },
+  { top: '89%', left: '76%', w: 140, rot: 6 },
+  { top: '91%', left: '16%', w: 115, rot: -5, wide: true },
 ];
 
 const DRAG_THRESHOLD = 6;

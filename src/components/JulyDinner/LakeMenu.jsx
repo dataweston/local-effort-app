@@ -23,8 +23,10 @@ const LakeMenu = ({ dishes }) => {
   const [drawn, setDrawn] = useState(false);
   const [points, setPoints] = useState([]);
 
-  // Points along the shoreline, computed from the real path geometry, then
-  // assigned to dishes top-to-bottom (the brief: dishes read down the page).
+  // Points along the LEFT shore only (the walk goes bottom-center up the left
+  // side to the top middle), computed from the real path geometry, then
+  // assigned to dishes top-to-bottom with hand-placed jitter — a list pinned
+  // along the shoreline, not a perfectly centered ring.
   useEffect(() => {
     if (!dishes.length) return;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -33,9 +35,9 @@ const LakeMenu = ({ dishes }) => {
     const n = dishes.length;
     const sampled = [];
     for (let i = 0; i < n; i += 1) {
-      // skip the stretch right at the child's feet (start and end of the walk)
-      const t = 0.045 + (i * 0.9) / Math.max(1, n - 1);
-      const pt = path.getPointAtLength(total * Math.min(0.945, t));
+      // t 0.07 → 0.48: just above the old man's feet up to the top middle
+      const t = 0.07 + (i * 0.41) / Math.max(1, n - 1);
+      const pt = path.getPointAtLength(total * t);
       sampled.push({ x: pt.x, y: pt.y });
     }
     sampled.sort((a, b) => a.y - b.y || a.x - b.x);
@@ -67,8 +69,9 @@ const LakeMenu = ({ dishes }) => {
     () =>
       dishes.map((name, i) => ({
         name,
-        x: points[i]?.x ?? 500,
-        y: points[i]?.y ?? 600,
+        // deterministic jitter, in viewBox units: mostly outward (left), never tidy
+        x: (points[i]?.x ?? 300) + (((i * 73) % 90) - 58),
+        y: (points[i]?.y ?? 600) + (((i * 41) % 26) - 13),
         rot: rotationFor(i),
         delay: 1200 + i * 90,
       })),
@@ -147,24 +150,34 @@ const LakeMenu = ({ dishes }) => {
           STOP
         </text>
 
-        {/* the child, mid-stride at the bottom, chalk to the ground */}
+        {/* the grumpy older man in a cap, hunched over his chalk */}
         <g className="jd-child" filter="url(#jd-rough)">
-          <circle cx="549" cy="1032" r="16" />
-          <path d="M541 1021 C545 1013 557 1012 561 1019" />
-          <circle cx="542" cy="1030" r="1.6" className="jd-eye" />
-          <path d="M538 1037 C540 1039 543 1039 545 1038" strokeWidth="2" />
-          <path d="M548 1048 C546 1070 544 1086 543 1100" />
+          <circle cx="549" cy="1034" r="14" />
+          {/* ball cap: brim jutting left (he faces his work), crown on top */}
+          <path d="M527 1027 L546 1025" strokeWidth="3.2" />
+          <path d="M537 1026 C538 1015 560 1013 562 1026" />
+          {/* one dot eye under a slanted grump of a brow */}
+          <path d="M537 1029 L545 1031" strokeWidth="2" />
+          <circle cx="541" cy="1035" r="1.6" className="jd-eye" />
+          {/* frown */}
+          <path d="M536 1044 C539 1041 543 1041 546 1044" strokeWidth="2" />
+          {/* beard scribble */}
+          <path d="M535 1046 C537 1054 546 1057 553 1051" strokeWidth="2" />
+          <path d="M539 1049 C541 1053 546 1054 549 1051" strokeWidth="1.6" />
+          {/* hunched spine */}
+          <path d="M550 1048 C543 1066 541 1085 543 1100" />
           <path d="M543 1100 C536 1116 527 1127 516 1136" />
           <path d="M543 1100 C549 1119 553 1131 557 1142" />
-          <path d="M546 1060 C534 1077 520 1094 508 1116" />
-          <path d="M548 1062 C558 1072 564 1080 568 1090" />
+          {/* arm down to the chalk, other hand jammed near a pocket */}
+          <path d="M546 1062 C534 1078 520 1095 508 1116" />
+          <path d="M549 1064 C556 1072 559 1079 559 1086" />
         </g>
         <circle cx="504" cy="1119" r="3.5" fill="var(--jd-water)" className="jd-child" />
       </svg>
 
       {/* muttering, as one does while drawing a lake */}
-      <div className="jd-mutter jd-mutter-1" aria-hidden="true">hmm… lake…</div>
-      <div className="jd-mutter jd-mutter-2" aria-hidden="true">…yes. definitely a lake.</div>
+      <div className="jd-mutter jd-mutter-1" aria-hidden="true">hrmph… lake…</div>
+      <div className="jd-mutter jd-mutter-2" aria-hidden="true">…fine. definitely a lake.</div>
 
       <ul className="jd-dishes" aria-label="The menu so far">
         {placed.map((dish, i) => (

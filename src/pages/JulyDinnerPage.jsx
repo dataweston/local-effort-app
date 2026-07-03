@@ -353,8 +353,6 @@ const JulyDinnerPage = () => {
       <div className="jd-upper">
       <ScatterLayer />
 
-      <a className="jd-back" href="/">Local Effort</a>
-
       {/* ── The lake, with the hero on its north-east shore ── */}
       <section className="jd-scene" aria-label="Dinner in July — the menu so far">
         <header className="jd-hero">
@@ -373,32 +371,29 @@ const JulyDinnerPage = () => {
           >
             buy tickets
           </button>
+
+          <p className="jd-hint">psst — the photos are loose. drag them anywhere.</p>
+          <button
+            type="button"
+            className="jd-artist-link"
+            aria-expanded={artistOpen}
+            onClick={() => setArtistOpen((v) => !v)}
+          >
+            illustrate for a worker owned cooperative
+          </button>
+          {artistOpen && (
+            <p className="jd-artist-copy">
+              drawings for equity? we're looking for an artist or collective to contribute the
+              visual story to our growing effort. make a huge impact and keep a piece of it.{' '}
+              email <a href="mailto:dataweston@gmail.com">Weston</a>.
+            </p>
+          )}
         </header>
 
         <LakeMenu dishes={dishes} />
       </section>
 
       <p className="jd-lake-caption">the menu so far —</p>
-
-      {/* the photos move; maybe an artist wants to move in too */}
-      <div className="jd-margin-notes">
-        <p className="jd-hint">psst — the photos are loose. pick them up, drag them anywhere.</p>
-        <button
-          type="button"
-          className="jd-artist-link"
-          aria-expanded={artistOpen}
-          onClick={() => setArtistOpen((v) => !v)}
-        >
-          illustrate for a worker owned cooperative
-        </button>
-        {artistOpen && (
-          <p className="jd-artist-copy">
-            drawings for equity? we're looking for an artist or collective to contribute the
-            visual story to our growing effort. make a huge impact and keep a piece of it.{' '}
-            email <a href="mailto:dataweston@gmail.com">Weston</a>.
-          </p>
-        )}
-      </div>
       </div>
 
       {/* ── The booking (appears when "buy tickets" is pressed) ── */}
