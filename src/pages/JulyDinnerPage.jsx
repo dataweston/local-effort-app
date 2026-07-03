@@ -101,17 +101,6 @@ const buildEventJsonLd = (event) => ({
   },
 });
 
-const CueArrow = () => (
-  <svg viewBox="0 0 26 34" fill="none" aria-hidden="true">
-    <path
-      d="M13 2 C10 9, 16 12, 12 19 C9 24, 14 27, 13 31 M7 25 C9 29, 11 30, 13 31 C15 30, 17 28, 19 25"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
 const JulyDinnerPage = () => {
   const [event, setEvent] = useState(FALLBACK_EVENT);
   const [seatsRemaining, setSeatsRemaining] = useState(null); // null = loading
@@ -128,6 +117,16 @@ const JulyDinnerPage = () => {
   const [paymentId, setPaymentId] = useState('');
   const [emailStatus, setEmailStatus] = useState(null);
   const [confirmed, setConfirmed] = useState(null); // { bookingType, quantity, partySize }
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [artistOpen, setArtistOpen] = useState(false);
+
+  // The checkout stays off the page until "buy tickets" is pressed.
+  useEffect(() => {
+    if (!showCheckout) return;
+    requestAnimationFrame(() => {
+      document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [showCheckout]);
 
   useEffect(() => {
     let cancelled = false;
@@ -167,8 +166,8 @@ const JulyDinnerPage = () => {
 
   const { cardLoaded, error: cardError, loadingScript, tokenize, verifyBuyer } = useSquareCard(
     '#july-dinner-card-container',
-    !soldOut,
-    [soldOut]
+    showCheckout && !soldOut,
+    [showCheckout, soldOut]
   );
 
   const checkoutAttemptRef = useRef('');
@@ -254,7 +253,7 @@ const JulyDinnerPage = () => {
   const { googlePayAvailable, applePayAvailable } = useSquareExpressPay({
     amountCents: totalCents,
     containerId: '#july-dinner-express-pay',
-    enabled: status !== 'success' && !soldOut,
+    enabled: showCheckout && status !== 'success' && !soldOut,
     onToken: handleExpressToken,
   });
   const expressPayAvailable = googlePayAvailable || applePayAvailable;
@@ -349,50 +348,61 @@ const JulyDinnerPage = () => {
         <script type="application/ld+json">{JSON.stringify(buildEventJsonLd(event))}</script>
       </Helmet>
 
+      {/* The photo layer is anchored to this upper block so snapshots hold
+          their ground when the checkout appears below. */}
+      <div className="jd-upper">
       <ScatterLayer />
 
-      {/* ── Arrival ── */}
-      <header className="jd-arrival">
-        <a className="jd-back" href="/">Local Effort</a>
-        <h1 className="jd-title">{event.title}</h1>
-        <p className="jd-when">{event.dateLabel} · {event.location}, North Minneapolis</p>
-        <p className="jd-terms">
-          ${formatMoney(event.priceCents)} a seat · {seatsLabel} · {event.timeLabel}
-        </p>
-        <p className="jd-lede">{event.summary}</p>
-        <a className="jd-cue" href="#book">
-          <span>the menu is drawn below — your seat is past the lake</span>
-          <CueArrow />
-        </a>
-      </header>
+      <a className="jd-back" href="/">Local Effort</a>
 
-      {/* ── The lake (climax) ── */}
-      <section className="jd-lake-section" aria-label="The menu so far">
+      {/* ── The lake, with the hero on its north-east shore ── */}
+      <section className="jd-scene" aria-label="Dinner in July — the menu so far">
+        <header className="jd-hero">
+          <h1 className="jd-title">{event.title}</h1>
+          <p className="jd-when">{event.dateLabel} · {event.location}, North Minneapolis</p>
+          <p className="jd-terms">
+            ${formatMoney(event.priceCents)} a seat · {seatsLabel} · {event.timeLabel}
+          </p>
+          <p className="jd-lede">
+            blah blah blah, summer. blah blah, one long table. blah blah blah — you should be there.
+          </p>
+          <button
+            type="button"
+            className="jd-buy"
+            onClick={() => setShowCheckout(true)}
+          >
+            buy tickets
+          </button>
+        </header>
+
         <LakeMenu dishes={dishes} />
-        <p className="jd-lake-caption">
-          the menu so far — a dozen things July is giving us. it keeps growing right up to the night.
-        </p>
       </section>
 
-      {/* ── The particulars ── */}
-      <section className="jd-details" aria-label="Details">
-        <p>
-          <strong>The room.</strong> One long table at {event.location} in North Minneapolis,
-          {` ${event.dateLabel}`}, seated at {event.timeLabel.replace(' seating', '')}.
-          The full address and arrival details land in your inbox — first with your confirmation,
-          again a few days before the dinner.
-        </p>
-        <p>
-          <strong>The food.</strong> {event.included} Courses come out slowly and generously;
-          nobody leaves hungry and nobody is rushed. Tell us about allergies or anything you
-          don't eat when you book, and we cook around it — that's the point of a small table.
-        </p>
-        <p>
-          <strong>To drink.</strong> {event.beverageNote}
-        </p>
-      </section>
+      <p className="jd-lake-caption">the menu so far —</p>
 
-      {/* ── The booking ── */}
+      {/* the photos move; maybe an artist wants to move in too */}
+      <div className="jd-margin-notes">
+        <p className="jd-hint">psst — the photos are loose. pick them up, drag them anywhere.</p>
+        <button
+          type="button"
+          className="jd-artist-link"
+          aria-expanded={artistOpen}
+          onClick={() => setArtistOpen((v) => !v)}
+        >
+          illustrate for a worker owned cooperative
+        </button>
+        {artistOpen && (
+          <p className="jd-artist-copy">
+            drawings for equity? we're looking for an artist or collective to contribute the
+            visual story to our growing effort. make a huge impact and keep a piece of it.{' '}
+            email <a href="mailto:dataweston@gmail.com">Weston</a>.
+          </p>
+        )}
+      </div>
+      </div>
+
+      {/* ── The booking (appears when "buy tickets" is pressed) ── */}
+      {showCheckout && (
       <section id="book" className="jd-book" aria-label="Book your seats">
         <div className="jd-book-panel">
           {status === 'success' && confirmed ? (
@@ -628,6 +638,7 @@ const JulyDinnerPage = () => {
           )}
         </div>
       </section>
+      )}
 
       <footer className="jd-coda">
         see you at the lake — <a href="mailto:hello@localeffort.com">hello@localeffort.com</a>

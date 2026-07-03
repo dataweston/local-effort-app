@@ -1,6 +1,11 @@
 /* Dinner in July (/julydinner) — direction and tokens documented in
    src/components/JulyDinner/DESIGN.md. Chalk lake drawn by a child; menu on
-   the shoreline; snapshots scattered like photos dropped on the drawing. */
+   the shoreline; hero on the north-east shore; snapshots scattered loose.
+
+   Stacking plan (root context — .jd-scene sets NO z-index on purpose so the
+   hero can outrank the photo layer without trapping it):
+     photos z3 < margin-notes/caption z4 = book z4 < hero z5 < back link z6.
+     Hovered/dragged photos jump to 40–50, above everything, deliberately. */
 
 .july-dinner-page {
   --jd-paper: #fafaf8;
@@ -36,19 +41,16 @@
   border-radius: 4px;
 }
 
-/* ── Arrival ─────────────────────────────────────────────── */
-
-.jd-arrival {
+/* photos live here, not on the whole page — see page JSX */
+.jd-upper {
   position: relative;
-  z-index: 2;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: clamp(2.5rem, 6vw, 5rem) 1.5rem 1rem;
-  text-align: center;
 }
 
 .jd-back {
-  display: inline-block;
+  position: absolute;
+  top: 1rem;
+  left: 1.25rem;
+  z-index: 6;
   font-family: var(--font-display);
   font-size: 0.9rem;
   color: var(--jd-ink-soft);
@@ -62,69 +64,82 @@
   border-bottom-color: var(--jd-water);
 }
 
+/* ── The scene: lake first, hero on its shore ────────────── */
+
+.jd-scene {
+  /* no z-index here — see stacking plan above */
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 0.5rem 0;
+}
+
+.jd-hero {
+  position: absolute;
+  top: 3%;
+  right: 2.5%;
+  z-index: 5;
+  width: min(360px, 34%);
+}
+
+.jd-hero > * {
+  text-shadow:
+    0 0 8px var(--jd-paper),
+    0 0 16px var(--jd-paper);
+}
+
 .jd-title {
-  margin: 1.75rem 0 0.75rem;
+  margin: 0 0 0.5rem;
   font-family: var(--font-display);
   font-weight: 650;
-  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  font-size: clamp(1.8rem, 4.6vw, 3.1rem);
   line-height: 1.02;
   letter-spacing: -0.015em;
   color: var(--jd-ink);
 }
 
 .jd-when {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.25rem;
   font-family: var(--font-display);
-  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-size: clamp(0.85rem, 1.6vw, 0.95rem);
   color: var(--jd-ink);
 }
 
 .jd-terms {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.78rem;
   color: var(--jd-ink-soft);
 }
 
 .jd-lede {
-  max-width: 34rem;
-  margin: 1.5rem auto 0;
-  font-size: 1.05rem;
-  line-height: 1.65;
+  margin: 0.8rem 0 0;
+  max-width: 24rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
   color: var(--jd-ink);
 }
 
-.jd-cue {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  margin-top: 1.75rem;
-  font-family: var(--font-yomogi);
-  font-size: 1.05rem;
-  color: var(--jd-water-deep);
-  text-decoration: none;
+.jd-buy {
+  margin-top: 1rem;
+  padding: 0.65rem 1.4rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 0.95rem;
+  color: var(--jd-paper);
+  background: var(--jd-ink);
+  border: 2px solid var(--jd-ink);
+  border-radius: var(--jd-wobble-sm);
+  cursor: pointer;
+  transition: background var(--jd-dur-1) var(--jd-ease), border-color var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-1) var(--jd-ease);
 }
 
-.jd-cue svg {
-  width: 26px;
-  height: 34px;
-  stroke: var(--jd-water);
-  transition: transform var(--jd-dur-2) var(--jd-ease);
-}
-
-.jd-cue:hover svg {
-  transform: translateY(4px);
+.jd-buy:hover {
+  background: var(--jd-accent);
+  border-color: var(--jd-accent);
+  transform: translateY(-1px) rotate(-0.5deg);
 }
 
 /* ── The lake ────────────────────────────────────────────── */
-
-.jd-lake-section {
-  position: relative;
-  z-index: 2;
-  max-width: 1050px;
-  margin: 0 auto;
-  padding: 0 0.5rem;
-}
 
 .jd-lake {
   position: relative;
@@ -189,6 +204,65 @@
 .is-drawn .jd-child {
   opacity: 0.85;
 }
+
+/* the lake's residents: duck, loons, a stop sign with no explanation */
+.jd-critter {
+  stroke: var(--jd-water-deep);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0;
+}
+
+.is-drawn .jd-critter {
+  opacity: 0.8;
+  transition: opacity var(--jd-dur-2) var(--jd-ease);
+  transition-delay: var(--jd-cdelay, 2000ms);
+}
+
+.jd-eye {
+  fill: var(--jd-ink);
+  stroke: none;
+}
+
+.jd-stop-text {
+  font-family: var(--font-yomogi);
+  font-size: 14px;
+  letter-spacing: 1px;
+  fill: var(--jd-ink);
+  stroke: none;
+}
+
+/* muttering, while drawing */
+.jd-mutter {
+  position: absolute;
+  font-family: var(--font-yomogi);
+  font-size: clamp(0.68rem, 1.6vw, 0.95rem);
+  color: var(--jd-ink-soft);
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.jd-mutter-1 {
+  left: 61%;
+  top: 88.5%;
+  transform: rotate(-3deg);
+}
+
+.jd-mutter-2 {
+  left: 63%;
+  top: 91.5%;
+  transform: rotate(2deg);
+}
+
+.is-drawn .jd-mutter {
+  opacity: 0.9;
+  transition: opacity var(--jd-dur-2) var(--jd-ease);
+}
+
+.is-drawn .jd-mutter-1 { transition-delay: 2800ms; }
+.is-drawn .jd-mutter-2 { transition-delay: 3400ms; }
 
 /* the one ambient element: shimmer drifting inside the lake */
 .jd-shimmer {
@@ -280,35 +354,78 @@
 
 .jd-lake-caption {
   position: relative;
-  z-index: 2;
-  margin: -1rem auto 0;
+  z-index: 4;
+  width: fit-content;
+  margin: -0.5rem auto 0;
   max-width: 30rem;
+  padding: 0.2rem 0.75rem;
+  background: var(--jd-paper);
+  border-radius: var(--jd-wobble-sm);
   text-align: center;
   font-family: var(--font-yomogi);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   color: var(--jd-ink-soft);
+  text-shadow:
+    0 0 6px var(--jd-paper),
+    0 0 12px var(--jd-paper);
 }
 
-/* ── The particulars ─────────────────────────────────────── */
+/* ── Margin notes: the photos move; artists welcome ──────── */
 
-.jd-details {
+.jd-margin-notes {
   position: relative;
-  z-index: 2;
-  max-width: 620px;
-  margin: 0 auto;
-  padding: clamp(3rem, 7vw, 5.5rem) 1.5rem 0;
+  z-index: 4;
+  max-width: 32rem;
+  margin: 1rem auto 0;
+  padding: 1rem 1.5rem 0.75rem;
+  background: var(--jd-paper);
+  border-radius: var(--jd-wobble-sm);
+  text-align: center;
 }
 
-.jd-details p {
-  margin: 0 0 1.25rem;
-  font-size: 1.05rem;
-  line-height: 1.7;
+.jd-margin-notes > * {
+  text-shadow:
+    0 0 6px var(--jd-paper),
+    0 0 12px var(--jd-paper);
+}
+
+.jd-hint {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+  color: var(--jd-water-deep);
+}
+
+.jd-artist-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--jd-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--jd-water);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-artist-link:hover {
+  color: var(--jd-water-deep);
+}
+
+.jd-artist-copy {
+  margin: 0.9rem auto 0;
+  max-width: 28rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
   color: var(--jd-ink);
 }
 
-.jd-details strong {
-  font-family: var(--font-display);
-  font-weight: 650;
+.jd-artist-copy a {
+  color: var(--jd-water-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ── The booking ─────────────────────────────────────────── */
@@ -318,7 +435,7 @@
   z-index: 4;
   max-width: 640px;
   margin: 0 auto;
-  padding: clamp(2.5rem, 6vw, 4rem) 1rem 3rem;
+  padding: clamp(2rem, 5vw, 3.5rem) 1rem 3rem;
 }
 
 .jd-book-panel {
@@ -683,7 +800,7 @@
 .jd-coda {
   position: relative;
   z-index: 2;
-  padding: 2rem 1.5rem 3rem;
+  padding: 2.5rem 1.5rem 3rem;
   text-align: center;
   font-family: var(--font-yomogi);
   font-size: 1rem;
@@ -705,15 +822,42 @@
   .jd-photo--wide {
     display: none;
   }
+
+  /* hero comes off the shore and settles down-and-right above the lake.
+     position:relative (not static) so its z-index keeps beating the photos —
+     otherwise snapshots swallow taps on the buy button. */
+  .jd-hero {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: min(420px, 86%);
+    margin: 2.5rem 4% 0.5rem auto;
+  }
+
+  .jd-scene {
+    padding-top: 2.25rem;
+  }
 }
 
 @media (max-width: 640px) {
   .jd-photo img {
-    width: calc(var(--jd-pw, 110px) * 0.72);
+    width: calc(var(--jd-pw, 110px) * 0.62);
   }
 
   .jd-photo.is-expanded {
     transform: translate(var(--jd-dx, 0px), var(--jd-dy, 0px)) rotate(0deg) scale(1.9);
+  }
+
+  .jd-title {
+    font-size: clamp(2rem, 9vw, 2.6rem);
+  }
+
+  .jd-lede {
+    font-size: 0.9rem;
+  }
+
+  .jd-terms {
+    font-size: 0.85rem;
   }
 
   .jd-book {
@@ -732,13 +876,17 @@
 
   .jd-lake-fill,
   .jd-lake-dust,
-  .jd-child {
+  .jd-child,
+  .jd-critter,
+  .jd-mutter {
     transition: none;
   }
 
   .jd-lake-fill { opacity: 1; }
   .jd-lake-dust { opacity: 0.18; }
   .jd-child { opacity: 0.85; }
+  .jd-critter { opacity: 0.8; }
+  .jd-mutter { opacity: 0.9; }
 
   .jd-dish {
     opacity: 1;
@@ -772,7 +920,7 @@
   .jd-chip,
   .jd-step-btn,
   .jd-submit,
-  .jd-cue svg {
+  .jd-buy {
     transition: none;
   }
 }

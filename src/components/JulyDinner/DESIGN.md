@@ -33,19 +33,24 @@ Type: **Yomogi** for dish names and small marginalia only (per client); **Genera
 Sans** (`--font-display`) for structure; **Source Sans 3** (`--font-body`) for prose
 and the form. All three already load globally.
 
-## Scroll storyboard (climax: the lake)
+## Scroll storyboard (climax: the lake — revised 2026-07-03 per client notes)
 
-1. **Arrival** — title, date, place, price in plain structural type. A chalk squiggle
-   points down: "the menu is drawn below."
-2. **The lake (climax)** — the chalk line draws itself once (2400ms, on first view),
-   the child mid-stride at the bottom, twelve dishes floating on the shoreline top to
-   bottom. Hovering a dish bobs and swells it gently and rings ripple out — touch the
-   water, the pond answers.
-3. **The particulars** — three calm paragraphs: the room, what's included, beverages.
-4. **The booking** — a chalk-bordered form. Seats 1–8 or buy out the whole night.
-   Beverage interests are required chips; dietary and music are optional. Square card
-   + express pay, unchanged mechanics.
+1. **The scene** — the lake owns the page. The hero (title, date, price, placeholder
+   lede, "buy tickets") sits small on the lake's north-east shore, down and to the
+   right; desktop overlays it on the scene, mobile settles it right-shifted above.
+2. **The lake (climax)** — the chalk line draws itself once (2400ms), the child
+   mid-stride at the bottom muttering to themselves; a duck, two loons, and an
+   unexplained stop sign live on the water. Dish hover = bob + ripple rings.
+3. **Margin notes** — "the menu so far —", the hint that the photos are loose and
+   draggable, and the artists-for-equity call-out (expands on click, mailto Weston).
+4. **The booking** — hidden until "buy tickets" is pressed, then reveals and scrolls
+   into view. Seats 1–8 or whole-night buy-out; required beverage chips; optional
+   dietary/music. Square card + express pay, unchanged mechanics.
 5. **Coda** — one line, goodbye.
+
+Stacking: photos (z3) sit above prose but below the hero (z5), margin notes and
+booking panel (z4); `.jd-scene` sets no z-index so the hero escapes the photo layer.
+Hovered/dragged photos jump to 40–50 above everything, on purpose.
 
 ## Motion budget
 
