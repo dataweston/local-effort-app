@@ -37,6 +37,7 @@ import activityPubDelivery from './activityPubDelivery'
 import decisionPriority from './decisionPriority'
 import hubLocalistContent from './hubLocalistContent'
 import hubLocalistItem from './hubLocalistItem'
+import dinnerEvent from './dinnerEvent'
 
 export const schemaTypes = [
   page,
@@ -78,6 +79,7 @@ export const schemaTypes = [
   decisionPriority,
   hubLocalistContent,
   hubLocalistItem,
+  dinnerEvent,
 ]
 
 export default schemaTypes

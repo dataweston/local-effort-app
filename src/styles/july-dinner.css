@@ -1,0 +1,778 @@
+/* Dinner in July (/julydinner) — direction and tokens documented in
+   src/components/JulyDinner/DESIGN.md. Chalk lake drawn by a child; menu on
+   the shoreline; snapshots scattered like photos dropped on the drawing. */
+
+.july-dinner-page {
+  --jd-paper: #fafaf8;
+  --jd-ink: #23231f;
+  --jd-ink-soft: #6b6a63;
+  --jd-water: #6e9bb0;
+  --jd-water-deep: #48748c;
+  --jd-water-wash: rgba(110, 155, 176, 0.1);
+  --jd-accent: #f35c2b;
+  --jd-dur-1: 240ms;
+  --jd-dur-2: 600ms;
+  --jd-dur-3: 2400ms;
+  --jd-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --jd-wobble: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --jd-wobble-sm: 125px 10px 115px 10px / 10px 115px 10px 125px;
+
+  position: relative;
+  overflow-x: clip;
+  min-height: 100vh;
+  background: var(--jd-paper);
+  color: var(--jd-ink);
+  font-family: var(--font-body);
+}
+
+.july-dinner-page ::selection {
+  background: var(--jd-water);
+  color: #fff;
+}
+
+.july-dinner-page :focus-visible {
+  outline: 2px dashed var(--jd-water-deep);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── Arrival ─────────────────────────────────────────────── */
+
+.jd-arrival {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 5rem) 1.5rem 1rem;
+  text-align: center;
+}
+
+.jd-back {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--jd-ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--jd-dur-1) var(--jd-ease), border-color var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-back:hover {
+  color: var(--jd-ink);
+  border-bottom-color: var(--jd-water);
+}
+
+.jd-title {
+  margin: 1.75rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--jd-ink);
+}
+
+.jd-when {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  color: var(--jd-ink);
+}
+
+.jd-terms {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-lede {
+  max-width: 34rem;
+  margin: 1.5rem auto 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--jd-ink);
+}
+
+.jd-cue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 1.75rem;
+  font-family: var(--font-yomogi);
+  font-size: 1.05rem;
+  color: var(--jd-water-deep);
+  text-decoration: none;
+}
+
+.jd-cue svg {
+  width: 26px;
+  height: 34px;
+  stroke: var(--jd-water);
+  transition: transform var(--jd-dur-2) var(--jd-ease);
+}
+
+.jd-cue:hover svg {
+  transform: translateY(4px);
+}
+
+/* ── The lake ────────────────────────────────────────────── */
+
+.jd-lake-section {
+  position: relative;
+  z-index: 2;
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 0 0.5rem;
+}
+
+.jd-lake {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000 / 1200;
+}
+
+.jd-lake svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.jd-lake-fill {
+  fill: var(--jd-water-wash);
+  opacity: 0;
+  transition: opacity var(--jd-dur-3) var(--jd-ease) 1600ms;
+}
+
+.is-drawn .jd-lake-fill {
+  opacity: 1;
+}
+
+.jd-lake-path {
+  fill: none;
+  stroke: var(--jd-water);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--jd-dur-3) var(--jd-ease);
+}
+
+.jd-lake-dust {
+  fill: none;
+  stroke: var(--jd-water);
+  stroke-width: 9;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity var(--jd-dur-3) var(--jd-ease) 1200ms;
+}
+
+.is-drawn .jd-lake-path {
+  stroke-dashoffset: 0;
+}
+
+.is-drawn .jd-lake-dust {
+  opacity: 0.18;
+}
+
+.jd-child {
+  stroke: var(--jd-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0;
+  transition: opacity var(--jd-dur-2) var(--jd-ease);
+}
+
+.is-drawn .jd-child {
+  opacity: 0.85;
+}
+
+/* the one ambient element: shimmer drifting inside the lake */
+.jd-shimmer {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jd-drift 48s var(--jd-ease) infinite alternate;
+}
+
+@keyframes jd-drift {
+  from { transform: translate(-40px, -24px) scale(1); }
+  to { transform: translate(52px, 34px) scale(1.07); }
+}
+
+/* dishes on the shoreline */
+.jd-dishes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jd-dish {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--jd-rot, 0deg));
+  opacity: 0;
+  cursor: default;
+}
+
+.is-drawn .jd-dish {
+  opacity: 1;
+  transition: opacity var(--jd-dur-2) var(--jd-ease);
+  transition-delay: var(--jd-delay, 0ms);
+}
+
+.jd-dish-text {
+  display: inline-block;
+  max-width: 15ch;
+  font-family: var(--font-yomogi);
+  font-size: clamp(0.8rem, 2.4vw, 1.55rem);
+  line-height: 1.15;
+  text-align: center;
+  color: var(--jd-ink);
+  text-shadow:
+    0 0 8px var(--jd-paper),
+    0 0 14px var(--jd-paper);
+  transform: scale(1);
+  transition: transform var(--jd-dur-2) var(--jd-ease), color var(--jd-dur-2) var(--jd-ease);
+}
+
+.jd-dish:hover .jd-dish-text,
+.jd-dish:focus-within .jd-dish-text {
+  color: var(--jd-water-deep);
+  transform: scale(1.14);
+  animation: jd-bob 2.4s var(--jd-ease) infinite alternate;
+}
+
+@keyframes jd-bob {
+  from { transform: scale(1.14) translateY(0); }
+  to { transform: scale(1.14) translateY(-5px); }
+}
+
+.jd-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130px;
+  height: 130px;
+  margin: -65px 0 0 -65px;
+  border: 1.5px solid var(--jd-water);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.2);
+}
+
+.jd-dish:hover .jd-ripple,
+.jd-dish:focus-within .jd-ripple {
+  animation: jd-ripple var(--jd-dur-3) var(--jd-ease) infinite;
+}
+
+.jd-dish:hover .jd-ripple--late,
+.jd-dish:focus-within .jd-ripple--late {
+  animation-delay: 900ms;
+}
+
+@keyframes jd-ripple {
+  0% { transform: scale(0.2); opacity: 0.5; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+.jd-lake-caption {
+  position: relative;
+  z-index: 2;
+  margin: -1rem auto 0;
+  max-width: 30rem;
+  text-align: center;
+  font-family: var(--font-yomogi);
+  font-size: 1.05rem;
+  color: var(--jd-ink-soft);
+}
+
+/* ── The particulars ─────────────────────────────────────── */
+
+.jd-details {
+  position: relative;
+  z-index: 2;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: clamp(3rem, 7vw, 5.5rem) 1.5rem 0;
+}
+
+.jd-details p {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--jd-ink);
+}
+
+.jd-details strong {
+  font-family: var(--font-display);
+  font-weight: 650;
+}
+
+/* ── The booking ─────────────────────────────────────────── */
+
+.jd-book {
+  position: relative;
+  z-index: 4;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) 1rem 3rem;
+}
+
+.jd-book-panel {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--jd-ink);
+  border-radius: var(--jd-wobble);
+  padding: clamp(1.5rem, 4.5vw, 2.75rem);
+}
+
+.jd-book-title {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  letter-spacing: -0.01em;
+}
+
+.jd-book-sub {
+  margin: 0 0 1.75rem;
+  font-size: 0.95rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-h {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.05rem;
+  color: var(--jd-ink);
+}
+
+.jd-h .jd-opt {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-fieldset {
+  margin: 0 0 1.75rem;
+  padding: 0;
+  border: 0;
+}
+
+/* booking-mode tabs */
+.jd-modes {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.jd-mode {
+  flex: 1 1 12rem;
+  padding: 0.7rem 1rem;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--jd-ink);
+  text-align: center;
+  background: #fff;
+  border: 1.5px solid var(--jd-ink);
+  border-radius: var(--jd-wobble-sm);
+  cursor: pointer;
+  transition: background var(--jd-dur-1) var(--jd-ease), color var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-mode:hover {
+  transform: translateY(-1px);
+}
+
+.jd-mode[aria-pressed='true'] {
+  background: var(--jd-ink);
+  color: var(--jd-paper);
+}
+
+.jd-mode-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--jd-ink-soft);
+}
+
+/* seat stepper */
+.jd-stepper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.jd-step-btn {
+  width: 46px;
+  height: 46px;
+  border: 1.5px solid var(--jd-ink);
+  border-radius: var(--jd-wobble-sm);
+  background: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--jd-ink);
+  cursor: pointer;
+  transition: background var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-1) var(--jd-ease), opacity var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-step-btn:hover:not(:disabled) {
+  background: var(--jd-water-wash);
+  transform: translateY(-1px);
+}
+
+.jd-step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.jd-step-count {
+  min-width: 2ch;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+}
+
+.jd-step-note {
+  font-size: 0.85rem;
+  color: var(--jd-ink-soft);
+}
+
+/* beverage chips */
+.jd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.jd-chip {
+  position: relative;
+  padding: 0.5rem 0.95rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.98rem;
+  line-height: 1.2;
+  color: var(--jd-ink);
+  background: #fff;
+  border: 1.5px solid var(--jd-water-deep);
+  border-radius: var(--jd-wobble-sm);
+  cursor: pointer;
+  transition: background var(--jd-dur-1) var(--jd-ease), color var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-2) var(--jd-ease);
+}
+
+.jd-chip:hover {
+  transform: translateY(-2px) rotate(-0.5deg);
+}
+
+.jd-chip[aria-pressed='true'] {
+  background: var(--jd-water);
+  border-color: var(--jd-water);
+  color: #fff;
+}
+
+/* the shared checkout primitives, retuned to this page's language */
+.july-dinner-page .le-checkout-label {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--jd-ink);
+}
+
+.july-dinner-page .le-checkout-input,
+.july-dinner-page .le-checkout-textarea {
+  border: 1.5px solid #c9c7bd;
+  border-radius: 10px 12px 11px 13px / 13px 11px 12px 10px;
+  background: #fff;
+  color: var(--jd-ink);
+  transition: border-color var(--jd-dur-1) var(--jd-ease);
+}
+
+.july-dinner-page .le-checkout-input:focus,
+.july-dinner-page .le-checkout-textarea:focus {
+  border-color: var(--jd-water-deep);
+  outline: none;
+}
+
+.july-dinner-page .le-checkout-express-divider {
+  font-family: var(--font-yomogi);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* total + submit */
+.jd-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.25rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1.5px dashed var(--jd-water);
+}
+
+.jd-total-label {
+  font-family: var(--font-yomogi);
+  font-size: 1.05rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-total-value {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.6rem;
+}
+
+.jd-total-breakdown {
+  font-size: 0.85rem;
+  color: var(--jd-ink-soft);
+  text-align: right;
+}
+
+.jd-submit {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.1rem;
+  color: var(--jd-paper);
+  background: var(--jd-ink);
+  border: 2px solid var(--jd-ink);
+  border-radius: var(--jd-wobble);
+  cursor: pointer;
+  transition: background var(--jd-dur-1) var(--jd-ease), border-color var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-submit:hover:not(:disabled) {
+  background: var(--jd-accent);
+  border-color: var(--jd-accent);
+  transform: translateY(-1px);
+}
+
+.jd-submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.jd-error {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  color: #8c3a2b;
+  border: 1.5px solid #d78a72;
+  border-radius: var(--jd-wobble-sm);
+  background: #fdf4f1;
+}
+
+.jd-footnote {
+  margin: 0.9rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--jd-ink-soft);
+}
+
+/* success + sold out */
+.jd-done {
+  text-align: center;
+  padding: 1rem 0.5rem;
+}
+
+.jd-done-title {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.jd-done-copy {
+  max-width: 26rem;
+  margin: 0 auto 1rem;
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.jd-done-meta {
+  font-size: 0.82rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-done-ripple {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1.25rem;
+}
+
+.jd-done-ripple span {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--jd-water);
+  border-radius: 50%;
+  opacity: 0;
+  animation: jd-ripple 2.8s var(--jd-ease) infinite;
+}
+
+.jd-done-ripple span:nth-child(2) {
+  animation-delay: 900ms;
+}
+
+.jd-done-ripple span:nth-child(3) {
+  animation-delay: 1800ms;
+}
+
+/* ── Scattered snapshots ─────────────────────────────────── */
+
+.jd-photos {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.jd-photo {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(var(--jd-dx, 0px), var(--jd-dy, 0px)) rotate(var(--jd-prot, 0deg)) scale(1);
+  transition: transform var(--jd-dur-2) var(--jd-ease);
+  z-index: 3;
+}
+
+.jd-photo img {
+  display: block;
+  width: var(--jd-pw, 110px);
+  height: auto;
+  max-height: calc(var(--jd-pw, 110px) * 1.45);
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 10px rgba(35, 35, 31, 0.18);
+  pointer-events: none;
+  user-select: none;
+}
+
+.jd-photo:hover,
+.jd-photo:focus-visible {
+  z-index: 40;
+  transform: translate(var(--jd-dx, 0px), var(--jd-dy, 0px)) rotate(calc(var(--jd-prot, 0deg) / 2)) scale(1.7);
+}
+
+.jd-photo.is-expanded {
+  z-index: 45;
+  transform: translate(var(--jd-dx, 0px), var(--jd-dy, 0px)) rotate(0deg) scale(2.3);
+}
+
+.jd-photo.is-dragging {
+  z-index: 50;
+  cursor: grabbing;
+  transition: none;
+}
+
+/* ── Coda ────────────────────────────────────────────────── */
+
+.jd-coda {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 1.5rem 3rem;
+  text-align: center;
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+  color: var(--jd-ink-soft);
+}
+
+.jd-coda a {
+  color: var(--jd-water-deep);
+  text-decoration: none;
+}
+
+.jd-coda a:hover {
+  text-decoration: underline;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .jd-photo--wide {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .jd-photo img {
+    width: calc(var(--jd-pw, 110px) * 0.72);
+  }
+
+  .jd-photo.is-expanded {
+    transform: translate(var(--jd-dx, 0px), var(--jd-dy, 0px)) rotate(0deg) scale(1.9);
+  }
+
+  .jd-book {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* ── Reduced motion: same scene, already at rest ─────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .jd-lake-path {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+
+  .jd-lake-fill,
+  .jd-lake-dust,
+  .jd-child {
+    transition: none;
+  }
+
+  .jd-lake-fill { opacity: 1; }
+  .jd-lake-dust { opacity: 0.18; }
+  .jd-child { opacity: 0.85; }
+
+  .jd-dish {
+    opacity: 1;
+    transition: none;
+  }
+
+  .jd-shimmer {
+    animation: none;
+  }
+
+  .jd-dish:hover .jd-dish-text,
+  .jd-dish:focus-within .jd-dish-text {
+    animation: none;
+    transform: none;
+  }
+
+  .jd-dish:hover .jd-ripple,
+  .jd-dish:focus-within .jd-ripple {
+    animation: none;
+    opacity: 0.35;
+    transform: scale(1);
+  }
+
+  .jd-done-ripple span {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .jd-photo,
+  .jd-mode,
+  .jd-chip,
+  .jd-step-btn,
+  .jd-submit,
+  .jd-cue svg {
+    transition: none;
+  }
+}

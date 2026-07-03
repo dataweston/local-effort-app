@@ -79,6 +79,8 @@ const { registerCogsRollupRoutes } = require('./brain/cogsRollup');
 const { registerSquareReconcileRoutes } = require('./brain/squareReconcile');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
+const julyDinnerEventHandler = require('../../api-handlers/july-dinner/event');
+const julyDinnerCheckoutHandler = require('../../api-handlers/july-dinner/checkout');
 const pizzafunderPaymentLinkHandler = require('../../api-handlers/pizzafunder/payment-link');
 const foodTruckDepositLinkHandler = require('../../api-handlers/food-truck/deposit-link');
 const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday/process-payment');
@@ -1271,6 +1273,24 @@ app.all('/api/psyche/checkout', async (req, res, next) => {
     await psycheCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'psyche checkout handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/july-dinner/event', async (req, res, next) => {
+  try {
+    await julyDinnerEventHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'july dinner event handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/july-dinner/checkout', async (req, res, next) => {
+  try {
+    await julyDinnerCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'july dinner checkout handler failed');
     next(err);
   }
 });

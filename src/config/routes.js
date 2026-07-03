@@ -39,6 +39,12 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
+    path: '/julydinner',
+    title: 'Dinner in July - Tickets | Local Effort Cooperative',
+    description: 'Friday, July 17 at the Arthouse in North Minneapolis. One long table, 20 seats, a multi-course dinner from Local Effort. $70 per person, non-alcoholic beverage included.',
+    prerender: false,
+  },
+  {
     path: '/winterdinner',
     title: 'Winter Dinner - Local Effort Cooperative',
     description: 'Seasonal winter dinner experience from Local Effort.',

@@ -33,6 +33,7 @@ const WinterPizzaPage = lazy(() => import('./pages/WinterPizzaPage'));
 const JanuaryMealsPage = lazy(() => import('./pages/JanuaryMealsPage'));
 const FebruaryPage = lazy(() => import('./pages/FebruaryPage'));
 const PsychePage = lazy(() => import('./pages/PsychePage'));
+const JulyDinnerPage = lazy(() => import('./pages/JulyDinnerPage'));
 const FineFoodsPage = lazy(() => import('./pages/FineFoodsPage'));
 const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
@@ -55,6 +56,7 @@ const AppContent = () => {
   const isFullPageHome = location.pathname === '/';
   const hideHeader =
     location.pathname === '/weddings' ||
+    location.pathname === '/julydinner' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
@@ -65,6 +67,7 @@ const AppContent = () => {
     location.pathname === '/' ||
     location.pathname === '/sale' ||
     location.pathname === '/chez-garage' ||
+    location.pathname === '/julydinner' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
@@ -209,6 +212,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <PsychePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/julydinner"
+                  element={
+                    <AnimatedPage>
+                      <JulyDinnerPage />
                     </AnimatedPage>
                   }
                 />
