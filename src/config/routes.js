@@ -43,41 +43,9 @@ export const PUBLIC_ROUTES = [
     title: 'Local Effort Cooperative Serves Summer - July 17 Dinner at the Arthouse | Tickets',
     description: 'A summer dinner from Local Effort Cooperative: Friday, July 17, 2026 at the Arthouse, 4400 Lyndale Ave N in Minneapolis. One long table, a multi-course menu from Minnesota farms, $70 a seat. Book online.',
     prerender: true,
-    // Static FoodEvent structured data for the prerendered HTML (the page's
-    // live Helmet JSON-LD only appears after hydration — see static-export.js).
-    // Keep in sync with buildEventJsonLd in src/pages/JulyDinnerPage.jsx.
-    jsonLd: {
-      '@context': 'https://schema.org',
-      '@type': 'FoodEvent',
-      name: 'Dinner in July — Local Effort Cooperative',
-      description:
-        'One long table at the Arthouse in Minneapolis. A multi-course summer dinner drawn from Minnesota farms. $70 a seat, non-alcoholic drinks included.',
-      eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      startDate: '2026-07-17T18:30:00-05:00',
-      image: ['https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/s7fngt44mwpptmgoawxc'],
-      location: {
-        '@type': 'Place',
-        name: 'The Arthouse',
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: '4400 Lyndale Ave N',
-          addressLocality: 'Minneapolis',
-          addressRegion: 'MN',
-          postalCode: '55412',
-          addressCountry: 'US',
-        },
-      },
-      organizer: { '@type': 'Organization', name: 'Local Effort', url: 'https://www.localeffortfood.com' },
-      offers: {
-        '@type': 'Offer',
-        url: 'https://www.localeffortfood.com/julydinner',
-        price: '70.00',
-        priceCurrency: 'USD',
-        availability: 'https://schema.org/LimitedAvailability',
-        validFrom: '2026-07-01T00:00:00-05:00',
-      },
-    },
+    // FoodEvent JSON-LD comes from the page's Helmet (buildEventJsonLd in
+    // JulyDinnerPage.jsx), which reaches the prerendered HTML because the page
+    // is SSR-rendered in src/ssr/StaticApp.jsx — keep that route entry.
   },
   {
     path: '/winterdinner',

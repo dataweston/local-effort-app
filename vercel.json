@@ -282,6 +282,10 @@
       "dest": "/prerender/pizza-party/index.html"
     },
     {
+      "src": "^/julydinner$",
+      "dest": "/prerender/julydinner/index.html"
+    },
+    {
       "src": "^/february$",
       "dest": "/prerender/february/index.html"
     },

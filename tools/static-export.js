@@ -87,6 +87,14 @@ const routes = PUBLIC_ROUTES.filter(r => r.prerender).map(r => r.path);
 function inject(html, body, head) {
   let out = html.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
   if (head && typeof head === 'string' && head.trim()) {
+    // Drop the template's static title/description when the route provides its
+    // own — two <title> tags leave Google free to pick the generic one.
+    if (/<title[\s>]/.test(head)) {
+      out = out.replace(/<title>[^<]*<\/title>\s*/i, '');
+    }
+    if (/name="description"/.test(head)) {
+      out = out.replace(/<meta(?:[^>"]|"[^"]*")*name="description"(?:[^>"]|"[^"]*")*>\s*/i, '');
+    }
     out = out.replace('</head>', `${head}\n</head>`);
   }
   return out;

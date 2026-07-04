@@ -14,6 +14,10 @@ const INITIAL_GENERATED_AT = generatedSalePageData?.generatedAt || '';
 
 const FALLBACK_TITLE = 'Local Effort Sale';
 
+// Search-facing title — keyword-first, independent of the Sanity page label
+// (which is lowercase shop copy, not a search snippet). Matches routes.js /sale.
+const SEO_TITLE = 'Shop Seasonal Food Drops & Preorders | Local Effort Cooperative';
+
 const getProductSummary = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
   const summary = (portableText || product?.longDescription || product?.shortDescription || '')
@@ -136,16 +140,16 @@ const SalePage = () => {
   return (
     <div className="le-sale-page">
       <Helmet>
-        <title>{`${pageTitle} | Local Effort Cooperative`}</title>
+        <title>{SEO_TITLE}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content="Local Effort sale, Minneapolis food preorder, prepared foods Minneapolis, pantry goods Minneapolis, local delivery food, seasonal food drop" />
-        <meta property="og:title" content={`${pageTitle} | Local Effort Cooperative`} />
+        <meta property="og:title" content={SEO_TITLE} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SITE_URL}/sale`} />
         {heroImage && <meta property="og:image" content={heroImage} />}
         {heroImage && <meta name="twitter:image" content={heroImage} />}
-        <meta name="twitter:title" content={`${pageTitle} | Local Effort Cooperative`} />
+        <meta name="twitter:title" content={SEO_TITLE} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
         <link rel="canonical" href={`${SITE_URL}/sale`} />
@@ -158,6 +162,7 @@ const SalePage = () => {
 
       <nav className="le-sale-breadcrumb" aria-label="Breadcrumb">
         <Link to="/" className="le-sale-breadcrumb-link">← Home</Link>
+        <Link to="/julydinner" className="le-sale-breadcrumb-link">Dinner in July — July 17 →</Link>
         <button
           type="button"
           className="le-sale-bag-btn"
@@ -170,6 +175,9 @@ const SalePage = () => {
 
       <main id="products" className="le-sale-main">
         <section className="le-sale-products" aria-labelledby="sale-products-title">
+          <h1 id="sale-products-title" className="sr-only">
+            {pageTitle} — seasonal food drops, pantry goods, and preorders from Local Effort Cooperative in Minneapolis
+          </h1>
           <ProductGrid
             products={products}
             skuPrefix="LE"

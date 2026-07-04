@@ -97,6 +97,13 @@ const formatPhone = (value) => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
+// Dinner runs about three hours; Google's event rich results want an endDate.
+const eventEndDate = (startIso) => {
+  const start = new Date(startIso);
+  if (Number.isNaN(start.getTime())) return null;
+  return new Date(start.getTime() + 3 * 60 * 60 * 1000).toISOString();
+};
+
 const buildEventJsonLd = (event) => ({
   '@context': 'https://schema.org',
   '@type': 'FoodEvent',
@@ -105,6 +112,9 @@ const buildEventJsonLd = (event) => ({
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   ...(event.eventDateTime ? { startDate: event.eventDateTime } : {}),
+  ...(event.eventDateTime && eventEndDate(event.eventDateTime)
+    ? { endDate: eventEndDate(event.eventDateTime) }
+    : {}),
   image: [event.heroImageUrl || OG_IMAGE],
   location: {
     '@type': 'Place',
@@ -401,15 +411,15 @@ const JulyDinnerPage = () => {
   return (
     <div className="july-dinner-page">
       <Helmet>
-        <title>Local Effort Cooperative Serves Summer — Tickets | {SITE_NAME}</title>
+        <title>{`Local Effort Cooperative Serves Summer — ${event.dateLabel} Dinner at the Arthouse | Tickets`}</title>
         <meta
           name="description"
-          content={`${event.summary} $${formatMoney(event.priceCents)} per seat, ${event.capacity} seats total. Non-alcoholic beverage included.`}
+          content={`${event.summary} ${event.dateLabel}. $${formatMoney(event.priceCents)} per seat, ${event.capacity} seats total. Non-alcoholic beverage included — book online.`}
         />
         <link rel="canonical" href={`${SITE_URL}/julydinner`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SITE_URL}/julydinner`} />
-        <meta property="og:title" content={`Local Effort Cooperative Serves Summer — Tickets | ${SITE_NAME}`} />
+        <meta property="og:title" content={`Local Effort Cooperative Serves Summer — ${event.dateLabel} Dinner at the Arthouse | Tickets`} />
         <meta property="og:description" content={event.summary} />
         <meta property="og:image" content={event.heroImageUrl || OG_IMAGE} />
         <meta name="twitter:card" content="summary_large_image" />
