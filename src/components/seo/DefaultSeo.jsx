@@ -11,6 +11,7 @@ import {
   SOCIAL_LINKS,
 } from '../../config/siteMetadata';
 import { PUBLIC_ROUTES, INTERNAL_ROUTES } from '../../config/routes';
+import { MERCHANT_RETURN_POLICY_JSON_LD } from '../../config/returnPolicy';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../../data/cloudinaryContent';
 
 /**
@@ -93,6 +94,7 @@ export const DefaultSeo = () => {
           },
         ],
         logo: `${SITE_URL}/gallery/logo.png`,
+        hasMerchantReturnPolicy: MERCHANT_RETURN_POLICY_JSON_LD,
       },
       {
         '@context': 'https://schema.org',

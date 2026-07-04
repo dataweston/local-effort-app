@@ -42,6 +42,7 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 | 04:15 daily | `/api/brain/google-business-profile/sync` | Business Profile listing, Search/Maps metrics, and discovery keywords |
 | 04:30 daily | `/api/brain/google-merchant/sync` | Merchant Center account and product diagnostics |
 | 04:45 daily | `/api/brain/google-ads/sync` | Google Ads campaign and search-term performance |
+| 05:15 daily | `/api/brain/google-projection/run` | Google ledger events → graph (`googleGraphProjector.js`): `Web: <group>` Channel entities with traffic rollups, Offer/BusinessLine `USES_CHANNEL` Website edges from mapped landing pages, Campaign entities from Ads data |
 | 11:00 + 23:00 | `/api/brain/triage/run` | LLM inbox triage (`triageEngine.js`, Claude via `@anthropic-ai/sdk`, model `claude-opus-4-8`) — auto-trash / auto-create safe entities / hint everything else |
 
 Recurring jobs accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.

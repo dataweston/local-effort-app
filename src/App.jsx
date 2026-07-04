@@ -50,6 +50,7 @@ const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
 const BrainBrowserPage = lazy(() => import('./pages/BrainBrowserPage'));
 const HubPage = lazy(() => import('./pages/HubPage'));
 const LocalistPage = lazy(() => import('./pages/LocalistPage'));
+const ReturnPolicyPage = lazy(() => import('./pages/ReturnPolicyPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -166,6 +167,14 @@ const AppContent = () => {
                   }
                 />
                 <Route path="/salepage" element={<Navigate to="/sale" replace />} />
+                <Route
+                  path="/return-policy"
+                  element={
+                    <AnimatedPage>
+                      <ReturnPolicyPage />
+                    </AnimatedPage>
+                  }
+                />
                 <Route
                   path="/chez-garage"
                   element={

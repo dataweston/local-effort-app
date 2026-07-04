@@ -14,6 +14,7 @@ import PizzaPartyPage from '../pages/PizzaPartyPage';
 import PsychePage from '../pages/PsychePage';
 import FebruaryPage from '../pages/FebruaryPage';
 import JulyDinnerPage from '../pages/JulyDinnerPage';
+import ReturnPolicyPage from '../pages/ReturnPolicyPage';
 
 export default function StaticApp({ helmetContext }) {
   const location = useLocation();
@@ -31,6 +32,7 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/sale" element={<SalePage />} />
+              <Route path="/return-policy" element={<ReturnPolicyPage />} />
               <Route path="/happymonday" element={<HappyMondayPage />} />
               <Route path="/pizza-party" element={<PizzaPartyPage />} />
               <Route path="/psyche" element={<PsychePage />} />

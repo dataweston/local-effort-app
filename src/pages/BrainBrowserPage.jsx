@@ -16,7 +16,7 @@ const ENTITY_TYPES = [
   'PriceQuote', 'LedgerTransaction', 'PriceReference',
   'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
   'ProcessStep', 'Constraint', 'Asset', 'Opportunity', 'Risk', 'Metric',
-  'NarrativeTheme', 'Supplier', 'Task', 'Note', 'Event',
+  'NarrativeTheme', 'Supplier', 'Task', 'Note', 'Event', 'Campaign',
 ];
 
 const TYPE_COLORS = {
@@ -43,6 +43,7 @@ const TYPE_COLORS = {
   Offer:          '#1565c0',
   Occasion:       '#6a0dad',
   Channel:        '#00838f',
+  Campaign:       '#ad1457',
   CustomerSegment:'#1b5e20',
   // Operations
   ProcessStep:    '#e65100',

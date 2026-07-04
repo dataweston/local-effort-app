@@ -356,7 +356,7 @@ const RELATIONSHIPS = {
     description: 'An occasion triggers demand for an offer.',
   },
   USES_CHANNEL: {
-    src: ['Customer', 'CustomerSegment', 'Offer', 'BusinessLine'],
+    src: ['Customer', 'CustomerSegment', 'Offer', 'BusinessLine', 'Campaign'],
     dst: ['Channel'],
     inverseLabel: 'CHANNEL_USED_BY',
     selfEdge: false,

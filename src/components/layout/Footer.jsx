@@ -16,6 +16,7 @@ export const Footer = () => {
           <nav className="fullpage-demo-footer-links" aria-label="Footer">
             <a href="/releases" className="fullpage-demo-footer-link">Press</a>
             <a href="/happymonday" className="fullpage-demo-footer-link">For Happy Monday</a>
+            <a href="/return-policy" className="fullpage-demo-footer-link">Returns</a>
           </nav>
           <div className="fullpage-demo-footer-actions">
             <button

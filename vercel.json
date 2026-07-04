@@ -45,6 +45,10 @@
       "schedule": "45 4 * * *"
     },
     {
+      "path": "/api/brain/google-projection/run",
+      "schedule": "15 5 * * *"
+    },
+    {
       "path": "/api/brain/triage/run",
       "schedule": "0 11 * * *"
     },
@@ -272,6 +276,10 @@
     {
       "src": "^/sale$",
       "dest": "/prerender/sale/index.html"
+    },
+    {
+      "src": "^/return-policy$",
+      "dest": "/prerender/return-policy/index.html"
     },
     {
       "src": "^/happymonday$",

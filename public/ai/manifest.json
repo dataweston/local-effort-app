@@ -1,7 +1,7 @@
 {
   "site": "https://www.localeffortfood.com",
   "name": "Local Effort Cooperative",
-  "updated": "2026-06-12T00:00:00Z",
+  "updated": "2026-07-04T00:00:00Z",
   "description": "Twin Cities personal chef, small-event catering, and product checkout surfaces with public machine-readable APIs, feeds, and agent commerce endpoints.",
   "mcpServers": [
     {
@@ -55,6 +55,7 @@
     "Primary public machine-readable endpoints are /api/public/site, /api/support/search, /sitemap.xml, /api/sitemap.xml, /.well-known/ucp, and /.well-known/mcp.",
     "Home-page service sections live at /#small-events and /#for-businesses; those are anchors on the home document, not standalone pages.",
     "Core commerce pages include /sale, /book, /pizza-party, /psyche, /february, and /weekly-order.",
+    "The standard United States return and exchange policy is published at /return-policy.",
     "Event booking with instant estimates and deposits lives at /book.",
     "Some checkout flows are JS-enhanced and may continue into hosted checkout after the public landing page.",
     "Form endpoints include a honeypot field named 'website'; leave it empty or omit it, otherwise the submission is silently discarded.",
@@ -64,6 +65,7 @@
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
     { "path": "/book", "title": "Book a Private Event", "summary": "Book a chef-led dinner party, pizza party, wedding, or small event; instant estimate and deposit." },
     { "path": "/sale", "title": "Sale", "summary": "Public sale catalog and checkout surface." },
+    { "path": "/return-policy", "title": "Return and Exchange Policy", "summary": "United States policy: eligible new products may be returned or exchanged within 5 days by mail with free return shipping and no restocking fee." },
     { "path": "/releases", "title": "Releases", "summary": "Press releases and media updates." },
     { "path": "/blog", "title": "Blog", "summary": "News, stories, and updates from Local Effort Cooperative" },
     { "path": "/happymonday", "title": "Happy Monday", "summary": "Weekly menu and ordering page." },

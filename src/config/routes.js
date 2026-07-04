@@ -27,6 +27,12 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
+    path: '/return-policy',
+    title: 'Return & Exchange Policy - Local Effort Cooperative',
+    description: 'Return and exchange policy for Local Effort Cooperative products: five-day window, free return shipping by mail, and no restocking fees.',
+    prerender: true,
+  },
+  {
     path: '/happymonday',
     title: 'For Happy Monday - Local Effort Cooperative',
     description: 'Local Effort menu and ordering for Happy Monday.',

@@ -82,6 +82,7 @@ const { registerGoogleBusinessAuthRoutes } = require('./brain/googleBusinessAuth
 const { registerGoogleBusinessProfileRoutes } = require('./brain/googleBusinessProfileSync');
 const { registerGoogleMerchantRoutes } = require('./brain/googleMerchantSync');
 const { registerGoogleAdsRoutes } = require('./brain/googleAdsSync');
+const { registerGoogleProjectionRoutes } = require('./brain/googleGraphProjector');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const julyDinnerEventHandler = require('../../api-handlers/july-dinner/event');
@@ -594,6 +595,7 @@ registerGoogleBusinessAuthRoutes(app, { logger });
 registerGoogleBusinessProfileRoutes(app, { logger });
 registerGoogleMerchantRoutes(app, { logger });
 registerGoogleAdsRoutes(app, { logger });
+registerGoogleProjectionRoutes(app, { logger });
 
 // Nightly brain jobs run via Vercel crons (see vercel.json):
 //   /api/brain/triage/run, /api/brain/inference/run,

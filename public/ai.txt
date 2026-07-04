@@ -4,12 +4,13 @@
 site: https://www.localeffortfood.com/
 manifest: https://www.localeffortfood.com/ai/manifest.json
 llms-txt: https://www.localeffortfood.com/llms.txt
-last-updated: 2026-06-12
+last-updated: 2026-07-04
 
 primary-pages:
 - /              Home page with service overview, testimonials, and business information
 - /book          Book a private event (dinner party, pizza party, wedding, small event) with instant estimate + deposit
 - /sale          Public sale catalog page
+- /return-policy Returns and exchanges: 5-day window, free return shipping by mail, no restocking fee
 - /releases      Press releases and media updates
 - /blog          Blog index ("Local Report")
 - /happymonday   Weekly menu and ordering page for Happy Monday

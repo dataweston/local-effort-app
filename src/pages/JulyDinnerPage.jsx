@@ -41,6 +41,7 @@ const DEFAULT_DISHES = [
   'melon and mint',
   'raspberries with yogurt',
   'tomatoes',
+  'carrots and celery',
   'currant kombucha',
   'mustard green kimchi',
   'ice cream',

@@ -4,6 +4,27 @@
   "services": ["personal chef", "meal prep", "event catering"],
   "serviceArea": ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
   "url": "https://www.localeffortfood.com",
+  "hasMerchantReturnPolicy": {
+    "@type": "MerchantReturnPolicy",
+    "applicableCountry": "US",
+    "returnPolicyCountry": "US",
+    "merchantReturnLink": "https://www.localeffortfood.com/return-policy",
+    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+    "merchantReturnDays": 5,
+    "itemCondition": "https://schema.org/NewCondition",
+    "returnMethod": "https://schema.org/ReturnByMail",
+    "returnFees": "https://schema.org/FreeReturn",
+    "returnLabelSource": "https://schema.org/ReturnLabelInBox",
+    "refundType": [
+      "https://schema.org/FullRefund",
+      "https://schema.org/ExchangeRefund"
+    ],
+    "restockingFee": {
+      "@type": "MonetaryAmount",
+      "value": 0,
+      "currency": "USD"
+    }
+  },
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Roseville",

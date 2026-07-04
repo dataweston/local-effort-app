@@ -165,10 +165,36 @@ and actual search terms. The integration never creates or changes campaigns.
 | 04:15 | Business Profile |
 | 04:30 | Merchant Center |
 | 04:45 | Google Ads |
+| 05:15 | Graph projection |
 
-All four jobs are included in `/api/brain/jobs/freshness` with a 24-hour SLA.
-Until credentials and account grants are complete, the jobs will correctly show
-as stale or errored.
+All jobs are included in `/api/brain/jobs/freshness` with a 24-hour SLA.
+Until credentials and account grants are complete, the sync jobs will correctly
+show as stale or errored.
+
+## Graph projection
+
+The syncs write ledger events only. `backend/api/brain/googleGraphProjector.js`
+(`/api/brain/google-projection/run`, job `google-graph-projection`) projects the
+durable facts into the graph on a nightly cron:
+
+- One `Channel` entity per observed GA4 default channel group
+  (`Web: Organic Search`, `Web: Direct`, …) plus
+  `Website (localeffortfood.com)`, each carrying a recomputed
+  `properties.webTraffic` rollup (all-time + last-28d, top sources/pages).
+- `Offer|BusinessLine -[USES_CHANNEL]-> Website` edges for landing pages in
+  the curated `LANDING_PATH_MAP`. Unmapped pages are reported in the run
+  output (`unmappedReport`) — that report is the worklist for extending the
+  map. Targets are matched against existing entities, never minted.
+- One `Campaign` entity per Google Ads campaign (keyed on campaign id, names
+  are mutable) with a `properties.adsPerformance` rollup and a
+  `USES_CHANNEL` edge to the `Google Ads` channel. Dormant until the Ads
+  account produces `google.ads.campaign.daily` events.
+
+Daily metric series stay in the ledger. Re-running is idempotent: rollups are
+recomputed from the ledger, edges upserted on
+(src, dst, relType, sourceType=`google_graph_projection`). Business Profile
+and Merchant events are not projected yet — add those projections once real
+payloads exist to test against.
 
 ## Organic search gap
 

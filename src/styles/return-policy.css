@@ -1,0 +1,127 @@
+@import './brand-tokens.css';
+
+.return-policy-page {
+  min-height: 100vh;
+  padding: clamp(2.5rem, 7vw, 6rem) 1rem;
+  color: var(--color-text-primary);
+  background:
+    radial-gradient(circle at top right, rgba(198, 108, 120, 0.14), transparent 34rem),
+    var(--color-bg-page);
+}
+
+.return-policy-card {
+  width: min(100%, 54rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  border: 1px solid rgba(58, 46, 63, 0.22);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1.5rem 4rem rgba(58, 46, 63, 0.08);
+}
+
+.return-policy-header {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(58, 46, 63, 0.2);
+}
+
+.return-policy-kicker {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.return-policy-header h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 7vw, 4.5rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.return-policy-header > p:not(.return-policy-kicker) {
+  max-width: 42rem;
+  margin: 1.25rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.return-policy-effective {
+  font-size: 0.9rem !important;
+}
+
+.return-policy-card section {
+  padding-top: 2.25rem;
+}
+
+.return-policy-card h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.return-policy-card p,
+.return-policy-card li,
+.return-policy-card dd {
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.return-policy-card p {
+  margin: 0.75rem 0 0;
+}
+
+.return-policy-card ol {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.return-policy-card li + li {
+  margin-top: 0.65rem;
+}
+
+.return-policy-card a {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--brand-rose);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.16em;
+}
+
+.return-policy-summary {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(58, 46, 63, 0.18);
+  border-radius: 0.85rem;
+}
+
+.return-policy-summary > div {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.8fr) minmax(0, 1.5fr);
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.return-policy-summary > div + div {
+  border-top: 1px solid rgba(58, 46, 63, 0.14);
+}
+
+.return-policy-summary dt {
+  font-weight: 700;
+}
+
+.return-policy-summary dd {
+  margin: 0;
+}
+
+@media (max-width: 36rem) {
+  .return-policy-summary > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
