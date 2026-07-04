@@ -118,7 +118,14 @@ function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
           .filter(Boolean)
           .join('\n')
       : '';
-    const full = inject(template, bodyHtml, head);
+    // Lazy-loaded pages render as a Suspense fallback here, so their Helmet
+    // JSON-LD never reaches the static HTML. Routes can declare a static
+    // `jsonLd` object in routes.js to get structured data into the export.
+    const routeMeta = PUBLIC_ROUTES.find((r) => r.path === url);
+    const jsonLdTag = routeMeta && routeMeta.jsonLd
+      ? `<script type="application/ld+json">${JSON.stringify(routeMeta.jsonLd)}</script>`
+      : '';
+    const full = inject(template, bodyHtml, [head, jsonLdTag].filter(Boolean).join('\n'));
     const outDir = path.join(process.cwd(), 'prerender', url === '/' ? '' : url);
     const outPath = path.join(outDir, 'index.html');
     ensureDir(outDir);

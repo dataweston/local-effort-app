@@ -449,7 +449,7 @@ const JulyDinnerPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Camden, Minneapolis
+                Minneapolis
               </a>
               <span className="jd-map-preview" aria-hidden="true">
                 {mapReady && (
@@ -788,7 +788,8 @@ const JulyDinnerPage = () => {
               <ul className="le-grid jd-shop-grid">
                 {shopProducts.map((product) => (
                   <li key={product.id || product.slug} className="le-grid-item">
-                    <a className="le-tile" href={product.slug ? `/product/${product.slug}` : '/sale'}>
+                    {/* straight to /sale — the /product/:slug page has no cart */}
+                    <a className="le-tile" href="/sale">
                       <span className="le-tile-image-wrap">
                         {product.images?.[0] ? (
                           <img
