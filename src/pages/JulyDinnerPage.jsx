@@ -58,6 +58,17 @@ const SHOW_SEATS_REMAINING = false;
 
 const CONTACT_EMAIL = 'yum@localeffortfood.com';
 
+// Social/search card image (Cloudinary, 1200×630) — also feeds the event JSON-LD.
+const OG_IMAGE =
+  'https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/s7fngt44mwpptmgoawxc';
+
+// GA4 is loaded site-wide (index.html); these feed Analytics + Ads conversions.
+const gaEvent = (name, params) => {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('event', name, params);
+  }
+};
+
 // Must match BEVERAGE_OPTIONS in api-handlers/july-dinner/_event.js.
 const BEVERAGE_OPTIONS = [
   'single glass of wine',
@@ -94,10 +105,18 @@ const buildEventJsonLd = (event) => ({
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   ...(event.eventDateTime ? { startDate: event.eventDateTime } : {}),
+  image: [event.heroImageUrl || OG_IMAGE],
   location: {
     '@type': 'Place',
     name: event.location,
-    address: { '@type': 'PostalAddress', addressLocality: 'Minneapolis', addressRegion: 'MN', addressCountry: 'US' },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '4400 Lyndale Ave N',
+      addressLocality: 'Minneapolis',
+      addressRegion: 'MN',
+      postalCode: '55412',
+      addressCountry: 'US',
+    },
   },
   organizer: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
   offers: {
@@ -106,6 +125,7 @@ const buildEventJsonLd = (event) => ({
     price: plainMoney(event.priceCents),
     priceCurrency: 'USD',
     availability: 'https://schema.org/LimitedAvailability',
+    validFrom: '2026-07-01T00:00:00-05:00',
   },
 });
 
@@ -249,6 +269,16 @@ const JulyDinnerPage = () => {
       throw new Error(data?.error || 'Payment failed.');
     }
     trackEvent('order.placed', { store: 'july-dinner', sessionId: checkoutAttemptId, paymentId: data?.paymentId, bookingType });
+    gaEvent('purchase', {
+      transaction_id: data?.paymentId || checkoutAttemptId,
+      currency: 'USD',
+      value: (data?.amountCents ?? totalCents) / 100,
+      items: [
+        bookingType === 'buyout'
+          ? { item_id: 'july-dinner-buyout', item_name: 'Dinner in July buy-out', price: event.buyoutPriceCents / 100, quantity: 1 }
+          : { item_id: 'july-dinner-seat', item_name: 'Dinner in July seat', price: event.priceCents / 100, quantity },
+      ],
+    });
     setPaymentId(data?.paymentId || '');
     setEmailStatus(data?.emailStatus || null);
     setConfirmed({ bookingType, quantity, partySize });
@@ -381,7 +411,7 @@ const JulyDinnerPage = () => {
         <meta property="og:url" content={`${SITE_URL}/julydinner`} />
         <meta property="og:title" content={`Local Effort Cooperative Serves Summer — Tickets | ${SITE_NAME}`} />
         <meta property="og:description" content={event.summary} />
-        {event.heroImageUrl && <meta property="og:image" content={event.heroImageUrl} />}
+        <meta property="og:image" content={event.heroImageUrl || OG_IMAGE} />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">{JSON.stringify(buildEventJsonLd(event))}</script>
       </Helmet>
@@ -419,7 +449,7 @@ const JulyDinnerPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                North Minneapolis
+                Camden, Minneapolis
               </a>
               <span className="jd-map-preview" aria-hidden="true">
                 {mapReady && (
@@ -445,7 +475,14 @@ const JulyDinnerPage = () => {
           <button
             type="button"
             className="jd-buy"
-            onClick={() => setShowCheckout(true)}
+            onClick={() => {
+              setShowCheckout(true);
+              gaEvent('begin_checkout', {
+                currency: 'USD',
+                value: (event.priceCents * quantity) / 100,
+                items: [{ item_id: 'july-dinner-seat', item_name: 'Dinner in July seat', price: event.priceCents / 100, quantity }],
+              });
+            }}
           >
             buy tickets
           </button>
@@ -721,9 +758,6 @@ const JulyDinnerPage = () => {
                       : `Reserve your seat — $${formatMoney(totalCents)}`}
               </button>
 
-              <p className="jd-footnote">
-                Instant confirmation by email, with every detail you need. Questions? Reply to it — a human answers.
-              </p>
             </form>
           )}
         </div>

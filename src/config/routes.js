@@ -40,9 +40,9 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/julydinner',
-    title: 'Dinner in July - Tickets | Local Effort Cooperative',
-    description: 'Friday, July 17 at the Arthouse in North Minneapolis. One long table, 20 seats, a multi-course dinner from Local Effort. $70 per person, non-alcoholic beverage included.',
-    prerender: false,
+    title: 'Local Effort Cooperative Serves Summer - July 17 Dinner at the Arthouse | Tickets',
+    description: 'A summer dinner from Local Effort Cooperative: Friday, July 17, 2026 at the Arthouse, 4400 Lyndale Ave N in Camden, Minneapolis. One long table, a multi-course menu from Minnesota farms, $70 a seat. Book online.',
+    prerender: true,
   },
   {
     path: '/winterdinner',
