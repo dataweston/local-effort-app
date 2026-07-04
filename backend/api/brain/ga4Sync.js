@@ -15,11 +15,13 @@
  */
 
 const crypto = require('crypto');
+const { GoogleAuth } = require('google-auth-library');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent } = require('./ledger');
 const { withJobRun } = require('./jobRuns');
 const {
   getAuthorizedOAuthClient,
+  googleApiRequest,
   isAuthorizedCron,
   timingSafeEqual,
 } = require('./googleBusinessAuth');
@@ -82,24 +84,28 @@ function parseServiceAccountCredentials(env = process.env) {
 }
 
 async function createAnalyticsClient(env = process.env) {
-  let google;
-  try {
-    ({ google } = require('googleapis'));
-  } catch {
-    throw new Error('googleapis package is required for GA4 sync');
-  }
-
   const credentials = parseServiceAccountCredentials(env);
+  let auth;
   if (!credentials && !env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const auth = await getAuthorizedOAuthClient();
-    return google.analyticsdata({ version: 'v1beta', auth });
+    auth = await getAuthorizedOAuthClient();
+  } else {
+    auth = new GoogleAuth({
+      ...(credentials ? { credentials } : {}),
+      scopes: [ANALYTICS_SCOPE],
+    });
   }
 
-  const auth = new google.auth.GoogleAuth({
-    ...(credentials ? { credentials } : {}),
-    scopes: [ANALYTICS_SCOPE],
-  });
-  return google.analyticsdata({ version: 'v1beta', auth });
+  return {
+    properties: {
+      runReport: async ({ property, requestBody }) => ({
+        data: await googleApiRequest(
+          auth,
+          `https://analyticsdata.googleapis.com/v1beta/${property}:runReport`,
+          { method: 'POST', body: requestBody }
+        ),
+      }),
+    },
+  };
 }
 
 async function runPagedReport(client, propertyId, report, daysBack) {

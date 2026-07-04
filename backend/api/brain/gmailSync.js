@@ -17,6 +17,8 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { writeLedgerEvent, createInboxItem } = require('./ledger');
+const { OAuth2Client } = require('google-auth-library');
+const { gmail: createGmailClient } = require('@googleapis/gmail');
 
 const GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const GMAIL_TOKEN_LABEL = 'gmail-sync';
@@ -24,20 +26,11 @@ const GMAIL_TOKEN_LABEL = 'gmail-sync';
 // ── OAuth helpers ────────────────────────────────────────────────────────────
 
 function getOAuthClient() {
-  const { google } = requireGoogle();
-  return new google.auth.OAuth2(
+  return new OAuth2Client(
     process.env.GMAIL_CLIENT_ID,
     process.env.GMAIL_CLIENT_SECRET,
     process.env.GMAIL_REDIRECT_URI || `${process.env.VITE_PUBLIC_URL || 'https://localeffortfood.com'}/api/brain/gmail/callback`
   );
-}
-
-function requireGoogle() {
-  try {
-    return require('googleapis');
-  } catch {
-    throw new Error('googleapis package not installed — run: pnpm add googleapis');
-  }
 }
 
 function getAuthUrl() {
@@ -126,9 +119,9 @@ async function loadGmailTokens() {
   });
   if (!row?.tokenData) return null;
   const raw = row.tokenData;
-  // Normalize python google-auth-oauthlib format → googleapis format
+  // Normalize python google-auth-oauthlib format for google-auth-library.
   // Python writes: { token, refresh_token, token_uri, client_id, client_secret, scopes }
-  // googleapis expects: { access_token, refresh_token, expiry_date, ... }
+  // OAuth2Client expects: { access_token, refresh_token, expiry_date, ... }
   if (raw.token && !raw.access_token) {
     return {
       access_token: raw.token,
@@ -209,7 +202,6 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
     throw new Error('Gmail not authorized — visit /api/brain/gmail/auth to connect');
   }
 
-  const { google } = requireGoogle();
   const oauth2Client = getOAuthClient();
   oauth2Client.setCredentials(tokens);
 
@@ -219,7 +211,7 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
     }
   });
 
-  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+  const gmail = createGmailClient({ version: 'v1', auth: oauth2Client });
   const prisma = getPrisma();
 
   // Build after: date string for Gmail query (YYYY/MM/DD)

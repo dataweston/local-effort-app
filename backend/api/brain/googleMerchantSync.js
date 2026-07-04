@@ -6,12 +6,12 @@
  * trail without letting an automated job mutate products or settings.
  */
 
-const { google } = require('googleapis');
 const { writeLedgerEvent } = require('./ledger');
 const { withJobRun } = require('./jobRuns');
 const {
   authorizeGoogleJobRequest,
   getAuthorizedOAuthClient,
+  googleApiRequest,
 } = require('./googleBusinessAuth');
 
 function accountName(value) {
@@ -20,51 +20,57 @@ function accountName(value) {
   return `accounts/${id}`;
 }
 
-async function discoverMerchantAccounts(client) {
+async function discoverMerchantAccounts(auth) {
   const configured = String(process.env.MERCHANT_CENTER_ACCOUNT_ID || '').trim();
   if (configured) return [{ name: accountName(configured) }];
 
   const accounts = [];
   let pageToken;
   do {
-    const response = await client.accounts.list({
-      pageSize: 500,
-      ...(pageToken ? { pageToken } : {}),
-    });
-    accounts.push(...(response.data.accounts || []));
-    pageToken = response.data.nextPageToken;
+    const params = new URLSearchParams({ pageSize: '500' });
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await googleApiRequest(
+      auth,
+      `https://merchantapi.googleapis.com/accounts/v1/accounts?${params}`
+    );
+    accounts.push(...(data.accounts || []));
+    pageToken = data.nextPageToken;
   } while (pageToken);
   return accounts;
 }
 
-async function listAccountIssues(client, parent) {
+async function listAccountIssues(auth, parent) {
   const issues = [];
   let pageToken;
   do {
-    const response = await client.accounts.issues.list({
-      parent,
-      pageSize: 100,
+    const params = new URLSearchParams({
+      pageSize: '100',
       languageCode: 'en-US',
       timeZone: 'America/Chicago',
-      ...(pageToken ? { pageToken } : {}),
     });
-    issues.push(...(response.data.accountIssues || []));
-    pageToken = response.data.nextPageToken;
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await googleApiRequest(
+      auth,
+      `https://merchantapi.googleapis.com/accounts/v1/${parent}/issues?${params}`
+    );
+    issues.push(...(data.accountIssues || []));
+    pageToken = data.nextPageToken;
   } while (pageToken);
   return issues;
 }
 
-async function listAggregateProductStatuses(client, parent) {
+async function listAggregateProductStatuses(auth, parent) {
   const statuses = [];
   let pageToken;
   do {
-    const response = await client.accounts.aggregateProductStatuses.list({
-      parent,
-      pageSize: 250,
-      ...(pageToken ? { pageToken } : {}),
-    });
-    statuses.push(...(response.data.aggregateProductStatuses || []));
-    pageToken = response.data.nextPageToken;
+    const params = new URLSearchParams({ pageSize: '250' });
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await googleApiRequest(
+      auth,
+      `https://merchantapi.googleapis.com/issueresolution/v1/${parent}/aggregateProductStatuses?${params}`
+    );
+    statuses.push(...(data.aggregateProductStatuses || []));
+    pageToken = data.nextPageToken;
   } while (pageToken);
   return statuses;
 }
@@ -103,9 +109,7 @@ function today() {
 
 async function runGoogleMerchantSync({ logger, auth: authOverride = null } = {}) {
   const auth = authOverride || await getAuthorizedOAuthClient();
-  const accountClient = google.merchantapi({ version: 'accounts_v1', auth });
-  const issueClient = google.merchantapi({ version: 'issueresolution_v1', auth });
-  const accounts = await discoverMerchantAccounts(accountClient);
+  const accounts = await discoverMerchantAccounts(auth);
   if (!accounts.length) throw new Error('No accessible Merchant Center accounts found');
 
   const stats = {
@@ -124,8 +128,8 @@ async function runGoogleMerchantSync({ logger, auth: authOverride = null } = {})
     try {
       const parent = accountName(account.name);
       const [accountIssues, productStatuses] = await Promise.all([
-        listAccountIssues(accountClient, parent),
-        listAggregateProductStatuses(issueClient, parent),
+        listAccountIssues(auth, parent),
+        listAggregateProductStatuses(auth, parent),
       ]);
       const productSummary = summarizeProductStatuses(productStatuses);
       stats.rowsSeen += accountIssues.length + productStatuses.length;

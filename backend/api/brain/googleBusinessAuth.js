@@ -6,6 +6,7 @@
  */
 
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 
@@ -18,14 +19,6 @@ const SCOPES = [
 ];
 
 const verifyAdminRequest = createAdminVerifier();
-
-function requireGoogle() {
-  try {
-    return require('googleapis');
-  } catch {
-    throw new Error('googleapis package is required for Google integrations');
-  }
-}
 
 function redirectUri() {
   return process.env.GOOGLE_BUSINESS_REDIRECT_URI
@@ -41,8 +34,7 @@ function createOAuthClient() {
       + 'or reuse GMAIL_CLIENT_ID/SECRET'
     );
   }
-  const { google } = requireGoogle();
-  return new google.auth.OAuth2(clientId, clientSecret, redirectUri());
+  return new OAuth2Client(clientId, clientSecret, redirectUri());
 }
 
 function stateSecret() {
@@ -135,6 +127,62 @@ async function getAuthorizedOAuthClient() {
   return client;
 }
 
+async function getGoogleAccessToken(auth) {
+  const result = await auth.getAccessToken();
+  const token = typeof result === 'string' ? result : result?.token;
+  if (!token) throw new Error('Unable to obtain Google OAuth access token');
+  return token;
+}
+
+function googleErrorMessage(body, status, rawText) {
+  const root = body?.error || body;
+  const messages = [];
+  if (root?.message) messages.push(root.message);
+  for (const detail of root?.details || []) {
+    for (const failure of detail?.errors || []) {
+      const code = failure.errorCode
+        ? Object.entries(failure.errorCode).map(([key, value]) => `${key}.${value}`).join(',')
+        : null;
+      messages.push([code, failure.message].filter(Boolean).join(': '));
+    }
+  }
+  if (!messages.length && rawText) messages.push(rawText.slice(0, 1000));
+  return messages.filter(Boolean).join(' | ') || `Google API HTTP ${status}`;
+}
+
+async function googleApiRequest(auth, url, {
+  method = 'GET',
+  body,
+  headers = {},
+} = {}) {
+  const token = await getGoogleAccessToken(auth);
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...headers,
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const rawText = await response.text();
+  let data = {};
+  if (rawText) {
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = {};
+    }
+  }
+  if (!response.ok) {
+    const error = new Error(googleErrorMessage(data, response.status, rawText));
+    error.status = response.status;
+    error.requestId = response.headers.get('request-id') || null;
+    throw error;
+  }
+  return data;
+}
+
 function timingSafeEqual(left, right) {
   const a = Buffer.from(String(left || ''));
   const b = Buffer.from(String(right || ''));
@@ -199,7 +247,9 @@ function registerGoogleBusinessAuthRoutes(app, { logger } = {}) {
 module.exports = {
   SCOPES,
   authorizeGoogleJobRequest,
+  getGoogleAccessToken,
   getAuthorizedOAuthClient,
+  googleApiRequest,
   isAuthorizedCron,
   registerGoogleBusinessAuthRoutes,
   timingSafeEqual,

@@ -11,19 +11,13 @@ const { withJobRun } = require('./jobRuns');
 const {
   authorizeGoogleJobRequest,
   getAuthorizedOAuthClient,
+  googleApiRequest,
 } = require('./googleBusinessAuth');
 
 function normalizeCustomerId(value) {
   const id = String(value || '').replace(/\D/g, '');
   if (!/^\d{10}$/.test(id)) throw new Error('Google Ads customer ID must contain 10 digits');
   return id;
-}
-
-async function accessToken(auth) {
-  const result = await auth.getAccessToken();
-  const token = typeof result === 'string' ? result : result?.token;
-  if (!token) throw new Error('Unable to obtain Google Ads OAuth access token');
-  return token;
 }
 
 function apiConfig() {
@@ -38,33 +32,21 @@ function apiConfig() {
   };
 }
 
-function requestHeaders(token, config) {
+function requestHeaders(config) {
   return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
     'developer-token': config.developerToken,
     ...(config.loginCustomerId ? { 'login-customer-id': config.loginCustomerId } : {}),
   };
-}
-
-async function googleAdsRequest(url, options) {
-  const response = await fetch(url, options);
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = body?.error?.message || body?.message || `Google Ads API HTTP ${response.status}`;
-    throw new Error(message);
-  }
-  return body;
 }
 
 async function resolveCustomerId(auth, config) {
   if (process.env.GOOGLE_ADS_CUSTOMER_ID) {
     return normalizeCustomerId(process.env.GOOGLE_ADS_CUSTOMER_ID);
   }
-  const token = await accessToken(auth);
-  const body = await googleAdsRequest(
+  const body = await googleApiRequest(
+    auth,
     `https://googleads.googleapis.com/${config.version}/customers:listAccessibleCustomers`,
-    { headers: requestHeaders(token, config) }
+    { headers: requestHeaders(config) }
   );
   const ids = (body.resourceNames || []).map((name) => normalizeCustomerId(name));
   if (ids.length === 1) return ids[0];
@@ -73,13 +55,13 @@ async function resolveCustomerId(auth, config) {
 }
 
 async function searchStream(auth, config, customerId, query) {
-  const token = await accessToken(auth);
-  const body = await googleAdsRequest(
+  const body = await googleApiRequest(
+    auth,
     `https://googleads.googleapis.com/${config.version}/customers/${customerId}/googleAds:searchStream`,
     {
       method: 'POST',
-      headers: requestHeaders(token, config),
-      body: JSON.stringify({ query }),
+      headers: requestHeaders(config),
+      body: { query },
     }
   );
   const batches = Array.isArray(body) ? body : [body];

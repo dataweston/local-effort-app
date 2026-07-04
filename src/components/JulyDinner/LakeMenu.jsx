@@ -183,8 +183,8 @@ const LakeMenu = ({ dishes, onShop }) => {
       )}
 
       {/* muttering, as one does while drawing a lake */}
-      <div className="jd-mutter jd-mutter-1" aria-hidden="true">hrmph… lake…</div>
-      <div className="jd-mutter jd-mutter-2" aria-hidden="true">…fine. definitely a lake.</div>
+      <div className="jd-mutter jd-mutter-1" aria-hidden="true">let's go fishing. uh yeah</div>
+      <div className="jd-mutter jd-mutter-2" aria-hidden="true">uh fish, uh fishing, for fish,</div>
 
       <ul className="jd-dishes" aria-label="The menu so far">
         {placed.map((dish, i) => (

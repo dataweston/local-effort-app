@@ -51,9 +51,10 @@ const DEFAULT_DISHES = [
   'dry wit',
 ];
 
-// Ticket quantity is hidden for now (client request) — flip to resurface the
-// seat stepper and the seats-remaining copy. All plumbing stays live.
-const SHOW_QUANTITY = false;
+// Seat stepper is live (1–8 per booking); the seats-remaining counts stay
+// hidden for now (client request) — flip to resurface them.
+const SHOW_QUANTITY = true;
+const SHOW_SEATS_REMAINING = false;
 
 const CONTACT_EMAIL = 'yum@localeffortfood.com';
 
@@ -128,6 +129,7 @@ const JulyDinnerPage = () => {
   const [artistOpen, setArtistOpen] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [shopProducts, setShopProducts] = useState(null); // null = not fetched
+  const [mapReady, setMapReady] = useState(false); // Google embed loads on first hover/focus
 
   // Modals: lock the page scroll and close on Escape.
   const anyModal = showCheckout || showShop;
@@ -395,12 +397,50 @@ const JulyDinnerPage = () => {
       <section className="jd-scene" aria-label="Dinner in July — the menu so far">
         <header className="jd-hero">
           <h1 className="jd-title">Local Effort Cooperative Serves Summer</h1>
-          <p className="jd-when">{event.dateLabel} · {event.location}, North Minneapolis</p>
+          <p className="jd-when">
+            {event.dateLabel} ·{' '}
+            <a
+              className="jd-place-link"
+              href="https://www.thearthouse.events"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              The Arthouse
+            </a>
+            ,{' '}
+            <span
+              className="jd-map-wrap"
+              onPointerEnter={() => setMapReady(true)}
+              onFocus={() => setMapReady(true)}
+            >
+              <a
+                className="jd-place-link"
+                href="https://www.google.com/maps/search/?api=1&query=4400+Lyndale+Ave+N,+Minneapolis,+MN"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                North Minneapolis
+              </a>
+              <span className="jd-map-preview" aria-hidden="true">
+                {mapReady && (
+                  <iframe
+                    title="Map: 4400 Lyndale Ave N, Minneapolis"
+                    src="https://www.google.com/maps?q=4400+Lyndale+Ave+N,+Minneapolis,+MN&output=embed"
+                    loading="lazy"
+                  />
+                )}
+              </span>
+            </span>
+          </p>
           <p className="jd-terms">
-            ${formatMoney(event.priceCents)} a seat{SHOW_QUANTITY ? ` · ${seatsLabel}` : ''} · {event.timeLabel}
+            ${formatMoney(event.priceCents)} a seat{SHOW_SEATS_REMAINING ? ` · ${seatsLabel}` : ''} · {event.timeLabel}
           </p>
           <p className="jd-lede">
-            blah blah blah, summer. blah blah, one long table. blah blah blah — you should be there.
+            the popup form finally collapses into an endless stream of ingredients, mise, little
+            ideas and highlights from meal prep. we'll feature mountains of flowers and herbs from
+            Nissa Inselman-Field from Otsego, and from HAFA in Hastings, plus fresh dairy from
+            Autumnwood in Forest Lake, sparkling botanicals from Peder Schweigert, and probably
+            some meat too.
           </p>
           <button
             type="button"
@@ -523,7 +563,7 @@ const JulyDinnerPage = () => {
                     <span className="jd-step-count" aria-live="polite">{quantity}</span>
                     <button type="button" className="jd-step-btn" onClick={() => stepQuantity(1)} disabled={quantity >= maxSeats || status === 'submitting'} aria-label="More seats">+</button>
                     <span className="jd-step-note">
-                      ${formatMoney(event.priceCents)} each · up to {event.maxSeatsPerOrder || 8} per booking · {seatsLabel}
+                      ${formatMoney(event.priceCents)} each · up to {event.maxSeatsPerOrder || 8} per booking{SHOW_SEATS_REMAINING ? ` · ${seatsLabel}` : ''}
                     </span>
                   </div>
                 ) : (

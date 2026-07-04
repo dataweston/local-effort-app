@@ -5,12 +5,12 @@
  * Search/Maps interactions, and captures monthly discovery keywords.
  */
 
-const { google } = require('googleapis');
 const { writeLedgerEvent } = require('./ledger');
 const { withJobRun } = require('./jobRuns');
 const {
   authorizeGoogleJobRequest,
   getAuthorizedOAuthClient,
+  googleApiRequest,
 } = require('./googleBusinessAuth');
 
 const DAILY_METRICS = [
@@ -62,51 +62,56 @@ async function discoverLocations(auth) {
     return [{ name, title: process.env.GOOGLE_BUSINESS_PROFILE_LOCATION_TITLE || null }];
   }
 
-  const accountApi = google.mybusinessaccountmanagement({ version: 'v1', auth });
-  const locationApi = google.mybusinessbusinessinformation({ version: 'v1', auth });
   const accounts = [];
   let accountPageToken;
   do {
-    const response = await accountApi.accounts.list({
-      pageSize: 20,
-      ...(accountPageToken ? { pageToken: accountPageToken } : {}),
-    });
-    accounts.push(...(response.data.accounts || []));
-    accountPageToken = response.data.nextPageToken;
+    const params = new URLSearchParams({ pageSize: '20' });
+    if (accountPageToken) params.set('pageToken', accountPageToken);
+    const data = await googleApiRequest(
+      auth,
+      `https://mybusinessaccountmanagement.googleapis.com/v1/accounts?${params}`
+    );
+    accounts.push(...(data.accounts || []));
+    accountPageToken = data.nextPageToken;
   } while (accountPageToken);
 
   const locations = [];
   for (const account of accounts) {
     let pageToken;
     do {
-      const response = await locationApi.accounts.locations.list({
-        parent: account.name,
+      const params = new URLSearchParams({
         readMask: 'name,title,storeCode,websiteUri,metadata,openInfo',
-        pageSize: 100,
-        ...(pageToken ? { pageToken } : {}),
+        pageSize: '100',
       });
-      locations.push(...(response.data.locations || []));
-      pageToken = response.data.nextPageToken;
+      if (pageToken) params.set('pageToken', pageToken);
+      const data = await googleApiRequest(
+        auth,
+        `https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?${params}`
+      );
+      locations.push(...(data.locations || []));
+      pageToken = data.nextPageToken;
     } while (pageToken);
   }
   return locations;
 }
 
-async function fetchDailyPerformance(client, locationName, daysBack) {
+async function fetchDailyPerformance(auth, locationName, daysBack) {
   const range = completedDateRange(daysBack);
-  const response = await client.locations.fetchMultiDailyMetricsTimeSeries({
-    location: locationName,
-    dailyMetrics: DAILY_METRICS,
-    'dailyRange.startDate.year': range.start.year,
-    'dailyRange.startDate.month': range.start.month,
-    'dailyRange.startDate.day': range.start.day,
-    'dailyRange.endDate.year': range.end.year,
-    'dailyRange.endDate.month': range.end.month,
-    'dailyRange.endDate.day': range.end.day,
-  });
+  const params = new URLSearchParams();
+  for (const metric of DAILY_METRICS) params.append('dailyMetrics', metric);
+  for (const [key, value] of Object.entries(range.start)) {
+    params.set(`dailyRange.startDate.${key}`, String(value));
+  }
+  for (const [key, value] of Object.entries(range.end)) {
+    params.set(`dailyRange.endDate.${key}`, String(value));
+  }
+  const data = await googleApiRequest(
+    auth,
+    `https://businessprofileperformance.googleapis.com/v1/${locationName}:fetchMultiDailyMetricsTimeSeries?${params}`
+  );
 
   const byDate = new Map();
-  for (const group of response.data.multiDailyMetricTimeSeries || []) {
+  for (const group of data.multiDailyMetricTimeSeries || []) {
     for (const series of group.dailyMetricTimeSeries || []) {
       for (const point of series.timeSeries?.datedValues || []) {
         if (!point.date) continue;
@@ -130,26 +135,29 @@ function previousCompleteMonths(monthsBack) {
   };
 }
 
-async function fetchSearchKeywords(client, locationName, monthsBack = 3) {
+async function fetchSearchKeywords(auth, locationName, monthsBack = 3) {
   const range = previousCompleteMonths(monthsBack);
   const keywords = [];
   let pageToken;
   do {
-    const response = await client.locations.searchkeywords.impressions.monthly.list({
-      parent: locationName,
-      'monthlyRange.startMonth.year': range.start.year,
-      'monthlyRange.startMonth.month': range.start.month,
-      'monthlyRange.endMonth.year': range.end.year,
-      'monthlyRange.endMonth.month': range.end.month,
-      pageSize: 100,
-      ...(pageToken ? { pageToken } : {}),
+    const params = new URLSearchParams({
+      'monthlyRange.startMonth.year': String(range.start.year),
+      'monthlyRange.startMonth.month': String(range.start.month),
+      'monthlyRange.endMonth.year': String(range.end.year),
+      'monthlyRange.endMonth.month': String(range.end.month),
+      pageSize: '100',
     });
-    keywords.push(...(response.data.searchKeywordsCounts || []).map((row) => ({
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await googleApiRequest(
+      auth,
+      `https://businessprofileperformance.googleapis.com/v1/${locationName}/searchkeywords/impressions/monthly?${params}`
+    );
+    keywords.push(...(data.searchKeywordsCounts || []).map((row) => ({
       keyword: row.searchKeyword || '(not set)',
       impressions: row.insightsValue?.value == null ? null : Number(row.insightsValue.value),
       threshold: row.insightsValue?.threshold == null ? null : Number(row.insightsValue.threshold),
     })));
-    pageToken = response.data.nextPageToken;
+    pageToken = data.nextPageToken;
   } while (pageToken);
   return { range, keywords };
 }
@@ -161,7 +169,6 @@ async function runGoogleBusinessProfileSync({
   auth: authOverride = null,
 } = {}) {
   const auth = authOverride || await getAuthorizedOAuthClient();
-  const client = google.businessprofileperformance({ version: 'v1', auth });
   const locations = await discoverLocations(auth);
   if (!locations.length) throw new Error('No accessible Google Business Profile locations found');
 
@@ -197,7 +204,7 @@ async function runGoogleBusinessProfileSync({
       else if (current._updated) stats.eventsUpdated += 1;
       else stats.eventsExisting += 1;
 
-      const dailyRows = await fetchDailyPerformance(client, location.name, daysBack);
+      const dailyRows = await fetchDailyPerformance(auth, location.name, daysBack);
       stats.rowsSeen += dailyRows.length;
       for (const row of dailyRows) {
         const event = await writeLedgerEvent({
@@ -214,7 +221,7 @@ async function runGoogleBusinessProfileSync({
         else stats.eventsExisting += 1;
       }
 
-      const keywordReport = await fetchSearchKeywords(client, location.name, monthsBack);
+      const keywordReport = await fetchSearchKeywords(auth, location.name, monthsBack);
       const monthId = `${keywordReport.range.start.year}-${String(keywordReport.range.start.month).padStart(2, '0')}`
         + `_${keywordReport.range.end.year}-${String(keywordReport.range.end.month).padStart(2, '0')}`;
       const keywordEvent = await writeLedgerEvent({

@@ -121,6 +121,60 @@
   color: var(--jd-ink-soft);
 }
 
+.jd-place-link {
+  color: var(--jd-ink);
+  text-decoration: underline dashed;
+  text-decoration-color: var(--jd-water);
+  text-underline-offset: 3px;
+  transition: color var(--jd-dur-1) var(--jd-ease);
+}
+
+.jd-place-link:hover {
+  color: var(--jd-water-deep);
+}
+
+/* map peek on hover — desktop pointers only; phones just follow the link */
+.jd-map-wrap {
+  position: relative;
+}
+
+.jd-map-preview {
+  display: none;
+}
+
+@media (hover: hover) {
+  .jd-map-preview {
+    display: block;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: -1rem;
+    width: 280px;
+    height: 190px;
+    background: #fff;
+    border: 1.5px solid var(--jd-ink);
+    border-radius: var(--jd-wobble-sm);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity var(--jd-dur-2) var(--jd-ease), transform var(--jd-dur-2) var(--jd-ease);
+    z-index: 70;
+  }
+
+  .jd-map-wrap:hover .jd-map-preview,
+  .jd-map-wrap:focus-within .jd-map-preview {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .jd-map-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+}
+
 .jd-lede {
   margin: 0.8rem 0 0;
   max-width: 24rem;
@@ -876,6 +930,54 @@
   transition: none;
 }
 
+/* ── The shop popup: sale-page tiles, borrowed verbatim ──── */
+
+.jd-shop {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.jd-shop-panel {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--jd-ink);
+  border-radius: var(--jd-wobble);
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+}
+
+.jd-shop-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-yomogi);
+  font-weight: 400;
+  font-size: 1.7rem;
+  color: var(--jd-ink);
+}
+
+.jd-shop-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.jd-shop-loading {
+  margin: 1.5rem 0;
+  font-family: var(--font-yomogi);
+  color: var(--jd-ink-soft);
+}
+
+.jd-shop-more {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-family: var(--font-yomogi);
+  font-size: 1.05rem;
+  color: var(--jd-water-deep);
+  text-decoration: underline dashed;
+  text-decoration-color: var(--jd-water);
+  text-underline-offset: 4px;
+}
+
+.jd-shop-more:hover {
+  color: var(--jd-ink);
+}
+
 /* ── Coda ────────────────────────────────────────────────── */
 
 .jd-coda {
@@ -904,19 +1006,53 @@
     display: none;
   }
 
-  /* hero comes off the shore and settles down-and-right above the lake.
+  /* small, right-shifted, out of the lake's way — the lake owns the view.
      position:relative (not static) so its z-index keeps beating the photos —
      otherwise snapshots swallow taps on the buy button. */
   .jd-hero {
     position: relative;
     top: auto;
     right: auto;
-    width: min(420px, 86%);
-    margin: 2.5rem 4% 0.5rem auto;
+    width: min(340px, 76%);
+    margin: 2.4rem 3% 0.25rem auto;
+    padding: 0.9rem 1rem 1rem;
+  }
+
+  .jd-title {
+    font-size: 1.2rem;
+  }
+
+  .jd-when,
+  .jd-lede {
+    font-size: 0.74rem;
+  }
+
+  .jd-lede {
+    margin-top: 0.6rem;
+  }
+
+  .jd-terms {
+    font-size: 0.7rem;
+  }
+
+  .jd-buy {
+    margin-top: 0.75rem;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.85rem;
+  }
+
+  .jd-hint {
+    margin: 0.9rem 0 0.4rem;
+    font-size: 0.78rem;
+  }
+
+  .jd-artist-link,
+  .jd-artist-copy {
+    font-size: 0.72rem;
   }
 
   .jd-scene {
-    padding-top: 2.25rem;
+    padding-top: 1.25rem;
   }
 }
 
@@ -930,24 +1066,16 @@
   }
 
   .jd-title {
-    font-size: clamp(2rem, 9vw, 2.6rem);
+    font-size: 1.1rem;
   }
 
   .jd-dish-text {
     font-size: 0.7rem;
   }
 
-  .jd-lede {
-    font-size: 0.9rem;
-  }
-
-  .jd-terms {
-    font-size: 0.85rem;
-  }
-
   .jd-book {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
   }
 }
 

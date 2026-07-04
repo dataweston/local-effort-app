@@ -1,0 +1,3 @@
+[mcp_servers.composio]
+url = "https://connect.composio.dev/mcp"
+env_http_headers = { "x-consumer-api-key" = "COMPOSIO_API_KEY" }
