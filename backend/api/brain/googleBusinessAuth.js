@@ -1,0 +1,206 @@
+/**
+ * Shared OAuth for Google-owned business systems.
+ *
+ * One offline grant covers GA4, Business Profile, Merchant Center, and Ads.
+ * Tokens are stored in BrainApiToken, consistent with the Gmail integration.
+ */
+
+const crypto = require('crypto');
+const { getPrisma } = require('../utils/prisma');
+const { createAdminVerifier } = require('../utils/adminVerifier');
+
+const TOKEN_LABEL = 'google-business-integrations';
+const SCOPES = [
+  'https://www.googleapis.com/auth/analytics.readonly',
+  'https://www.googleapis.com/auth/business.manage',
+  'https://www.googleapis.com/auth/content',
+  'https://www.googleapis.com/auth/adwords',
+];
+
+const verifyAdminRequest = createAdminVerifier();
+
+function requireGoogle() {
+  try {
+    return require('googleapis');
+  } catch {
+    throw new Error('googleapis package is required for Google integrations');
+  }
+}
+
+function redirectUri() {
+  return process.env.GOOGLE_BUSINESS_REDIRECT_URI
+    || 'https://www.localeffortfood.com/api/brain/google/callback';
+}
+
+function createOAuthClient() {
+  const clientId = process.env.GOOGLE_BUSINESS_CLIENT_ID || process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_BUSINESS_CLIENT_SECRET || process.env.GMAIL_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      'Google OAuth client missing: set GOOGLE_BUSINESS_CLIENT_ID/SECRET '
+      + 'or reuse GMAIL_CLIENT_ID/SECRET'
+    );
+  }
+  const { google } = requireGoogle();
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUri());
+}
+
+function stateSecret() {
+  return process.env.GOOGLE_BUSINESS_OAUTH_STATE_SECRET
+    || process.env.BRAIN_ADMIN_KEY
+    || process.env.GOOGLE_BUSINESS_CLIENT_SECRET
+    || process.env.GMAIL_CLIENT_SECRET
+    || '';
+}
+
+function createOAuthState() {
+  const secret = stateSecret();
+  if (!secret) throw new Error('Google business OAuth state secret not configured');
+  const encoded = Buffer.from(JSON.stringify({
+    ts: Date.now(),
+    nonce: crypto.randomBytes(16).toString('hex'),
+  })).toString('base64url');
+  const signature = crypto.createHmac('sha256', secret).update(encoded).digest('base64url');
+  return `${encoded}.${signature}`;
+}
+
+function verifyOAuthState(state, maxAgeMs = 15 * 60 * 1000) {
+  const secret = stateSecret();
+  if (!secret || typeof state !== 'string') return false;
+  const [encoded, signature] = state.split('.');
+  if (!encoded || !signature) return false;
+  const expected = crypto.createHmac('sha256', secret).update(encoded).digest('base64url');
+  if (!timingSafeEqual(signature, expected)) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+    return Number.isFinite(payload.ts) && Date.now() - payload.ts <= maxAgeMs;
+  } catch {
+    return false;
+  }
+}
+
+function getAuthUrl() {
+  return createOAuthClient().generateAuthUrl({
+    access_type: 'offline',
+    include_granted_scopes: true,
+    prompt: 'consent',
+    scope: SCOPES,
+    state: createOAuthState(),
+  });
+}
+
+async function exchangeCodeForTokens(code) {
+  const { tokens } = await createOAuthClient().getToken(code);
+  return tokens;
+}
+
+async function storeTokens(tokens) {
+  const prisma = getPrisma();
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(JSON.stringify(tokens))
+    .digest('hex');
+  await prisma.brainApiToken.upsert({
+    where: { tokenHash },
+    update: { lastUsedAt: new Date(), tokenData: tokens, scopes: SCOPES },
+    create: {
+      label: TOKEN_LABEL,
+      tokenHash,
+      scopes: SCOPES,
+      tokenData: tokens,
+    },
+  });
+  return tokenHash;
+}
+
+async function loadTokens() {
+  if (process.env.GOOGLE_BUSINESS_REFRESH_TOKEN) {
+    return { refresh_token: process.env.GOOGLE_BUSINESS_REFRESH_TOKEN };
+  }
+  const prisma = getPrisma();
+  const row = await prisma.brainApiToken.findFirst({
+    where: { label: TOKEN_LABEL },
+    orderBy: { lastUsedAt: 'desc' },
+  });
+  return row?.tokenData || null;
+}
+
+async function getAuthorizedOAuthClient() {
+  const tokens = await loadTokens();
+  if (!tokens) {
+    throw new Error('Google business OAuth not connected; visit /api/brain/google/auth');
+  }
+  const client = createOAuthClient();
+  client.setCredentials(tokens);
+  return client;
+}
+
+function timingSafeEqual(left, right) {
+  const a = Buffer.from(String(left || ''));
+  const b = Buffer.from(String(right || ''));
+  return a.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function hasBrainAdminHeader(req) {
+  return timingSafeEqual(req.headers['x-brain-admin-key'], process.env.BRAIN_ADMIN_KEY);
+}
+
+function isAuthorizedCron(req) {
+  const marked = req.headers['x-vercel-cron'] === '1'
+    || String(req.headers['user-agent'] || '').startsWith('vercel-cron');
+  if (!marked) return false;
+  if (!process.env.CRON_SECRET) return true;
+  const match = String(req.headers.authorization || '').match(/^Bearer\s+(.+)$/i);
+  return timingSafeEqual(match?.[1], process.env.CRON_SECRET);
+}
+
+async function authorizeGoogleJobRequest(req) {
+  const admin = await verifyAdminRequest(req);
+  return Boolean(admin || isAuthorizedCron(req) || hasBrainAdminHeader(req));
+}
+
+function registerGoogleBusinessAuthRoutes(app, { logger } = {}) {
+  app.get('/api/brain/google/auth', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin && !hasBrainAdminHeader(req)) {
+        return res.status(403).json({ error: 'admin only' });
+      }
+      const authUrl = getAuthUrl();
+      if (req.query.format === 'json') return res.json({ authUrl, scopes: SCOPES });
+      return res.redirect(authUrl);
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/google: auth error');
+      return res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/brain/google/callback', async (req, res) => {
+    try {
+      if (req.query.error) return res.status(400).send(`OAuth error: ${req.query.error}`);
+      if (!req.query.code) return res.status(400).send('Missing code');
+      if (!verifyOAuthState(req.query.state)) return res.status(400).send('Invalid OAuth state');
+      const tokens = await exchangeCodeForTokens(req.query.code);
+      if (!tokens.refresh_token) {
+        return res.status(400).send('Google did not return a refresh token; revoke the prior grant and reconnect');
+      }
+      await storeTokens(tokens);
+      return res.send(
+        '<html><body><h2>Google business systems connected.</h2>'
+        + '<p>You can close this tab.</p></body></html>'
+      );
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/google: callback error');
+      return res.status(500).send('Token exchange failed');
+    }
+  });
+}
+
+module.exports = {
+  SCOPES,
+  authorizeGoogleJobRequest,
+  getAuthorizedOAuthClient,
+  isAuthorizedCron,
+  registerGoogleBusinessAuthRoutes,
+  timingSafeEqual,
+};

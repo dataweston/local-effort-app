@@ -18,7 +18,7 @@ const LAKE_PATH = [
 // Dish label rotation: deterministic small tilt, never the same twice in a row.
 const rotationFor = (i) => ((i * 137) % 13) - 6;
 
-const LakeMenu = ({ dishes }) => {
+const LakeMenu = ({ dishes, onShop }) => {
   const containerRef = useRef(null);
   const [drawn, setDrawn] = useState(false);
   const [points, setPoints] = useState([]);
@@ -174,6 +174,13 @@ const LakeMenu = ({ dishes }) => {
         </g>
         <circle cx="504" cy="1119" r="3.5" fill="var(--jd-water)" className="jd-child" />
       </svg>
+
+      {/* the store, moored out on the water */}
+      {onShop && (
+        <button type="button" className="jd-shop-link" onClick={onShop}>
+          shop here
+        </button>
+      )}
 
       {/* muttering, as one does while drawing a lake */}
       <div className="jd-mutter jd-mutter-1" aria-hidden="true">hrmph… lake…</div>

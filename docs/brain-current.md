@@ -38,9 +38,13 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 | 02:30 daily | `/api/brain/square-orders/sync` | Square COMPLETED orders → `order.placed` ledger events (`squareOrdersSync.js`) |
 | 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/PRICE_DRIFT pass |
 | 03:30 daily | `/api/brain/hypothesis/run` | Hypothesis predicate evaluation |
+| 04:00 daily | `/api/brain/ga4/sync` | GA4 landing-page + acquisition performance → `web.traffic.daily` |
+| 04:15 daily | `/api/brain/google-business-profile/sync` | Business Profile listing, Search/Maps metrics, and discovery keywords |
+| 04:30 daily | `/api/brain/google-merchant/sync` | Merchant Center account and product diagnostics |
+| 04:45 daily | `/api/brain/google-ads/sync` | Google Ads campaign and search-term performance |
 | 11:00 + 23:00 | `/api/brain/triage/run` | LLM inbox triage (`triageEngine.js`, Claude via `@anthropic-ai/sdk`, model `claude-opus-4-8`) — auto-trash / auto-create safe entities / hint everything else |
 
-All four accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.
+Recurring jobs accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.
 **The triage and constraint LLM paths need `ANTHROPIC_API_KEY` with credit.**
 
 ## Dietary constraints
@@ -83,5 +87,9 @@ search in prod matters.)
   order volume spikes Jul–Aug and Oct–Nov) are the natural additions.
 - 829 gmail-derived provisional assertions still need review (Smart Review
   panel on /brain).
-- Recommended new sources (see audit): GA4 Data API (site tagged), Open-Meteo
-  weather, Google Business Profile reviews (apply for API access early).
+- Google business ingestion code exists for GA4, Business Profile performance,
+  Merchant diagnostics, and Ads; production data remains gated on OAuth,
+  property/account IDs, GBP API quota, and an Ads developer token. Setup:
+  `docs/google-business-integrations.md`.
+- Recommended next sources: Google Search Console, Open-Meteo weather, and
+  Google Business Profile reviews.

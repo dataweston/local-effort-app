@@ -16,6 +16,10 @@ const { getPrisma } = require('../utils/prisma');
 // Expected cadence per job (hours). A successful run must land within this
 // window or the job is flagged stale by jobFreshness().
 const JOB_SLA = {
+  'ga4-sync': 24,
+  'google-business-profile-sync': 24,
+  'google-merchant-sync': 24,
+  'google-ads-sync': 24,
   'square-orders-sync': 24,
   'order-projection': 24,
   'local-budget-sync': 24,
@@ -36,7 +40,13 @@ async function recordJobRun(prisma, { jobName, status, startedAt, summary = {}, 
         startedAt,
         finishedAt,
         durationMs: startedAt ? finishedAt.getTime() - startedAt.getTime() : null,
-        itemsProcessed: numberOrNull(summary.itemsProcessed ?? summary.ordersSeen ?? summary.processed ?? summary.lineItemsSeen),
+        itemsProcessed: numberOrNull(
+          summary.itemsProcessed
+          ?? summary.rowsSeen
+          ?? summary.ordersSeen
+          ?? summary.processed
+          ?? summary.lineItemsSeen
+        ),
         itemsWritten: numberOrNull(summary.itemsWritten ?? summary.eventsWritten ?? summary.written ?? summary.edgesWritten),
         errorCount: Array.isArray(summary.errors) ? summary.errors.length : (error ? 1 : 0),
         expectedIntervalHours: JOB_SLA[jobName] ?? null,

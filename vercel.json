@@ -29,6 +29,22 @@
       "schedule": "30 3 * * *"
     },
     {
+      "path": "/api/brain/ga4/sync",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/brain/google-business-profile/sync",
+      "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/brain/google-merchant/sync",
+      "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/brain/google-ads/sync",
+      "schedule": "45 4 * * *"
+    },
+    {
       "path": "/api/brain/triage/run",
       "schedule": "0 11 * * *"
     },

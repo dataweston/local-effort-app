@@ -77,6 +77,11 @@ const { registerIngestRoutes } = require('./brain/ingest/routes');
 const { registerLocalBudgetRoutes } = require('./brain/localBudgetSync');
 const { registerCogsRollupRoutes } = require('./brain/cogsRollup');
 const { registerSquareReconcileRoutes } = require('./brain/squareReconcile');
+const { registerGa4Routes } = require('./brain/ga4Sync');
+const { registerGoogleBusinessAuthRoutes } = require('./brain/googleBusinessAuth');
+const { registerGoogleBusinessProfileRoutes } = require('./brain/googleBusinessProfileSync');
+const { registerGoogleMerchantRoutes } = require('./brain/googleMerchantSync');
+const { registerGoogleAdsRoutes } = require('./brain/googleAdsSync');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
 const psycheCheckoutHandler = require('../../api-handlers/psyche/checkout');
 const julyDinnerEventHandler = require('../../api-handlers/july-dinner/event');
@@ -584,9 +589,15 @@ registerIngestRoutes(app, { logger });
 registerLocalBudgetRoutes(app, { logger });
 registerCogsRollupRoutes(app, { logger });
 registerSquareReconcileRoutes(app, { logger });
+registerGa4Routes(app, { logger });
+registerGoogleBusinessAuthRoutes(app, { logger });
+registerGoogleBusinessProfileRoutes(app, { logger });
+registerGoogleMerchantRoutes(app, { logger });
+registerGoogleAdsRoutes(app, { logger });
 
 // Nightly brain jobs run via Vercel crons (see vercel.json):
-//   /api/brain/triage/run, /api/brain/inference/run, /api/brain/hypothesis/run
+//   /api/brain/triage/run, /api/brain/inference/run,
+//   /api/brain/hypothesis/run and the Google business sync routes.
 // The old in-process setInterval + Python spawn was removed — it never ran in
 // serverless deployments. To run the Python sidecar extraction locally, use
 // POST /api/brain/sidecar/run or `python brain-sidecar/run.py <job>` directly.

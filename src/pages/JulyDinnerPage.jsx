@@ -8,6 +8,7 @@ import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import LakeMenu from '../components/JulyDinner/LakeMenu';
 import ScatterLayer from '../components/JulyDinner/ScatterLayer';
 import '../styles/le-checkout.css';
+import '../styles/product-grid.css';
 import '../styles/july-dinner.css';
 
 // Design direction: src/components/JulyDinner/DESIGN.md
@@ -45,10 +46,16 @@ const DEFAULT_DISHES = [
   'ice cream',
   'shiso dolmas',
   'salame',
-  'garlic honey',
-  'olive oil',
   'cheesy bread',
+  'vanilla tart',
+  'dry wit',
 ];
+
+// Ticket quantity is hidden for now (client request) — flip to resurface the
+// seat stepper and the seats-remaining copy. All plumbing stays live.
+const SHOW_QUANTITY = false;
+
+const CONTACT_EMAIL = 'yum@localeffortfood.com';
 
 // Must match BEVERAGE_OPTIONS in api-handlers/july-dinner/_event.js.
 const BEVERAGE_OPTIONS = [
@@ -106,7 +113,7 @@ const JulyDinnerPage = () => {
   const [seatsRemaining, setSeatsRemaining] = useState(null); // null = loading
   const [soldOut, setSoldOut] = useState(false);
   const [bookingType, setBookingType] = useState('seats'); // 'seats' | 'buyout'
-  const [quantity, setQuantity] = useState(2);
+  const [quantity, setQuantity] = useState(SHOW_QUANTITY ? 2 : 1);
   const [partySize, setPartySize] = useState(12);
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '' });
   const [beverageInterests, setBeverageInterests] = useState([]);
@@ -119,14 +126,43 @@ const JulyDinnerPage = () => {
   const [confirmed, setConfirmed] = useState(null); // { bookingType, quantity, partySize }
   const [showCheckout, setShowCheckout] = useState(false);
   const [artistOpen, setArtistOpen] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const [shopProducts, setShopProducts] = useState(null); // null = not fetched
 
-  // The checkout stays off the page until "buy tickets" is pressed.
+  // Modals: lock the page scroll and close on Escape.
+  const anyModal = showCheckout || showShop;
   useEffect(() => {
-    if (!showCheckout) return;
-    requestAnimationFrame(() => {
-      document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [showCheckout]);
+    if (!anyModal) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setShowCheckout(false);
+        setShowShop(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [anyModal]);
+
+  // Shop products load once, the first time the shop opens (sale-page source).
+  useEffect(() => {
+    if (!showShop || shopProducts !== null) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/store/products?store=sale');
+        const data = res.ok ? await res.json() : null;
+        if (!cancelled) setShopProducts(Array.isArray(data?.products) ? data.products.slice(0, 8) : []);
+      } catch {
+        if (!cancelled) setShopProducts([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [showShop, shopProducts]);
 
   useEffect(() => {
     let cancelled = false;
@@ -333,7 +369,7 @@ const JulyDinnerPage = () => {
   return (
     <div className="july-dinner-page">
       <Helmet>
-        <title>{event.title} — Tickets | {SITE_NAME}</title>
+        <title>Local Effort Cooperative Serves Summer — Tickets | {SITE_NAME}</title>
         <meta
           name="description"
           content={`${event.summary} $${formatMoney(event.priceCents)} per seat, ${event.capacity} seats total. Non-alcoholic beverage included.`}
@@ -341,7 +377,7 @@ const JulyDinnerPage = () => {
         <link rel="canonical" href={`${SITE_URL}/julydinner`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SITE_URL}/julydinner`} />
-        <meta property="og:title" content={`${event.title} — Tickets | ${SITE_NAME}`} />
+        <meta property="og:title" content={`Local Effort Cooperative Serves Summer — Tickets | ${SITE_NAME}`} />
         <meta property="og:description" content={event.summary} />
         {event.heroImageUrl && <meta property="og:image" content={event.heroImageUrl} />}
         <meta name="twitter:card" content="summary_large_image" />
@@ -353,13 +389,15 @@ const JulyDinnerPage = () => {
       <div className="jd-upper">
       <ScatterLayer />
 
+      <a className="jd-back" href="/">← local effort</a>
+
       {/* ── The lake, with the hero on its north-east shore ── */}
       <section className="jd-scene" aria-label="Dinner in July — the menu so far">
         <header className="jd-hero">
-          <h1 className="jd-title">{event.title}</h1>
+          <h1 className="jd-title">Local Effort Cooperative Serves Summer</h1>
           <p className="jd-when">{event.dateLabel} · {event.location}, North Minneapolis</p>
           <p className="jd-terms">
-            ${formatMoney(event.priceCents)} a seat · {seatsLabel} · {event.timeLabel}
+            ${formatMoney(event.priceCents)} a seat{SHOW_QUANTITY ? ` · ${seatsLabel}` : ''} · {event.timeLabel}
           </p>
           <p className="jd-lede">
             blah blah blah, summer. blah blah, one long table. blah blah blah — you should be there.
@@ -390,15 +428,25 @@ const JulyDinnerPage = () => {
           )}
         </header>
 
-        <LakeMenu dishes={dishes} />
+        <LakeMenu dishes={dishes} onShop={() => setShowShop(true)} />
       </section>
 
       <p className="jd-lake-caption">the menu so far —</p>
       </div>
 
-      {/* ── The booking (appears when "buy tickets" is pressed) ── */}
+      {/* ── The booking: a near-fullpage popup ── */}
       {showCheckout && (
-      <section id="book" className="jd-book" aria-label="Book your seats">
+      <div className="jd-modal" role="dialog" aria-modal="true" aria-label="Tickets">
+        <div className="jd-modal-backdrop" onClick={() => setShowCheckout(false)} />
+        <section id="book" className="jd-book jd-modal-panel">
+        <button
+          type="button"
+          className="jd-modal-close"
+          onClick={() => setShowCheckout(false)}
+          aria-label="Close"
+        >
+          ×
+        </button>
         <div className="jd-book-panel">
           {status === 'success' && confirmed ? (
             <div className="jd-done">
@@ -414,7 +462,7 @@ const JulyDinnerPage = () => {
               </p>
               {paymentId && <div className="jd-done-meta">Payment ID: {paymentId}</div>}
               {emailStatus?.customer === false && (
-                <div className="jd-error">We could not send the confirmation email. Please write to hello@localeffort.com.</div>
+                <div className="jd-error">We could not send the confirmation email. Please write to {CONTACT_EMAIL}.</div>
               )}
             </div>
           ) : soldOut || (seatsRemaining !== null && seatsRemaining <= 0) ? (
@@ -423,14 +471,13 @@ const JulyDinnerPage = () => {
               <h2 className="jd-done-title">Sold out</h2>
               <p className="jd-done-copy">
                 All {event.capacity} seats for {event.title} are spoken for.
-                Email <a href="mailto:hello@localeffort.com">hello@localeffort.com</a> to join the
+                Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> to join the
                 waitlist — we reach out first if a seat opens up.
               </p>
             </div>
           ) : (
             <form className="le-checkout-form" onSubmit={handleSubmit} noValidate>
-              <h2 className="jd-book-title">Take a seat</h2>
-              <p className="jd-book-sub">About a minute, start to finish. Confirmation lands by email right away.</p>
+              <h2 className="jd-book-title">Tickets</h2>
 
               {/* How many */}
               <fieldset className="jd-fieldset">
@@ -452,7 +499,7 @@ const JulyDinnerPage = () => {
                     disabled={!buyoutAvailable}
                     title={buyoutAvailable ? undefined : 'Some seats are already sold'}
                   >
-                    The whole night
+                    Buy it Out
                   </button>
                 </div>
 
@@ -470,7 +517,7 @@ const JulyDinnerPage = () => {
                       <span className="jd-step-note">roughly how many are coming — you can firm it up later</span>
                     </div>
                   </>
-                ) : (
+                ) : SHOW_QUANTITY ? (
                   <div className="jd-stepper">
                     <button type="button" className="jd-step-btn" onClick={() => stepQuantity(-1)} disabled={quantity <= 1 || status === 'submitting'} aria-label="Fewer seats">−</button>
                     <span className="jd-step-count" aria-live="polite">{quantity}</span>
@@ -479,6 +526,8 @@ const JulyDinnerPage = () => {
                       ${formatMoney(event.priceCents)} each · up to {event.maxSeatsPerOrder || 8} per booking · {seatsLabel}
                     </span>
                   </div>
+                ) : (
+                  <p className="jd-mode-note">${formatMoney(event.priceCents)} a seat.</p>
                 )}
               </fieldset>
 
@@ -527,7 +576,10 @@ const JulyDinnerPage = () => {
 
               {/* Beverages (required) */}
               <fieldset className="jd-fieldset">
-                <legend className="jd-h">What should be flowing? <span className="jd-opt">pick all that apply</span></legend>
+                <legend className="jd-h">
+                  Dinner includes a few non-alcoholic drinks. What else would you want to be drinking?{' '}
+                  <span className="jd-opt">pick all that apply</span>
+                </legend>
                 <div className="jd-chips" role="group" aria-label="Beverage interests">
                   {BEVERAGE_OPTIONS.map((option) => (
                     <button
@@ -601,13 +653,14 @@ const JulyDinnerPage = () => {
               </fieldset>
 
               <div className="jd-total">
-                <span className="jd-total-label">all in</span>
                 <div>
                   <div className="jd-total-value">${formatMoney(totalCents)}</div>
                   <div className="jd-total-breakdown">
                     {isBuyout
                       ? `the whole night · up to ${event.buyoutCapacity} people`
-                      : `${quantity} ${seatWord} × $${formatMoney(event.priceCents)}`}
+                      : SHOW_QUANTITY
+                        ? `${quantity} ${seatWord} × $${formatMoney(event.priceCents)}`
+                        : 'one seat at the table'}
                   </div>
                 </div>
               </div>
@@ -622,8 +675,10 @@ const JulyDinnerPage = () => {
                 {status === 'submitting'
                   ? 'Setting your place…'
                   : isBuyout
-                    ? `Book the whole night — $${formatMoney(event.buyoutPriceCents)}`
-                    : `Reserve ${quantity} ${seatWord} — $${formatMoney(totalCents)}`}
+                    ? `Buy it out — $${formatMoney(event.buyoutPriceCents)}`
+                    : SHOW_QUANTITY
+                      ? `Reserve ${quantity} ${seatWord} — $${formatMoney(totalCents)}`
+                      : `Reserve your seat — $${formatMoney(totalCents)}`}
               </button>
 
               <p className="jd-footnote">
@@ -632,11 +687,68 @@ const JulyDinnerPage = () => {
             </form>
           )}
         </div>
-      </section>
+        </section>
+      </div>
+      )}
+
+      {/* ── The shop: sale-page products, sale-page look ── */}
+      {showShop && (
+      <div className="jd-modal" role="dialog" aria-modal="true" aria-label="Shop">
+        <div className="jd-modal-backdrop" onClick={() => setShowShop(false)} />
+        <section className="jd-shop jd-modal-panel">
+          <button
+            type="button"
+            className="jd-modal-close"
+            onClick={() => setShowShop(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div className="jd-shop-panel">
+            <h2 className="jd-shop-title">from the shop</h2>
+            {shopProducts === null ? (
+              <p className="jd-shop-loading">setting the shelf…</p>
+            ) : shopProducts.length === 0 ? (
+              <p className="jd-shop-loading">the shelf is bare right now — the store has more.</p>
+            ) : (
+              <ul className="le-grid jd-shop-grid">
+                {shopProducts.map((product) => (
+                  <li key={product.id || product.slug} className="le-grid-item">
+                    <a className="le-tile" href={product.slug ? `/product/${product.slug}` : '/sale'}>
+                      <span className="le-tile-image-wrap">
+                        {product.images?.[0] ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.title}
+                            loading="lazy"
+                            className="le-tile-image"
+                          />
+                        ) : (
+                          <span className="le-tile-image-placeholder" aria-hidden="true" />
+                        )}
+                      </span>
+                      <span className="le-tile-meta">
+                        <span />
+                        <span className="le-tile-price">
+                          {product.priceDisplay || `$${(((product.salePrice ?? product.price) || 0) / 100).toFixed(2)}`}
+                        </span>
+                      </span>
+                      <span className="le-tile-copy">
+                        <span className="le-tile-title">{product.title}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <a className="jd-shop-more" href="/sale">open the store →</a>
+          </div>
+        </section>
+      </div>
       )}
 
       <footer className="jd-coda">
-        see you at the lake — <a href="mailto:hello@localeffort.com">hello@localeffort.com</a>
+        local ingredients and cooperative ownership. — <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </footer>
     </div>
   );

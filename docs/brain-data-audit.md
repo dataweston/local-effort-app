@@ -10,8 +10,12 @@ Date: 2026-06-10. All counts queried live from the production Postgres (`DATABAS
 > the duplicate clusters; the inference/hypothesis crons were repaired
 > (Vercel sends GET, routes were POST-only); and LLM inbox triage runs as a
 > Node cron. Current system state: `docs/brain-current.md`. Still open:
-> gmail provisional review backlog, Anthropic API credits, GA4/weather/GBP
-> sources.
+> gmail provisional review backlog, Anthropic API credits, weather/GBP reviews.
+>
+> **2026-07-03 update:** read-only Brain integrations now exist for GA4,
+> Google Business Profile performance, Merchant Center diagnostics, and Google
+> Ads performance. Production authorization/account configuration is still
+> required; see `docs/google-business-integrations.md`.
 
 ---
 
