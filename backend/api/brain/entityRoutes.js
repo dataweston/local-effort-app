@@ -21,7 +21,7 @@ const VALID_TYPES = [
   'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
   'PriceQuote', 'LedgerTransaction', 'PriceReference',
   // Business model
-  'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment',
+  'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment', 'Campaign',
   // Operations
   'ProcessStep', 'Constraint', 'Asset',
   // Strategy

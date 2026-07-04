@@ -23,6 +23,7 @@ const JOB_SLA = {
   'square-orders-sync': 24,
   'order-projection': 24,
   'google-graph-projection': 24,
+  'search-console-sync': 24,
   'local-budget-sync': 24,
   'cogs-rollup': 24,
   'square-reconcile': 24,

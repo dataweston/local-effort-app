@@ -1357,7 +1357,13 @@ function MasterMenuPanel({ accessToken, weekStart, weekLabel }) {
 }
 
 function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
-  const [data, setData] = useState({ customers: [], upcomingCustomers: [], notes: [], mode: 'staff' });
+  const [data, setData] = useState({
+    customers: [],
+    pausedCustomers: [],
+    upcomingCustomers: [],
+    notes: [],
+    mode: 'staff',
+  });
   const [activeTab, setActiveTab] = useState(null);
   const [noteBody, setNoteBody] = useState('');
   const [loading, setLoading] = useState(false);
@@ -1492,6 +1498,48 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
           </table>
         </div>
       </Panel>
+
+      {data.mode !== 'customer' && (data.pausedCustomers || []).length > 0 && (
+        <Panel
+          title="Paused Customers"
+          icon={Soup}
+          action={<span className="hub-pill hub-pill-muted">{data.pausedCustomers.length} paused</span>}
+        >
+          <details>
+            <summary className="hub-paused-summary">
+              Show paused customer profiles
+            </summary>
+            <div className="hub-customer-table-wrap">
+              <table className="hub-customer-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Plan</th>
+                    <th>Profile</th>
+                    <th>Spend &amp; History</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.pausedCustomers.map((customer) => (
+                    <tr key={customer.id}>
+                      <td>
+                        <strong>{customer.name}</strong>
+                        <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
+                      </td>
+                      <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
+                      <td>
+                        <span>{customer.profile.householdSize || 'Household not set'}</span>
+                        <small>{customer.profile.deliveryNotes || customer.profile.address || ''}</small>
+                      </td>
+                      <td><CustomerSpendCell customer={customer} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </Panel>
+      )}
 
       {data.mode !== 'customer' && (
         <Panel
@@ -3550,6 +3598,14 @@ const hubCss = `
 
 /* ── Weekly meal prep ── */
 .hub-meal-prep { display: grid; gap: 12px; }
+.hub-paused-summary {
+  cursor: pointer;
+  color: var(--hub-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px;
+}
+.hub-paused-summary:hover { color: var(--hub-ink); }
 .hub-customer-table-wrap {
   max-height: min(430px, 52svh);
   overflow: auto;

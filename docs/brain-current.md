@@ -36,13 +36,14 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 | Cron (UTC) | Path | What |
 |---|---|---|
 | 02:30 daily | `/api/brain/square-orders/sync` | Square COMPLETED orders → `order.placed` ledger events (`squareOrdersSync.js`) |
-| 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/PRICE_DRIFT pass |
+| 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/REPEAT_CUSTOMER/PRICE_DRIFT + CHANNEL_TRAFFIC_TREND/WEB_CONVERSION (web-funnel) pass |
 | 03:30 daily | `/api/brain/hypothesis/run` | Hypothesis predicate evaluation |
 | 04:00 daily | `/api/brain/ga4/sync` | GA4 landing-page + acquisition performance → `web.traffic.daily` |
 | 04:15 daily | `/api/brain/google-business-profile/sync` | Business Profile listing, Search/Maps metrics, and discovery keywords |
 | 04:30 daily | `/api/brain/google-merchant/sync` | Merchant Center account and product diagnostics |
 | 04:45 daily | `/api/brain/google-ads/sync` | Google Ads campaign and search-term performance |
-| 05:15 daily | `/api/brain/google-projection/run` | Google ledger events → graph (`googleGraphProjector.js`): `Web: <group>` Channel entities with traffic rollups, Offer/BusinessLine `USES_CHANNEL` Website edges from mapped landing pages, Campaign entities from Ads data |
+| 05:00 daily | `/api/brain/search-console/sync` | Search Console daily query + page performance (`searchConsoleSync.js`; needs `webmasters.readonly` on the shared grant) |
+| 05:15 daily | `/api/brain/google-projection/run` | Google ledger events → graph (`googleGraphProjector.js`): `Web: <group>` Channel entities with traffic rollups, Offer/BusinessLine `USES_CHANNEL` Website edges from mapped landing pages, `DEMAND_SIGNAL_FOR` edges from search terms/keywords/queries, Campaign entities from Ads data |
 | 11:00 + 23:00 | `/api/brain/triage/run` | LLM inbox triage (`triageEngine.js`, Claude via `@anthropic-ai/sdk`, model `claude-opus-4-8`) — auto-trash / auto-create safe entities / hint everything else |
 
 Recurring jobs accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.

@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
+import { trackEvent } from '../lib/trackEvent';
 import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
 
 const SMALL_EVENT_CONFIG = {
@@ -73,6 +74,7 @@ const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
+const JULY_DINNER_POPUP_KEY = 'local-effort:july-dinner-popup:2026';
 const BUSINESS_CONTACT_OPTIONS = {
   wholesale: 'Wholesale',
   consulting: 'Restaurant consulting',
@@ -403,6 +405,7 @@ const FullPageDemoPage = () => {
   const [quoteError, setQuoteError] = useState('');
   const [announcementVisible, setAnnouncementVisible] = useState(false);
   const [announcementOpen, setAnnouncementOpen] = useState(false);
+  const [julyDinnerOpen, setJulyDinnerOpen] = useState(false);
   const [caseStudyImage, setCaseStudyImage] = useState(null);
   const [aboutFaqOpen, setAboutFaqOpen] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -652,6 +655,10 @@ const normalizeMealStyle = (value) =>
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Unable to send message');
+      trackEvent('contact.completed', {
+        store: 'small-events',
+        leadType: `small_event_quote_${type}`,
+      });
       setQuoteStatus('success');
     } catch (error) {
       setQuoteStatus('error');
@@ -767,6 +774,7 @@ const normalizeMealStyle = (value) =>
 
   const saveEstimate = async (type, options = {}) => {
     const form = getSmallEventForm(type);
+    const isNewEstimate = !form.estimateId;
     setSmallEventsSaving(true);
     setSmallEventsNotice('');
     try {
@@ -814,6 +822,13 @@ const normalizeMealStyle = (value) =>
       }
 
       applyEstimateResponse(type, data?.estimate, data?.hold);
+      if (isNewEstimate && data?.estimate?.id) {
+        trackEvent('contact.completed', {
+          store: 'small-events',
+          sessionId: data.estimate.id,
+          leadType: `small_event_${type}`,
+        });
+      }
       setSmallEventsNotice('Estimate saved.');
       return data?.estimate || null;
     } catch (error) {
@@ -1767,6 +1782,27 @@ const normalizeMealStyle = (value) =>
   useEffect(() => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    try {
+      if (window.sessionStorage.getItem(JULY_DINNER_POPUP_KEY)) return undefined;
+    } catch {
+      // The popup can still work when storage is unavailable.
+    }
+
+    const timer = window.setTimeout(() => {
+      setJulyDinnerOpen(true);
+      try {
+        window.sessionStorage.setItem(JULY_DINNER_POPUP_KEY, 'shown');
+      } catch {
+        // Ignore storage restrictions.
+      }
+    }, 1600);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -4016,6 +4052,27 @@ const normalizeMealStyle = (value) =>
               2420 Cleveland Ave N, Roseville, MN 55113
             </a>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={julyDinnerOpen} onOpenChange={setJulyDinnerOpen}>
+        <DialogContent className="fullpage-demo-scope july-dinner-popup sm:max-w-[520px]">
+          <DialogHeader className="july-dinner-popup__header">
+            <div className="july-dinner-popup__eyebrow">One night · twenty seats</div>
+            <DialogTitle className="july-dinner-popup__title">Dinner in July</DialogTitle>
+            <DialogDescription className="july-dinner-popup__description">
+              One long table at the Arthouse in North Minneapolis. Friday, July 17 at 6:30 p.m.,
+              with a multi-course dinner built around what Minnesota farms are growing.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="july-dinner-popup__details">
+            <span>Friday, July 17</span>
+            <span aria-hidden="true">·</span>
+            <span>$70 per seat</span>
+          </div>
+          <a className="july-dinner-popup__cta" href="/julydinner">
+            Get July dinner tickets <span aria-hidden="true">→</span>
+          </a>
         </DialogContent>
       </Dialog>
 

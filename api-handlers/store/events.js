@@ -1,17 +1,14 @@
 // POST /api/store/events
-// Fire-and-forget checkout funnel event log. Frontend sends these on key
-// moments; we persist to Firestore for funnel analysis.
-//
-// Body: {
-//   event: string,       — event name, see EVENT_ALLOWLIST below
-//   store: string,       — 'sale' | 'happy-monday' | etc.
-//   sessionId?: string,  — checkout attempt id if available
-//   meta?: object        — small, schema-free metadata bag
-// }
-//
-// Always returns 204. Never blocks the user-facing flow.
+// Fire-and-forget checkout funnel instrumentation. Accepted events retain the
+// legacy Firestore document shape and are also written to the Brain ledger.
+// This endpoint must always return 204 and never block a customer flow.
 
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
+const { writeLedgerEvent } = require('../../backend/api/brain/ledger');
+const {
+  sanitizeCheckoutEvent,
+  checkoutEventSourceId,
+} = require('./_eventPayload');
 
 const EVENT_ALLOWLIST = new Set([
   'checkout.started',
@@ -31,7 +28,8 @@ const EVENT_ALLOWLIST = new Set([
 ]);
 
 module.exports = async (req, res) => {
-  // Always 204 — never block the client
+  // Respond before any external write. Express still allows this handler to
+  // finish its best-effort writes after the response is sent.
   res.status(204).end();
 
   if (req.method !== 'POST') return;
@@ -39,20 +37,44 @@ module.exports = async (req, res) => {
   const { event, store, sessionId, meta } = req.body || {};
   if (!event || !EVENT_ALLOWLIST.has(event)) return;
 
-  const { firestore } = getFirebaseAdmin();
-  if (!firestore) return;
+  const accepted = sanitizeCheckoutEvent({ event, store, sessionId, meta });
+  const occurredAt = new Date();
+  const writes = [];
 
   try {
-    await firestore.collection('checkout_events').add({
-      event,
-      store: store || 'unknown',
-      sessionId: sessionId || null,
-      meta: meta && typeof meta === 'object' ? meta : {},
-      ts: new Date().toISOString(),
-      tsMs: Date.now(),
-    });
+    const { firestore } = getFirebaseAdmin();
+    if (firestore) {
+      writes.push(
+        firestore.collection('checkout_events').add({
+          ...accepted,
+          ts: occurredAt.toISOString(),
+          tsMs: occurredAt.getTime(),
+        }).catch((err) => {
+          console.warn('[store/events] firestore log failed:', err?.message);
+        }),
+      );
+    }
   } catch (err) {
-    // Silent — instrumentation must never surface errors to users
-    console.warn('[store/events] log failed:', err?.message);
+    console.warn('[store/events] firestore unavailable:', err?.message);
   }
+
+  writes.push(
+    writeLedgerEvent({
+      eventType: accepted.event,
+      schemaVersion: 1,
+      occurredAt,
+      source: 'web_checkout',
+      sourceId: checkoutEventSourceId(accepted),
+      actorType: 'visitor',
+      payload: {
+        store: accepted.store,
+        sessionId: accepted.sessionId,
+        ...accepted.meta,
+      },
+    }).catch((err) => {
+      console.warn('[store/events] brain log failed:', err?.message);
+    }),
+  );
+
+  await Promise.allSettled(writes);
 };

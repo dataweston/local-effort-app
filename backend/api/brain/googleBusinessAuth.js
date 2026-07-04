@@ -16,6 +16,9 @@ const SCOPES = [
   'https://www.googleapis.com/auth/business.manage',
   'https://www.googleapis.com/auth/content',
   'https://www.googleapis.com/auth/adwords',
+  // Added 2026-07-04 for Search Console. Grants stored before this date lack
+  // it — re-authorize via /api/brain/google/auth before the sync will work.
+  'https://www.googleapis.com/auth/webmasters.readonly',
 ];
 
 const verifyAdminRequest = createAdminVerifier();
@@ -100,21 +103,33 @@ async function storeTokens(tokens) {
       tokenHash,
       scopes: SCOPES,
       tokenData: tokens,
+      lastUsedAt: new Date(),
     },
   });
   return tokenHash;
 }
 
 async function loadTokens() {
-  if (process.env.GOOGLE_BUSINESS_REFRESH_TOKEN) {
+  // The env override is intended for local-only setup. In production, prefer
+  // the database grant so completing the OAuth callback can actually add new
+  // scopes (for example Search Console) without an older Vercel refresh token
+  // permanently shadowing it.
+  if (!process.env.VERCEL && process.env.GOOGLE_BUSINESS_REFRESH_TOKEN) {
     return { refresh_token: process.env.GOOGLE_BUSINESS_REFRESH_TOKEN };
   }
   const prisma = getPrisma();
-  const row = await prisma.brainApiToken.findFirst({
-    where: { label: TOKEN_LABEL },
-    orderBy: { lastUsedAt: 'desc' },
-  });
-  return row?.tokenData || null;
+  try {
+    const row = await prisma.brainApiToken.findFirst({
+      where: { label: TOKEN_LABEL },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (row?.tokenData) return row.tokenData;
+  } catch (error) {
+    if (!process.env.GOOGLE_BUSINESS_REFRESH_TOKEN) throw error;
+  }
+  return process.env.GOOGLE_BUSINESS_REFRESH_TOKEN
+    ? { refresh_token: process.env.GOOGLE_BUSINESS_REFRESH_TOKEN }
+    : null;
 }
 
 async function getAuthorizedOAuthClient() {

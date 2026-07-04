@@ -1,11 +1,14 @@
 /**
  * Brain inference engine — nightly SQL-level signal computation.
  *
- * Computes four inference types from the LedgerEvent log:
+ * Computes inference types from the LedgerEvent log:
  *   PREFERS       — vendor paid repeatedly (≥3 times in 90 days)
  *   AVOIDS        — vendor used to appear, has gone silent (>60 days, ≥2 prior)
  *   CHURNING      — customer order frequency dropping (last period < half of prior)
  *   PRICE_DRIFT   — average payment to vendor shifted >15% vs prior 90-day window
+ *   REPEAT_CUSTOMER — customer placed ≥2 orders in the last year
+ *   CHANNEL_TRAFFIC_TREND — web channel sessions moved ≥30% (28d vs prior 28d)
+ *   WEB_CONVERSION — meal-prep intake submissions vs intake-page sessions
  *
  * Each run:
  *   1. Supersedes any prior inference of the same type + entity pair
@@ -14,6 +17,7 @@
  */
 
 const { getPrisma } = require('../utils/prisma');
+const { canonicalName } = require('./ledger');
 
 const DECAY_RATES = {
   PREFERS: 'slow',          // vendor relationship — stable
@@ -21,6 +25,8 @@ const DECAY_RATES = {
   CHURNING: 'fast',         // customer state changes quickly
   PRICE_DRIFT: 'medium',
   REPEAT_CUSTOMER: 'slow',  // loyalty is a durable trait
+  CHANNEL_TRAFFIC_TREND: 'fast',  // web traffic shifts week to week
+  WEB_CONVERSION: 'medium',
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -313,6 +319,111 @@ async function computePriceDrift(prisma, now) {
   return results;
 }
 
+// ── CHANNEL_TRAFFIC_TREND ────────────────────────────────────────────────────
+// Web channel sessions moved ≥30% last 28 days vs the prior 28 days. Entities
+// are the `Web: <group>` Channel nodes the Google graph projector maintains —
+// if the projector hasn't run yet for a group, that group is skipped.
+
+async function computeChannelTrafficTrend(prisma, now) {
+  const windowMs = 28 * 86_400_000;
+  const recentStart = new Date(now.getTime() - windowMs);
+  const priorStart = new Date(now.getTime() - 2 * windowMs);
+
+  const events = await prisma.ledgerEvent.findMany({
+    where: {
+      eventType: 'web.traffic.daily',
+      occurredAt: { gte: priorStart },
+      tombstonedAt: null,
+      payload: { path: ['reportType'], equals: 'acquisition' },
+    },
+    select: { id: true, occurredAt: true, payload: true },
+  });
+
+  const groups = new Map(); // channelGroup → { recent, prior, evIds }
+  for (const ev of events) {
+    const group = String(ev.payload?.sessionDefaultChannelGroup || 'Unassigned').trim() || 'Unassigned';
+    let rec = groups.get(group);
+    if (!rec) { rec = { recent: 0, prior: 0, evIds: [] }; groups.set(group, rec); }
+    const sessions = Number(ev.payload?.sessions || 0);
+    if (ev.occurredAt >= recentStart) rec.recent += sessions;
+    else rec.prior += sessions;
+    rec.evIds.push(ev.id);
+  }
+
+  const results = [];
+  for (const [group, rec] of groups) {
+    // Volume floor: percentage swings on a handful of sessions are noise.
+    if (Math.max(rec.recent, rec.prior) < 20) continue;
+    if (rec.prior === 0) continue; // new channel group; trend undefined
+    const delta = (rec.recent - rec.prior) / rec.prior;
+    if (Math.abs(delta) < 0.30) continue;
+
+    const entity = await prisma.brainEntity.findFirst({
+      where: { entityType: 'Channel', tombstonedAt: null, canonicalName: canonicalName(`Web: ${group}`) },
+      select: { id: true, name: true },
+    });
+    if (!entity) continue;
+
+    const pct = Math.round(delta * 100);
+    const dir = delta > 0 ? 'up' : 'down';
+    const conf = confidence(Math.min(Math.abs(pct), 100), 100);
+    const summary = `Web sessions ${dir} ${Math.abs(pct)}% vs prior 28 days (${rec.recent} vs ${rec.prior})`;
+    results.push({ entity, evIds: rec.evIds.slice(0, 50), conf, summary });
+  }
+  return results;
+}
+
+// ── WEB_CONVERSION ───────────────────────────────────────────────────────────
+// Meal-prep intake submissions vs sessions on the intake landing page, last
+// 28 days vs prior. The one web conversion loop that is fully instrumented
+// today (GA4 landing_page events + intake.meal_prep.submitted).
+
+async function computeWebConversion(prisma, now) {
+  const windowMs = 28 * 86_400_000;
+  const recentStart = new Date(now.getTime() - windowMs);
+  const priorStart = new Date(now.getTime() - 2 * windowMs);
+
+  const [pageEvents, intakes] = await Promise.all([
+    prisma.ledgerEvent.findMany({
+      where: {
+        eventType: 'web.traffic.daily',
+        occurredAt: { gte: priorStart },
+        tombstonedAt: null,
+        payload: { path: ['landingPage'], equals: '/meal-prep-intake' },
+      },
+      select: { id: true, occurredAt: true, payload: true },
+    }),
+    prisma.ledgerEvent.findMany({
+      where: { eventType: 'intake.meal_prep.submitted', occurredAt: { gte: priorStart }, tombstonedAt: null },
+      select: { id: true, occurredAt: true },
+    }),
+  ]);
+
+  let recentSessions = 0, priorSessions = 0;
+  for (const ev of pageEvents) {
+    const s = Number(ev.payload?.sessions || 0);
+    if (ev.occurredAt >= recentStart) recentSessions += s;
+    else priorSessions += s;
+  }
+  const recentIntakes = intakes.filter((e) => e.occurredAt >= recentStart).length;
+  const priorIntakes = intakes.length - recentIntakes;
+
+  if (recentSessions === 0 && recentIntakes === 0) return [];
+
+  const entity = await prisma.brainEntity.findFirst({
+    where: { entityType: 'Offer', tombstonedAt: null, canonicalName: canonicalName('Weekly Meal Prep') },
+    select: { id: true, name: true },
+  });
+  if (!entity) return [];
+
+  const rate = recentSessions > 0 ? Math.round((recentIntakes / recentSessions) * 100) : null;
+  const summary = `${recentIntakes} intake submission${recentIntakes === 1 ? '' : 's'} from ${recentSessions} intake-page sessions`
+    + (rate === null ? '' : ` (${rate}%)`)
+    + ` last 28 days (prior 28d: ${priorIntakes}/${priorSessions})`;
+  const evIds = [...pageEvents.map((e) => e.id).slice(0, 30), ...intakes.map((e) => e.id)];
+  return [{ entity, evIds, conf: 0.8, summary }];
+}
+
 // ── Writer ────────────────────────────────────────────────────────────────────
 
 async function upsertInference(prisma, { entity, inferenceType, conf, summary, evIds, now }) {
@@ -392,14 +503,17 @@ const JOB_SOURCE = {
   PRICE_DRIFT: { eventType: 'payment.completed' },
   CHURNING:        { eventType: { in: ['order.placed', 'payment.completed'] } },
   REPEAT_CUSTOMER: { eventType: { in: ['order.placed', 'payment.completed'] } },
+  CHANNEL_TRAFFIC_TREND: { eventType: 'web.traffic.daily' },
+  WEB_CONVERSION:        { eventType: 'web.traffic.daily' },
 };
 
 async function inputDiagnostics(prisma) {
-  const [payments, orders] = await Promise.all([
+  const [payments, orders, webTraffic] = await Promise.all([
     prisma.ledgerEvent.count({ where: { eventType: 'payment.completed', tombstonedAt: null } }),
     prisma.ledgerEvent.count({ where: { eventType: 'order.placed', tombstonedAt: null } }),
+    prisma.ledgerEvent.count({ where: { eventType: 'web.traffic.daily', tombstonedAt: null } }),
   ]);
-  return { payments, orders };
+  return { payments, orders, webTraffic };
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -436,6 +550,8 @@ async function runInferencePass({ logger } = {}) {
     { name: 'CHURNING',        fn: computeChurning },
     { name: 'REPEAT_CUSTOMER', fn: computeRepeatCustomer },
     { name: 'PRICE_DRIFT',     fn: computePriceDrift },
+    { name: 'CHANNEL_TRAFFIC_TREND', fn: computeChannelTrafficTrend },
+    { name: 'WEB_CONVERSION',  fn: computeWebConversion },
   ];
 
   for (const { name, fn } of jobs) {
@@ -464,9 +580,11 @@ async function runInferencePass({ logger } = {}) {
       // Distinguish "ran but found nothing" from "no input data at all" so a
       // zero result isn't mistaken for a healthy quiet night.
       const ordersJob = name === 'CHURNING' || name === 'REPEAT_CUSTOMER';
+      const webJob = name === 'CHANNEL_TRAFFIC_TREND' || name === 'WEB_CONVERSION';
       const sourceEmpty =
         (JOB_SOURCE[name]?.eventType === 'payment.completed' && diagnostics.payments === 0) ||
-        (ordersJob && diagnostics.payments === 0 && diagnostics.orders === 0);
+        (ordersJob && diagnostics.payments === 0 && diagnostics.orders === 0) ||
+        (webJob && diagnostics.webTraffic === 0);
       if (candidates.length === 0 && sourceEmpty) {
         logger?.warn({ name }, `brain/inference: ${name} produced 0 — its source ledger events do not exist (not a quiet night).`);
       } else {

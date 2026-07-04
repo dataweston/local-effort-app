@@ -1605,6 +1605,83 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   text-underline-offset: 4px;
 }
 
+:where(.fullpage-demo, .fullpage-demo-scope).july-dinner-popup {
+  overflow: hidden;
+  border: 2px dashed #6e9bb0;
+  border-radius: 38px 52px 44px 58px;
+  background: #eef4f7;
+  padding: clamp(1.75rem, 6vw, 3rem);
+  box-shadow: 0 24px 70px rgba(35, 35, 31, 0.24);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__header {
+  gap: 0.35rem;
+  padding-right: 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__eyebrow {
+  color: #48748c;
+  font-family: var(--font-office-code);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__title {
+  color: #23231f;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 3.2rem);
+  line-height: 1;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__description {
+  max-width: 42ch;
+  color: #3a3a34;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.65rem;
+  margin: 1.4rem 0;
+  color: #48748c;
+  font-family: var(--font-office-code);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__cta {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 18px 22px 17px 24px;
+  background: #23231f;
+  padding: 0.8rem 1.2rem;
+  color: #fafaf8;
+  font-family: var(--font-office-code);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__cta:hover {
+  background: #48748c;
+  transform: translateY(-2px);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .july-dinner-popup__cta:focus-visible {
+  outline: 3px solid #48748c;
+  outline-offset: 3px;
+}
+
 @media (max-width: 640px) {
   :where(.fullpage-demo, .fullpage-demo-scope) .announcement-bar {
     font-size: 0.78rem;

@@ -9,11 +9,6 @@ try {
   prisma = null;
 }
 
-// Active weekly meal-prep customers that exist as Customer table rows. Tyler is
-// paused (excluded). Samantha lives only in the knowledge graph (intake + Square,
-// no Customer row), so she's surfaced via the brain mealPrepStage path below
-// rather than this slug list. See loadActiveBrainCustomers().
-const TARGET_CUSTOMER_SLUGS = ['levy-family'];
 const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';
 const FUTURE_WEEK_COUNT = 3;
@@ -248,11 +243,24 @@ async function buildEnrichmentIndex({ squareCustomerIds, emails }) {
 
 function summarizeRules(rawRules) {
   const rules = parseJson(rawRules, {});
-  const sections = rules?.sectionRules || rules?.sections || {};
+  const sections = rules?.sections || rules?.sectionRules || {};
   if (sections && typeof sections === 'object' && !Array.isArray(sections)) {
-    return Object.entries(sections)
-      .map(([slug, rule]) => `${rule?.label || slug}: ${rule?.min || 0}-${rule?.max || 0}`)
-      .join('; ');
+    const items = Object.entries(sections).map(([slug, rule]) => {
+      const label = rule?.label || slug;
+      if (rule?.open) return `${label}: open`;
+      if (rule?.qty != null) {
+        const serves = rule.servesAdults != null
+          ? ` for ${rule.servesAdults} adult${Number(rule.servesAdults) === 1 ? '' : 's'}`
+          : '';
+        return `${label}: ${rule.qty}${serves}`;
+      }
+      return `${label}: ${rule?.min || 0}-${rule?.max || 0}`;
+    });
+    if (rules?.billing?.weeklyTotalCents != null) {
+      const weekly = `$${(Number(rules.billing.weeklyTotalCents) / 100).toFixed(0)}/week`;
+      items.push(rules.billing.deliveryIncluded ? `${weekly}, delivery included` : weekly);
+    }
+    return items.join('; ');
   }
   const max = rules?.maxTotalItems ? `${rules.maxTotalItems} max items` : '';
   const entrees = rules?.requiredEntrees ? `${rules.requiredEntrees} entrees` : '';
@@ -272,6 +280,8 @@ function publicCustomer(customer, brainEntity, enrichment = null) {
     id: customer.id,
     slug: customer.slug,
     name: customer.name || customer.slug,
+    source: 'customer',
+    mealPrepStage: brainEntity?.properties?.mealPrepStage || 'active',
     priceTierDefault: customer.priceTierDefault || null,
     planSummary: summarizeRules(customer.planRulesJson),
     profile: {
@@ -298,9 +308,30 @@ function publicCustomer(customer, brainEntity, enrichment = null) {
 }
 
 async function loadCustomers(auth) {
-  const where = auth.isCustomer
-    ? { id: auth.customer?.id || '__none__' }
-    : { slug: { in: TARGET_CUSTOMER_SLUGS } };
+  let where;
+  if (auth.isCustomer) {
+    where = { id: auth.customer?.id || '__none__' };
+  } else {
+    // The graph lifecycle is the roster source of truth. A hardcoded slug list
+    // caused linked active customers such as Samantha to disappear.
+    const linkedRoster = await prisma.brainEntity.findMany({
+      where: {
+        entityType: 'Customer',
+        tombstonedAt: null,
+        localEffortCustomerId: { not: null },
+        OR: [
+          { properties: { path: ['mealPrepStage'], equals: 'active' } },
+          { properties: { path: ['mealPrepStage'], equals: 'paused' } },
+        ],
+      },
+      select: { localEffortCustomerId: true },
+    });
+    where = {
+      id: {
+        in: linkedRoster.map((entity) => entity.localEffortCustomerId).filter(Boolean),
+      },
+    };
+  }
 
   const customers = await prisma.customer.findMany({
     where,
@@ -403,11 +434,9 @@ async function loadUpcomingCustomers() {
   ));
 }
 
-// Active-roster customers that live ONLY in the knowledge graph (intake + Square),
-// without a Customer table row — e.g. Samantha. Driven by mealPrepStage so the
-// active roster is data, not a hardcoded slug list. 'active' shows in the active
-// roster; 'paused' (e.g. Tyler) is surfaced but flagged, not dropped silently.
-async function loadActiveBrainCustomers() {
+// Roster customers that live only in the knowledge graph. Linked Customer rows
+// are loaded above; this query handles graph-only active and paused customers.
+async function loadBrainRosterCustomers() {
   const entities = await prisma.brainEntity.findMany({
     where: {
       entityType: 'Customer',
@@ -511,21 +540,20 @@ async function handler(req, res) {
     const showRoster = !auth.isCustomer || auth.isPrivileged;
     const [tableCustomers, brainCustomers, upcomingCustomers, notes] = await Promise.all([
       loadCustomers(auth),
-      showRoster ? loadActiveBrainCustomers() : Promise.resolve([]),
+      showRoster ? loadBrainRosterCustomers() : Promise.resolve([]),
       showRoster ? loadUpcomingCustomers() : Promise.resolve([]),
       loadNotes(),
     ]);
-    // Merge table-row and brain-only active customers into one roster; active
-    // first, paused last, then by name.
-    const stageRank = (c) => (c.mealPrepStage === 'paused' ? 1 : 0);
-    const customers = [...tableCustomers, ...brainCustomers].sort(
-      (a, b) => stageRank(a) - stageRank(b) || String(a.name || '').localeCompare(String(b.name || '')),
-    );
+    const roster = showRoster
+      ? splitRosterCustomers([...tableCustomers, ...brainCustomers])
+      : { active: tableCustomers, paused: [] };
+    const { active: customers, paused: pausedCustomers } = roster;
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       mode: auth.isCustomer && !auth.isPrivileged ? 'customer' : auth.isPrivileged ? 'privileged' : 'staff',
       customers,
+      pausedCustomers,
       upcomingCustomers,
       notes,
     });
@@ -535,5 +563,19 @@ async function handler(req, res) {
   }
 }
 
+function splitRosterCustomers(customers) {
+  const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || ''));
+  return {
+    active: customers.filter((customer) => customer.mealPrepStage !== 'paused').sort(byName),
+    paused: customers.filter((customer) => customer.mealPrepStage === 'paused').sort(byName),
+  };
+}
+
 module.exports = handler;
-module.exports._internals = { activeWeekTabs, archiveExpiredWeekNotes, loadNotes, pairTitle };
+module.exports._internals = {
+  activeWeekTabs,
+  archiveExpiredWeekNotes,
+  loadNotes,
+  pairTitle,
+  splitRosterCustomers,
+};

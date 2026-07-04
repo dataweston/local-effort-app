@@ -278,7 +278,12 @@ const PsychePage = () => {
         throw new Error(data?.error || 'Payment failed.');
       }
 
-      trackEvent('order.placed', { store: 'psyche', sessionId: checkoutAttemptId, paymentId: data?.paymentId });
+      trackEvent('order.placed', {
+        store: 'psyche',
+        sessionId: checkoutAttemptId,
+        paymentId: data?.paymentId,
+        amountCents: data?.amountCents ?? totalCents,
+      });
       setPaymentId(data?.paymentId || '');
       setEmailStatus(data?.emailStatus || null);
       setStatus('success');

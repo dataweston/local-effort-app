@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MEAL_PREP_INTAKE_QUESTIONS as QUESTIONS } from '../data/mealPrepIntakeQuestions';
+import { trackEvent } from '../lib/trackEvent';
 import '../styles/meal-prep-intake.css';
 
 const PROTEIN_SUB_OPTIONS = {
@@ -529,6 +530,10 @@ const MealPrepIntakePage = () => {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || data.error || 'Failed to submit intake');
+      trackEvent('contact.completed', {
+        store: 'meal-prep',
+        leadType: 'meal_prep_intake',
+      });
       setSubmitted(true);
     } catch (err) {
       setSubmitError(err.message);

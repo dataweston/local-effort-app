@@ -8,6 +8,7 @@ The Brain has read-only ingestion for four Google systems:
 | Google Business Profile | `/api/brain/google-business-profile/sync` | `google.business_profile.current`, `google.business_profile.daily`, `google.business_profile.search_keywords` |
 | Merchant Center | `/api/brain/google-merchant/sync` | `google.merchant.diagnostics.daily` |
 | Google Ads | `/api/brain/google-ads/sync` | `google.ads.campaign.daily`, `google.ads.search_term.daily` |
+| Search Console | `/api/brain/search-console/sync` | `google.search_console.daily` (reportType `query` \| `page` \| `query_page`) |
 
 All sync routes accept GET for Vercel Cron and POST for an authenticated
 manual run. They are read-only against Google. Brain writes are idempotent.
@@ -71,6 +72,8 @@ The grant requests these scopes:
 - `business.manage`
 - `content`
 - `adwords`
+- `webmasters.readonly` (added 2026-07-04 for Search Console — grants stored
+  before then must be re-authorized via `/api/brain/google/auth`)
 
 For local-only setup, `GOOGLE_BUSINESS_REFRESH_TOKEN` can supply an existing
 refresh token instead of the stored database token.
@@ -165,7 +168,19 @@ and actual search terms. The integration never creates or changes campaigns.
 | 04:15 | Business Profile |
 | 04:30 | Merchant Center |
 | 04:45 | Google Ads |
+| 05:00 | Search Console |
 | 05:15 | Graph projection |
+
+## Search Console
+
+`backend/api/brain/searchConsoleSync.js` pulls one Pacific calendar day at a
+time for query totals, page totals, and query-to-page pairs (default property
+`sc-domain:localeffortfood.com`, override with `SEARCH_CONSOLE_SITE_URL`).
+Search Console returns top rows rather than an exhaustive query log, so ledger
+payloads explicitly carry `dataCompleteness: "top_rows"` and truncated-report
+status. Data lags ~2 days, so daily runs refresh the last 5 completed days.
+Requires the `webmasters.readonly` scope on the shared grant and Search Console
+access for the OAuth identity.
 
 All jobs are included in `/api/brain/jobs/freshness` with a 24-hour SLA.
 Until credentials and account grants are complete, the sync jobs will correctly
@@ -181,10 +196,16 @@ durable facts into the graph on a nightly cron:
   (`Web: Organic Search`, `Web: Direct`, …) plus
   `Website (localeffortfood.com)`, each carrying a recomputed
   `properties.webTraffic` rollup (all-time + last-28d, top sources/pages).
-- `Offer|BusinessLine -[USES_CHANNEL]-> Website` edges for landing pages in
-  the curated `LANDING_PATH_MAP`. Unmapped pages are reported in the run
-  output (`unmappedReport`) — that report is the worklist for extending the
-  map. Targets are matched against existing entities, never minted.
+- `Offer|BusinessLine -[USES_CHANNEL]-> Website` edges (Products use
+  `LISTED_ON`) for landing pages in the curated `LANDING_PATH_MAP`. Unmapped
+  pages are reported in the run output (`unmappedReport`) — that report is the
+  worklist for extending the map. Targets are matched against existing
+  entities, never minted.
+- `Channel -[DEMAND_SIGNAL_FOR]-> Dish|Product|Offer|Occasion|BusinessLine`
+  edges from search terms (Ads search terms, GBP discovery keywords, Search
+  Console queries). Terms match deterministically: curated business vocabulary
+  (`DEMAND_KEYWORD_MAP`) plus whole-phrase entity-name/alias containment.
+  Unmatched high-volume terms land in `unmatchedTermReport`.
 - One `Campaign` entity per Google Ads campaign (keyed on campaign id, names
   are mutable) with a `properties.adsPerformance` rollup and a
   `USES_CHANNEL` edge to the `Google Ads` channel. Dormant until the Ads
@@ -199,6 +220,6 @@ payloads exist to test against.
 ## Organic search gap
 
 Business Profile explains local Search/Maps discovery, but it does not explain
-organic website ranking, indexing, or query performance. Google Search Console
-is still required for that diagnosis. It should be the next read-only Google
-source after these account integrations are authorized.
+organic website ranking, indexing, or query performance. The Search Console
+sync above closes that gap — it is gated only on re-authorizing the shared
+grant with the `webmasters.readonly` scope.

@@ -363,6 +363,14 @@ const RELATIONSHIPS = {
     promote: 'never',
     description: 'An entity uses or is associated with a sales/communication channel.',
   },
+  DEMAND_SIGNAL_FOR: {
+    src: ['Channel'],
+    dst: ['Dish', 'Product', 'Offer', 'Occasion', 'BusinessLine', 'Ingredient'],
+    inverseLabel: 'HAS_DEMAND_SIGNAL',
+    selfEdge: false,
+    promote: 'never',
+    description: 'Search terms observed on a channel signal customer demand for an entity (rollup edge from the Google graph projector).',
+  },
   LISTED_ON: {
     src: ['Dish', 'Product', 'Offer'],
     dst: ['Channel'],

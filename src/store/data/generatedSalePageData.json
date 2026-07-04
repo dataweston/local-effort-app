@@ -1,11 +1,50 @@
 {
-  "generatedAt": "2026-06-30T15:52:21.300Z",
+  "generatedAt": "2026-07-04T22:55:51.684Z",
   "page": {
     "title": "local effort sales",
     "subheading": "sale",
     "introText": "one-off or small run items, usually go quickly.\n\npickup at\n\nNeon Collective Kitchens\n\n2103 W Broadway in Minneapolis\n\ncoordinate with Weston for time and day, most days are fine."
   },
   "products": [
+    {
+      "id": "a33aab49-4e73-40b8-ad72-5637bb45273c",
+      "title": "Goat Milk Yogurt",
+      "slug": null,
+      "shortDescription": "one time offer?",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "a164fe3f3e3a",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "fa7ce859629b",
+              "_type": "span",
+              "marks": [],
+              "text": "delicious goat milk yogurt. we got the dairy from a homesteader near elk river. we pasteurized, so, it’s not true raw yogurt. there is traces of cow milk, from the yogurt inoculation, should be safe for most people. \n\nVERY flavorful, classic slight game/heavy grass notes. not quite as thick as our cows milk variations. sold by the quart."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [],
+      "price": 0,
+      "salePrice": 1600,
+      "priceDisplay": null,
+      "inventoryManaged": true,
+      "inventory": 5,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ],
+      "allowsDelivery": true
+    },
     {
       "id": "f857fde2-8250-4816-9982-b4f8ea245ba8",
       "title": "Ice Cream - Mountain Mint - Pint",
@@ -177,15 +216,36 @@
               "_key": "9659b2a06aad",
               "_type": "span",
               "marks": [],
-              "text": "extra nice olive oil and blanched wild ramps blended for a pantry crusher that will carry you until autumn.\n\nhalf pint mason. green."
+              "text": "extra nice "
+            },
+            {
+              "_key": "025915cea96f",
+              "_type": "span",
+              "marks": [
+                "9b9224b014de"
+              ],
+              "text": "olive oil"
+            },
+            {
+              "_key": "9f506f7af8c4",
+              "_type": "span",
+              "marks": [],
+              "text": " and blanched wild ramps blended for a pantry crusher that will carry you until autumn.\n\nhalf pint mason. green."
             }
           ],
-          "markDefs": [],
+          "markDefs": [
+            {
+              "_key": "9b9224b014de",
+              "_type": "link",
+              "href": "https://www.oleoestepa.com/en/pdo-estepa/"
+            }
+          ],
           "style": "normal"
         }
       ],
       "images": [
-        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/15912827f326b51e2697ffb67b4ebdf4f8fa3190-3024x4032.jpg"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/15912827f326b51e2697ffb67b4ebdf4f8fa3190-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/f532ab979ef9bc2f9b494cba5853b17649facb52-1000x1000.jpg"
       ],
       "price": 2400,
       "salePrice": null,

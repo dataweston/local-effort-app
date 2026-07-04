@@ -7,6 +7,7 @@ import { inject } from '@vercel/analytics';
 import * as Sentry from '@sentry/react';
 import './styles/semantic-ui.css';
 import { loadFonts } from './utils/performance';
+import { captureAcquisitionContext } from './lib/acquisitionContext';
 
 const GLOBAL_FONT_STYLES = [
   { href: 'https://api.fontshare.com/v2/css?f[]=general-sans@400,600,700&display=swap', crossOrigin: null },
@@ -18,6 +19,7 @@ const GLOBAL_FONT_STYLES = [
 ];
 
 loadFonts(GLOBAL_FONT_STYLES);
+captureAcquisitionContext();
 
 // Initialize Sentry only if DSN provided (avoid noisy console in local dev)
 if (import.meta.env.VITE_SENTRY_DSN) {
