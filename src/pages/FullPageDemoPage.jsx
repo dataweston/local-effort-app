@@ -325,6 +325,288 @@ const GalleryItem = ({
   );
 };
 
+/* ── Quick booking forms (stripped-down home funnels) ──────────────────────
+   One primary CTA per product, minimal fields, straight to the existing
+   submission endpoints. The detailed wizards stay available behind
+   secondary "detailed planner" links. */
+
+// Event types map to human-readable labels stored on the event request.
+const QUICK_EVENT_OPTIONS = [
+  { value: 'Dinner party', label: 'Dinner party at my home' },
+  { value: 'Pizza party', label: 'Pizza party' },
+  { value: 'Office / holiday / shower', label: 'Office, holiday party, shower + more' },
+];
+
+// Minimal event booking: name, email, phone, date (+ type when not fixed).
+// Posts to the existing /api/events/request endpoint (Supabase + team email
+// + ICS attachment + honeypot + rate limiting all live server-side).
+const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this date' }) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    type: fixedType || QUICK_EVENT_OPTIONS[0].value,
+    website: '',
+  });
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+
+  const update = (field) => (event) =>
+    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (status === 'sending') return;
+    setStatus('sending');
+    setError('');
+    try {
+      const nameParts = form.name.trim().split(/\s+/).filter(Boolean);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '-';
+      const res = await fetch('/api/events/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          eventDate: form.date || undefined,
+          eventType: form.type,
+          notes: `Quick booking request from the home page (${source}).`,
+          website: form.website,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Unable to send request');
+      trackEvent('contact.completed', { store: 'small-events', leadType: `quick_book_${source}` });
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Unable to send request. Please try again.');
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="quickbook-success" role="status">
+        Request received. We&apos;ll confirm your date within one business day —
+        nothing is charged until we&apos;ve confirmed the details together.
+      </div>
+    );
+  }
+
+  return (
+    <form className="quickbook-form" onSubmit={handleSubmit}>
+      {!fixedType && (
+        <div>
+          <label className="business-label" htmlFor={`quickbook-type-${source}`}>Event type</label>
+          <select
+            id={`quickbook-type-${source}`}
+            className="business-input"
+            value={form.type}
+            onChange={update('type')}
+          >
+            {QUICK_EVENT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      <div>
+        <label className="business-label" htmlFor={`quickbook-name-${source}`}>Name</label>
+        <input
+          id={`quickbook-name-${source}`}
+          className="business-input"
+          value={form.name}
+          onChange={update('name')}
+          autoComplete="name"
+          placeholder="First and last name"
+          required
+        />
+      </div>
+      <div className="quickbook-row">
+        <div>
+          <label className="business-label" htmlFor={`quickbook-email-${source}`}>Email</label>
+          <input
+            id={`quickbook-email-${source}`}
+            type="email"
+            className="business-input"
+            value={form.email}
+            onChange={update('email')}
+            autoComplete="email"
+            required
+          />
+        </div>
+        <div>
+          <label className="business-label" htmlFor={`quickbook-phone-${source}`}>Phone</label>
+          <input
+            id={`quickbook-phone-${source}`}
+            type="tel"
+            className="business-input"
+            value={form.phone}
+            onChange={update('phone')}
+            autoComplete="tel"
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label className="business-label" htmlFor={`quickbook-date-${source}`}>Event date</label>
+        <input
+          id={`quickbook-date-${source}`}
+          type="date"
+          className="business-input"
+          value={form.date}
+          onChange={update('date')}
+          required
+        />
+      </div>
+      {/* Honeypot — real users never see or fill this. */}
+      <div className="quickbook-hp" aria-hidden="true">
+        <label htmlFor={`quickbook-website-${source}`}>Website</label>
+        <input
+          id={`quickbook-website-${source}`}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website}
+          onChange={update('website')}
+        />
+      </div>
+      {status === 'error' && <div className="quickbook-error">{error}</div>}
+      <button type="submit" className="business-btn" disabled={status === 'sending'}>
+        {status === 'sending' ? 'Sending…' : ctaLabel}
+      </button>
+    </form>
+  );
+};
+
+// Minimal meal-prep start: name, email, phone (optional), start week.
+// Posts to the existing /api/messages/submit endpoint (Brevo contact upsert,
+// Sanity inbox message, team email, honeypot + rate limiting server-side).
+const MealPrepQuickStart = () => {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', startDate: '', website: '' });
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+
+  const update = (field) => (event) =>
+    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (status === 'sending') return;
+    setStatus('sending');
+    setError('');
+    try {
+      const lines = [
+        'Weekly meal prep quick signup from the home page.',
+        `Name: ${form.name}`,
+        `Email: ${form.email}`,
+        `Phone: ${form.phone || '(not provided)'}`,
+        `Preferred start week: ${form.startDate || 'as soon as possible'}`,
+      ];
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email.trim(),
+          phone: form.phone,
+          subject: 'Weekly meal prep signup',
+          type: 'meal-prep-signup',
+          website: form.website,
+          message: lines.join('\n'),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Unable to send request');
+      trackEvent('contact.completed', { store: 'meal-prep', leadType: 'meal_prep_quick_start' });
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Unable to send request. Please try again.');
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="quickbook-success" role="status">
+        You&apos;re in. We&apos;ll reach out within one business day to plan your
+        first week — menu, portions, and delivery day.
+      </div>
+    );
+  }
+
+  return (
+    <form className="quickbook-form" onSubmit={handleSubmit}>
+      <div>
+        <label className="business-label" htmlFor="mealprep-quick-name">Name</label>
+        <input
+          id="mealprep-quick-name"
+          className="business-input"
+          value={form.name}
+          onChange={update('name')}
+          autoComplete="name"
+          required
+        />
+      </div>
+      <div className="quickbook-row">
+        <div>
+          <label className="business-label" htmlFor="mealprep-quick-email">Email</label>
+          <input
+            id="mealprep-quick-email"
+            type="email"
+            className="business-input"
+            value={form.email}
+            onChange={update('email')}
+            autoComplete="email"
+            required
+          />
+        </div>
+        <div>
+          <label className="business-label" htmlFor="mealprep-quick-phone">Phone (optional)</label>
+          <input
+            id="mealprep-quick-phone"
+            type="tel"
+            className="business-input"
+            value={form.phone}
+            onChange={update('phone')}
+            autoComplete="tel"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="business-label" htmlFor="mealprep-quick-start">Start week</label>
+        <input
+          id="mealprep-quick-start"
+          type="date"
+          className="business-input"
+          value={form.startDate}
+          onChange={update('startDate')}
+        />
+      </div>
+      {/* Honeypot — real users never see or fill this. */}
+      <div className="quickbook-hp" aria-hidden="true">
+        <label htmlFor="mealprep-quick-website">Website</label>
+        <input
+          id="mealprep-quick-website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website}
+          onChange={update('website')}
+        />
+      </div>
+      {status === 'error' && <div className="quickbook-error">{error}</div>}
+      <button type="submit" className="business-btn" disabled={status === 'sending'}>
+        {status === 'sending' ? 'Sending…' : 'Start weekly meals'}
+      </button>
+    </form>
+  );
+};
+
 const FullPageDemoPage = () => {
   const [activePage, setActivePage] = useState(0);
   const [images, setImages] = useState([]);
@@ -361,20 +643,6 @@ const FullPageDemoPage = () => {
   const [smallEventsSaving, setSmallEventsSaving] = useState(false);
   const [smallEventsNotice, setSmallEventsNotice] = useState('');
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
-  const [waitlistStatus, setWaitlistStatus] = useState('idle');
-  const [waitlist, setWaitlist] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    familySize: '',
-    children: '',
-    daysPerWeek: '',
-    mealsPerDay: '',
-    allergies: '',
-    questions: '',
-    website: '',
-  });
   const [mealPlanImages, setMealPlanImages] = useState([]);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
   const [mealPlanError, setMealPlanError] = useState(null);
@@ -389,13 +657,13 @@ const FullPageDemoPage = () => {
   const [pizzaLoading, setPizzaLoading] = useState(false);
   const [pizzaError, setPizzaError] = useState(null);
   const [partners, setPartners] = useState([]);
-  const [businessPanel, setBusinessPanel] = useState(null);
   const [wholesaleEmail, setWholesaleEmail] = useState('');
   const [wholesaleSubmitted, setWholesaleSubmitted] = useState(false);
+  const [wholesaleStatus, setWholesaleStatus] = useState('idle');
+  const [wholesaleWebsite, setWholesaleWebsite] = useState('');
   const [wholesaleMenuItems, setWholesaleMenuItems] = useState([]);
   const [wholesaleMenuLoading, setWholesaleMenuLoading] = useState(false);
   const [wholesaleMenuError, setWholesaleMenuError] = useState('');
-  const [officeLunchesOpen, setOfficeLunchesOpen] = useState(false);
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [quoteDialogType, setQuoteDialogType] = useState('');
   const [quoteName, setQuoteName] = useState('');
@@ -406,7 +674,6 @@ const FullPageDemoPage = () => {
   const [announcementVisible, setAnnouncementVisible] = useState(false);
   const [announcementOpen, setAnnouncementOpen] = useState(false);
   const [julyDinnerOpen, setJulyDinnerOpen] = useState(false);
-  const [caseStudyImage, setCaseStudyImage] = useState(null);
   const [aboutFaqOpen, setAboutFaqOpen] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '', website: '' });
@@ -536,17 +803,35 @@ const normalizeMealStyle = (value) =>
     return addDays(base, ESTIMATE_LIFESPAN_DAYS);
   };
 
-  const handleBusinessSelect = (panel) => {
-    setBusinessPanel(panel);
-    if (panel === 'office') {
-      setOfficeLunchesOpen(true);
-    }
-  };
-
-  const handleWholesaleSubmit = (event) => {
+  // BUGFIX: this handler used to only flip local state — the email was never
+  // sent anywhere, so wholesale leads were silently dropped. It now posts to
+  // the existing /api/messages/submit endpoint before unlocking the menu.
+  const handleWholesaleSubmit = async (event) => {
     event.preventDefault();
-    if (!wholesaleEmail) return;
-    setWholesaleSubmitted(true);
+    const email = wholesaleEmail.trim();
+    if (!email || wholesaleStatus === 'sending') return;
+    setWholesaleStatus('sending');
+    try {
+      const res = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          subject: 'Wholesale menu + pricing request',
+          type: 'wholesale-inquiry',
+          sendCopy: true,
+          website: wholesaleWebsite,
+          message: `Wholesale menu + pricing sheet requested from the For Business tab.\nEmail: ${email}`,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Unable to send request');
+      trackEvent('contact.completed', { store: 'b2b', leadType: 'wholesale_menu_request' });
+      setWholesaleStatus('idle');
+      setWholesaleSubmitted(true);
+    } catch (_err) {
+      setWholesaleStatus('error');
+    }
   };
 
   const openQuoteDialog = (type) => {
@@ -2191,71 +2476,6 @@ const normalizeMealStyle = (value) =>
     prefetched.current.add(url);
   }, []);
 
-  const resetWaitlist = () =>
-    setWaitlist({
-      name: '',
-      email: '',
-      phone: '',
-      familySize: '',
-      children: '',
-      daysPerWeek: '',
-      mealsPerDay: '',
-      allergies: '',
-      questions: '',
-      website: '',
-    });
-
-  const handleWaitlistChange = (field, value) => {
-    setWaitlist((prev) => ({ ...prev, [field]: value }));
-    if (waitlistStatus !== 'idle') setWaitlistStatus('idle');
-  };
-
-  const handleWaitlistSubmit = async (event) => {
-    event.preventDefault();
-    setWaitlistStatus('sending');
-    try {
-      const lines = [
-        'Weekly Meal Prep Waitlist signup',
-        `Name: ${waitlist.name}`,
-        `Email: ${waitlist.email}`,
-        `Phone: ${waitlist.phone || '(not provided)'}`,
-        `Family size: ${waitlist.familySize || '(not provided)'}`,
-        `Children & ages: ${waitlist.children || '(not provided)'}`,
-        `Days per week: ${waitlist.daysPerWeek || '(not provided)'}`,
-        `Meals per day: ${waitlist.mealsPerDay || '(not provided)'}`,
-        `Allergies or medical comments: ${waitlist.allergies || '(none noted)'}`,
-        '',
-        'Questions or notes:',
-        waitlist.questions || '(none provided)',
-      ];
-      const payload = {
-        name: waitlist.name,
-        email: waitlist.email,
-        phone: waitlist.phone,
-        subject: 'Meal Prep Waitlist signup',
-        type: 'meal-prep-waitlist',
-        familySize: waitlist.familySize,
-        children: waitlist.children,
-        daysPerWeek: waitlist.daysPerWeek,
-        mealsPerDay: waitlist.mealsPerDay,
-        allergies: waitlist.allergies,
-        questions: waitlist.questions,
-        website: waitlist.website,
-        message: lines.join('\n'),
-      };
-      const res = await fetch('/api/messages/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      setWaitlistStatus('success');
-      resetWaitlist();
-    } catch (_error) {
-      setWaitlistStatus('error');
-    }
-  };
-
   const handleAboutSubscribeChange = (value) => {
     setAboutSubscribeEmail(value);
     if (aboutSubscribeStatus !== 'idle') {
@@ -2740,6 +2960,148 @@ const normalizeMealStyle = (value) =>
     [],
   );
 
+  /* ── Weekly Meal Prep structured data (prices derived from the meal prep
+        calculator in src/pages/MealPrepIntakePage.jsx) ── */
+  const mealPrepStructuredData = useMemo(
+    () => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'FoodService',
+          '@id': 'https://www.localeffortfood.com#meal-prep',
+          name: 'Local Effort Cooperative — Weekly Meal Prep',
+          url: 'https://www.localeffortfood.com/#weekly-meals',
+          description: 'Weekly personal-chef meal prep delivered across Minneapolis–St. Paul. Home-cooked breakfasts, lunches, and dinners from locally sourced Minnesota ingredients. Family dinners from $18 per person; solo plans from about $82 per week including delivery.',
+          provider: { '@id': 'https://www.localeffortfood.com#business' },
+          areaServed: [
+            { '@type': 'City', name: 'Minneapolis' },
+            { '@type': 'City', name: 'Saint Paul' },
+            { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
+          ],
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'Weekly Meal Prep',
+            itemListElement: [
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Weekly Dinners',
+                  description: 'Home-cooked dinners delivered weekly. $18 per adult for family dinners (3+ adults), $24 solo, $45 for two. Kids priced by age.',
+                  serviceType: 'Personal chef meal prep',
+                  category: 'Meal Preparation',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '18',
+                  unitText: 'per adult per dinner (family rate)',
+                },
+              },
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Weekly Breakfasts & Lunches',
+                  description: 'Breakfasts at $13.50 per adult and lunches at $18 per adult, delivered with your weekly order.',
+                  serviceType: 'Personal chef meal prep',
+                  category: 'Meal Preparation',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '13.50',
+                  unitText: 'per adult per breakfast',
+                },
+              },
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Weekly Delivery',
+                  description: 'Flat weekly delivery across the Twin Cities metro.',
+                  serviceType: 'Food delivery',
+                  category: 'Meal Preparation',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '10',
+                  unitText: 'per weekly delivery',
+                },
+              },
+            ],
+          },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': 'https://www.localeffortfood.com/#weekly-meals',
+          name: 'Weekly Meal Prep Delivery in Minneapolis–St. Paul | Local Effort Cooperative',
+          description: 'Weekly personal-chef meal prep delivered in the Twin Cities. Dinners from $18 per person. Sign up online in under a minute.',
+          isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
+          about: { '@id': 'https://www.localeffortfood.com#meal-prep' },
+        },
+      ],
+    }),
+    [],
+  );
+
+  /* ── Local Pizza structured data (prices derived from SMALL_EVENT_CONFIG
+        pizza pricing shared with backend/api/routes/smallEvents.js) ── */
+  const pizzaStructuredData = useMemo(
+    () => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'FoodService',
+          '@id': 'https://www.localeffortfood.com#local-pizza',
+          name: 'Local Effort Cooperative — Local Pizza Parties',
+          url: 'https://www.localeffortfood.com/#local-pizza',
+          description: '100% Midwest-ingredient pizza. Full-service pizza parties at your home, office, or business across Minneapolis–St. Paul from $55 per guest ($850 party minimum). Frozen Local Pizza available at Happy Monday in Roseville.',
+          provider: { '@id': 'https://www.localeffortfood.com#business' },
+          areaServed: [
+            { '@type': 'City', name: 'Minneapolis' },
+            { '@type': 'City', name: 'Saint Paul' },
+            { '@type': 'City', name: 'Roseville' },
+            { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
+          ],
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'Local Pizza',
+            itemListElement: [
+              {
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: 'Pizza Party — Full Service',
+                  description: 'Pizza party at your location for 4–16 guests, cooked and served by our chefs. 100% Midwest ingredients.',
+                  serviceType: 'Pizza catering',
+                  category: 'Event Catering',
+                },
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  priceCurrency: 'USD',
+                  price: '55',
+                  minPrice: '850',
+                  unitText: 'per guest ($850 party minimum)',
+                },
+              },
+            ],
+          },
+        },
+        {
+          '@type': 'WebPage',
+          '@id': 'https://www.localeffortfood.com/#local-pizza',
+          name: 'Local Pizza Parties & Frozen Pizza | Local Effort Cooperative',
+          description: 'Book a 100% Midwest-ingredient pizza party in the Twin Cities from $55 per guest, or find frozen Local Pizza at Happy Monday in Roseville.',
+          isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
+          about: { '@id': 'https://www.localeffortfood.com#local-pizza' },
+        },
+      ],
+    }),
+    [],
+  );
+
   const FeedbackModal = useMemo(() => {
     if (!showFeedback) return null;
     return (
@@ -3007,100 +3369,43 @@ const normalizeMealStyle = (value) =>
           id="weekly-meals"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative h-full pt-20">
-            <div className="flex items-start">
-              <div
-                className="group mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]"
-                style={{
-                  padding: '12px 16px',
-                  backgroundColor: BRAND_TOKENS.surfaceMuted,
-                  borderRadius: '6px',
-                }}
-              >
-                <div
-                  className="line-through group-hover:italic"
-                  style={{
-                    color: BRAND_TOKENS.textPrimary,
-                    fontFamily: "'Office Code Pro', monospace",
-                    fontSize: '18px',
-                    fontWeight: 600,
-                  }}
-                >
-                  Pickup on Sundays
-                </div>
-                <button
-                  type="button"
-                  className="inline-block line-through group-hover:italic"
-                  disabled
-                  aria-disabled="true"
-                  style={{
-                    marginTop: '12px',
-                    color: BRAND_TOKENS.textPrimary,
-                    fontFamily: "'Office Code Pro', monospace",
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    textDecoration: 'underline',
-                    cursor: 'not-allowed',
-                    opacity: 0.6,
-                  }}
-                >
-                  order here
-                </button>
-              </div>
-              <motion.span
-                aria-hidden="true"
-                style={{
-                  marginTop: '72px',
-                  marginLeft: '24px',
-                  marginRight: '24px',
-                  color: BRAND_TOKENS.textPrimary,
-                  fontSize: '24px',
-                }}
-                animate={{ x: [0, 10, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                →
-              </motion.span>
-              <div className="mt-6 ml-4 md:mt-8 md:ml-8 lg:mt-[50px] lg:ml-[50px]">
-                <div
-                  className="rounded-md border border-slate-300 bg-white/80 px-4 py-3"
-                  style={{ fontFamily: "'Office Code Pro', monospace" }}
-                >
-                  <div className="text-sm font-semibold text-slate-900">Waiting list</div>
-                  <div className="mt-1 text-xs text-slate-600">We&apos;ll let you know when space opens up.</div>
-                  <button
-                    type="button"
-                    className="mt-3 w-full rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
-                    onClick={() => {
-                      resetWaitlist();
-                      setWaitlistStatus('idle');
-                      setShowWaitlistForm(true);
-                    }}
-                  >
-                    Join the waitlist
-                  </button>
+          <div className="relative h-full pt-20 overflow-y-auto">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: mealPrepStructuredData }} />
+            {/* Crawl-friendly summary — visible to search engines, visually hidden */}
+            <div className="sr-only">
+              <h2>Weekly Meal Prep Delivery in Minneapolis–St. Paul</h2>
+              <p>
+                Local Effort Cooperative cooks and delivers weekly meals across the Twin Cities.
+                Family dinners from $18 per person, breakfasts from $13.50, solo plans from about
+                $82 per week including $10 delivery. Sign up online in under a minute — name,
+                email, and a start week is all we need.
+              </p>
+            </div>
+            <div className="px-4 md:px-8 lg:px-[50px] mt-6 md:mt-10">
+              <div className="quickbook-panel">
+                <div className="business-eyebrow">Weekly meals</div>
+                <h2 className="business-heading">A week of real food, cooked for you</h2>
+                <p className="quickbook-copy">
+                  From a few dinners a week to complete meal replacement — wholesome, home-cooked
+                  meals from high-integrity Minnesota ingredients, delivered to your door every week.
+                  Tell us who&apos;s eating; we handle the rest.
+                </p>
+                <div className="quickbook-price">from $82/week · dinners $18/person · delivery $10</div>
+                <MealPrepQuickStart />
+                <div className="quickbook-links">
+                  <a className="quickbook-secondary" href="/meal-prep-intake">
+                    Prefer to plan every detail? Take the full intake →
+                  </a>
                 </div>
               </div>
             </div>
-            <div className="mt-12 px-4 md:px-8 lg:px-[50px]">
+            <div className="mt-12 px-4 md:px-8 lg:px-[50px] pb-16">
               {mealPlanLoading ? (
                 <div className="text-sm text-gray-600">Loading photos...</div>
               ) : mealPlanError ? (
                 <div className="text-sm text-red-700">{mealPlanError}</div>
               ) : (
                 <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
-                  <div className="mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg">
-                    <div
-                      style={{
-                        fontFamily: "'Yomogi', cursive",
-                        color: BRAND_TOKENS.textPrimary,
-                        fontSize: '22px',
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      From a few meals a week to complete meal replacement. We make wholesome home cooked meals from high integrity local ingredients. We ensure that you eat real food all week.
-                    </div>
-                  </div>
                   {mealPlanImages.map((img, idx) => (
                     <div
                       key={(img.asset_id || img.public_id || idx) + ':' + idx}
@@ -3150,59 +3455,41 @@ const normalizeMealStyle = (value) =>
               </ul>
               <p>Contact: yum@localeffortfood.com | Minneapolis, MN</p>
             </div>
-            <div className="relative min-h-[520px] h-[70vh]">
+            <div className="relative min-h-[560px]">
               <img
                 src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
                 alt="Private event catering by Local Effort Cooperative in Minneapolis"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
-              <div className="relative z-10 flex items-start justify-center h-full pt-24">
-                <div className="small-events-cta">
-                  <div className="small-events-guide" aria-hidden="true">
-                    <div className="small-events-guide-text">BOOK TODAY</div>
-                    <span className="small-events-guide-arrow" />
-                  </div>
-                  <div
-                    style={{
-                      display: 'table',
-                      borderCollapse: 'separate',
-                      borderSpacing: '16px',
-                    }}
-                  >
-                    <div style={{ display: 'table-row' }}>
-                      <div style={{ display: 'table-cell' }}>
-                        <button
-                          type="button"
-                          onClick={() => setSmallEventsDialog('dinner')}
-                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                          style={{ fontFamily: "'Office Code Pro', monospace" }}
-                        >
-                          dinner party in my home
-                        </button>
-                      </div>
-                      <div style={{ display: 'table-cell' }}>
-                        <button
-                          type="button"
-                          onClick={() => setSmallEventsDialog('holiday')}
-                          className="px-6 py-5 rounded-md border border-white/70 bg-white/80 text-left text-base font-semibold text-slate-900 hover:bg-white"
-                          style={{ fontFamily: "'Office Code Pro', monospace" }}
-                        >
-                          small events like office and holiday parties, baby or wedding showers
-                        </button>
-                      </div>
-                    </div>
+              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] py-10 md:py-14">
+                <div className="quickbook-panel">
+                  <div className="business-eyebrow">Small events</div>
+                  <h2 className="business-heading">Put a chef on your date</h2>
+                  <p className="quickbook-copy">
+                    Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
+                    menus from 100% Minnesota-sourced ingredients, cooked and served at your place.
+                    One short form — we confirm within one business day.
+                  </p>
+                  <div className="quickbook-price">dinner &amp; pizza parties from $850 · larger events from $1,200</div>
+                  <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
+                  <div className="quickbook-links">
+                    <button
+                      type="button"
+                      className="quickbook-secondary"
+                      onClick={() => setSmallEventsDialog('dinner')}
+                    >
+                      Want an instant estimate first? Open the detailed planner →
+                    </button>
+                    <button
+                      type="button"
+                      className="quickbook-secondary"
+                      onClick={() => openSmallEventsContact('dinner')}
+                    >
+                      Questions? Send us a note
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center">
-                <a
-                  href="/june"
-                  className="px-8 py-5 rounded-md border-2 border-green-200/80 bg-green-800/90 text-white text-lg font-semibold hover:bg-green-900 transition-colors shadow-lg"
-                  style={{ fontFamily: "'Office Code Pro', monospace" }}
-                >
-                  home dinners in June
-                </a>
               </div>
             </div>
             <div className="px-8 pb-16 pt-10">
@@ -3216,39 +3503,6 @@ const normalizeMealStyle = (value) =>
                   >
                     Alyssa Andes
                   </a>
-                </div>
-              </div>
-              <div className="mt-10">
-                <h3 className="sr-only">Our catering services: dinners, weddings, and events</h3>
-                <div className="partnerships-grid columns-2 md:columns-3 lg:columns-4 [column-fill:_balance]">
-                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
-                    <meta itemProp="serviceType" content="Private chef dinner" />
-                    <meta itemProp="areaServed" content="Minneapolis-St. Paul, Minnesota" />
-                    <button
-                      type="button"
-                      className="partnerships-title partnerships-title-link"
-                      onClick={() => openSmallEventsContact('dinner')}
-                    >
-                      <span itemProp="name">dinner at your home</span>
-                    </button>
-                    <div className="partnerships-copy" itemProp="description">
-                      In-home private chef dinner for 4–16 guests. Multi-course seasonal menus tailored to your occasion and dietary needs.
-                    </div>
-                  </article>
-                  <article className="partnerships-card break-inside-avoid" itemScope itemType="https://schema.org/Service">
-                    <meta itemProp="serviceType" content="Event catering" />
-                    <meta itemProp="areaServed" content="Minneapolis-St. Paul, Minnesota" />
-                    <button
-                      type="button"
-                      className="partnerships-title partnerships-title-link"
-                      onClick={() => openSmallEventsContact('holiday')}
-                    >
-                      <span itemProp="name">small events like office and holiday parties, baby or wedding showers</span>
-                    </button>
-                    <div className="partnerships-copy" itemProp="description">
-                      Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal, locally sourced menus.
-                    </div>
-                  </article>
                 </div>
               </div>
               <div className="mt-12">
@@ -3297,256 +3551,110 @@ const normalizeMealStyle = (value) =>
               <div className="business-hero-content">
                 <div className="business-panel">
                   <div className="business-eyebrow">For businesses</div>
-                  <h2 className="business-heading">Partner with Local Effort</h2>
+                  <h2 className="business-heading">Local food for your display case</h2>
                   <div className="business-subtitle">
-                    You&apos;re working directly with the chefs. We&apos;re here to support your local food needs.
+                    Minnesota-made pizza, sandwiches, salads, and grab-and-go for cafes, bars, and
+                    retail. You&apos;re working directly with the chefs — delivered fresh within
+                    ~15 miles of 55449 or along Highway 35W.
                   </div>
-                  <div className="business-actions">
+                  <div className="quickbook-price">wholesale from $3.10/unit · pizzas from $3.60 · sandwiches from $5.85</div>
+                  {!wholesaleSubmitted ? (
+                    <form className="business-form" style={{ marginTop: '1rem' }} onSubmit={handleWholesaleSubmit}>
+                      <label className="business-label" htmlFor="wholesale-email">
+                        Work email
+                      </label>
+                      <input
+                        id="wholesale-email"
+                        type="email"
+                        className="business-input"
+                        placeholder="you@company.com"
+                        value={wholesaleEmail}
+                        onChange={(e) => setWholesaleEmail(e.target.value)}
+                        required
+                      />
+                      {/* Honeypot — real users never see or fill this. */}
+                      <div className="quickbook-hp" aria-hidden="true">
+                        <label htmlFor="wholesale-website">Website</label>
+                        <input
+                          id="wholesale-website"
+                          type="text"
+                          tabIndex={-1}
+                          autoComplete="off"
+                          value={wholesaleWebsite}
+                          onChange={(e) => setWholesaleWebsite(e.target.value)}
+                        />
+                      </div>
+                      {wholesaleStatus === 'error' && (
+                        <div className="quickbook-error">
+                          We couldn&apos;t send that just now — please try again, or email{' '}
+                          <a href="mailto:weston@localeffortfood.com">weston@localeffortfood.com</a>.
+                        </div>
+                      )}
+                      <button type="submit" className="business-btn" disabled={wholesaleStatus === 'sending'}>
+                        {wholesaleStatus === 'sending' ? 'Sending…' : 'Get the menu + pricing'}
+                      </button>
+                      <div className="business-note">
+                        The menu unlocks right here, and we&apos;ll email you the pricing sheet.
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="business-menu" style={{ marginTop: '1rem' }}>
+                      <div className="business-menu-title">Wholesale menu unlocked</div>
+                      <div className="business-note">Here is a starter list with partner pricing. The pricing sheet is on its way to your inbox.</div>
+                      <div className="business-menu-list">
+                        {wholesaleMenuLoading && (
+                          <div className="business-note">Loading menu...</div>
+                        )}
+                        {!wholesaleMenuLoading && wholesaleMenuError && (
+                          <div className="business-note">{wholesaleMenuError}</div>
+                        )}
+                        {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && (
+                          <div className="business-note">Menu updates are in progress. Email us for current pricing.</div>
+                        )}
+                        {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => (
+                          <div key={section.category} className="business-menu-section">
+                            <div className="business-menu-category">{section.category}</div>
+                            {section.items.map((item) => (
+                              <div key={item.id || item.name} className="business-menu-row">
+                                <span>{item.name}</span>
+                                <span className="business-price">{item.price}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="business-btn business-btn-secondary"
+                        onClick={() => setWholesaleSubmitted(false)}
+                      >
+                        Use a different email
+                      </button>
+                    </div>
+                  )}
+                  <div className="quickbook-links">
                     <button
                       type="button"
-                      className={`business-link ${businessPanel === 'wholesale' ? 'is-active' : ''}`}
-                      onClick={() => handleBusinessSelect('wholesale')}
+                      className="quickbook-secondary"
+                      onClick={() => openBusinessContact('consulting')}
                     >
-                      cafes, bars, grocery stores and other retail settings interested in wholesale
+                      Restaurant consulting →
                     </button>
                     <button
                       type="button"
-                      className={`business-link ${businessPanel === 'office' ? 'is-active' : ''}`}
-                      onClick={() => handleBusinessSelect('office')}
+                      className="quickbook-secondary"
+                      onClick={() => openBusinessContact('collaborations')}
                     >
-                      office lunches (coming soon)
+                      Collaborations &amp; pop-ups →
                     </button>
-                    <button
-                      type="button"
-                      className={`business-link ${businessPanel === 'pizza' ? 'is-active' : ''}`}
-                      onClick={() => handleBusinessSelect('pizza')}
-                    >
-                      open a pizza shop
-                    </button>
+                    <a className="quickbook-secondary" href="mailto:weston@localeffortfood.com">
+                      Open a pizza shop — talk to Weston →
+                    </a>
                   </div>
                 </div>
-                {businessPanel && businessPanel !== 'office' && (
-                  <div className="business-reveal">
-                    {businessPanel === 'wholesale' && (
-                      <div className="business-stack">
-                        {!wholesaleSubmitted ? (
-                          <form className="business-form" onSubmit={handleWholesaleSubmit}>
-                            <label className="business-label" htmlFor="wholesale-email">
-                              Email for menu access
-                            </label>
-                            <input
-                              id="wholesale-email"
-                              type="email"
-                              className="business-input"
-                              placeholder="you@company.com"
-                              value={wholesaleEmail}
-                              onChange={(e) => setWholesaleEmail(e.target.value)}
-                              required
-                            />
-                            <button type="submit" className="business-btn">
-                              Get menu + pricing
-                            </button>
-                            <div className="business-note">
-                              We&apos;ll send a copy of the pricing sheet too.
-                            </div>
-                            <div className="business-note">
-                              fridge and freezer-friendly foods for display cases, grab and go fridges, and menus,
-                              delivered fresh. available within approx. 15 miles of 55449, or anywhere in metro along
-                              Highway 35w.
-                            </div>
-                          </form>
-                        ) : (
-                          <div className="business-menu">
-                            <div className="business-menu-title">Wholesale menu unlocked</div>
-                            <div className="business-note">Here is a starter list with partner pricing.</div>
-                            <div className="business-menu-list">
-                              {wholesaleMenuLoading && (
-                                <div className="business-note">Loading menu...</div>
-                              )}
-                              {!wholesaleMenuLoading && wholesaleMenuError && (
-                                <div className="business-note">{wholesaleMenuError}</div>
-                              )}
-                              {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && (
-                                <div className="business-note">Menu updates are in progress. Email us for current pricing.</div>
-                              )}
-                              {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => (
-                                <div key={section.category} className="business-menu-section">
-                                  <div className="business-menu-category">{section.category}</div>
-                                  {section.items.map((item) => (
-                                    <div key={item.id || item.name} className="business-menu-row">
-                                      <span>{item.name}</span>
-                                      <span className="business-price">{item.price}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ))}
-                            </div>
-                            <button
-                              type="button"
-                              className="business-btn business-btn-secondary"
-                              onClick={() => setWholesaleSubmitted(false)}
-                            >
-                              Use a different email
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {businessPanel === 'pizza' && (
-                      <div className="business-stack">
-                        <div className="business-menu-title">Open a pizza shop</div>
-                        <div className="business-note">Reach Weston directly to start the conversation.</div>
-                        <a className="business-email" href="mailto:weston@localeffortfood.com">
-                          weston@localeffortfood.com
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
-            <section className="case-study-section">
-              <div className="case-study-header">
-                <div className="case-study-title">case study: customer portal for happy monday</div>
-                <div className="case-study-subtitle">
-                  a lightweight portal where customers can get more information, like ingredients and nutrition, as
-                  well as provide feedback and make custom requests.
-                </div>
-              </div>
-              <div className="case-study-scroll" role="region" aria-label="Happy Monday case study">
-                <div className="case-study-grid">
-                  <div className="case-study-card case-study-text">
-                    <div className="case-study-tag">Goal</div>
-                    <div className="case-study-copy">
-                      create a way for a cafe food vendor to have a direct relationship with end customers.{' '}
-                      <a
-                        href="https://www.localeffortfood.com/happymonday"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline underline-offset-4"
-                      >
-                        see it in action
-                      </a>
-                      .
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="case-study-card case-study-image case-study-expand"
-                    onClick={() => setCaseStudyImage({
-                      src: '/gallery/hmw%20(1).png',
-                      alt: 'Happy Monday portal preview',
-                    })}
-                  >
-                    <img
-                      src="/gallery/hmw%20(1).png"
-                      alt="Happy Monday portal preview"
-                      loading="lazy"
-                    />
-                  </button>
-                  <div className="case-study-card case-study-text">
-                    <div className="case-study-tag">Experience</div>
-                    <div className="case-study-copy">
-                      customers are empowered to chat directly with the chef about their dietary needs and
-                      preferences, and have the opportunity to customize their experience at their favorite place.
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="case-study-card case-study-image case-study-expand"
-                    onClick={() => setCaseStudyImage({
-                      src: '/gallery/hmw%20(2).png',
-                      alt: 'Happy Monday meals grid',
-                    })}
-                  >
-                    <img
-                      src="/gallery/hmw%20(2).png"
-                      alt="Happy Monday meals grid"
-                      loading="lazy"
-                    />
-                  </button>
-                  <div className="case-study-card case-study-text">
-                    <div className="case-study-tag">What&apos;s next</div>
-                    <div className="case-study-copy">
-                      b2c pre-ordering, subscriptions and notifications for &apos;DROPS&apos; or new products,
-                      discounts and loyalty features, and more ideas about improving vendor-customer relationships in
-                      cafe settings.
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="case-study-card case-study-image case-study-expand"
-                    onClick={() => setCaseStudyImage({
-                      src: '/gallery/hmw%20(3).png',
-                      alt: 'Happy Monday meal prep detail',
-                    })}
-                  >
-                    <img
-                      src="/gallery/hmw%20(3).png"
-                      alt="Happy Monday meal prep detail"
-                      loading="lazy"
-                    />
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <section className="partnerships-section" aria-label="Commercial food services">
-              <h3 className="sr-only">Our B2B services: wholesale, consulting, and collaborations</h3>
-              <div className="partnerships-grid">
-                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
-                  <meta itemProp="serviceType" content="Wholesale food supply" />
-                  <meta itemProp="areaServed" content="Minneapolis-St. Paul Metro, Minnesota" />
-                  <button
-                    type="button"
-                    className="partnerships-title partnerships-title-link"
-                    onClick={() => openBusinessContact('wholesale')}
-                  >
-                    <span itemProp="name">wholesale</span>
-                  </button>
-                  <div className="partnerships-copy" itemProp="description">
-                    pizza, sandwiches, salads, and other standbys, with the same commitments to local and high-integrity
-                    ingredients. always minnesotan made, always midwest ingredients, always delicious and nutritionally
-                    sound.
-                  </div>
-                </article>
-                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
-                  <meta itemProp="serviceType" content="Restaurant consulting" />
-                  <meta itemProp="areaServed" content="Minnesota" />
-                  <button
-                    type="button"
-                    className="partnerships-title partnerships-title-link"
-                    onClick={() => openBusinessContact('consulting')}
-                  >
-                    <span itemProp="name">restaurant consulting</span>
-                  </button>
-                  <div className="partnerships-copy" itemProp="description">
-                    front-of-house and back-of-house solutions. improve your restaurant group&apos;s tech stack,
-                    ingredient sourcing, menu design, service feel, and more. we are restaurant veterans with
-                    substantial experience in every dimension of this weird business. we&apos;re here to help you make
-                    your vision sharper, crisper, cooler, higher impact.
-                  </div>
-                </article>
-                <article className="partnerships-card" itemScope itemType="https://schema.org/Service">
-                  <meta itemProp="serviceType" content="Food collaboration & partnership" />
-                  <meta itemProp="areaServed" content="Minnesota" />
-                  <button
-                    type="button"
-                    className="partnerships-title partnerships-title-link"
-                    onClick={() => openBusinessContact('collaborations')}
-                  >
-                    <span itemProp="name">collaborations</span>
-                  </button>
-                  <div className="partnerships-copy" itemProp="description">
-                    always very open and interested in working with other creatives and businesses from all domains:
-                    political organizers, artists, bakers, farmers and ag workers, event coordinators, small and large
-                    businesses - we want to bring <span className="partnerships-highlight">local food</span> to your
-                    audience.
-                  </div>
-                </article>
-              </div>
-            </section>
           </div>
         </FullPageSection>
 
@@ -3769,22 +3877,55 @@ const normalizeMealStyle = (value) =>
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className="relative w-full h-full pt-20 overflow-y-auto">
-            <div className="relative min-h-[520px] h-[70vh]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: pizzaStructuredData }} />
+            {/* Crawl-friendly summary — visible to search engines, visually hidden */}
+            <div className="sr-only">
+              <h2>Local Pizza Parties in Minneapolis–St. Paul</h2>
+              <p>
+                Book a 100% Midwest-ingredient pizza party at your home, office, or business.
+                From $55 per guest with an $850 party minimum, cooked and served by Local Effort
+                chefs. Frozen Local Pizza is stocked at Happy Monday in Roseville.
+              </p>
+            </div>
+            <div className="relative min-h-[560px]">
               <img
                 src="/gallery/5Z0A5737-Edit.jpg"
                 alt="Local pizza"
                 className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
-              <div className="relative z-10 flex h-full flex-col items-start justify-end gap-6 px-8 pb-16 md:flex-row md:items-end md:justify-between">
+              <div className="relative z-10 flex flex-col gap-6 px-4 md:px-8 lg:px-[50px] py-10 md:py-14 md:flex-row md:items-start md:justify-between">
+                <div className="quickbook-panel">
+                  <div className="business-eyebrow">Local pizza</div>
+                  <h2 className="business-heading">Book a pizza party</h2>
+                  <p className="quickbook-copy">
+                    100% Midwest ingredients, cooked and served at your home, office, or business
+                    by our chefs. Pick a date — we bring everything.
+                  </p>
+                  <div className="quickbook-price">from $55/guest · $850 party minimum</div>
+                  <QuickEventBookForm
+                    fixedType="Pizza party"
+                    source="local-pizza"
+                    ctaLabel="Book my pizza party"
+                  />
+                  <div className="quickbook-links">
+                    <button
+                      type="button"
+                      className="quickbook-secondary"
+                      onClick={() => setSmallEventsDialog('pizza')}
+                    >
+                      Want an instant estimate first? Open the detailed planner →
+                    </button>
+                  </div>
+                </div>
                 <div
                   className="max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg"
                   style={{ fontFamily: "'Office Code Pro', monospace" }}
                 >
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">Local pizza</div>
-                  <div className="mt-2 text-lg font-semibold">Local Pizza in your freezer</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">In your freezer</div>
+                  <div className="mt-2 text-lg font-semibold">Local Pizza to go</div>
                   <div className="mt-2 text-sm text-slate-700">
-                    Local Pizza is 100% midwest ingredients. Find us at Happy Monday in Roseville, and soon on{' '}
+                    Find frozen Local Pizza at Happy Monday in Roseville, and soon on{' '}
                     <a
                       href="https://mnfood.club/?afmc=1y"
                       target="_blank"
@@ -3793,16 +3934,9 @@ const normalizeMealStyle = (value) =>
                     >
                       MN Food Club
                     </a>
-                    . Host a pizza party at your home, office, or business today.
+                    .
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="pizza-cta"
-                  onClick={() => setSmallEventsDialog('pizza')}
-                >
-                  book a pizza party
-                </button>
               </div>
             </div>
             <div className="relative z-10 px-8 pb-16 pt-10">
@@ -4435,189 +4569,6 @@ const normalizeMealStyle = (value) =>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={officeLunchesOpen} onOpenChange={setOfficeLunchesOpen}>
-        <DialogContent className="fullpage-demo-scope sm:max-w-[900px]">
-          <DialogHeader>
-            <DialogTitle>Office lunches (coming soon)</DialogTitle>
-          </DialogHeader>
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <img
-              src="/gallery/Screenshot%20(168).png"
-              alt="Office lunches preview"
-              className="h-auto w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(caseStudyImage)}
-        onOpenChange={(open) => {
-          if (!open) setCaseStudyImage(null);
-        }}
-      >
-        <DialogContent className="fullpage-demo-scope case-study-lightbox sm:max-w-[900px]">
-          {caseStudyImage && (
-            <img
-              src={caseStudyImage.src}
-              alt={caseStudyImage.alt}
-              className="w-full h-auto"
-              loading="eager"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {showWaitlistForm && (
-        <div
-          className="fixed inset-0 z-[70] flex items-start justify-center bg-black/60 px-4 py-8 overflow-y-auto"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="form-card w-full max-w-xl max-h-[90vh] overflow-y-auto relative">
-            <button
-              type="button"
-              className="absolute right-4 top-4 text-sm underline z-10"
-              onClick={() => {
-                setShowWaitlistForm(false);
-                setWaitlistStatus('idle');
-                resetWaitlist();
-              }}
-            >
-              Close
-            </button>
-            <h2 className="text-2xl font-bold mb-2">Join the waiting list</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              We&apos;ll reach out when weekly meal pickup slots reopen.
-            </p>
-            <form onSubmit={handleWaitlistSubmit} className="space-y-4">
-              <div>
-                <label className="label" htmlFor="weekly-waitlist-name">Name</label>
-                <input
-                  id="weekly-waitlist-name"
-                  className="input"
-                  value={waitlist.name}
-                  onChange={(e) => handleWaitlistChange('name', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="label" htmlFor="weekly-waitlist-email">Email</label>
-                  <input
-                    id="weekly-waitlist-email"
-                    type="email"
-                    className="input"
-                    value={waitlist.email}
-                    onChange={(e) => handleWaitlistChange('email', e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label" htmlFor="weekly-waitlist-phone">Phone number</label>
-                  <input
-                    id="weekly-waitlist-phone"
-                    className="input"
-                    value={waitlist.phone}
-                    onChange={(e) => handleWaitlistChange('phone', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="label" htmlFor="weekly-waitlist-family">Family size</label>
-                <input
-                  id="weekly-waitlist-family"
-                  className="input"
-                  placeholder="e.g. 2 adults, 2 kids"
-                  value={waitlist.familySize}
-                  onChange={(e) => handleWaitlistChange('familySize', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="weekly-waitlist-children">Children &amp; ages</label>
-                <textarea
-                  id="weekly-waitlist-children"
-                  className="textarea"
-                  rows={2}
-                  value={waitlist.children}
-                  onChange={(e) => handleWaitlistChange('children', e.target.value)}
-                  placeholder="Tell us about school schedules, toddlers, or teens."
-                />
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="label" htmlFor="weekly-waitlist-days">Days per week</label>
-                  <input
-                    id="weekly-waitlist-days"
-                    className="input"
-                    placeholder="How many days should we cover?"
-                    value={waitlist.daysPerWeek}
-                    onChange={(e) => handleWaitlistChange('daysPerWeek', e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label" htmlFor="weekly-waitlist-meals">Meals per day</label>
-                  <input
-                    id="weekly-waitlist-meals"
-                    className="input"
-                    placeholder="Breakfast, lunch, dinner?"
-                    value={waitlist.mealsPerDay}
-                    onChange={(e) => handleWaitlistChange('mealsPerDay', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="label" htmlFor="weekly-waitlist-allergies">Allergies or medical comments</label>
-                <textarea
-                  id="weekly-waitlist-allergies"
-                  className="textarea"
-                  rows={3}
-                  value={waitlist.allergies}
-                  onChange={(e) => handleWaitlistChange('allergies', e.target.value)}
-                  placeholder="Include any dietary restrictions, allergies, or doctor notes."
-                />
-              </div>
-              <div>
-                <label className="label" htmlFor="weekly-waitlist-questions">Questions for the team</label>
-                <textarea
-                  id="weekly-waitlist-questions"
-                  className="textarea"
-                  rows={3}
-                  value={waitlist.questions}
-                  onChange={(e) => handleWaitlistChange('questions', e.target.value)}
-                  placeholder="Anything else we should know?"
-                />
-              </div>
-              <input
-                type="text"
-                name="website"
-                value={waitlist.website}
-                onChange={(e) => handleWaitlistChange('website', e.target.value)}
-                autoComplete="off"
-                tabIndex={-1}
-                aria-hidden="true"
-                className="hidden"
-              />
-              <div className="flex flex-wrap items-center gap-3">
-                <button type="submit" className="btn btn-primary" disabled={waitlistStatus === 'sending'}>
-                  {waitlistStatus === 'sending' ? 'Submitting...' : 'Join waitlist'}
-                </button>
-                {waitlistStatus === 'success' && (
-                  <span className="text-green-700 text-sm">Thanks! We&apos;ll be in touch.</span>
-                )}
-                {waitlistStatus === 'error' && (
-                  <span className="text-red-700 text-sm">We couldn&apos;t submit your request. Please try again.</span>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

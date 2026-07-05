@@ -15,6 +15,7 @@ import PsychePage from '../pages/PsychePage';
 import FebruaryPage from '../pages/FebruaryPage';
 import JulyDinnerPage from '../pages/JulyDinnerPage';
 import ReturnPolicyPage from '../pages/ReturnPolicyPage';
+import OfficeCateringPage from '../pages/OfficeCateringPage';
 
 export default function StaticApp({ helmetContext }) {
   const location = useLocation();
@@ -38,6 +39,7 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/psyche" element={<PsychePage />} />
               <Route path="/february" element={<FebruaryPage />} />
               <Route path="/julydinner" element={<JulyDinnerPage />} />
+              <Route path="/office-catering" element={<OfficeCateringPage />} />
             </Routes>
           </main>
         </div>

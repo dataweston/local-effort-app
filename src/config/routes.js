@@ -91,9 +91,15 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/localist',
-    title: 'Localist - Weekly Meals Text List - Local Effort Cooperative',
-    description: 'Join the Localist text list: every Monday we text a limited menu of salads and hot bowls for Tuesday/Wednesday pickup in North Minneapolis.',
+    title: 'Become a Localist — Membership | Local Effort Cooperative',
+    description: 'Become a Localist: membership in a Minneapolis workers cooperative. $45/month or $375/year — waived for anyone who needs it. Members get pickup menus, perks, and 4% back as credit every quarter.',
     prerender: false,
+  },
+  {
+    path: '/office-catering',
+    title: 'Office Catering Minneapolis - Sandwich Trays, Salads & Baked Goods | Local Effort Cooperative',
+    description: 'Order office catering in Minneapolis-St. Paul: sandwich trays, big-bowl salads that feed 8-10, and baked goods by the dozen from Local Effort Cooperative. $150 minimum, 48-hour lead time, $40 delivery - free at $750+. Invoice-friendly.',
+    prerender: true,
   },
 ];
 

@@ -51,6 +51,7 @@ const BrainBrowserPage = lazy(() => import('./pages/BrainBrowserPage'));
 const HubPage = lazy(() => import('./pages/HubPage'));
 const LocalistPage = lazy(() => import('./pages/LocalistPage'));
 const ReturnPolicyPage = lazy(() => import('./pages/ReturnPolicyPage'));
+const OfficeCateringPage = lazy(() => import('./pages/OfficeCateringPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -172,6 +173,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <ReturnPolicyPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/office-catering"
+                  element={
+                    <AnimatedPage>
+                      <OfficeCateringPage />
                     </AnimatedPage>
                   }
                 />

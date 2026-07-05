@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
     return res.status(429).json({ error: 'rate-limit-exceeded' });
   }
 
-  const { phone } = req.body || {};
+  const { phone, name, email, tier } = req.body || {};
   if (!phone || typeof phone !== 'string') {
     return res.status(400).json({ error: 'valid-phone-required' });
   }
@@ -49,6 +49,18 @@ module.exports = async (req, res) => {
   const digits = phone.replace(/\D/g, '');
   if (digits.length !== 10) {
     return res.status(400).json({ error: 'valid-phone-required' });
+  }
+
+  // Optional membership fields — backward compatible: legacy clients send { phone } only.
+  const VALID_TIERS = ['monthly', 'annual', 'waived'];
+  if (tier !== undefined && (typeof tier !== 'string' || !VALID_TIERS.includes(tier))) {
+    return res.status(400).json({ error: 'invalid-tier' });
+  }
+  const safeName = typeof name === 'string' ? name.trim().slice(0, 120) : '';
+  const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const safeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail) ? trimmedEmail : '';
+  if (trimmedEmail && !safeEmail) {
+    return res.status(400).json({ error: 'invalid-email' });
   }
 
   const apiKey = process.env.BREVO_API_KEY;
@@ -65,10 +77,24 @@ module.exports = async (req, res) => {
 
   const mobilePhone = `+1${digits}`;
 
+  // Split "First Last" for Brevo's standard attributes.
+  const nameParts = safeName.split(/\s+/).filter(Boolean);
+  const attributes = {
+    SMS: mobilePhone,
+    ...(nameParts.length > 0 && { FIRSTNAME: nameParts[0] }),
+    ...(nameParts.length > 1 && { LASTNAME: nameParts.slice(1).join(' ') }),
+    ...(safeEmail && { EMAIL: safeEmail }),
+    ...(tier && {
+      LOCALIST_TIER: tier,
+      LOCALIST_SIGNUP_DATE: new Date().toISOString().split('T')[0],
+    }),
+  };
+
   try {
     const payload = {
       mobilePhone,
-      attributes: { SMS: mobilePhone },
+      ...(safeEmail && { email: safeEmail }),
+      attributes,
       ...(listIds.length > 0 && { listIds }),
       updateEnabled: true,
     };
@@ -87,23 +113,24 @@ module.exports = async (req, res) => {
 
     if (!response.ok) {
       if (response.status === 400 && data.code === 'duplicate_parameter') {
-        if (listIds.length > 0) {
-          await fetch(`${BREVO_API_BASE}/contacts/${encodeURIComponent(mobilePhone)}`, {
-            method: 'PUT',
-            headers: {
-              accept: 'application/json',
-              'api-key': apiKey,
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({ listIds }),
-          });
-        }
+        await fetch(`${BREVO_API_BASE}/contacts/${encodeURIComponent(mobilePhone)}`, {
+          method: 'PUT',
+          headers: {
+            accept: 'application/json',
+            'api-key': apiKey,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            attributes,
+            ...(listIds.length > 0 && { listIds }),
+          }),
+        });
         return res.status(200).json({ ok: true });
       }
       throw new Error(data.message || response.statusText);
     }
 
-    console.log(`[localist/subscribe] subscribed: ${mobilePhone}`);
+    console.log(`[localist/subscribe] subscribed: ${mobilePhone}${tier ? ` (tier: ${tier})` : ''}`);
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error('[localist/subscribe] error:', error.message);

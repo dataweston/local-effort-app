@@ -1,0 +1,446 @@
+/* ==========================================================================
+   localist-membership — "Become a Localist" membership page
+   Additive layer over le-checkout.css. Same palette:
+     #fff / #fffaf1     backgrounds
+     #d9d0c6 / #e8e8e8  borders
+     #111               primary text
+     #6b655d / #756c61  muted / labels
+     'Office Code Pro' / ui-monospace  labels, prices
+   ========================================================================== */
+
+.lm-page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  color: #111;
+}
+
+.lm-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+
+.lm-mono {
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+}
+
+.lm-eyebrow {
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #756c61;
+  margin: 0 0 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.lm-hero {
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.lm-hero-title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.lm-hero-copy {
+  margin: 0 0 2rem;
+  max-width: 38rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #4a453f;
+}
+
+.lm-hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lm-btn {
+  display: inline-block;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: background 0.15s ease, color 0.15s ease;
+  min-height: 48px;
+}
+
+.lm-btn:hover {
+  background: #2a2a2a;
+}
+
+.lm-btn--ghost {
+  background: transparent;
+  color: #111;
+}
+
+.lm-btn--ghost:hover {
+  background: #f5f1eb;
+}
+
+/* --------------------------------------------------------------------------
+   Section scaffold
+   -------------------------------------------------------------------------- */
+
+.lm-section {
+  padding: 3rem 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.lm-section-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #111;
+}
+
+.lm-section-sub {
+  margin: 0 0 2rem;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #6b655d;
+}
+
+/* --------------------------------------------------------------------------
+   Pricing tiers — SaaS-style side by side
+   -------------------------------------------------------------------------- */
+
+.lm-tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .lm-tiers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lm-tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid #d9d0c6;
+  background: #fff;
+}
+
+.lm-tier--featured {
+  background: #fffaf1;
+  border-color: #111;
+}
+
+.lm-tier-badge {
+  position: absolute;
+  top: -0.65rem;
+  left: 1.25rem;
+  padding: 0.2rem 0.6rem;
+  background: #111;
+  color: #fff;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lm-tier-name {
+  margin: 0;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #756c61;
+}
+
+.lm-tier-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+}
+
+.lm-tier-amount {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.02em;
+}
+
+.lm-tier-per {
+  font-size: 0.8rem;
+  color: #6b655d;
+}
+
+.lm-tier-note {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #6b655d;
+  margin: 0;
+}
+
+.lm-tier .lm-btn {
+  margin-top: auto;
+  width: 100%;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Benefits list
+   -------------------------------------------------------------------------- */
+
+.lm-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lm-benefit {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.lm-benefit:last-child {
+  border-bottom: none;
+}
+
+.lm-benefit-marker {
+  flex-shrink: 0;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #756c61;
+}
+
+.lm-benefit-body {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #27211a;
+}
+
+.lm-benefit-body strong {
+  font-weight: 600;
+  color: #111;
+}
+
+/* --------------------------------------------------------------------------
+   Waiver panel — equal dignity to pricing
+   -------------------------------------------------------------------------- */
+
+.lm-waiver {
+  padding: 1.75rem 1.5rem;
+  border: 1px solid #d9d0c6;
+  border-left: 3px solid #4a6640;
+  background: #f7faf4;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lm-waiver-title {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: #111;
+}
+
+.lm-waiver-copy {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #27211a;
+}
+
+.lm-waiver .lm-btn {
+  align-self: flex-start;
+}
+
+.lm-waiver-fineprint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #4a6640;
+}
+
+/* --------------------------------------------------------------------------
+   Signup form
+   -------------------------------------------------------------------------- */
+
+.lm-form-wrap {
+  max-width: 34rem;
+}
+
+.lm-tier-pills {
+  display: flex;
+  gap: 1px;
+  background: #d9d0c6;
+}
+
+.lm-tier-pill {
+  flex: 1;
+  padding: 0.7rem 0.5rem;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4a453f;
+  text-align: center;
+  line-height: 1.3;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.lm-tier-pill:hover {
+  background: #f5f1eb;
+}
+
+.lm-tier-pill.is-selected {
+  background: #111;
+  color: #fff;
+}
+
+.lm-tier-pill-sub {
+  display: block;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.68rem;
+  margin-top: 0.2rem;
+  opacity: 0.75;
+}
+
+/* --------------------------------------------------------------------------
+   FAQ
+   -------------------------------------------------------------------------- */
+
+.lm-faq-item {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.lm-faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1.1rem 2rem 1.1rem 0;
+  position: relative;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.4;
+}
+
+.lm-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.lm-faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 1.1rem;
+  color: #756c61;
+}
+
+.lm-faq-item[open] summary::after {
+  content: '−';
+}
+
+.lm-faq-item summary:hover {
+  color: #4a453f;
+}
+
+.lm-faq-answer {
+  padding: 0 0 1.25rem;
+  max-width: 40rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #4a453f;
+}
+
+.lm-faq-answer p {
+  margin: 0 0 0.75rem;
+}
+
+.lm-faq-answer p:last-child {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Final CTA band
+   -------------------------------------------------------------------------- */
+
+.lm-final {
+  padding: 3.5rem 0;
+  text-align: center;
+}
+
+.lm-final .lm-hero-actions {
+  justify-content: center;
+}
+
+.lm-final-title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.02em;
+}
+
+.lm-final-copy {
+  margin: 0 auto 1.75rem;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #6b655d;
+}
+
+/* --------------------------------------------------------------------------
+   Gallery strip
+   -------------------------------------------------------------------------- */
+
+.lm-gallery {
+  padding: 3rem 0 4rem;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lm-btn,
+  .lm-tier-pill {
+    transition: none !important;
+  }
+}

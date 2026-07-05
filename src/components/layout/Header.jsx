@@ -157,7 +157,7 @@ export const Header = () => {
             onMouseEnter={handleHoverOn}
             onMouseLeave={handleHoverOff}
           >
-            Localist
+            Become a Localist
           </Link>
         </nav>
 
@@ -227,7 +227,7 @@ export const Header = () => {
                 style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
                 variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
-                Localist
+                Become a Localist
               </motion.a>
             </motion.nav>
           </motion.div>
