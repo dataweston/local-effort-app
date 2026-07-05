@@ -4061,8 +4061,8 @@ const normalizeMealStyle = (value) =>
             <div className="july-dinner-popup__eyebrow">One night · twenty seats</div>
             <DialogTitle className="july-dinner-popup__title">Dinner in July</DialogTitle>
             <DialogDescription className="july-dinner-popup__description">
-              One long table at the Arthouse in North Minneapolis. Friday, July 17 at 6:30 p.m.,
-              with a multi-course dinner built around what Minnesota farms are growing.
+              Friday, July 17 at 6:30 p.m. at the Arthouse in North Minneapolis, with a
+              multi-course dinner built around what Minnesota farms are growing.
             </DialogDescription>
           </DialogHeader>
           <div className="july-dinner-popup__details">
