@@ -44,10 +44,11 @@ const DEFAULT_DISHES = [
   'carrots and celery',
   'currant kombucha',
   'mustard green kimchi',
-  'ice cream',
+  'trout temaki',
+  'wild rice ice cream',
   'shiso dolmas',
+  'fregola & mushroom',
   'salame',
-  'cheesy bread',
   'vanilla tart',
   'dry wit',
 ];
