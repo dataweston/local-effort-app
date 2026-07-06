@@ -310,6 +310,10 @@
       "dest": "/prerender/book/index.html"
     },
     {
+      "src": "^/office-catering$",
+      "dest": "/prerender/office-catering/index.html"
+    },
+    {
       "src": "^/weekly$",
       "dest": "/blog",
       "status": 308

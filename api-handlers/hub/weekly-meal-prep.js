@@ -267,7 +267,7 @@ function summarizeRules(rawRules) {
   return [entrees, max].filter(Boolean).join('; ');
 }
 
-function publicCustomer(customer, brainEntity, enrichment = null) {
+function publicCustomer(customer, brainEntity, enrichment = null, { includeInternal = true } = {}) {
   const latestOrder = customer.orders?.[0] || null;
   const recentItems = (latestOrder?.items || []).map((item) => ({
     title: item.dish?.title || 'Unknown dish',
@@ -302,8 +302,12 @@ function publicCustomer(customer, brainEntity, enrichment = null) {
           items: recentItems,
         }
       : null,
-    brain: compactBrainEntity(brainEntity),
-    ...(enrichment || { transactionCount: 0, totalSpendCents: 0, transactions: [], emailThreadCount: 0, emailThreads: [] }),
+    ...(includeInternal
+      ? {
+          brain: compactBrainEntity(brainEntity),
+          ...(enrichment || { transactionCount: 0, totalSpendCents: 0, transactions: [], emailThreadCount: 0, emailThreads: [] }),
+        }
+      : {}),
   };
 }
 
@@ -350,6 +354,17 @@ async function loadCustomers(auth) {
     },
     orderBy: [{ name: 'asc' }, { slug: 'asc' }],
   });
+
+  // Customer sessions receive only their household-facing profile. Do not query
+  // or serialize internal brain signals, transaction history, or email history.
+  if (auth.isCustomer && !auth.isPrivileged) {
+    return customers.map((customer) => publicCustomer(
+      customer,
+      null,
+      null,
+      { includeInternal: false },
+    ));
+  }
 
   const brainEntities = await prisma.brainEntity.findMany({
     where: {

@@ -615,7 +615,7 @@ function CustomerHomeView({ accessToken, setTab }) {
   return (
     <div className="hub-grid">
       {plan && (
-        <Panel title="Your Plan" icon={Soup} action={<button onClick={() => setTab('weeklyMealPrep')}>Weekly Meal Prep</button>}>
+        <Panel title="Your Plan" icon={Soup} action={<button onClick={() => setTab('weeklyMealPrep')}>Meal Prep</button>}>
           <div className="hub-list">
             {plan.items.map((item) => (
               <div className="hub-row" key={item.key}>
@@ -1527,8 +1527,8 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
                 <th>Plan</th>
                 <th>Profile</th>
                 <th>Latest Order</th>
-                <th>Spend &amp; History</th>
-                <th>Brain Signals</th>
+                {!isCustomer && <th>Spend &amp; History</th>}
+                {!isCustomer && <th>Brain Signals</th>}
               </tr>
             </thead>
             <tbody>
@@ -1553,17 +1553,21 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
                       </>
                     ) : 'No order yet'}
                   </td>
-                  <td>
-                    <CustomerSpendCell customer={customer} />
-                  </td>
-                  <td>
-                    <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
-                    {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
-                  </td>
+                  {!isCustomer && (
+                    <td>
+                      <CustomerSpendCell customer={customer} />
+                    </td>
+                  )}
+                  {!isCustomer && (
+                    <td>
+                      <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
+                      {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
+                    </td>
+                  )}
                 </tr>
               ))}
               {!loading && data.customers.length === 0 && (
-                <tr><td colSpan="6">No customer profiles are linked yet.</td></tr>
+                <tr><td colSpan={isCustomer ? 4 : 6}>No customer profiles are linked yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -1674,12 +1678,12 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
       <Panel
         title="Shared Prep Notes"
         icon={FileText}
-        action={(
+        action={canEditNotes ? (
           <div className="hub-button-row">
             <button className={preview ? '' : 'is-active'} onClick={() => setPreview(false)}>Edit</button>
             <button className={preview ? 'is-active' : ''} onClick={() => setPreview(true)}>Preview</button>
           </div>
-        )}
+        ) : null}
       >
         <div className="hub-wordpad-tabs">
           {(data.notes || []).map((note) => (
@@ -1687,7 +1691,11 @@ function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = false }) {
               {note.title}
             </button>
           ))}
-          <span>{status || 'Shared with all staff. Tabs fall off Tuesday and archive to the brain.'}</span>
+          <span>
+            {status || (canEditNotes
+              ? 'Shared with all staff. Tabs fall off Tuesday and archive to the brain.'
+              : 'Shared with your household by the kitchen.')}
+          </span>
         </div>
         {canEditNotes ? (
           preview ? (
