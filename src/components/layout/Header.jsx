@@ -8,7 +8,8 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const navItems = FULLPAGE_PAGES.slice(1);
-  const isBlogRoute = location.pathname === '/blog' || location.pathname.startsWith('/blog/');
+  const isUpcomingRoute = location.pathname === '/julydinner';
+  const isShopRoute = location.pathname === '/sale';
   const isLocalistRoute = location.pathname === '/localist';
 
   useEffect(() => {
@@ -55,11 +56,6 @@ export const Header = () => {
     if (event.currentTarget.dataset.active === 'true') return;
     event.currentTarget.style.backgroundColor = 'transparent';
     event.currentTarget.style.color = 'var(--color-text-primary)';
-  };
-
-  const handleBlogNavigate = () => {
-    navigate('/blog');
-    setIsOpen(false);
   };
 
   return (
@@ -128,13 +124,12 @@ export const Header = () => {
               </a>
             );
           })}
-          <a
-            href="/blog"
-            data-active={isBlogRoute ? 'true' : 'false'}
-            onClick={(e) => { e.preventDefault(); handleBlogNavigate(); }}
+          <Link
+            to="/julydinner"
+            data-active={isUpcomingRoute ? 'true' : 'false'}
             className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
             style={{
-              backgroundColor: isBlogRoute ? 'var(--color-bg-secondary)' : 'transparent',
+              backgroundColor: isUpcomingRoute ? 'var(--color-bg-secondary)' : 'transparent',
               color: 'var(--color-text-primary)',
               fontFamily: "'Office Code Pro', monospace",
               textDecoration: 'none',
@@ -142,8 +137,23 @@ export const Header = () => {
             onMouseEnter={handleHoverOn}
             onMouseLeave={handleHoverOff}
           >
-            Blog
-          </a>
+            Upcoming
+          </Link>
+          <Link
+            to="/sale"
+            data-active={isShopRoute ? 'true' : 'false'}
+            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
+            style={{
+              backgroundColor: isShopRoute ? 'var(--color-bg-secondary)' : 'transparent',
+              color: 'var(--color-text-primary)',
+              fontFamily: "'Office Code Pro', monospace",
+              textDecoration: 'none',
+            }}
+            onMouseEnter={handleHoverOn}
+            onMouseLeave={handleHoverOff}
+          >
+            Shop
+          </Link>
           <Link
             to="/localist"
             data-active={isLocalistRoute ? 'true' : 'false'}
@@ -212,13 +222,22 @@ export const Header = () => {
                 </motion.a>
               ))}
               <motion.a
-                href="/blog"
-                onClick={(e) => { e.preventDefault(); handleBlogNavigate(); }}
+                href="/julydinner"
+                onClick={(e) => { e.preventDefault(); navigate('/julydinner'); setIsOpen(false); }}
                 className="text-3xl uppercase text-center text-slate-900"
                 style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
                 variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
-                Blog
+                Upcoming
+              </motion.a>
+              <motion.a
+                href="/sale"
+                onClick={(e) => { e.preventDefault(); navigate('/sale'); setIsOpen(false); }}
+                className="text-3xl uppercase text-center text-slate-900"
+                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
+                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+              >
+                Shop
               </motion.a>
               <motion.a
                 href="/localist"

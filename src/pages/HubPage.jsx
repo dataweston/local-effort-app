@@ -37,8 +37,8 @@ const tabs = [
   { id: 'people', label: 'People', icon: UsersRound },
 ];
 
-const mealPrepTab = { id: 'weeklyMealPrep', label: 'Weekly Meal Prep', icon: Soup };
-const foodInputsTab = { id: 'foodInputs', label: 'Food Inputs', icon: Utensils };
+const mealPrepTab = { id: 'weeklyMealPrep', label: 'Meal Prep', icon: Soup };
+const foodInputsTab = { id: 'foodInputs', label: 'Ingredient Intake', icon: Utensils };
 
 const LOCALIST_CUSTOMER_OPTIONS = [
   { key: 'glutenFree', label: 'Gluten free' },
@@ -210,6 +210,7 @@ function HubAuthScreen({ auth, inviteToken }) {
   const [displayName, setDisplayName] = useState('');
   const [title, setTitle] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -226,9 +227,13 @@ function HubAuthScreen({ auth, inviteToken }) {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
+    setMessage('');
     setBusy(true);
     try {
-      if (mode === 'signup') {
+      if (mode === 'reset') {
+        await auth.sendPasswordReset(email);
+        setMessage('Check your email for a password reset link. You can close this page after it arrives.');
+      } else if (mode === 'signup') {
         await auth.signUpWithEmail(email, password, { display_name: displayName });
         await auth.signInWithEmail(email, password);
       } else {
@@ -262,9 +267,11 @@ function HubAuthScreen({ auth, inviteToken }) {
           <Field label="Email">
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
           </Field>
-          <Field label="Password">
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={8} required />
-          </Field>
+          {mode !== 'reset' && (
+            <Field label="Password">
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={8} required />
+            </Field>
+          )}
           {mode === 'signup' && (
             <>
               <Field label="Display name">
@@ -276,19 +283,83 @@ function HubAuthScreen({ auth, inviteToken }) {
             </>
           )}
           {error && <p className="hub-error">{error}</p>}
+          {message && <p className="hub-notice" role="status">{message}</p>}
           <button className="hub-primary-button" type="submit" disabled={busy}>
             <LogIn size={20} aria-hidden="true" />
-            {busy ? 'Working...' : mode === 'signup' ? 'Create profile' : 'Sign in'}
+            {busy ? 'Working...' : mode === 'reset' ? 'Send reset link' : mode === 'signup' ? 'Create profile' : 'Sign in'}
           </button>
         </form>
 
-        <button className="hub-text-button" type="button" onClick={() => setMode(mode === 'signup' ? 'signin' : 'signup')}>
-          {mode === 'signup' ? 'I already have a Hub account' : 'I have an invite and need a profile'}
-        </button>
+        {mode === 'signin' ? (
+          <>
+            <button className="hub-text-button" type="button" onClick={() => setMode('reset')}>
+              Forgot your password?
+            </button>
+            <button className="hub-text-button" type="button" onClick={() => setMode('signup')}>
+              I have an invite and need a profile
+            </button>
+          </>
+        ) : (
+          <button className="hub-text-button" type="button" onClick={() => { setMode('signin'); setError(''); setMessage(''); }}>
+            Back to sign in
+          </button>
+        )}
 
         <p className="hub-help">
-          Use email and password. Invite links control who can create staff, customer, or privileged profiles.
+          {mode === 'reset'
+            ? 'Use the same email address as your Hub account.'
+            : 'Use email and password. Invite links control who can create staff, customer, or privileged profiles.'}
         </p>
+      </div>
+    </main>
+  );
+}
+
+function HubPasswordRecovery({ auth }) {
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError('');
+    if (password !== confirmation) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await auth.updatePassword(password);
+    } catch (err) {
+      setError(err.message || 'Unable to update password');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <main className="hub-auth-screen">
+      <div className="hub-auth-card">
+        <div className="hub-brand">
+          <ShieldCheck size={42} aria-hidden="true" />
+          <div>
+            <h1>Choose a new password</h1>
+            <p>Use at least 8 characters.</p>
+          </div>
+        </div>
+        <form onSubmit={submit} className="hub-form">
+          <Field label="New password">
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={8} required />
+          </Field>
+          <Field label="Confirm new password">
+            <input type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" minLength={8} required />
+          </Field>
+          {error && <p className="hub-error">{error}</p>}
+          <button className="hub-primary-button" type="submit" disabled={busy}>
+            {busy ? 'Updating...' : 'Update password'}
+          </button>
+        </form>
       </div>
     </main>
   );
@@ -2963,7 +3034,6 @@ function SecurityPasswordGate({ children }) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
-            autoFocus
             required
           />
         </Field>
@@ -3155,10 +3225,10 @@ export default function HubPage() {
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
-  // Customer-visible tabs: Today, Weekly Meal Prep, Chat (only their own data).
+  // Customer-visible tabs are intentionally limited to their own household data.
+  // Chat and People remain staff-only so customers cannot enumerate member names.
   const todayTab = tabs[0];
-  const chatTab = tabs.find((t) => t.id === 'chat');
-  const customerTabs = [todayTab, mealPrepTab, chatTab];
+  const customerTabs = [todayTab, mealPrepTab, foodInputsTab];
   const navTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
@@ -3207,6 +3277,14 @@ export default function HubPage() {
       <>
         <style>{hubCss}</style>
         <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>
+      </>
+    );
+  }
+  if (auth.isPasswordRecovery) {
+    return (
+      <>
+        <style>{hubCss}</style>
+        <HubPasswordRecovery auth={auth} />
       </>
     );
   }

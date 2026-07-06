@@ -11,6 +11,9 @@ const SupabaseAuthContext = createContext({
   signInWithGoogle: async () => {},
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
+  sendPasswordReset: async () => {},
+  updatePassword: async () => {},
+  isPasswordRecovery: false,
   signOut: async () => {},
 });
 
@@ -26,6 +29,7 @@ export const SupabaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,10 +48,16 @@ export const SupabaseAuthProvider = ({ children }) => {
       }
 
       if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+        let redirected = false;
         try {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
+          const authType = hashParams.get('type');
+
+          if (authType === 'recovery' && isMounted) {
+            setIsPasswordRecovery(true);
+          }
 
           if (accessToken && refreshToken) {
             const { data, error } = await supabase.auth.setSession({
@@ -71,10 +81,11 @@ export const SupabaseAuthProvider = ({ children }) => {
           if (savedPath && savedPath !== window.location.pathname) {
             localStorage.removeItem('auth_redirect_path');
             window.location.replace(savedPath);
-            return;
+            redirected = true;
           }
           localStorage.removeItem('auth_redirect_path');
         }
+        if (redirected) return;
       }
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -96,6 +107,12 @@ export const SupabaseAuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      } else if (event === 'USER_UPDATED' || event === 'SIGNED_OUT') {
+        setIsPasswordRecovery(false);
+      }
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         removeHashFragment();
@@ -148,19 +165,39 @@ export const SupabaseAuthProvider = ({ children }) => {
 
   const signInWithEmail = async (email, password) => {
     if (!supabase) throw new Error('Supabase not configured');
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) throw error;
     return data;
   };
 
   const signUpWithEmail = async (email, password, metadata = {}) => {
     if (!supabase) throw new Error('Supabase not configured');
+    const normalizedEmail = String(email || '').trim().toLowerCase();
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: { data: metadata },
     });
     if (error) throw error;
+    return data;
+  };
+
+  const sendPasswordReset = async (email, redirectTo) => {
+    if (!supabase) throw new Error('Supabase not configured');
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const { data, error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: redirectTo || `${window.location.origin}/hub`,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const updatePassword = async (password) => {
+    if (!supabase) throw new Error('Supabase not configured');
+    const { data, error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+    setIsPasswordRecovery(false);
     return data;
   };
 
@@ -174,6 +211,9 @@ export const SupabaseAuthProvider = ({ children }) => {
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    sendPasswordReset,
+    updatePassword,
+    isPasswordRecovery,
     signOut,
   };
 
