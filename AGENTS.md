@@ -55,6 +55,18 @@ docs/                     Current docs. docs/archive/ = historical, do not trust
 
 When adding/retiring a public page: update `src/config/routes.js`, `App.jsx`, `public/ai.txt`, `public/llms.txt`, and `public/ai/manifest.json` together.
 
+## Human-facing communications (hard rules)
+
+Any email, SMS, or notification that reaches a real customer or staff member is a production deployment with no rollback. This is a live business; a confusing or spammy message costs trust that code fixes can't recover. These rules exist because of a real incident (July 2026: Supabase-default password-reset emails went to a staff member and customers — spam-filtered, zero identifying info, and the link dumped recipients on the homepage instead of /hub; everyone was confused).
+
+1. **Dry-run to the owner first, always.** Before a message reaches a real recipient, send the exact message through the exact mechanism to the owner's address. Open it, check the spam folder, click every link, confirm the landing page. Then get explicit approval for the real send — name each recipient.
+2. **Never use default transactional email for human-facing messages.** Supabase built-in SMTP is a dev bootstrap: generic sender, unbranded template, spam-prone, rate-limited to a few emails/hour. Human-facing mail goes through Brevo or user-approved Gmail. Supabase auth emails are acceptable only once custom SMTP and a reviewed, branded template are configured — verify in the dashboard, don't assume.
+3. **Every message must orient its recipient.** Who it's from (Local Effort), why they're receiving it, what to do, what they'll see afterward, and who to contact if stuck. A bare system-generated link is never acceptable to send a human.
+4. **The tested path must be the shipped path.** Verifying the in-app reset flow does not verify a dashboard-triggered reset email. If you tested A and are shipping B, B is untested — stop and test B.
+5. **Auth links are guilty until proven innocent.** Supabase silently rewrites `redirectTo` to the project Site URL unless the target is on the auth redirect allowlist — this is how reset links landed on the homepage. Click the actual link in the actual received email before any real send.
+6. **Escalate unfitness signals; don't ship around them.** If the channel rate-limits, spam-folders, or misroutes during testing, that's a blocker to raise with the user — not a caveat to write into the message copy.
+7. **Leave an audit trail.** Record who was contacted, when, via what channel, and with what content (commit message, notes doc, or the user's Sent folder). "Sent via dashboard" that nobody can reconstruct later is not acceptable.
+
 ## Commands
 
 ```bash

@@ -13,7 +13,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase configuration missing. Set VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment');
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey 
+// Password-recovery links are only handled by /hub's recovery screen. If one
+// lands on any other page, forward it — hash intact — before createClient's
+// detectSessionInUrl consumes the token, otherwise the user ends up silently
+// signed in on a random page with no way to set a new password.
+if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+  const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
+  if (recoveryParams.get('type') === 'recovery' && window.location.pathname !== '/hub') {
+    window.location.replace(`/hub${window.location.hash}`);
+  }
+}
+
+export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
