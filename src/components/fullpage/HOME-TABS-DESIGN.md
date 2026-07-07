@@ -45,20 +45,22 @@ labels, prices in dashed-underline ledger rows. No wobble inside it.
 
 ## Composition per tab
 
-1. **Weekly meals** — slip left on the bridge background, facts as two mono
-   lines of price math, masonry photo columns below (`.ht-polaroid` leans
-   each card ±0.4°, echoing the home tab's loose snapshots).
-2. **Small events** — slip floats right over the full-bleed event photo
-   (mirror of meals). Date-first form: the date field leads, then chips for
-   party type, then contact. Testimonial reset as a General Sans margin
-   quote with a Yomogi attribution.
-3. **For businesses** — the receipt. Three starting prices as ledger rows;
-   the email gate is one written line (label, underline, button); the
-   unlocked wholesale menu renders as more ledger rows.
+1. **Weekly meals** — slip left on the bridge background, the first gallery
+   photo promoted to a hero print beside it (`.ht-hero-photo`), masonry
+   photo columns below (`.ht-polaroid` leans each card ±0.4°, echoing the
+   home tab's loose snapshots). Submitting the quick form auto-sends the
+   intake-form email (Brevo template 27, same as the waitlist).
+2. **Small events** — a horizontal slip (`.ht-slip--wide` + `.ht-slip-cols`)
+   banded across the top third of the full-bleed photo so the image stays
+   in view: copy left, date-first form right. Testimonial reset as a
+   General Sans margin quote with a Yomogi attribution.
+3. **For businesses** — the receipt. Wholesale only (consulting/collabs
+   removed per client, 2026-07). Three starting prices as ledger rows; the
+   email gate is one written line; the unlocked menu renders as more
+   ledger rows.
 4. **Local pizza** — slip left over the pizza photo; the Yomogi ingredient
-   note (grande / bakers field / dei fratelli) promoted from a buried
-   masonry card to the tab's margin note, beside a mono "in your freezer"
-   stock note.
+   note (grande / bakers field / dei fratelli) sits at the head of the
+   photo grid below.
 
 One Yomogi margin note per tab, maximum. Secondary paths are dashed
 underlines, never buttons.

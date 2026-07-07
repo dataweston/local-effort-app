@@ -76,11 +76,6 @@ const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
 const JULY_DINNER_POPUP_KEY = 'local-effort:july-dinner-popup:2026';
-const BUSINESS_CONTACT_OPTIONS = {
-  wholesale: 'Wholesale',
-  consulting: 'Restaurant consulting',
-  collaborations: 'Collaborations',
-};
 const SMALL_EVENTS_CONTACT_OPTIONS = {
   dinner: 'Dinner at your home',
   holiday: 'Small events like office and holiday parties, baby or wedding showers',
@@ -592,8 +587,8 @@ const MealPrepQuickStart = () => {
     return (
       <div className="ht-success" role="status">
         <span className="ht-success-lead">you&apos;re in —</span>
-        We&apos;ll reach out within one business day to plan your first week:
-        menu, portions, and delivery day.
+        The intake form is on its way to your inbox. We&apos;ll reach out within
+        one business day to plan your first week: menu, portions, and delivery day.
       </div>
     );
   }
@@ -671,9 +666,6 @@ const MealPrepQuickStart = () => {
       <button type="submit" className="ht-submit" disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Start weekly meals'}
       </button>
-      <p className="ht-footnote">
-        Name, email, a start week — that&apos;s the whole signup.
-      </p>
     </form>
   );
 };
@@ -751,15 +743,6 @@ const FullPageDemoPage = () => {
   const [fb, setFb] = useState({ name: '', email: '', sentiment: 'positive', message: '', website: '' });
   const [fbStatus, setFbStatus] = useState('idle');
   const [liveFeedback, setLiveFeedback] = useState([]);
-  const [businessContactOpen, setBusinessContactOpen] = useState(false);
-  const [businessContactType, setBusinessContactType] = useState('wholesale');
-  const [businessContactName, setBusinessContactName] = useState('');
-  const [businessContactEmail, setBusinessContactEmail] = useState('');
-  const [businessContactPhone, setBusinessContactPhone] = useState('');
-  const [businessContactOrg, setBusinessContactOrg] = useState('');
-  const [businessContactMessage, setBusinessContactMessage] = useState('');
-  const [businessContactStatus, setBusinessContactStatus] = useState('idle');
-  const [businessContactError, setBusinessContactError] = useState('');
   const [smallEventsContactOpen, setSmallEventsContactOpen] = useState(false);
   const [smallEventsContactType, setSmallEventsContactType] = useState('dinner');
   const [smallEventsContactName, setSmallEventsContactName] = useState('');
@@ -2753,23 +2736,6 @@ const normalizeMealStyle = (value) =>
     };
   }, [formatFeedbackContext]);
 
-  const resetBusinessContact = useCallback(() => {
-    setBusinessContactName('');
-    setBusinessContactEmail('');
-    setBusinessContactPhone('');
-    setBusinessContactOrg('');
-    setBusinessContactMessage('');
-    setBusinessContactStatus('idle');
-    setBusinessContactError('');
-  }, []);
-
-  const openBusinessContact = useCallback((type) => {
-    setBusinessContactType(type);
-    setBusinessContactOpen(true);
-    setBusinessContactStatus('idle');
-    setBusinessContactError('');
-  }, []);
-
   const resetSmallEventsContact = useCallback(() => {
     setSmallEventsContactName('');
     setSmallEventsContactEmail('');
@@ -2927,7 +2893,7 @@ const normalizeMealStyle = (value) =>
           '@id': 'https://www.localeffortfood.com#business',
           name: 'Local Effort Cooperative',
           url: 'https://www.localeffortfood.com',
-          description: 'Minneapolis-based chef team offering wholesale food supply, restaurant consulting, pizza shop development, and creative collaborations for cafes, bars, offices, and retail businesses across the Twin Cities.',
+          description: 'Minneapolis-based chef team offering wholesale food supply for cafes, bars, offices, and retail businesses across the Twin Cities.',
           email: 'weston@localeffortfood.com',
           areaServed: [
             { '@type': 'City', name: 'Minneapolis' },
@@ -2955,65 +2921,11 @@ const normalizeMealStyle = (value) =>
                     itemOffered: {
                       '@type': 'Service',
                       name: 'Wholesale Food for Cafes, Bars & Retail',
-                      description: 'Fridge and freezer-ready foods for display cases, grab-and-go fridges, and menus. Pizza, sandwiches, salads, and seasonal items — always Minnesota-made with Midwest ingredients. Delivered fresh within 15 miles of 55449 or along Highway 35W in the metro.',
+                      description: 'Fridge and freezer-ready foods for display cases, grab-and-go fridges, and menus. Pizza, sandwiches, salads, and seasonal items — always Minnesota-made with Midwest ingredients.',
                       provider: { '@id': 'https://www.localeffortfood.com#business' },
                       areaServed: { '@type': 'Place', name: 'Minneapolis-St. Paul Metro' },
                       serviceType: 'Wholesale food supply',
                       category: 'Food & Beverage Wholesale',
-                    },
-                  },
-                ],
-              },
-              {
-                '@type': 'OfferCatalog',
-                name: 'Restaurant Consulting',
-                itemListElement: [
-                  {
-                    '@type': 'Offer',
-                    itemOffered: {
-                      '@type': 'Service',
-                      name: 'Restaurant Consulting — FOH & BOH Solutions',
-                      description: 'Front-of-house and back-of-house consulting for restaurant groups: tech stack optimization, ingredient sourcing, menu design, and service experience. Veteran operators with deep experience across every dimension of food-service.',
-                      provider: { '@id': 'https://www.localeffortfood.com#business' },
-                      areaServed: { '@type': 'Place', name: 'Minnesota' },
-                      serviceType: 'Restaurant consulting',
-                      category: 'Business Consulting',
-                    },
-                  },
-                ],
-              },
-              {
-                '@type': 'OfferCatalog',
-                name: 'Pizza Shop Development',
-                itemListElement: [
-                  {
-                    '@type': 'Offer',
-                    itemOffered: {
-                      '@type': 'Service',
-                      name: 'Open a Pizza Shop — Concept & Launch',
-                      description: 'End-to-end guidance on opening a pizza shop: concept development, sourcing local ingredients, menu engineering, kitchen build-out consulting, and operational playbook. Built on Local Effort\'s 100%-local pizza program.',
-                      provider: { '@id': 'https://www.localeffortfood.com#business' },
-                      areaServed: { '@type': 'Place', name: 'United States' },
-                      serviceType: 'Food business consulting',
-                      category: 'Restaurant Development',
-                    },
-                  },
-                ],
-              },
-              {
-                '@type': 'OfferCatalog',
-                name: 'Creative Collaborations',
-                itemListElement: [
-                  {
-                    '@type': 'Offer',
-                    itemOffered: {
-                      '@type': 'Service',
-                      name: 'Local Food Collaborations for Businesses & Events',
-                      description: 'Food partnerships for organizations, artists, farmers, event coordinators, and businesses of all sizes. Bring local, high-integrity food to your audience — pop-ups, co-branded products, campaigns, and custom food experiences.',
-                      provider: { '@id': 'https://www.localeffortfood.com#business' },
-                      areaServed: { '@type': 'Place', name: 'Minnesota' },
-                      serviceType: 'Food collaboration & partnership',
-                      category: 'Creative Services',
                     },
                   },
                 ],
@@ -3024,8 +2936,8 @@ const normalizeMealStyle = (value) =>
         {
           '@type': 'WebPage',
           '@id': 'https://www.localeffortfood.com/#for-businesses',
-          name: 'For Businesses — Wholesale, Consulting & Collaborations | Local Effort Cooperative',
-          description: 'Commercial food services for Minneapolis businesses: wholesale supply for cafes and retail, restaurant consulting, pizza shop development, and creative food collaborations.',
+          name: 'For Businesses — Wholesale | Local Effort Cooperative',
+          description: 'Wholesale food supply for Minneapolis businesses: pizza, sandwiches, salads, and grab-and-go for cafes, bars, and retail.',
           isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
           about: { '@id': 'https://www.localeffortfood.com#business' },
         },
@@ -3455,20 +3367,17 @@ const normalizeMealStyle = (value) =>
                 email, and a start week is all we need.
               </p>
             </div>
-            <div className="px-4 md:px-8 lg:px-[50px] mt-6 md:mt-10">
+            <div className="px-4 md:px-8 lg:px-[50px] mt-6 md:mt-10 flex flex-col gap-6 md:flex-row md:items-start">
               <div className="ht-slip">
                 <p className="ht-kicker">weekly meals —</p>
                 <h2 className="ht-heading">A week of real food, cooked for you</h2>
                 <span className="ht-rule-line" aria-hidden="true" />
                 <p className="ht-copy">
                   From a few dinners a week to complete meal replacement — wholesome, home-cooked
-                  meals from high-integrity Minnesota ingredients, delivered to your door every week.
-                  Tell us who&apos;s eating; we handle the rest.
+                  meals from high-integrity Midwest ingredients, delivered to your door every week.
                 </p>
                 <p className="ht-facts">
                   dinners from $18 a person · breakfasts from $13.50
-                  <br />
-                  solo weeks from about $82, delivery included
                 </p>
                 <MealPrepQuickStart />
                 <div className="ht-side-links">
@@ -3477,6 +3386,23 @@ const normalizeMealStyle = (value) =>
                   </a>
                 </div>
               </div>
+              {mealPlanImages.length > 0 && (
+                <div className="ht-hero-photo hidden md:block">
+                  {mealPlanImages[0].thumbnail_url ? (
+                    <img
+                      src={mealPlanImages[0].thumbnail_url}
+                      alt={mealPlanImages[0].context?.alt || 'A week of Local Effort meals'}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <CloudinaryImage
+                      publicId={mealPlanImages[0].public_id || mealPlanImages[0].publicId}
+                      alt={mealPlanImages[0].context?.alt || 'A week of Local Effort meals'}
+                      width={900}
+                    />
+                  )}
+                </div>
+              )}
             </div>
             <div className="mt-12 px-4 md:px-8 lg:px-[50px] pb-16">
               {mealPlanLoading ? (
@@ -3485,7 +3411,7 @@ const normalizeMealStyle = (value) =>
                 <div className="text-sm text-red-700">{mealPlanError}</div>
               ) : (
                 <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
-                  {mealPlanImages.map((img, idx) => (
+                  {mealPlanImages.slice(1).map((img, idx) => (
                     <div
                       key={(img.asset_id || img.public_id || idx) + ':' + idx}
                       className="ht-polaroid mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
@@ -3541,35 +3467,40 @@ const normalizeMealStyle = (value) =>
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
-              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] py-10 md:py-14 flex">
-                <div className="ht-slip md:ml-auto">
-                  <p className="ht-kicker">small events —</p>
-                  <h2 className="ht-heading">Put a chef on your date</h2>
-                  <span className="ht-rule-line" aria-hidden="true" />
-                  <p className="ht-copy">
-                    Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
-                    menus from 100% Minnesota-sourced ingredients, cooked and served at your place.
-                    One short form — we confirm within one business day.
-                  </p>
-                  <p className="ht-facts">
-                    dinner &amp; pizza parties from $850 · larger events from $1,200
-                  </p>
-                  <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
-                  <div className="ht-side-links">
-                    <button
-                      type="button"
-                      className="ht-side-link"
-                      onClick={() => setSmallEventsDialog('dinner')}
-                    >
-                      Want an instant estimate first? Open the detailed planner
-                    </button>
-                    <button
-                      type="button"
-                      className="ht-side-link"
-                      onClick={() => openSmallEventsContact('dinner')}
-                    >
-                      Questions? Send us a note
-                    </button>
+              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] pt-6 md:pt-8 pb-10">
+                <div className="ht-slip ht-slip--wide">
+                  <div className="ht-slip-cols">
+                    <div>
+                      <p className="ht-kicker">small events —</p>
+                      <h2 className="ht-heading">Minnesotan food for Minnesotans</h2>
+                      <span className="ht-rule-line" aria-hidden="true" />
+                      <p className="ht-copy">
+                        Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
+                        menus from 100% Midwest-sourced ingredients, cooked and served at your place.
+                      </p>
+                      <p className="ht-facts">
+                        dinner &amp; pizza parties from $850 · larger events from $1,200
+                      </p>
+                      <div className="ht-side-links">
+                        <button
+                          type="button"
+                          className="ht-side-link"
+                          onClick={() => setSmallEventsDialog('dinner')}
+                        >
+                          Want an instant estimate first? Open the detailed planner
+                        </button>
+                        <button
+                          type="button"
+                          className="ht-side-link"
+                          onClick={() => openSmallEventsContact('dinner')}
+                        >
+                          Questions? Send us a note
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3611,15 +3542,12 @@ const normalizeMealStyle = (value) =>
             <div className="sr-only">
               <h2>Commercial Food Services for Minneapolis Businesses</h2>
               <p>
-                Local Effort Cooperative provides wholesale food supply, restaurant consulting, pizza shop
-                development, and creative collaborations for cafes, bars, grocery stores, offices, and
-                organizations across the Twin Cities metro. Contact weston@localeffortfood.com.
+                Local Effort Cooperative provides wholesale food supply for cafes, bars, grocery
+                stores, offices, and organizations across the Twin Cities metro. Contact
+                weston@localeffortfood.com.
               </p>
               <ul>
-                <li>Wholesale: pizza, sandwiches, salads for display cases and grab-and-go — delivered fresh within 15 miles of 55449</li>
-                <li>Restaurant consulting: FOH/BOH, tech stack, sourcing, menu design, service experience</li>
-                <li>Open a pizza shop: concept, sourcing, menu engineering, kitchen build-out, operations</li>
-                <li>Collaborations: pop-ups, co-branded products, food partnerships for events and organizations</li>
+                <li>Wholesale: pizza, sandwiches, salads for display cases and grab-and-go — wholesale units from $3.10</li>
               </ul>
             </div>
             <div
@@ -3638,8 +3566,7 @@ const normalizeMealStyle = (value) =>
                   <span className="ht-rule-line" aria-hidden="true" />
                   <p className="ht-copy">
                     Minnesota-made pizza, sandwiches, salads, and grab-and-go for cafes, bars, and
-                    retail. You&apos;re working directly with the chefs — delivered fresh within
-                    ~15 miles of 55449 or along Highway 35W.
+                    retail. You&apos;re working directly with the chefs.
                   </p>
                   <div className="ht-ledger" aria-label="Starting wholesale prices">
                     <div className="ht-ledger-row">
@@ -3739,25 +3666,6 @@ const normalizeMealStyle = (value) =>
                       </div>
                     </div>
                   )}
-                  <div className="ht-side-links">
-                    <button
-                      type="button"
-                      className="ht-side-link"
-                      onClick={() => openBusinessContact('consulting')}
-                    >
-                      Restaurant consulting
-                    </button>
-                    <button
-                      type="button"
-                      className="ht-side-link"
-                      onClick={() => openBusinessContact('collaborations')}
-                    >
-                      Collaborations &amp; pop-ups
-                    </button>
-                    <a className="ht-side-link" href="mailto:weston@localeffortfood.com">
-                      Open a pizza shop — talk to Weston
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -4026,41 +3934,24 @@ const normalizeMealStyle = (value) =>
                     </button>
                   </div>
                 </div>
-                <div className="flex flex-col gap-6 md:max-w-md">
-                  <div className="ht-freezer">
-                    <span className="ht-freezer-kicker">in your freezer —</span>
-                    <div>Local Pizza to go</div>
-                    <div className="mt-1">
-                      Find frozen Local Pizza at Happy Monday in Roseville, and soon on{' '}
-                      <a
-                        href="https://mnfood.club/?afmc=1y"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        MN Food Club
-                      </a>
-                      .
-                    </div>
-                  </div>
-                  <p className="ht-margin-note">
-                    cheese:{' '}
-                    <a href="https://grandecheese.com/cheeses/mozzarella/" target="_blank" rel="noreferrer">
-                      grande mozzarella
-                    </a>
-                    . grain:{' '}
-                    <a href="https://www.bakersfieldflourandbread.com/" target="_blank" rel="noreferrer">
-                      bakers field
-                    </a>
-                    . tomato:{' '}
-                    <a href="https://deifratelli.com/" target="_blank" rel="noreferrer">
-                      dei fratelli
-                    </a>
-                    . pepperoni: many.
-                  </p>
-                </div>
               </div>
             </div>
             <div className="relative z-10 px-8 pb-16 pt-10">
+              <p className="ht-margin-note mb-8">
+                cheese:{' '}
+                <a href="https://grandecheese.com/cheeses/mozzarella/" target="_blank" rel="noreferrer">
+                  grande mozzarella
+                </a>
+                . grain:{' '}
+                <a href="https://www.bakersfieldflourandbread.com/" target="_blank" rel="noreferrer">
+                  bakers field
+                </a>
+                . tomato:{' '}
+                <a href="https://deifratelli.com/" target="_blank" rel="noreferrer">
+                  dei fratelli
+                </a>
+                . pepperoni: many.
+              </p>
               {pizzaLoading ? (
                 <div className="text-sm text-gray-600">Loading photos...</div>
               ) : pizzaError ? (
@@ -4393,139 +4284,6 @@ const normalizeMealStyle = (value) =>
               </button>
             </form>
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={businessContactOpen}
-        onOpenChange={(open) => {
-          setBusinessContactOpen(open);
-          if (!open) resetBusinessContact();
-        }}
-      >
-        <DialogContent className="fullpage-demo-scope sm:max-w-[560px]">
-          <DialogHeader>
-            <DialogTitle>
-              Contact us about {BUSINESS_CONTACT_OPTIONS[businessContactType] || 'partnerships'}
-            </DialogTitle>
-            <DialogDescription>
-              Share a few details and we&apos;ll follow up with next steps.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            className="space-y-4"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (businessContactStatus === 'sending') return;
-              setBusinessContactStatus('sending');
-              setBusinessContactError('');
-              try {
-                const typeLabel = BUSINESS_CONTACT_OPTIONS[businessContactType] || 'Partnerships';
-                const lines = [
-                  `Partnership type: ${typeLabel}`,
-                  businessContactOrg ? `Organization: ${businessContactOrg}` : null,
-                  businessContactPhone ? `Phone: ${businessContactPhone}` : null,
-                  businessContactMessage ? `Message: ${businessContactMessage}` : null,
-                ].filter(Boolean);
-                const payload = {
-                  name: businessContactName,
-                  email: businessContactEmail,
-                  subject: `Business inquiry: ${typeLabel}`,
-                  message: lines.join('\n'),
-                  type: 'business-partnership',
-                };
-                const res = await fetch('/api/messages/submit', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload),
-                });
-                if (!res.ok) throw new Error(await res.text());
-                setBusinessContactStatus('sent');
-                resetBusinessContact();
-                setTimeout(() => setBusinessContactOpen(false), 800);
-              } catch (error) {
-                setBusinessContactError(error?.message || 'Unable to send message.');
-                setBusinessContactStatus('error');
-              }
-            }}
-          >
-            <div>
-              <label className="label" htmlFor="business-contact-type">Partnership type</label>
-              <select
-                id="business-contact-type"
-                className="input"
-                value={businessContactType}
-                onChange={(e) => setBusinessContactType(e.target.value)}
-              >
-                {Object.entries(BUSINESS_CONTACT_OPTIONS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label" htmlFor="business-contact-name">Name</label>
-              <input
-                id="business-contact-name"
-                className="input"
-                value={businessContactName}
-                onChange={(e) => setBusinessContactName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="label" htmlFor="business-contact-email">Email</label>
-              <input
-                id="business-contact-email"
-                type="email"
-                className="input"
-                value={businessContactEmail}
-                onChange={(e) => setBusinessContactEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="label" htmlFor="business-contact-org">Organization</label>
-              <input
-                id="business-contact-org"
-                className="input"
-                value={businessContactOrg}
-                onChange={(e) => setBusinessContactOrg(e.target.value)}
-                placeholder="Optional"
-              />
-            </div>
-            <div>
-              <label className="label" htmlFor="business-contact-phone">Phone (optional)</label>
-              <input
-                id="business-contact-phone"
-                type="tel"
-                className="input"
-                value={businessContactPhone}
-                onChange={(e) => setBusinessContactPhone(e.target.value)}
-                placeholder="Optional"
-              />
-            </div>
-            <div>
-              <label className="label" htmlFor="business-contact-message">Message</label>
-              <textarea
-                id="business-contact-message"
-                className="textarea"
-                rows={5}
-                value={businessContactMessage}
-                onChange={(e) => setBusinessContactMessage(e.target.value)}
-                required
-              />
-            </div>
-            {businessContactError && (
-              <div className="text-sm text-red-700">{businessContactError}</div>
-            )}
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={businessContactStatus === 'sending'}
-            >
-              {businessContactStatus === 'sending' ? 'Sending...' : 'Send request'}
-            </button>
-          </form>
         </DialogContent>
       </Dialog>
 

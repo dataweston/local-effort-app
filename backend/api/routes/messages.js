@@ -412,16 +412,17 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         return handleEmailError(res, err, 'Failed to send email');
       }
 
-      // Send the client a branded waitlist confirmation with a link to the meal prep intake.
+      // Send the client a branded confirmation with a link to the meal prep intake.
+      // Fires for the full waitlist form and the home-page quick signup alike.
       // Non-fatal: the signup already succeeded above, so a confirmation failure is logged, not surfaced.
-      if (type === 'meal-prep-waitlist' && email && waitlistConfirmTemplateId) {
+      if ((type === 'meal-prep-waitlist' || type === 'meal-prep-signup') && email && waitlistConfirmTemplateId) {
         const [firstName] = String(name || '').trim().split(/\s+/);
         try {
           await sendEmail({
             to: [{ email, name: name || email }],
             sender: { email: senderEmail, name: 'Local Effort' },
             templateId: waitlistConfirmTemplateId,
-            tags: ['meal-prep-waitlist', 'confirmation'],
+            tags: [type, 'confirmation'],
             params: {
               FIRSTNAME: firstName || 'there',
               INTAKE_URL: `${siteUrl}/meal-prep-intake`,

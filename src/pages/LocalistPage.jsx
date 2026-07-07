@@ -42,6 +42,12 @@ const FAQ_ITEMS = [
     ],
   },
   {
+    q: 'How do I pay?',
+    a: [
+      'We bill through Square. After you sign up, your invoice arrives by email and can be paid by bank transfer (ACH) or card. ACH is the way to go if you can — card processors take close to 3% of every charge, and ACH keeps that money in the food instead.',
+    ],
+  },
+  {
     q: 'Can I cancel?',
     a: [
       'Yes, anytime, no hoops. Text or email us and we’ll stop your membership at the end of the period you’ve paid for. Any credit you’ve earned stays spendable.',
@@ -316,13 +322,12 @@ const LocalistPage = () => {
         <div className="lm-container">
           <div className="lm-waiver">
             <p className="lm-eyebrow" style={{ marginBottom: 0 }}>Cost is a barrier?</p>
-            <h2 className="lm-waiver-title">Then membership is free. Full stop.</h2>
+            <h2 className="lm-waiver-title">Then membership is free.</h2>
             <p className="lm-waiver-copy">
-              If the fee would keep you out, we waive it — no forms, no proof, no
-              questions. Claiming it is enough. Waived Localists get the same
-              menus, the same pickups, and the same perks as everyone else, plus
-              an exclusive low-cost menu. The only thing that differs is the 4%
-              quarterly credit, which is reserved for paying members.
+              Waived Localists get the same menus, the same pickups, and the same
+              perks as everyone else, plus an exclusive low-cost menu. The only
+              thing that differs is the 4% quarterly credit, which is reserved
+              for paying members.
             </p>
             <button type="button" className="lm-btn" onClick={() => chooseTier('waived')}>
               Claim free membership
@@ -340,7 +345,9 @@ const LocalistPage = () => {
           <p className="lm-eyebrow">Sign up</p>
           <h2 className="lm-section-title">Become a Localist</h2>
           <p className="lm-section-sub">
-            No payment is taken on this page. A real person from the co-op will
+            No payment is taken on this page. We bill through Square — your
+            invoice can be paid by bank transfer (ACH), which keeps processing
+            fees out of the food, or by card. A real person from the co-op will
             reach out within a day to confirm your membership and sort the rest.
           </p>
 
@@ -351,7 +358,7 @@ const LocalistPage = () => {
                 <p className="le-checkout-success-copy">
                   {tier === 'waived'
                     ? 'Your free membership claim is in — no payment, no follow-up questions about it.'
-                    : `Your ${tier === 'annual' ? 'annual' : 'monthly'} membership request is in.`}{' '}
+                    : `Your ${tier === 'annual' ? 'annual' : 'monthly'} membership request is in. Your Square invoice follows by email — paying by bank transfer (ACH) keeps processing fees out of the food.`}{' '}
                   A real human from the co-op will text or email you within a day
                   to confirm and get you set up.
                 </p>
@@ -486,7 +493,7 @@ const LocalistPage = () => {
           <h2 className="lm-final-title">Eat from your cooperative.</h2>
           <p className="lm-final-copy">
             Join as a Localist and the co-op cooks for you every week — and if
-            money is tight, join anyway. The table is the point.
+            money is tight, join anyway.
           </p>
           <div className="lm-hero-actions">
             <button type="button" className="lm-btn" onClick={() => scrollTo(pricingRef)}>
