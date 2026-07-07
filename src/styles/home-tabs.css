@@ -1,0 +1,509 @@
+/* Home tabs (weekly meals / small events / for businesses / local pizza)
+   Direction: src/components/fullpage/HOME-TABS-DESIGN.md
+
+   The four service tabs share one material system — the hand-ruled order
+   slip from /julydinner (underline inputs, dashed rules, wobble radii,
+   Yomogi marginalia, conversational microcopy) — and each gets exactly one
+   accent traced to its subject:
+
+     weekly meals    olive   (brand --brand-olive, the vegetable week)
+     small events    rose    (brand --brand-rose, the celebration)
+     for businesses  ink     (a printed price sheet — straight rules, mono)
+     local pizza     hearth  (#f35c2b, the site accent /julydinner uses)
+
+   Scoped under .ht-scope so nothing leaks into the rest of the fullpage
+   theme. Prose is Source Sans 3, structure General Sans, hand notes Yomogi,
+   money and data Office Code Pro — same casting as the rest of the site. */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope {
+  --ht-ink: var(--brand-ink);
+  --ht-ink-soft: rgba(58, 46, 63, 0.66);
+  --ht-paper: rgba(250, 250, 248, 0.92);
+  --ht-rule: rgba(58, 46, 63, 0.3);
+  --ht-danger: #9e3b47; /* deep brand-rose, for errors */
+  --ht-dur-1: 240ms;
+  --ht-dur-2: 600ms;
+  --ht-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ht-wobble: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --ht-wobble-sm: 125px 10px 115px 10px / 10px 115px 10px 125px;
+  color: var(--ht-ink);
+}
+
+/* one accent per tab — the only thing that changes between them */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--meals {
+  --ht-accent: #7a846e;
+  --ht-accent-deep: #5a6350;
+  --ht-accent-wash: rgba(122, 132, 110, 0.14);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--events {
+  --ht-accent: #c66c78;
+  --ht-accent-deep: #a24e5b;
+  --ht-accent-wash: rgba(198, 108, 120, 0.14);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business {
+  --ht-accent: #3a2e3f;
+  --ht-accent-deep: #3a2e3f;
+  --ht-accent-wash: rgba(58, 46, 63, 0.08);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--pizza {
+  --ht-accent: #f35c2b;
+  --ht-accent-deep: #c4441c;
+  --ht-accent-wash: rgba(243, 92, 43, 0.12);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope ::selection {
+  background: var(--ht-accent);
+  color: #fff;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope :focus-visible {
+  outline: 2px dashed var(--ht-accent-deep);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── The slip: paper the booking is written on ───────────────────────── */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-slip {
+  max-width: 560px;
+  padding: 1.6rem 1.75rem 1.75rem;
+  background: var(--ht-paper);
+  border-radius: var(--ht-wobble-sm);
+}
+
+/* the business slip is a printed price sheet, not a sketch — straight
+   edges, one heavy top rule, no wobble anywhere inside it */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business .ht-slip {
+  max-width: 620px;
+  border-radius: 2px;
+  border-top: 3px solid var(--ht-ink);
+  background: rgba(252, 251, 248, 0.95);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-kicker {
+  margin: 0;
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+  color: var(--ht-accent-deep);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business .ht-kicker {
+  font-family: var(--font-office-code);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-heading {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.5rem, 2.8vw, 2.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  color: var(--ht-ink);
+}
+
+/* the drawn rule under each heading — scaleX from the left, once, when the
+   tab is first visited (.is-drawn set from activePage in the JSX) */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-rule-line {
+  display: block;
+  height: 2px;
+  margin-top: 0.7rem;
+  background: var(--ht-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope.is-drawn .ht-rule-line {
+  transform: scaleX(1);
+  transition: transform var(--ht-dur-2) var(--ht-ease) 150ms;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-copy {
+  margin: 0.8rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ht-ink);
+}
+
+/* money and terms: plain typographic facts, mono, no badge */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-facts {
+  margin: 0.8rem 0 0;
+  font-family: var(--font-office-code);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--ht-ink-soft);
+}
+
+/* ── The form: hand-ruled lines, not boxes ───────────────────────────── */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-form {
+  margin-top: 1.15rem;
+  display: grid;
+  gap: 0.95rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-row {
+  display: grid;
+  gap: 0.95rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-label {
+  display: block;
+  margin-bottom: 0.1rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ht-ink-soft);
+  text-transform: lowercase;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business .ht-label {
+  font-family: var(--font-office-code);
+  font-size: 0.78rem;
+  text-transform: none;
+}
+
+/* .ht-scope in these selectors outranks the theme's `.fullpage-demo input`
+   box styling — the slip keeps its hand-ruled underline */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope .ht-input {
+  width: 100%;
+  min-height: 44px; /* iOS touch target minimum, same floor as the theme */
+  border: none;
+  border-bottom-width: 1.5px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--ht-rule);
+  border-radius: 0;
+  background-color: transparent;
+  padding: 0.35rem 0.15rem;
+  font-family: var(--font-body);
+  color: var(--ht-ink);
+  transition: border-color var(--ht-dur-1) var(--ht-ease);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope .ht-input:focus {
+  border-bottom-color: var(--ht-accent-deep);
+  outline: none;
+  box-shadow: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope .ht-input::placeholder {
+  color: rgba(58, 46, 63, 0.38);
+}
+
+/* date inputs keep the underline; ≥16px so iOS never zooms the form */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope .ht-input[type='date'] {
+  font-family: var(--font-office-code);
+  font-size: 1rem;
+}
+
+/* event-type chips (replaces the select) */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-chip {
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.95rem;
+  line-height: 1.25;
+  color: var(--ht-ink);
+  background: #fff;
+  border: 1.5px solid var(--ht-accent-deep);
+  border-radius: var(--ht-wobble-sm);
+  cursor: pointer;
+  transition:
+    background var(--ht-dur-1) var(--ht-ease),
+    color var(--ht-dur-1) var(--ht-ease),
+    transform var(--ht-dur-1) var(--ht-ease);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-chip:hover {
+  transform: translateY(-1px) rotate(-0.4deg);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-chip[aria-pressed='true'] {
+  background: var(--ht-accent);
+  border-color: var(--ht-accent);
+  color: #fff;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-submit {
+  margin-top: 0.25rem;
+  padding: 0.8rem 1.4rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1rem;
+  color: #fff;
+  background: var(--ht-accent-deep);
+  border: 2px solid var(--ht-accent-deep);
+  border-radius: var(--ht-wobble);
+  cursor: pointer;
+  transition:
+    background var(--ht-dur-1) var(--ht-ease),
+    border-color var(--ht-dur-1) var(--ht-ease),
+    transform var(--ht-dur-1) var(--ht-ease);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-submit:hover:not(:disabled) {
+  background: var(--ht-accent);
+  border-color: var(--ht-accent);
+  transform: translateY(-1px);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business .ht-submit {
+  border-radius: 2px;
+}
+
+/* the quiet promise under a submit ("nothing is charged until…") */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-footnote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ht-ink-soft);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-footnote--tight {
+  margin-top: 0.35rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ht-danger);
+}
+
+/* received — a stamped note where the form used to be */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-success {
+  margin-top: 1.15rem;
+  padding: 1rem 1.15rem;
+  border: 1.5px dashed var(--ht-accent-deep);
+  border-radius: var(--ht-wobble-sm);
+  background: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ht-ink);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business .ht-success {
+  border-radius: 2px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-success-lead {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--font-yomogi);
+  font-size: 1.02rem;
+  color: var(--ht-accent-deep);
+}
+
+/* secondary paths: dashed hand underlines, never buttons */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-side-links {
+  margin-top: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-side-link {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ht-ink);
+  text-align: left;
+  text-decoration: underline dashed;
+  text-decoration-color: var(--ht-accent);
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color var(--ht-dur-1) var(--ht-ease);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-side-link:hover {
+  color: var(--ht-accent-deep);
+}
+
+/* ── Marginalia: one hand note per tab, no more ──────────────────────── */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-margin-note {
+  max-width: 24rem;
+  margin: 0;
+  font-family: var(--font-yomogi);
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: var(--ht-ink);
+  transform: rotate(-0.6deg);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-margin-note a {
+  color: inherit;
+  text-decoration: underline dashed;
+  text-underline-offset: 4px;
+}
+
+/* the small-events testimonial, set like a margin quote */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-quote {
+  max-width: 28rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.25rem, 2.3vw, 1.8rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ht-ink);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-quote-attr {
+  margin-top: 0.5rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.98rem;
+  color: var(--ht-accent-deep);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-quote-attr a {
+  color: inherit;
+  text-decoration: underline dashed;
+  text-underline-offset: 4px;
+}
+
+/* ── The business ledger ─────────────────────────────────────────────── */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-ledger {
+  margin-top: 0.9rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed var(--ht-rule);
+  font-family: var(--font-office-code);
+  font-size: 0.84rem;
+  color: var(--ht-ink);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-ledger-row + .ht-ledger-cat {
+  margin-top: 0.9rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-ledger-cat {
+  font-family: var(--font-office-code);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ht-ink-soft);
+  padding-bottom: 0.2rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-ledger-price {
+  white-space: nowrap;
+}
+
+/* email gate: one written line — label, underline, button */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-gate {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-gate > div {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-gate {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── The freezer note (pizza) ────────────────────────────────────────── */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-freezer {
+  max-width: 26rem;
+  padding: 1rem 1.15rem;
+  background: var(--ht-paper);
+  border: 1.5px dashed var(--ht-rule);
+  border-radius: 2px;
+  font-family: var(--font-office-code);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--ht-ink);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-freezer a {
+  color: var(--ht-accent-deep);
+  text-decoration: underline dashed;
+  text-underline-offset: 4px;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-freezer-kicker {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.98rem;
+  color: var(--ht-accent-deep);
+}
+
+/* ── Snapshot wrappers in the photo columns ──────────────────────────── */
+
+/* the gallery photos lean a hair off-grid, like the home tab's loose
+   snapshots; transform only, alternating, far too small to read as motion */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-polaroid {
+  transform: rotate(0.4deg);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-polaroid:nth-child(even) {
+  transform: rotate(-0.45deg);
+}
+
+/* honeypot — unchanged mechanics, local name so slips stay self-contained */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Reduced motion: everything pre-drawn, nothing travels ───────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-rule-line,
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope.is-drawn .ht-rule-line {
+    transform: scaleX(1);
+    transition: none;
+  }
+
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-chip:hover,
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-submit:hover:not(:disabled) {
+    transform: none;
+  }
+}

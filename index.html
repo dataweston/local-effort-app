@@ -122,6 +122,10 @@
   gtag('js', new Date());
 
   gtag('config', 'G-P0Q3W8KEKY');
+  const googleAdsId = '%VITE_GOOGLE_ADS_ID%';
+  if (googleAdsId && !googleAdsId.startsWith('%')) {
+    gtag('config', googleAdsId);
+  }
 </script>
 <!-- Brevo SDK -->
 <script src="https://cdn.brevo.com/js/sdk-loader.js" async></script>

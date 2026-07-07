@@ -64,11 +64,22 @@ const CONTACT_EMAIL = 'yum@localeffortfood.com';
 const OG_IMAGE =
   'https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/s7fngt44mwpptmgoawxc';
 
+const GOOGLE_ADS_ID = import.meta.env.VITE_GOOGLE_ADS_ID || '';
+const JULY_BUYOUT_CONVERSION_LABEL = import.meta.env.VITE_GOOGLE_ADS_JULY_BUYOUT_CONVERSION_LABEL || '';
+
 // GA4 is loaded site-wide (index.html); these feed Analytics + Ads conversions.
 const gaEvent = (name, params) => {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', name, params);
   }
+};
+
+const googleAdsConversion = (label, params) => {
+  if (!GOOGLE_ADS_ID || !label) return;
+  gaEvent('conversion', {
+    send_to: `${GOOGLE_ADS_ID}/${label}`,
+    ...params,
+  });
 };
 
 // Must match BEVERAGE_OPTIONS in api-handlers/july-dinner/_event.js.
@@ -340,6 +351,13 @@ const JulyDinnerPage = () => {
       value: (data?.amountCents ?? totalCents) / 100,
       items: [checkoutItemFor(bookingType, event, quantity)],
     });
+    if (bookingType === 'buyout') {
+      googleAdsConversion(JULY_BUYOUT_CONVERSION_LABEL, {
+        transaction_id: data?.paymentId || checkoutAttemptId,
+        currency: 'USD',
+        value: (data?.amountCents ?? totalCents) / 100,
+      });
+    }
     setPaymentId(data?.paymentId || '');
     setEmailStatus(data?.emailStatus || null);
     setConfirmed({ bookingType, quantity, partySize });

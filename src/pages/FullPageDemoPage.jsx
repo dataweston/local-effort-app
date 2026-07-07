@@ -23,6 +23,7 @@ import {
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
 import { trackEvent } from '../lib/trackEvent';
 import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
+import '../styles/home-tabs.css';
 
 const SMALL_EVENT_CONFIG = {
   dinner: {
@@ -337,6 +338,21 @@ const QUICK_EVENT_OPTIONS = [
   { value: 'Office / holiday / shower', label: 'Office, holiday party, shower + more' },
 ];
 
+// Shared slip-form helpers (same behavior as /julydinner's booking form).
+const normalizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
+const formatPhone = (value) => {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+const isValidEmailAddress = (value = '') => /.+@.+\..+/.test(String(value).trim());
+const todayISO = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+};
+
 // Minimal event booking: name, email, phone, date (+ type when not fixed).
 // Posts to the existing /api/events/request endpoint (Supabase + team email
 // + ICS attachment + honeypot + rate limiting all live server-side).
@@ -351,13 +367,30 @@ const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this date' 
   });
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const minDate = todayISO();
 
   const update = (field) => (event) =>
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
 
+  // Friendly, specific validation before anything leaves the page.
+  const validationMessage = () => {
+    if (!form.date) return "Pick the date you're hoping for — we confirm it within one business day.";
+    if (form.date < minDate) return 'That date has already passed — pick one coming up.';
+    if (!form.name.trim()) return "Add your name so we know who's hosting.";
+    if (!isValidEmailAddress(form.email)) return 'Add your email — the confirmation lands there.';
+    if (normalizePhone(form.phone).length !== 10) return 'Add a phone number — we confirm dates with a quick call or text.';
+    return '';
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (status === 'sending') return;
+    const problem = validationMessage();
+    if (problem) {
+      setStatus('error');
+      setError(problem);
+      return;
+    }
     setStatus('sending');
     setError('');
     try {
@@ -390,81 +423,90 @@ const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this date' 
 
   if (status === 'success') {
     return (
-      <div className="quickbook-success" role="status">
-        Request received. We&apos;ll confirm your date within one business day —
-        nothing is charged until we&apos;ve confirmed the details together.
+      <div className="ht-success" role="status">
+        <span className="ht-success-lead">request received —</span>
+        We&apos;ll confirm your date within one business day. Nothing is charged
+        until we&apos;ve confirmed the details together.
       </div>
     );
   }
 
   return (
-    <form className="quickbook-form" onSubmit={handleSubmit}>
+    <form className="ht-form" onSubmit={handleSubmit} noValidate>
       {!fixedType && (
         <div>
-          <label className="business-label" htmlFor={`quickbook-type-${source}`}>Event type</label>
-          <select
-            id={`quickbook-type-${source}`}
-            className="business-input"
-            value={form.type}
-            onChange={update('type')}
-          >
+          <span className="ht-label" id={`quickbook-type-${source}`}>what kind of party?</span>
+          <div className="ht-chips" role="group" aria-labelledby={`quickbook-type-${source}`}>
             {QUICK_EVENT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <button
+                key={opt.value}
+                type="button"
+                className="ht-chip"
+                aria-pressed={form.type === opt.value}
+                onClick={() => setForm((prev) => ({ ...prev, type: opt.value }))}
+              >
+                {opt.label}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       )}
       <div>
-        <label className="business-label" htmlFor={`quickbook-name-${source}`}>Name</label>
-        <input
-          id={`quickbook-name-${source}`}
-          className="business-input"
-          value={form.name}
-          onChange={update('name')}
-          autoComplete="name"
-          placeholder="First and last name"
-          required
-        />
-      </div>
-      <div className="quickbook-row">
-        <div>
-          <label className="business-label" htmlFor={`quickbook-email-${source}`}>Email</label>
-          <input
-            id={`quickbook-email-${source}`}
-            type="email"
-            className="business-input"
-            value={form.email}
-            onChange={update('email')}
-            autoComplete="email"
-            required
-          />
-        </div>
-        <div>
-          <label className="business-label" htmlFor={`quickbook-phone-${source}`}>Phone</label>
-          <input
-            id={`quickbook-phone-${source}`}
-            type="tel"
-            className="business-input"
-            value={form.phone}
-            onChange={update('phone')}
-            autoComplete="tel"
-            required
-          />
-        </div>
-      </div>
-      <div>
-        <label className="business-label" htmlFor={`quickbook-date-${source}`}>Event date</label>
+        <label className="ht-label" htmlFor={`quickbook-date-${source}`}>the date you&apos;re hoping for</label>
         <input
           id={`quickbook-date-${source}`}
           type="date"
-          className="business-input"
+          className="ht-input"
+          min={minDate}
           value={form.date}
           onChange={update('date')}
           required
         />
       </div>
+      <div>
+        <label className="ht-label" htmlFor={`quickbook-name-${source}`}>your name</label>
+        <input
+          id={`quickbook-name-${source}`}
+          className="ht-input"
+          value={form.name}
+          onChange={update('name')}
+          autoComplete="name"
+          placeholder="first and last"
+          required
+        />
+      </div>
+      <div className="ht-row">
+        <div>
+          <label className="ht-label" htmlFor={`quickbook-email-${source}`}>email</label>
+          <input
+            id={`quickbook-email-${source}`}
+            type="email"
+            className="ht-input"
+            value={form.email}
+            onChange={update('email')}
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+        <div>
+          <label className="ht-label" htmlFor={`quickbook-phone-${source}`}>phone</label>
+          <input
+            id={`quickbook-phone-${source}`}
+            type="tel"
+            className="ht-input"
+            value={form.phone}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, phone: formatPhone(event.target.value) }))
+            }
+            autoComplete="tel"
+            placeholder="(612) 555-0123"
+            required
+          />
+        </div>
+      </div>
       {/* Honeypot — real users never see or fill this. */}
-      <div className="quickbook-hp" aria-hidden="true">
+      <div className="ht-hp" aria-hidden="true">
         <label htmlFor={`quickbook-website-${source}`}>Website</label>
         <input
           id={`quickbook-website-${source}`}
@@ -475,10 +517,13 @@ const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this date' 
           onChange={update('website')}
         />
       </div>
-      {status === 'error' && <div className="quickbook-error">{error}</div>}
-      <button type="submit" className="business-btn" disabled={status === 'sending'}>
+      {status === 'error' && <p className="ht-error" role="alert">{error}</p>}
+      <button type="submit" className="ht-submit" disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : ctaLabel}
       </button>
+      <p className="ht-footnote">
+        No payment now — we confirm the date and details together first.
+      </p>
     </form>
   );
 };
@@ -490,13 +535,26 @@ const MealPrepQuickStart = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', startDate: '', website: '' });
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const minDate = todayISO();
 
   const update = (field) => (event) =>
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
 
+  const validationMessage = () => {
+    if (!form.name.trim()) return 'Add your name so we know who we are cooking for.';
+    if (!isValidEmailAddress(form.email)) return 'Add your email — that is where we plan your first week.';
+    return '';
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (status === 'sending') return;
+    const problem = validationMessage();
+    if (problem) {
+      setStatus('error');
+      setError(problem);
+      return;
+    }
     setStatus('sending');
     setError('');
     try {
@@ -532,63 +590,73 @@ const MealPrepQuickStart = () => {
 
   if (status === 'success') {
     return (
-      <div className="quickbook-success" role="status">
-        You&apos;re in. We&apos;ll reach out within one business day to plan your
-        first week — menu, portions, and delivery day.
+      <div className="ht-success" role="status">
+        <span className="ht-success-lead">you&apos;re in —</span>
+        We&apos;ll reach out within one business day to plan your first week:
+        menu, portions, and delivery day.
       </div>
     );
   }
 
   return (
-    <form className="quickbook-form" onSubmit={handleSubmit}>
+    <form className="ht-form" onSubmit={handleSubmit} noValidate>
       <div>
-        <label className="business-label" htmlFor="mealprep-quick-name">Name</label>
+        <label className="ht-label" htmlFor="mealprep-quick-name">your name</label>
         <input
           id="mealprep-quick-name"
-          className="business-input"
+          className="ht-input"
           value={form.name}
           onChange={update('name')}
           autoComplete="name"
+          placeholder="first and last"
           required
         />
       </div>
-      <div className="quickbook-row">
+      <div className="ht-row">
         <div>
-          <label className="business-label" htmlFor="mealprep-quick-email">Email</label>
+          <label className="ht-label" htmlFor="mealprep-quick-email">email</label>
           <input
             id="mealprep-quick-email"
             type="email"
-            className="business-input"
+            className="ht-input"
             value={form.email}
             onChange={update('email')}
             autoComplete="email"
+            placeholder="you@example.com"
             required
           />
         </div>
         <div>
-          <label className="business-label" htmlFor="mealprep-quick-phone">Phone (optional)</label>
+          <label className="ht-label" htmlFor="mealprep-quick-phone">phone <span aria-hidden="true">·</span> optional</label>
           <input
             id="mealprep-quick-phone"
             type="tel"
-            className="business-input"
+            className="ht-input"
             value={form.phone}
-            onChange={update('phone')}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, phone: formatPhone(event.target.value) }))
+            }
             autoComplete="tel"
+            placeholder="(612) 555-0123"
           />
         </div>
       </div>
       <div>
-        <label className="business-label" htmlFor="mealprep-quick-start">Start week</label>
+        <label className="ht-label" htmlFor="mealprep-quick-start">when should the first week land?</label>
         <input
           id="mealprep-quick-start"
           type="date"
-          className="business-input"
+          className="ht-input"
+          min={minDate}
           value={form.startDate}
           onChange={update('startDate')}
         />
+        <p className="ht-footnote ht-footnote--tight">
+          leave it blank for as soon as possible
+        </p>
       </div>
       {/* Honeypot — real users never see or fill this. */}
-      <div className="quickbook-hp" aria-hidden="true">
+      <div className="ht-hp" aria-hidden="true">
         <label htmlFor="mealprep-quick-website">Website</label>
         <input
           id="mealprep-quick-website"
@@ -599,16 +667,20 @@ const MealPrepQuickStart = () => {
           onChange={update('website')}
         />
       </div>
-      {status === 'error' && <div className="quickbook-error">{error}</div>}
-      <button type="submit" className="business-btn" disabled={status === 'sending'}>
+      {status === 'error' && <p className="ht-error" role="alert">{error}</p>}
+      <button type="submit" className="ht-submit" disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Start weekly meals'}
       </button>
+      <p className="ht-footnote">
+        Name, email, a start week — that&apos;s the whole signup.
+      </p>
     </form>
   );
 };
 
 const FullPageDemoPage = () => {
   const [activePage, setActivePage] = useState(0);
+  const [visitedPages, setVisitedPages] = useState(() => new Set([0]));
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -2017,6 +2089,8 @@ const normalizeMealStyle = (value) =>
 
   const handlePageChange = (index) => {
     setActivePage(index);
+    // First visit to a tab draws its heading rule (see home-tabs.css)
+    setVisitedPages((prev) => (prev.has(index) ? prev : new Set(prev).add(index)));
     // Sync active styling on the universal header buttons
     document.querySelectorAll('nav button[data-menu-btn]').forEach((btn) => {
       const pageIndex = parseInt(btn.getAttribute('data-page-index'), 10);
@@ -3369,7 +3443,7 @@ const normalizeMealStyle = (value) =>
           id="weekly-meals"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative h-full pt-20 overflow-y-auto">
+          <div className={`ht-scope ht-scope--meals relative h-full pt-20 overflow-y-auto${visitedPages.has(1) ? ' is-drawn' : ''}`}>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: mealPrepStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
@@ -3382,19 +3456,24 @@ const normalizeMealStyle = (value) =>
               </p>
             </div>
             <div className="px-4 md:px-8 lg:px-[50px] mt-6 md:mt-10">
-              <div className="quickbook-panel">
-                <div className="business-eyebrow">Weekly meals</div>
-                <h2 className="business-heading">A week of real food, cooked for you</h2>
-                <p className="quickbook-copy">
+              <div className="ht-slip">
+                <p className="ht-kicker">weekly meals —</p>
+                <h2 className="ht-heading">A week of real food, cooked for you</h2>
+                <span className="ht-rule-line" aria-hidden="true" />
+                <p className="ht-copy">
                   From a few dinners a week to complete meal replacement — wholesome, home-cooked
                   meals from high-integrity Minnesota ingredients, delivered to your door every week.
                   Tell us who&apos;s eating; we handle the rest.
                 </p>
-                <div className="quickbook-price">from $82/week · dinners $18/person · delivery $10</div>
+                <p className="ht-facts">
+                  dinners from $18 a person · breakfasts from $13.50
+                  <br />
+                  solo weeks from about $82, delivery included
+                </p>
                 <MealPrepQuickStart />
-                <div className="quickbook-links">
-                  <a className="quickbook-secondary" href="/meal-prep-intake">
-                    Prefer to plan every detail? Take the full intake →
+                <div className="ht-side-links">
+                  <a className="ht-side-link" href="/meal-prep-intake">
+                    Prefer to plan every detail? Take the full intake
                   </a>
                 </div>
               </div>
@@ -3409,7 +3488,7 @@ const normalizeMealStyle = (value) =>
                   {mealPlanImages.map((img, idx) => (
                     <div
                       key={(img.asset_id || img.public_id || idx) + ':' + idx}
-                      className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                      className="ht-polaroid mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
                     >
                       {img.thumbnail_url ? (
                         <img
@@ -3439,7 +3518,7 @@ const normalizeMealStyle = (value) =>
           id="small-events"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full pt-20 overflow-y-auto">
+          <div className={`ht-scope ht-scope--events relative w-full h-full pt-20 overflow-y-auto${visitedPages.has(2) ? ' is-drawn' : ''}`}>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: smallEventsStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
@@ -3462,28 +3541,31 @@ const normalizeMealStyle = (value) =>
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
               />
-              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] py-10 md:py-14">
-                <div className="quickbook-panel">
-                  <div className="business-eyebrow">Small events</div>
-                  <h2 className="business-heading">Put a chef on your date</h2>
-                  <p className="quickbook-copy">
+              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] py-10 md:py-14 flex">
+                <div className="ht-slip md:ml-auto">
+                  <p className="ht-kicker">small events —</p>
+                  <h2 className="ht-heading">Put a chef on your date</h2>
+                  <span className="ht-rule-line" aria-hidden="true" />
+                  <p className="ht-copy">
                     Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
                     menus from 100% Minnesota-sourced ingredients, cooked and served at your place.
                     One short form — we confirm within one business day.
                   </p>
-                  <div className="quickbook-price">dinner &amp; pizza parties from $850 · larger events from $1,200</div>
+                  <p className="ht-facts">
+                    dinner &amp; pizza parties from $850 · larger events from $1,200
+                  </p>
                   <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
-                  <div className="quickbook-links">
+                  <div className="ht-side-links">
                     <button
                       type="button"
-                      className="quickbook-secondary"
+                      className="ht-side-link"
                       onClick={() => setSmallEventsDialog('dinner')}
                     >
-                      Want an instant estimate first? Open the detailed planner →
+                      Want an instant estimate first? Open the detailed planner
                     </button>
                     <button
                       type="button"
-                      className="quickbook-secondary"
+                      className="ht-side-link"
                       onClick={() => openSmallEventsContact('dinner')}
                     >
                       Questions? Send us a note
@@ -3493,9 +3575,10 @@ const normalizeMealStyle = (value) =>
               </div>
             </div>
             <div className="px-8 pb-16 pt-10">
-              <div className="small-events-testimonial">
-                "Local Effort is truly top tier."
-                <div className="small-events-testimonial-author">
+              <figure className="ht-quote m-0">
+                <blockquote className="m-0">&ldquo;Local Effort is truly top tier.&rdquo;</blockquote>
+                <figcaption className="ht-quote-attr">
+                  —{' '}
                   <a
                     href="https://soupsistersmn.com"
                     target="_blank"
@@ -3503,8 +3586,8 @@ const normalizeMealStyle = (value) =>
                   >
                     Alyssa Andes
                   </a>
-                </div>
-              </div>
+                </figcaption>
+              </figure>
               <div className="mt-12">
                 <PhotoGrid
                   tags={['event', 'dinner']}
@@ -3522,7 +3605,7 @@ const normalizeMealStyle = (value) =>
           id="for-businesses"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="business-tab">
+          <div className={`ht-scope ht-scope--business business-tab${visitedPages.has(3) ? ' is-drawn' : ''}`}>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: b2bStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
@@ -3549,31 +3632,53 @@ const normalizeMealStyle = (value) =>
             >
               <div className="business-hero-scrim" aria-hidden="true" />
               <div className="business-hero-content">
-                <div className="business-panel">
-                  <div className="business-eyebrow">For businesses</div>
-                  <h2 className="business-heading">Local food for your display case</h2>
-                  <div className="business-subtitle">
+                <div className="ht-slip">
+                  <p className="ht-kicker">for businesses — wholesale price sheet</p>
+                  <h2 className="ht-heading">Local food for your display case</h2>
+                  <span className="ht-rule-line" aria-hidden="true" />
+                  <p className="ht-copy">
                     Minnesota-made pizza, sandwiches, salads, and grab-and-go for cafes, bars, and
                     retail. You&apos;re working directly with the chefs — delivered fresh within
                     ~15 miles of 55449 or along Highway 35W.
+                  </p>
+                  <div className="ht-ledger" aria-label="Starting wholesale prices">
+                    <div className="ht-ledger-row">
+                      <span>wholesale units</span>
+                      <span className="ht-ledger-price">from $3.10</span>
+                    </div>
+                    <div className="ht-ledger-row">
+                      <span>100% local pizza</span>
+                      <span className="ht-ledger-price">from $3.60</span>
+                    </div>
+                    <div className="ht-ledger-row">
+                      <span>sandwiches</span>
+                      <span className="ht-ledger-price">from $5.85</span>
+                    </div>
                   </div>
-                  <div className="quickbook-price">wholesale from $3.10/unit · pizzas from $3.60 · sandwiches from $5.85</div>
                   {!wholesaleSubmitted ? (
-                    <form className="business-form" style={{ marginTop: '1rem' }} onSubmit={handleWholesaleSubmit}>
-                      <label className="business-label" htmlFor="wholesale-email">
-                        Work email
-                      </label>
-                      <input
-                        id="wholesale-email"
-                        type="email"
-                        className="business-input"
-                        placeholder="you@company.com"
-                        value={wholesaleEmail}
-                        onChange={(e) => setWholesaleEmail(e.target.value)}
-                        required
-                      />
+                    <form className="ht-form" onSubmit={handleWholesaleSubmit} noValidate>
+                      <div className="ht-gate">
+                        <div>
+                          <label className="ht-label" htmlFor="wholesale-email">
+                            work email
+                          </label>
+                          <input
+                            id="wholesale-email"
+                            type="email"
+                            className="ht-input"
+                            placeholder="you@company.com"
+                            value={wholesaleEmail}
+                            onChange={(e) => setWholesaleEmail(e.target.value)}
+                            autoComplete="email"
+                            required
+                          />
+                        </div>
+                        <button type="submit" className="ht-submit" disabled={wholesaleStatus === 'sending'}>
+                          {wholesaleStatus === 'sending' ? 'Sending…' : 'Get the menu + pricing'}
+                        </button>
+                      </div>
                       {/* Honeypot — real users never see or fill this. */}
-                      <div className="quickbook-hp" aria-hidden="true">
+                      <div className="ht-hp" aria-hidden="true">
                         <label htmlFor="wholesale-website">Website</label>
                         <input
                           id="wholesale-website"
@@ -3585,70 +3690,72 @@ const normalizeMealStyle = (value) =>
                         />
                       </div>
                       {wholesaleStatus === 'error' && (
-                        <div className="quickbook-error">
+                        <p className="ht-error" role="alert">
                           We couldn&apos;t send that just now — please try again, or email{' '}
                           <a href="mailto:weston@localeffortfood.com">weston@localeffortfood.com</a>.
-                        </div>
+                        </p>
                       )}
-                      <button type="submit" className="business-btn" disabled={wholesaleStatus === 'sending'}>
-                        {wholesaleStatus === 'sending' ? 'Sending…' : 'Get the menu + pricing'}
-                      </button>
-                      <div className="business-note">
+                      <p className="ht-footnote">
                         The menu unlocks right here, and we&apos;ll email you the pricing sheet.
-                      </div>
+                      </p>
                     </form>
                   ) : (
-                    <div className="business-menu" style={{ marginTop: '1rem' }}>
-                      <div className="business-menu-title">Wholesale menu unlocked</div>
-                      <div className="business-note">Here is a starter list with partner pricing. The pricing sheet is on its way to your inbox.</div>
-                      <div className="business-menu-list">
+                    <div>
+                      <div className="ht-success" role="status">
+                        <span className="ht-success-lead">menu unlocked —</span>
+                        A starter list with partner pricing is below. The full pricing sheet is on
+                        its way to your inbox.
+                      </div>
+                      <div className="ht-ledger">
                         {wholesaleMenuLoading && (
-                          <div className="business-note">Loading menu...</div>
+                          <p className="ht-footnote">Loading menu...</p>
                         )}
                         {!wholesaleMenuLoading && wholesaleMenuError && (
-                          <div className="business-note">{wholesaleMenuError}</div>
+                          <p className="ht-footnote">{wholesaleMenuError}</p>
                         )}
                         {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuItems.length === 0 && (
-                          <div className="business-note">Menu updates are in progress. Email us for current pricing.</div>
+                          <p className="ht-footnote">Menu updates are in progress. Email us for current pricing.</p>
                         )}
                         {!wholesaleMenuLoading && !wholesaleMenuError && wholesaleMenuSections.map((section) => (
-                          <div key={section.category} className="business-menu-section">
-                            <div className="business-menu-category">{section.category}</div>
+                          <React.Fragment key={section.category}>
+                            <div className="ht-ledger-cat">{section.category}</div>
                             {section.items.map((item) => (
-                              <div key={item.id || item.name} className="business-menu-row">
+                              <div key={item.id || item.name} className="ht-ledger-row">
                                 <span>{item.name}</span>
-                                <span className="business-price">{item.price}</span>
+                                <span className="ht-ledger-price">{item.price}</span>
                               </div>
                             ))}
-                          </div>
+                          </React.Fragment>
                         ))}
                       </div>
-                      <button
-                        type="button"
-                        className="business-btn business-btn-secondary"
-                        onClick={() => setWholesaleSubmitted(false)}
-                      >
-                        Use a different email
-                      </button>
+                      <div className="ht-side-links">
+                        <button
+                          type="button"
+                          className="ht-side-link"
+                          onClick={() => setWholesaleSubmitted(false)}
+                        >
+                          Use a different email
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <div className="quickbook-links">
+                  <div className="ht-side-links">
                     <button
                       type="button"
-                      className="quickbook-secondary"
+                      className="ht-side-link"
                       onClick={() => openBusinessContact('consulting')}
                     >
-                      Restaurant consulting →
+                      Restaurant consulting
                     </button>
                     <button
                       type="button"
-                      className="quickbook-secondary"
+                      className="ht-side-link"
                       onClick={() => openBusinessContact('collaborations')}
                     >
-                      Collaborations &amp; pop-ups →
+                      Collaborations &amp; pop-ups
                     </button>
-                    <a className="quickbook-secondary" href="mailto:weston@localeffortfood.com">
-                      Open a pizza shop — talk to Weston →
+                    <a className="ht-side-link" href="mailto:weston@localeffortfood.com">
+                      Open a pizza shop — talk to Weston
                     </a>
                   </div>
                 </div>
@@ -3876,7 +3983,7 @@ const normalizeMealStyle = (value) =>
           id="local-pizza"
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
-          <div className="relative w-full h-full pt-20 overflow-y-auto">
+          <div className={`ht-scope ht-scope--pizza relative w-full h-full pt-20 overflow-y-auto${visitedPages.has(5) ? ' is-drawn' : ''}`}>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: pizzaStructuredData }} />
             {/* Crawl-friendly summary — visible to search engines, visually hidden */}
             <div className="sr-only">
@@ -3895,47 +4002,61 @@ const normalizeMealStyle = (value) =>
                 style={{ objectPosition: 'center' }}
               />
               <div className="relative z-10 flex flex-col gap-6 px-4 md:px-8 lg:px-[50px] py-10 md:py-14 md:flex-row md:items-start md:justify-between">
-                <div className="quickbook-panel">
-                  <div className="business-eyebrow">Local pizza</div>
-                  <h2 className="business-heading">Book a pizza party</h2>
-                  <p className="quickbook-copy">
+                <div className="ht-slip">
+                  <p className="ht-kicker">local pizza —</p>
+                  <h2 className="ht-heading">Book a pizza party</h2>
+                  <span className="ht-rule-line" aria-hidden="true" />
+                  <p className="ht-copy">
                     100% Midwest ingredients, cooked and served at your home, office, or business
                     by our chefs. Pick a date — we bring everything.
                   </p>
-                  <div className="quickbook-price">from $55/guest · $850 party minimum</div>
+                  <p className="ht-facts">from $55 a guest · $850 party minimum</p>
                   <QuickEventBookForm
                     fixedType="Pizza party"
                     source="local-pizza"
                     ctaLabel="Book my pizza party"
                   />
-                  <div className="quickbook-links">
+                  <div className="ht-side-links">
                     <button
                       type="button"
-                      className="quickbook-secondary"
+                      className="ht-side-link"
                       onClick={() => setSmallEventsDialog('pizza')}
                     >
-                      Want an instant estimate first? Open the detailed planner →
+                      Want an instant estimate first? Open the detailed planner
                     </button>
                   </div>
                 </div>
-                <div
-                  className="max-w-lg rounded-lg border border-white/60 bg-white/85 p-5 text-slate-900 shadow-lg"
-                  style={{ fontFamily: "'Office Code Pro', monospace" }}
-                >
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">In your freezer</div>
-                  <div className="mt-2 text-lg font-semibold">Local Pizza to go</div>
-                  <div className="mt-2 text-sm text-slate-700">
-                    Find frozen Local Pizza at Happy Monday in Roseville, and soon on{' '}
-                    <a
-                      href="https://mnfood.club/?afmc=1y"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline underline-offset-4"
-                    >
-                      MN Food Club
-                    </a>
-                    .
+                <div className="flex flex-col gap-6 md:max-w-md">
+                  <div className="ht-freezer">
+                    <span className="ht-freezer-kicker">in your freezer —</span>
+                    <div>Local Pizza to go</div>
+                    <div className="mt-1">
+                      Find frozen Local Pizza at Happy Monday in Roseville, and soon on{' '}
+                      <a
+                        href="https://mnfood.club/?afmc=1y"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        MN Food Club
+                      </a>
+                      .
+                    </div>
                   </div>
+                  <p className="ht-margin-note">
+                    cheese:{' '}
+                    <a href="https://grandecheese.com/cheeses/mozzarella/" target="_blank" rel="noreferrer">
+                      grande mozzarella
+                    </a>
+                    . grain:{' '}
+                    <a href="https://www.bakersfieldflourandbread.com/" target="_blank" rel="noreferrer">
+                      bakers field
+                    </a>
+                    . tomato:{' '}
+                    <a href="https://deifratelli.com/" target="_blank" rel="noreferrer">
+                      dei fratelli
+                    </a>
+                    . pepperoni: many.
+                  </p>
                 </div>
               </div>
             </div>
@@ -3946,49 +4067,10 @@ const normalizeMealStyle = (value) =>
                 <div className="text-sm text-red-700">{pizzaError}</div>
               ) : (
                 <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
-                  <div className="mb-4 break-inside-avoid border p-4 bg-white/70 rounded-lg">
-                    <div
-                      style={{
-                        fontFamily: "'Yomogi', cursive",
-                        color: BRAND_TOKENS.textPrimary,
-                        fontSize: '22px',
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      cheese:{' '}
-                      <a
-                        href="https://grandecheese.com/cheeses/mozzarella/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline underline-offset-4"
-                      >
-                        grande mozzarella
-                      </a>
-                      . grain:{' '}
-                      <a
-                        href="https://www.bakersfieldflourandbread.com/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline underline-offset-4"
-                      >
-                        bakers field
-                      </a>
-                      . tomato:{' '}
-                      <a
-                        href="https://deifratelli.com/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline underline-offset-4"
-                      >
-                        dei fratelli
-                      </a>
-                      . pepperoni: many.
-                    </div>
-                  </div>
                   {pizzaImages.map((img, idx) => (
                     <div
                       key={(img.asset_id || img.public_id || idx) + ':' + idx}
-                      className="mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
+                      className="ht-polaroid mb-4 break-inside-avoid border p-2 bg-white rounded-lg overflow-hidden"
                     >
                       {img.thumbnail_url ? (
                         <img

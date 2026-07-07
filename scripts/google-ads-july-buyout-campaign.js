@@ -8,6 +8,7 @@
  */
 
 try {
+  require('dotenv').config();
   require('dotenv').config({ path: '.env.local' });
 } catch {
   // dotenv is present in this repo; keep the script usable in stripped-down envs.
@@ -15,6 +16,7 @@ try {
 
 const {
   CONFIRM_APPLY,
+  listAccessibleCustomers,
   mutateJulyBuyoutCampaign,
 } = require('../backend/api/brain/googleAdsJulyBuyout');
 
@@ -28,6 +30,8 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--apply') {
       args.apply = true;
+    } else if (arg === '--list-accessible') {
+      args.listAccessible = true;
     } else if (arg === '--daily-budget') {
       args.dailyBudget = Number(argv[++i]);
     } else if (arg === '--customer-id') {
@@ -44,6 +48,7 @@ function parseArgs(argv) {
 function printHelp() {
   process.stdout.write([
     'Usage:',
+    '  node scripts/google-ads-july-buyout-campaign.js --list-accessible',
     '  node scripts/google-ads-july-buyout-campaign.js [--daily-budget 25] [--customer-id 1234567890]',
     '  node scripts/google-ads-july-buyout-campaign.js --apply [--daily-budget 25] [--customer-id 1234567890]',
     '',
@@ -57,6 +62,11 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
     printHelp();
+    return;
+  }
+  if (args.listAccessible) {
+    const result = await listAccessibleCustomers();
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     return;
   }
   const result = await mutateJulyBuyoutCampaign({
