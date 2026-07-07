@@ -64,8 +64,9 @@ const CONTACT_EMAIL = 'yum@localeffortfood.com';
 const OG_IMAGE =
   'https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/s7fngt44mwpptmgoawxc';
 
-const GOOGLE_ADS_ID = import.meta.env.VITE_GOOGLE_ADS_ID || '';
-const JULY_BUYOUT_CONVERSION_LABEL = import.meta.env.VITE_GOOGLE_ADS_JULY_BUYOUT_CONVERSION_LABEL || '';
+const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+const GOOGLE_ADS_ID = env.VITE_GOOGLE_ADS_ID || '';
+const JULY_BUYOUT_CONVERSION_LABEL = env.VITE_GOOGLE_ADS_JULY_BUYOUT_CONVERSION_LABEL || '';
 
 // GA4 is loaded site-wide (index.html); these feed Analytics + Ads conversions.
 const gaEvent = (name, params) => {
