@@ -82,6 +82,7 @@ const { registerGoogleBusinessAuthRoutes } = require('./brain/googleBusinessAuth
 const { registerGoogleBusinessProfileRoutes } = require('./brain/googleBusinessProfileSync');
 const { registerGoogleMerchantRoutes } = require('./brain/googleMerchantSync');
 const { registerGoogleAdsRoutes } = require('./brain/googleAdsSync');
+const { registerGoogleAdsJulyBuyoutRoutes } = require('./brain/googleAdsJulyBuyout');
 const { registerGoogleProjectionRoutes } = require('./brain/googleGraphProjector');
 const { registerSearchConsoleRoutes } = require('./brain/searchConsoleSync');
 const weeklyOrderCheckoutLinkHandler = require('../../api-handlers/weekly-order/checkout-link');
@@ -596,6 +597,7 @@ registerGoogleBusinessAuthRoutes(app, { logger });
 registerGoogleBusinessProfileRoutes(app, { logger });
 registerGoogleMerchantRoutes(app, { logger });
 registerGoogleAdsRoutes(app, { logger });
+registerGoogleAdsJulyBuyoutRoutes(app, { logger });
 registerGoogleProjectionRoutes(app, { logger });
 registerSearchConsoleRoutes(app, { logger });
 
