@@ -121,6 +121,16 @@
   color: var(--jd-ink-soft);
 }
 
+.jd-buyout-note {
+  margin: 0.55rem 0 0;
+  max-width: 23rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.98rem;
+  line-height: 1.35;
+  color: var(--jd-water-deep);
+  transform: rotate(-0.4deg);
+}
+
 .jd-place-link {
   color: var(--jd-ink);
   text-decoration: underline dashed;
@@ -184,7 +194,6 @@
 }
 
 .jd-buy {
-  margin-top: 1rem;
   padding: 0.65rem 1.4rem;
   font-family: var(--font-display);
   font-weight: 650;
@@ -197,10 +206,28 @@
   transition: background var(--jd-dur-1) var(--jd-ease), border-color var(--jd-dur-1) var(--jd-ease), transform var(--jd-dur-1) var(--jd-ease);
 }
 
-.jd-buy:hover {
+.jd-buy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.jd-buy--secondary {
+  color: var(--jd-ink);
+  background: transparent;
+}
+
+.jd-buy:hover:not(:disabled) {
   background: var(--jd-accent);
   border-color: var(--jd-accent);
   transform: translateY(-1px) rotate(-0.5deg);
+}
+
+.jd-buy:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
 }
 
 /* margin scribbles inside the hero card */
@@ -1035,8 +1062,16 @@
     font-size: 0.7rem;
   }
 
-  .jd-buy {
+  .jd-buyout-note {
+    font-size: 0.78rem;
+  }
+
+  .jd-buy-row {
+    gap: 0.45rem;
     margin-top: 0.75rem;
+  }
+
+  .jd-buy {
     padding: 0.55rem 1.1rem;
     font-size: 0.85rem;
   }

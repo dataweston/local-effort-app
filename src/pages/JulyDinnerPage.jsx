@@ -106,6 +106,21 @@ const eventEndDate = (startIso) => {
   return new Date(start.getTime() + 3 * 60 * 60 * 1000).toISOString();
 };
 
+const checkoutItemFor = (type, event, quantity) =>
+  type === 'buyout'
+    ? {
+        item_id: 'july-dinner-buyout',
+        item_name: 'Dinner in July whole-night buy-out',
+        price: event.buyoutPriceCents / 100,
+        quantity: 1,
+      }
+    : {
+        item_id: 'july-dinner-seat',
+        item_name: 'Dinner in July seat',
+        price: event.priceCents / 100,
+        quantity,
+      };
+
 const buildEventJsonLd = (event) => ({
   '@context': 'https://schema.org',
   '@type': 'FoodEvent',
@@ -131,14 +146,26 @@ const buildEventJsonLd = (event) => ({
     },
   },
   organizer: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
-  offers: {
-    '@type': 'Offer',
-    url: `${SITE_URL}/julydinner`,
-    price: plainMoney(event.priceCents),
-    priceCurrency: 'USD',
-    availability: 'https://schema.org/LimitedAvailability',
-    validFrom: '2026-07-01T00:00:00-05:00',
-  },
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Seat at Dinner in July',
+      url: `${SITE_URL}/julydinner`,
+      price: plainMoney(event.priceCents),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/LimitedAvailability',
+      validFrom: '2026-07-01T00:00:00-05:00',
+    },
+    {
+      '@type': 'Offer',
+      name: `Whole-night private buy-out for up to ${event.buyoutCapacity} people`,
+      url: `${SITE_URL}/julydinner?booking=buyout`,
+      price: plainMoney(event.buyoutPriceCents),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/LimitedAvailability',
+      validFrom: '2026-07-01T00:00:00-05:00',
+    },
+  ],
 });
 
 const JulyDinnerPage = () => {
@@ -162,6 +189,26 @@ const JulyDinnerPage = () => {
   const [showShop, setShowShop] = useState(false);
   const [shopProducts, setShopProducts] = useState(null); // null = not fetched
   const [mapReady, setMapReady] = useState(false); // Google embed loads on first hover/focus
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const requestedBooking = params.get('booking') || params.get('package');
+    if (requestedBooking !== 'buyout') return;
+    setBookingType('buyout');
+    trackEvent('product.viewed', {
+      store: 'july-dinner',
+      productId: 'july-dinner-buyout',
+      bookingType: 'buyout',
+      amountCents: FALLBACK_EVENT.buyoutPriceCents,
+      itemCount: 1,
+    });
+    gaEvent('view_item', {
+      currency: 'USD',
+      value: FALLBACK_EVENT.buyoutPriceCents / 100,
+      items: [checkoutItemFor('buyout', FALLBACK_EVENT, 1)],
+    });
+  }, []);
 
   // Modals: lock the page scroll and close on Escape.
   const anyModal = showCheckout || showShop;
@@ -223,6 +270,12 @@ const JulyDinnerPage = () => {
   );
   // Buying out the night only works while the table is still empty.
   const buyoutAvailable = seatsRemaining === null || seatsRemaining >= event.capacity;
+  useEffect(() => {
+    if (bookingType === 'buyout' && !buyoutAvailable) {
+      setBookingType('seats');
+    }
+  }, [bookingType, buyoutAvailable]);
+
   const totalCents = isBuyout ? event.buyoutPriceCents : event.priceCents * quantity;
   const seatWord = quantity === 1 ? 'seat' : 'seats';
 
@@ -285,11 +338,7 @@ const JulyDinnerPage = () => {
       transaction_id: data?.paymentId || checkoutAttemptId,
       currency: 'USD',
       value: (data?.amountCents ?? totalCents) / 100,
-      items: [
-        bookingType === 'buyout'
-          ? { item_id: 'july-dinner-buyout', item_name: 'Dinner in July buy-out', price: event.buyoutPriceCents / 100, quantity: 1 }
-          : { item_id: 'july-dinner-seat', item_name: 'Dinner in July seat', price: event.priceCents / 100, quantity },
-      ],
+      items: [checkoutItemFor(bookingType, event, quantity)],
     });
     setPaymentId(data?.paymentId || '');
     setEmailStatus(data?.emailStatus || null);
@@ -366,6 +415,25 @@ const JulyDinnerPage = () => {
     resetStatus();
   };
 
+  const selectBookingType = (nextType) => {
+    if (nextType === 'buyout' && !buyoutAvailable) return;
+    const normalizedType = nextType === 'buyout' ? 'buyout' : 'seats';
+    setBookingType(normalizedType);
+    resetStatus();
+    const item = checkoutItemFor(normalizedType, event, quantity);
+    trackEvent('product.viewed', {
+      store: 'july-dinner',
+      productId: item.item_id,
+      bookingType: normalizedType,
+      amountCents: normalizedType === 'buyout' ? event.buyoutPriceCents : event.priceCents * quantity,
+      itemCount: item.quantity,
+    });
+    gaEvent('select_item', {
+      item_list_name: 'Dinner in July booking type',
+      items: [item],
+    });
+  };
+
   const canSubmit = () => !validationMessage() && cardLoaded;
 
   const handleSubmit = async (e) => {
@@ -410,13 +478,35 @@ const JulyDinnerPage = () => {
         ? 'sold out'
         : `${seatsRemaining} of ${event.capacity} seats left`;
 
+  const openCheckout = (nextBookingType) => {
+    const nextType = nextBookingType === 'buyout' ? 'buyout' : 'seats';
+    if (soldOut) return;
+    if (nextType === 'buyout' && !buyoutAvailable) return;
+    setBookingType(nextType);
+    setShowCheckout(true);
+    const nextTotalCents = nextType === 'buyout' ? event.buyoutPriceCents : event.priceCents * quantity;
+    const nextItem = checkoutItemFor(nextType, event, quantity);
+    trackEvent('checkout.started', {
+      store: 'july-dinner',
+      bookingType: nextType,
+      productId: nextItem.item_id,
+      amountCents: nextTotalCents,
+      itemCount: nextItem.quantity,
+    });
+    gaEvent('begin_checkout', {
+      currency: 'USD',
+      value: nextTotalCents / 100,
+      items: [nextItem],
+    });
+  };
+
   return (
     <div className="july-dinner-page">
       <Helmet>
         <title>{`Local Effort Cooperative Serves Summer — ${event.dateLabel} Dinner at the Arthouse | Tickets`}</title>
         <meta
           name="description"
-          content={`${event.summary} ${event.dateLabel}. $${formatMoney(event.priceCents)} per seat, ${event.capacity} seats total. Non-alcoholic beverage included — book online.`}
+          content={`${event.summary} ${event.dateLabel}. Buy out the night for up to ${event.buyoutCapacity} people at $${formatMoney(event.buyoutPriceCents)}, or reserve seats at $${formatMoney(event.priceCents)} each.`}
         />
         <link rel="canonical" href={`${SITE_URL}/julydinner`} />
         <meta property="og:type" content="website" />
@@ -475,7 +565,10 @@ const JulyDinnerPage = () => {
             </span>
           </p>
           <p className="jd-terms">
-            ${formatMoney(event.priceCents)} a seat{SHOW_SEATS_REMAINING ? ` · ${seatsLabel}` : ''} · {event.timeLabel}
+            whole night ${formatMoney(event.buyoutPriceCents)} up to {event.buyoutCapacity} · seats ${formatMoney(event.priceCents)} each{SHOW_SEATS_REMAINING ? ` · ${seatsLabel}` : ''} · {event.timeLabel}
+          </p>
+          <p className="jd-buyout-note">
+            Take over the room for a private dinner, bring up to {event.buyoutCapacity}, and let us close the table around your people.
           </p>
           <p className="jd-lede">
             the popup form finally collapses into an endless stream of ingredients, mise, little
@@ -484,20 +577,24 @@ const JulyDinnerPage = () => {
             Autumnwood in Forest Lake, sparkling botanicals from Peder Schweigert, and probably
             some meat too.
           </p>
-          <button
-            type="button"
-            className="jd-buy"
-            onClick={() => {
-              setShowCheckout(true);
-              gaEvent('begin_checkout', {
-                currency: 'USD',
-                value: (event.priceCents * quantity) / 100,
-                items: [{ item_id: 'july-dinner-seat', item_name: 'Dinner in July seat', price: event.priceCents / 100, quantity }],
-              });
-            }}
-          >
-            buy tickets
-          </button>
+          <div className="jd-buy-row">
+            <button
+              type="button"
+              className="jd-buy"
+              onClick={() => openCheckout('buyout')}
+              disabled={!buyoutAvailable || soldOut}
+            >
+              buy out the night
+            </button>
+            <button
+              type="button"
+              className="jd-buy jd-buy--secondary"
+              onClick={() => openCheckout('seats')}
+              disabled={soldOut}
+            >
+              reserve seats
+            </button>
+          </div>
 
           <p className="jd-hint">psst — the photos are loose. drag them anywhere.</p>
           <button
@@ -576,7 +673,7 @@ const JulyDinnerPage = () => {
                     type="button"
                     className="jd-mode"
                     aria-pressed={!isBuyout}
-                    onClick={() => { setBookingType('seats'); resetStatus(); }}
+                    onClick={() => selectBookingType('seats')}
                   >
                     A few seats
                   </button>
@@ -584,7 +681,7 @@ const JulyDinnerPage = () => {
                     type="button"
                     className="jd-mode"
                     aria-pressed={isBuyout}
-                    onClick={() => { setBookingType('buyout'); resetStatus(); }}
+                    onClick={() => selectBookingType('buyout')}
                     disabled={!buyoutAvailable}
                     title={buyoutAvailable ? undefined : 'Some seats are already sold'}
                   >
