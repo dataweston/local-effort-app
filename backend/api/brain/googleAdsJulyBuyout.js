@@ -44,6 +44,11 @@ const HOUSEHOLD_INCOME_RANGES = [
 
 const FEMALE_BID_MODIFIER = 1.25;
 
+// Manual CPC ad groups default to $0.01 when no bid is set, which loses every
+// auction (July 2026: campaign served zero impressions until bid was raised).
+// $2.00 clears the top-of-page estimates for all current keywords.
+const AD_GROUP_CPC_BID_MICROS = 2_000_000;
+
 const HEADLINES = [
   'Private Dinner Buyout',
   'Minneapolis Chef Dinner',
@@ -202,6 +207,7 @@ function buildOperations(customerId, dailyBudget, name = campaignName()) {
           campaign,
           status: 'ENABLED',
           type: 'SEARCH_STANDARD',
+          cpcBidMicros: AD_GROUP_CPC_BID_MICROS,
         },
       },
     },
