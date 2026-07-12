@@ -1,3 +1,5 @@
+import {richTextBlock} from './objects/richTextBlock'
+
 const HUB_SALES_AREA_OPTIONS = [
   { title: 'Localist', value: 'localist' },
   { title: 'Security at Neon', value: 'security' },
@@ -30,31 +32,37 @@ export default {
       validation: (Rule) => Rule.unique(),
     },
     {
-      name: 'eyebrow',
+      name: 'eyebrowRich',
       title: 'Small label',
-      type: 'string',
+      type: 'array',
+      of: [richTextBlock()],
       description: 'Short label above the headline.',
-      initialValue: 'This week',
     },
     {
-      name: 'headline',
+      name: 'headlineRich',
       title: 'Headline',
-      type: 'string',
+      type: 'array',
+      of: [richTextBlock()],
       validation: (Rule) => Rule.required(),
     },
     {
-      name: 'body',
+      name: 'bodyRich',
       title: 'Body',
-      type: 'text',
-      rows: 4,
+      type: 'array',
+      of: [richTextBlock()],
       description: 'The main update shown above the Hub sales-page items.',
     },
     {
-      name: 'note',
+      name: 'noteRich',
       title: 'Footer note',
-      type: 'string',
+      type: 'array',
+      of: [richTextBlock()],
       description: 'Optional short note below the update.',
     },
+    {name: 'eyebrow', type: 'string', hidden: true, readOnly: true},
+    {name: 'headline', type: 'string', hidden: true, readOnly: true},
+    {name: 'body', type: 'text', hidden: true, readOnly: true},
+    {name: 'note', type: 'string', hidden: true, readOnly: true},
     {
       name: 'active',
       title: 'Active',
@@ -73,17 +81,20 @@ export default {
   preview: {
     select: {
       title: 'title',
-      subtitle: 'headline',
+      subtitle: 'headlineRich',
       active: 'active',
       areas: 'areas',
     },
     prepare({ title, subtitle, active, areas }) {
+      const subtitleText = Array.isArray(subtitle)
+        ? subtitle.flatMap((block) => block.children || []).map((child) => child.text || '').join(' ')
+        : subtitle
       const areaLabels = (areas || [])
         .map((area) => HUB_SALES_AREA_OPTIONS.find((option) => option.value === area)?.title || area)
         .join(', ')
       return {
         title: title || 'Localist message',
-        subtitle: [subtitle, areaLabels, active === false ? '(hidden)' : null].filter(Boolean).join(' / '),
+        subtitle: [subtitleText, areaLabels, active === false ? '(hidden)' : null].filter(Boolean).join(' / '),
       }
     },
   },

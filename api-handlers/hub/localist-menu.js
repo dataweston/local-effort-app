@@ -37,6 +37,10 @@ const LOCALIST_CONTENT_QUERY = `
   )
 ] | order(_updatedAt desc)[0] {
   _id,
+  eyebrowRich,
+  headlineRich,
+  bodyRich,
+  noteRich,
   eyebrow,
   headline,
   body,
@@ -56,10 +60,10 @@ function publicContent(content) {
   if (!content) return null;
   return {
     _id: content._id,
-    eyebrow: content.eyebrow || '',
-    headline: content.headline || '',
-    body: content.body || '',
-    note: content.note || '',
+    eyebrow: Array.isArray(content.eyebrowRich) ? content.eyebrowRich : content.eyebrow || '',
+    headline: Array.isArray(content.headlineRich) ? content.headlineRich : content.headline || '',
+    body: Array.isArray(content.bodyRich) ? content.bodyRich : content.body || '',
+    note: Array.isArray(content.noteRich) ? content.noteRich : content.note || '',
     updatedAt: content._updatedAt || null,
   };
 }

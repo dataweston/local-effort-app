@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PortableText } from '@portabletext/react';
 import {
   CalendarDays,
   CheckCircle2,
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
+import { createPortableTextComponents } from '../utils/portableTextComponents';
 
 const tabs = [
   { id: 'today', label: 'Today', icon: Home },
@@ -61,6 +63,17 @@ const LOCALIST_ITEM_FLAG_LABELS = [
   ['containsNuts', 'Contains nuts'],
   ['containsDairy', 'Contains dairy'],
 ];
+
+function HubRichText({ value, element = 'p' }) {
+  if (!value) return null;
+  if (!Array.isArray(value)) return React.createElement(element, null, value);
+  const components = createPortableTextComponents({
+    block: {
+      normal: ({ children }) => React.createElement(element, null, children),
+    },
+  });
+  return <PortableText value={value} components={components} />;
+}
 
 const SECURITY_MENU_PASSWORD = 'noodleboy.';
 const SECURITY_MENU_QR_TOKEN = 'neon-kitchen-security';
@@ -2837,10 +2850,10 @@ function LocalistView({
     >
       {content && (
         <section className="hub-localist-intro">
-          {content.eyebrow && <small>{content.eyebrow}</small>}
-          {content.headline && <h3>{content.headline}</h3>}
-          {content.body && <p>{content.body}</p>}
-          {content.note && <span>{content.note}</span>}
+          {content.eyebrow && <HubRichText value={content.eyebrow} element="small" />}
+          {content.headline && <HubRichText value={content.headline} element="h3" />}
+          {content.body && <HubRichText value={content.body} element="p" />}
+          {content.note && <HubRichText value={content.note} element="span" />}
         </section>
       )}
       {area === 'localist' && localistTrackingContext().localistToken && (
