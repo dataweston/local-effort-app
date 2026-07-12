@@ -131,6 +131,45 @@ const ABOUT_INFO_BLOCKS = [
   },
 ];
 
+const RECENT_MEAL_PREP_MENUS = [
+  {
+    label: 'July 5/6',
+    sections: [
+      {
+        label: 'Dinners',
+        items: [
+          'Pulled pork with cabbage, rainbow chard, potato salad or rice, and pickles',
+          'Nam tok waterfall beef with sticky rice, shiso, cucumbers, and marinated sirloin',
+          'Dan dan noodles with minced pork, chili oil, sunflower seeds, green onion, and braised choy — gluten-free where appropriate',
+        ],
+      },
+      { label: 'Kids', items: ['Squash fritters', 'Strawberry crêpes'] },
+      { label: 'Snack', items: ['Mango coconut sticky rice'] },
+    ],
+  },
+  {
+    label: 'June 28/29',
+    sections: [
+      {
+        label: 'Dinners',
+        items: [
+          'Zabuton roast, pot-roast style, with new red potatoes and green bean casserole',
+          'Mango-glazed BBQ chicken with green bean salad and new potato salad',
+          'Pork loin over quinoa with prunes and snap pea salad',
+        ],
+      },
+      {
+        label: 'Lunches',
+        items: [
+          'Niçoise salad with lettuce, marinated fish, egg, olives, and green beans',
+          'Poke bowl with sushi rice, sesame, mustard kimchi, tuna or salmon, cucumber, and radish',
+          '“Ikea” lunch with meatballs, gravy, jam, mashed potatoes, and English peas',
+        ],
+      },
+    ],
+  },
+];
+
 const formatCurrency = (value, options = {}) => {
   const {
     minimumFractionDigits = 0,
@@ -3404,6 +3443,36 @@ const normalizeMealStyle = (value) =>
                 </div>
               )}
             </div>
+            <section className="ht-recent-menus" aria-labelledby="recent-meal-prep-menus">
+              <div className="ht-recent-menus__intro">
+                <p className="ht-kicker">recent menus —</p>
+                <h3 id="recent-meal-prep-menus">What clients have eaten lately</h3>
+                <p>
+                  These are real recent examples. Your weekly menu is shaped around your household,
+                  preferences, dietary needs, and what Minnesota farms are producing.
+                </p>
+              </div>
+              <div className="ht-recent-menus__weeks">
+                {RECENT_MEAL_PREP_MENUS.map((menu, menuIndex) => (
+                  <details className="ht-recent-menu" key={menu.label} open={menuIndex === 0}>
+                    <summary>
+                      <span>Week of {menu.label}</span>
+                      <span className="ht-recent-menu__hint">see menu</span>
+                    </summary>
+                    <div className="ht-recent-menu__body">
+                      {menu.sections.map((section) => (
+                        <div className="ht-recent-menu__section" key={section.label}>
+                          <h4>{section.label}</h4>
+                          <ul>
+                            {section.items.map((item) => <li key={item}>{item}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
             <div className="mt-12 px-4 md:px-8 lg:px-[50px] pb-16">
               {mealPlanLoading ? (
                 <div className="text-sm text-gray-600">Loading photos...</div>

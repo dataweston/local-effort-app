@@ -372,6 +372,121 @@
   color: var(--ht-accent-deep);
 }
 
+/* Recent meal-prep menus: compact proof beside the signup, not a promise that
+   every household receives an identical fixed menu. */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(1.25rem, 3vw, 3rem);
+  margin: clamp(2.5rem, 6vw, 5rem) 1rem 0;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px solid var(--ht-rule);
+  border-radius: var(--ht-wobble-sm);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+@media (min-width: 768px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus {
+    margin-right: 2rem;
+    margin-left: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus {
+    margin-right: 50px;
+    margin-left: 50px;
+  }
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus__intro h3 {
+  margin: 0.35rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 650;
+  line-height: 1.05;
+  color: var(--ht-ink);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus__intro > p:last-child {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--ht-ink-soft);
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus__weeks {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu {
+  border-bottom: 1px dashed var(--ht-rule);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  color: var(--ht-ink);
+  font-family: var(--font-office-code);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  list-style: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu__hint {
+  color: var(--ht-accent-deep);
+  font-family: var(--font-yomogi);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu[open] .ht-recent-menu__hint {
+  visibility: hidden;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu__body {
+  display: grid;
+  gap: 1rem;
+  padding: 0 0 1rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu__section h4 {
+  margin: 0 0 0.35rem;
+  color: var(--ht-accent-deep);
+  font-family: var(--font-office-code);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menu__section ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--ht-ink);
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 720px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-recent-menus {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Marginalia: one hand note per tab, no more ──────────────────────── */
 
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-margin-note {
