@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { richTextBlock } from './objects/richTextBlock'
 
 export default defineType({
   name: 'release',
@@ -102,7 +103,7 @@ export default defineType({
       name: 'body',
       type: 'array',
       of: [
-        { type: 'block' },
+        richTextBlock(),
         { type: 'image', options: { hotspot: true }, fields: [{ name: 'alt', type: 'string', title: 'Alt text' }] },
       ],
     }),

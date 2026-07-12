@@ -1,4 +1,5 @@
 // schemas/publicEvent.js
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'publicEvent',
@@ -62,7 +63,7 @@ export default {
       options: { hotspot: true },
       description: 'Optional image displayed in cards and the event dialog. Use 16:9 if possible.',
     },
-    { name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] },
+    { name: 'description', title: 'Description', type: 'array', of: [richTextBlock()] },
     { name: 'firestoreEventId', title: 'Firestore Event ID', type: 'string' },
   ],
   preview: {

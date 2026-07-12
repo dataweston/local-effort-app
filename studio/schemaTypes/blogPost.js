@@ -1,4 +1,5 @@
 import {defineType, defineField} from 'sanity'
+import { richTextBlock } from './objects/richTextBlock'
 
 export default defineType({
   name: 'blogPost',
@@ -70,7 +71,7 @@ export default defineType({
       name: 'body',
       type: 'array',
       of: [
-        { type: 'block' },
+        richTextBlock(),
         { type: 'image', options: { hotspot: true }, fields: [{ name: 'alt', type: 'string', title: 'Alt Text' }] },
         // Replaced direct cloudinary.asset with wrapper object type to avoid unknown type error
         { type: 'cloudinaryImage', title: 'Cloudinary Image' },

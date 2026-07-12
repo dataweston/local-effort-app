@@ -1,4 +1,5 @@
 // schemas/crowdfundingCampaign.js
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'crowdfundingCampaign',
@@ -38,7 +39,7 @@ export default {
       name: 'description',
       title: 'Short Description',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'A brief, editable summary of the campaign. Use Portable Text to add simple formatting and paragraphs.',
       validation: Rule => Rule.required().error('A short description is required.'),
       group: 'overview',
@@ -126,7 +127,7 @@ export default {
       name: 'story',
       title: 'Campaign Story',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'The main content of your campaign page. Tell your story, explain your project, and show your passion.',
       group: 'story',
     },
@@ -134,7 +135,7 @@ export default {
       name: 'goals',
       title: 'Goals',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'Describe your campaign goals in a structured, rich text field.',
       group: 'goals',
     },
@@ -225,7 +226,7 @@ export default {
               title: 'Description',
               type: 'array',
               of: [
-                { type: 'block' },
+                richTextBlock(),
                 {
                   type: 'image',
                   options: { hotspot: true },

@@ -605,6 +605,17 @@
   border-radius: 0.35rem;
 }
 
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-hero-photo--events {
+  min-height: 34rem;
+}
+
+@media (max-width: 767px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .ht-hero-photo--events {
+    min-height: 22rem;
+    width: 100%;
+  }
+}
+
 /* ── Snapshot wrappers in the photo columns ──────────────────────────── */
 
 /* the gallery photos lean a hair off-grid, like the home tab's loose

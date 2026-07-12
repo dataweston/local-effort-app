@@ -1,4 +1,5 @@
 // schemas/page.js
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'page',
@@ -58,9 +59,7 @@ export default {
       title: 'Page Content',
       type: 'array',
       of: [
-        {
-          type: 'block', // For rich text content
-        },
+        richTextBlock(),
         {
           type: 'image', // To add images within the content
         },

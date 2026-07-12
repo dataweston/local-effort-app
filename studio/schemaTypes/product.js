@@ -1,4 +1,5 @@
 import PriceUsdInput from '../components/PriceUsdInput.jsx'
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'product',
@@ -8,7 +9,7 @@ export default {
     { name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() },
     { name: 'slug', title: 'Slug', type: 'slug', options: { source: 'title', maxLength: 96 } },
     { name: 'shortDescription', title: 'Short Description', type: 'string' },
-    { name: 'longDescription', title: 'Long Description (Portable Text)', type: 'array', of: [{ type: 'block' }] },
+    { name: 'longDescription', title: 'Long Description', type: 'array', of: [richTextBlock()] },
     { name: 'images', title: 'Images', type: 'array', of: [{ type: 'image' }], options: { layout: 'grid' } },
     { name: 'price', title: 'Price (USD)', description: 'Enter dollars (USD).', type: 'number', components: { input: PriceUsdInput }, validation: (Rule) => Rule.min(0) },
     { name: 'salePrice', title: 'Sale Price (USD)', description: 'Optional sale price in dollars (USD).', type: 'number', components: { input: PriceUsdInput } },

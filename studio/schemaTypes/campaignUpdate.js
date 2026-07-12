@@ -1,4 +1,5 @@
 // schemas/campaignUpdate.js
+import { richTextBlock } from './objects/richTextBlock'
 export default {
     name: 'campaignUpdate',
     title: 'Campaign Update',
@@ -28,7 +29,7 @@ export default {
             name: 'body',
             title: 'Update Body',
             type: 'array',
-            of: [{ type: 'block' }],
+            of: [richTextBlock()],
             validation: (Rule) =>
                 Rule.required()
                     .error('Please add some content to the update body.'),

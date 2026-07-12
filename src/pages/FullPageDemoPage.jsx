@@ -3529,49 +3529,26 @@ const normalizeMealStyle = (value) =>
               </ul>
               <p>Contact: yum@localeffortfood.com | Minneapolis, MN</p>
             </div>
-            <div className="relative min-h-[560px]">
-              <img
-                src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
-                alt="Private event catering by Local Effort Cooperative in Minneapolis"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ objectPosition: 'center' }}
-              />
-              <div className="relative z-10 px-4 md:px-8 lg:px-[50px] pt-6 md:pt-8 pb-10">
-                <div className="ht-slip ht-slip--wide">
-                  <div className="ht-slip-cols">
-                    <div>
-                      <p className="ht-kicker">small events —</p>
-                      <h2 className="ht-heading">Minnesotan food for Minnesotans</h2>
-                      <span className="ht-rule-line" aria-hidden="true" />
-                      <p className="ht-copy">
-                        Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
-                        menus from 100% Midwest-sourced ingredients, cooked and served at your place.
-                      </p>
-                      <p className="ht-facts">
-                        dinner &amp; pizza parties from $850 · larger events from $1,200
-                      </p>
-                      <div className="ht-side-links">
-                        <button
-                          type="button"
-                          className="ht-side-link"
-                          onClick={() => setSmallEventsDialog('dinner')}
-                        >
-                          Want an instant estimate first? Open the detailed planner
-                        </button>
-                        <button
-                          type="button"
-                          className="ht-side-link"
-                          onClick={() => openSmallEventsContact('dinner')}
-                        >
-                          Questions? Send us a note
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
-                    </div>
-                  </div>
-                </div>
+            <div className="px-4 md:px-8 lg:px-[50px] mt-6 md:mt-10 flex flex-col gap-6 md:flex-row md:items-start">
+              <div className="ht-slip">
+                <p className="ht-kicker">small events —</p>
+                <h2 className="ht-heading">Minnesotan food for Minnesotans</h2>
+                <span className="ht-rule-line" aria-hidden="true" />
+                <p className="ht-copy">
+                  Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
+                  menus from 100% Midwest-sourced ingredients, cooked and served at your place.
+                </p>
+                <p className="ht-facts">
+                  dinner &amp; pizza parties from $850 · larger events from $1,200
+                </p>
+                <QuickEventBookForm source="small-events" ctaLabel="Request this date" />
+              </div>
+              <div className="ht-hero-photo ht-hero-photo--events">
+                <img
+                  src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
+                  alt="Private event catering by Local Effort Cooperative in Minneapolis"
+                  loading="lazy"
+                />
               </div>
             </div>
             <div className="px-8 pb-16 pt-10">

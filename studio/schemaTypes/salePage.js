@@ -1,4 +1,5 @@
 // schemas/salePage.js
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'salePage',
@@ -28,7 +29,7 @@ export default {
       name: 'intro',
       title: 'Intro Text',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'Optional text shown under the subtitle to explain the sale.',
     },
   ],

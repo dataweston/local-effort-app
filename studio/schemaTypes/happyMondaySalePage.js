@@ -1,4 +1,5 @@
 // schemas/happyMondaySalePage.js
+import { richTextBlock } from './objects/richTextBlock'
 
 export default {
   name: 'happyMondaySalePage',
@@ -15,7 +16,7 @@ export default {
       name: 'intro',
       title: 'Intro Text',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'Optional text shown under the title to explain the sale.',
     },
   ],

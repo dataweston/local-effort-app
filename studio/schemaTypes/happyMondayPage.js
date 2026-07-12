@@ -1,3 +1,5 @@
+import { richTextBlock } from './objects/richTextBlock'
+
 export default {
   name: 'happyMondayPage',
   title: 'Happy Monday Page',
@@ -14,7 +16,7 @@ export default {
       title: 'Content Box',
       type: 'array',
       // This 'block' type enables the rich text editor
-      of: [{ type: 'block' }],
+      of: [richTextBlock()],
       description: 'The main content that appears above the menu items.',
     },
   ],
