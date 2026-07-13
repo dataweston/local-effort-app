@@ -1,4 +1,5 @@
 const { getPrisma } = require('../utils/prisma');
+const { Prisma } = require('@prisma/client');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent } = require('./ledger');
 const { reconcileVendorPayments } = require('./vendorPaymentReconcile');
@@ -10,16 +11,44 @@ const PARTNER_RELATIONS = new Set([
   'HOSTED_BY', 'MENTIONS', 'MENTIONED_IN_CONTENT', 'TAGGED_ON_INSTAGRAM', 'LOCATED_AT',
 ]);
 
-function evidenceWeight(assertion) {
-  const source = String(assertion.sourceType || assertion.ledgerEvent?.source || '').toLowerCase();
-  const rel = String(assertion.relType || '').toUpperCase();
-  if (rel === 'PAYMENT_SENT' || rel === 'RECONCILED_WITH') return 10;
-  if (rel === 'INVOICED' || rel === 'ISSUED_BY') return 9;
-  if (rel === 'SUPPLIES' || rel === 'PRICED_AT' || rel === 'SOURCED_FROM') return 8;
-  if (source.includes('gmail') && /receipt|invoice|order/.test(JSON.stringify(assertion.metadata || {}).toLowerCase())) return 8;
-  if (source.includes('instagram')) return 4;
-  if (source.includes('repo')) return 3;
-  return 2;
+function jsonValue(value) {
+  return value === null || value === undefined ? Prisma.JsonNull : value;
+}
+
+function evidenceGroup(assertion, vendorId) {
+  const other = assertion.srcId === vendorId ? assertion.dst : assertion.src;
+  const source = assertion.ledgerEvent?.source || assertion.sourceType || 'unknown';
+  const rel = assertion.relType;
+  const bucket = rel === 'PRICED_AT' || rel === 'SUPPLIES' || rel === 'SUPPLIED_BY' ? 'products'
+    : rel === 'PAYMENT_SENT' || rel === 'SPEND_HISTORY' || rel === 'RECONCILED_WITH' ? 'purchases'
+      : rel === 'EMAILED' || rel === 'INVOICED' ? 'communications'
+        : rel === 'MENTIONS' ? 'public_mentions' : 'relationships';
+  return { key: `${bucket}:${rel}:${source}`, bucket, relType: rel, source, other };
+}
+
+function summarizeEvidence(assertions, vendorId) {
+  const groups = new Map();
+  for (const assertion of assertions) {
+    const group = evidenceGroup(assertion, vendorId);
+    const current = groups.get(group.key) || { ...group, count: 0, pendingCount: 0, firstAt: null, lastAt: null, samples: [], totalCents: 0 };
+    current.count += 1;
+    if (assertion.provisional) current.pendingCount += 1;
+    const at = assertion.ledgerEvent?.occurredAt || assertion.createdAt;
+    if (!current.firstAt || new Date(at) < new Date(current.firstAt)) current.firstAt = at;
+    if (!current.lastAt || new Date(at) > new Date(current.lastAt)) current.lastAt = at;
+    const amount = Number(assertion.ledgerEvent?.payload?.amountCents || assertion.metadata?.amountCents || 0);
+    if (Number.isFinite(amount)) current.totalCents += amount;
+    if (current.samples.length < 3 && group.other) current.samples.push(group.other);
+    groups.set(group.key, current);
+  }
+  return [...groups.values()].sort((a, b) => b.count - a.count);
+}
+
+function cappedEvidenceScore(summary) {
+  return Math.round(summary.reduce((score, group) => {
+    const base = group.bucket === 'purchases' ? 10 : group.bucket === 'products' ? 7 : group.bucket === 'communications' ? 4 : 3;
+    return score + base * Math.min(3, 1 + Math.log10(Math.max(1, group.count)));
+  }, 0) * 10) / 10;
 }
 
 function relationshipGuess(assertions, properties = {}) {
@@ -41,7 +70,7 @@ function registerPartnerReviewRoutes(app, { logger } = {}) {
   app.get('/api/brain/partners/review', async (req, res) => {
     try {
       if (!await verifyAdminRequest(req)) return res.status(403).json({ error: 'admin only' });
-      const limit = Math.min(parseInt(req.query.limit, 10) || 100, 250);
+      const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
       const vendors = await prisma.brainEntity.findMany({
         where: { entityType: { in: ['Vendor', 'Supplier'] }, tombstonedAt: null },
         orderBy: { updatedAt: 'desc' },
@@ -62,21 +91,28 @@ function registerPartnerReviewRoutes(app, { logger } = {}) {
       });
       const items = vendors.map(v => {
         const assertions = [...v.srcAssertions, ...v.dstAssertions].filter(a => PARTNER_RELATIONS.has(a.relType));
-        const score = assertions.reduce((sum, a) => sum + evidenceWeight(a) * Number(a.confidence || 1), 0);
+        const evidenceSummary = summarizeEvidence(assertions, v.id);
         const properties = v.properties || {};
+        const reviewStatus = properties.partnerReviewStatus || (properties.publicEligible ? 'approved' : 'unreviewed');
         return {
           id: v.id, name: v.name, entityType: v.entityType, status: v.status,
           properties, aliases: v.aliases, relationshipGuess: relationshipGuess(assertions, properties),
-          evidenceScore: Math.round(score * 10) / 10,
+          reviewStatus, evidenceScore: cappedEvidenceScore(evidenceSummary), evidenceSummary,
+          rawEvidenceCount: assertions.length,
           pendingCount: assertions.filter(a => a.provisional).length,
-          evidence: assertions.slice(0, 40).map(a => ({
+          evidence: assertions.filter(a => a.relType !== 'PRICED_AT').slice(0, 20).map(a => ({
             id: a.id, relType: a.relType, confidence: a.confidence, provisional: a.provisional,
             sourceType: a.sourceType, createdAt: a.createdAt, metadata: a.metadata,
             other: a.srcId === v.id ? a.dst : a.src,
             ledgerEvent: a.ledgerEvent ? { eventType: a.ledgerEvent.eventType, source: a.ledgerEvent.source, occurredAt: a.ledgerEvent.occurredAt, payload: a.ledgerEvent.payload } : null,
           })),
         };
-      }).sort((a, b) => (b.pendingCount - a.pendingCount) || (b.evidenceScore - a.evidenceScore));
+      }).sort((a, b) => {
+        const stateRank = { unreviewed: 0, draft: 1, approved: 2, rejected: 3 };
+        return (stateRank[a.reviewStatus] - stateRank[b.reviewStatus])
+          || (Number(b.rawEvidenceCount > 0) - Number(a.rawEvidenceCount > 0))
+          || (b.evidenceScore - a.evidenceScore);
+      });
       return res.json({ ok: true, items, count: items.length });
     } catch (err) {
       logger?.error({ err }, 'brain: partner review list error');
@@ -95,21 +131,27 @@ function registerPartnerReviewRoutes(app, { logger } = {}) {
       if (!await verifyAdminRequest(req)) return res.status(403).json({ error: 'admin only' });
       const current = await prisma.brainEntity.findFirst({ where: { id: req.params.id, entityType: { in: ['Vendor', 'Supplier'] }, tombstonedAt: null } });
       if (!current) return res.status(404).json({ error: 'vendor not found' });
-      const allowed = ['partnerRelationshipType', 'partnerTier', 'publicEligible', 'website', 'instagram', 'physicalAddress', 'whatWeBuy', 'reviewNotes'];
+      const action = String(req.body?.action || 'save_draft');
+      if (!['save_draft', 'approve', 'reject'].includes(action)) return res.status(400).json({ error: 'invalid review action' });
+      const allowed = ['partnerRelationshipType', 'partnerTier', 'website', 'instagram', 'physicalAddress', 'whatWeBuy', 'reviewNotes'];
       const next = { ...(current.properties || {}) };
       for (const key of allowed) if (Object.prototype.hasOwnProperty.call(req.body || {}, key)) next[key] = req.body[key];
+      next.partnerReviewStatus = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'draft';
+      next.publicEligible = action === 'approve';
       next.partnerReviewedAt = new Date().toISOString();
       next.partnerReviewedBy = 'admin:partner-review';
-      const changedFields = allowed.filter(key => Object.prototype.hasOwnProperty.call(req.body || {}, key)
+      const changedFields = [...allowed, 'partnerReviewStatus', 'publicEligible'].filter(key => (key === 'partnerReviewStatus' || key === 'publicEligible' || Object.prototype.hasOwnProperty.call(req.body || {}, key))
         && JSON.stringify((current.properties || {})[key]) !== JSON.stringify(req.body[key]));
+      if (!changedFields.includes('partnerReviewStatus') && (current.properties || {}).partnerReviewStatus !== next.partnerReviewStatus) changedFields.push('partnerReviewStatus');
+      if (!changedFields.includes('publicEligible') && (current.properties || {}).publicEligible !== next.publicEligible) changedFields.push('publicEligible');
       const entity = await prisma.brainEntity.update({ where: { id: current.id }, data: { properties: next, visibility: next.publicEligible ? 'public' : 'private' } });
       const evidenceIds = Array.isArray(req.body?.evidenceIds) ? req.body.evidenceIds.filter(Boolean).slice(0, 200) : [];
       const decisions = [];
       for (const fieldName of changedFields) {
         const decision = await prisma.partnerReviewDecision.create({ data: {
           vendorEntityId: current.id, taskType: fieldName === 'partnerRelationshipType' ? 'relationship_classification' : 'partner_field',
-          fieldName, proposedValue: (current.properties || {})[fieldName] ?? null, chosenValue: req.body[fieldName] ?? null,
-          action: 'accept_with_edit', reason: req.body?.decisionReason || null, evidenceIds,
+          fieldName, proposedValue: jsonValue((current.properties || {})[fieldName]), chosenValue: jsonValue(next[fieldName]),
+          action, reason: req.body?.decisionReason || null, evidenceIds,
           featureSnapshot: { entityType: current.entityType, canonicalName: current.canonicalName }, reviewer: 'admin:partner-review', ruleVersion: 'partner-v1',
         } });
         decisions.push(decision.id);
