@@ -27,6 +27,8 @@ const JOB_SLA = {
   'local-budget-sync': 24,
   'cogs-rollup': 24,
   'square-reconcile': 24,
+  'gmail-vendor-sync': 24,
+  'vendor-payment-reconcile': 24,
   'inference-run': 24,
   'hypothesis-run': 24,
   'triage-run': 24, // runs twice daily; 24h window tolerates one miss

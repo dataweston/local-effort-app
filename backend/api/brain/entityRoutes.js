@@ -19,6 +19,7 @@ const VALID_TYPES = [
   'Vendor', 'Customer', 'Person', 'Menu', 'Dish', 'Ingredient', 'Task', 'Note', 'Event',
   'Shift', 'Resource', 'Group', 'StaffRole',
   'Invoice', 'Payment', 'Order', 'Receipt', 'EmailThread', 'Feedback', 'Decision',
+  'ContentArtifact', 'SocialPost',
   'PriceQuote', 'LedgerTransaction', 'PriceReference',
   // Business model
   'BusinessLine', 'Offer', 'Occasion', 'Channel', 'CustomerSegment', 'Campaign',

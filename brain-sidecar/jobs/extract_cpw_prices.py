@@ -53,6 +53,17 @@ DOWNLOADS = Path.home() / 'Downloads'
 VENDOR_NAME = 'Co-op Partners Warehouse'
 
 
+def _clean_identifier(value: str):
+    """Preserve catalogue identifiers without CSV/Excel float artefacts."""
+    value = str(value or '').strip()
+    return re.sub(r'\.0$', '', value) or None
+
+
+def _clean_brand(value: str):
+    value = re.sub(r'\s+', ' ', str(value or '')).strip()
+    return value.title() if value else None
+
+
 def _normalize_name(description: str, variety: str) -> str:
     """
     Turn 'APPLES OG', 'COSMIC CRISP BAGGED' → 'Apples Cosmic Crisp Bagged'.
@@ -194,6 +205,9 @@ def run(dry_run: bool = False) -> dict:
                 units, unit_size = _parse_count_size(count_size)
                 organic = r.get('CAT', '').startswith('OG')
                 category = r.get('CAT', '').replace('OG ', '').replace('CV ', '').strip()
+                upc = _clean_identifier(r.get('UPC'))
+                product_number = _clean_identifier(r.get('PRO #'))
+                brand = _clean_brand(r.get('BRAND'))
 
                 per_unit_price = round(case_price / units, 4) if units else None
 
@@ -214,7 +228,14 @@ def run(dry_run: bool = False) -> dict:
                     'department': category,
                     'organic': organic,
                     'file': csv_path.name,
+                    'sellerRole': 'distributor',
                 }
+                if upc:
+                    meta['upc'] = upc
+                if product_number:
+                    meta['productNumber'] = product_number
+                if brand:
+                    meta['brand'] = brand
                 if per_unit_price is not None:
                     meta['perUnitPrice'] = per_unit_price
                     meta['unitSize'] = str(unit_size)
@@ -231,6 +252,49 @@ def run(dry_run: bool = False) -> dict:
                     provisional=False,
                 )
                 assertions_written += 1
+
+                # CPW is the catalogue distributor. A named BRAND is a producer
+                # candidate, not a confirmed manufacturer: model both roles as
+                # independently reviewable provisional assertions on a Product.
+                product_id, _ = find_or_create_entity('Product', name)
+                write_assertion(
+                    src_id=vendor_id, dst_id=product_id,
+                    rel_type='SUPPLIES',
+                    ledger_event_id=ledger_id,
+                    confidence=0.8,
+                    metadata={
+                        'source': 'cpw_price_list',
+                        'relationshipRole': 'distributor',
+                        'upc': upc,
+                        'productNumber': product_number,
+                        'brand': brand,
+                        'file': csv_path.name,
+                    },
+                    valid_from=occurred_at,
+                    provisional=True,
+                )
+                assertions_written += 1
+
+                if brand:
+                    brand_id, _ = find_or_create_entity('Vendor', brand)
+                    write_assertion(
+                        src_id=brand_id, dst_id=product_id,
+                        rel_type='SUPPLIES',
+                        ledger_event_id=ledger_id,
+                        confidence=0.6,
+                        metadata={
+                            'source': 'cpw_price_list',
+                            'relationshipRole': 'producer_candidate',
+                            'evidenceBasis': 'catalog_brand_field',
+                            'upc': upc,
+                            'productNumber': product_number,
+                            'distributedBy': VENDOR_NAME,
+                            'file': csv_path.name,
+                        },
+                        valid_from=occurred_at,
+                        provisional=True,
+                    )
+                    assertions_written += 1
 
             except Exception as e:
                 errors.append(f'{csv_path.name} row {r.get("Description","?")}: {e}')

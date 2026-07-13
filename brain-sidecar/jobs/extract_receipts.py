@@ -63,11 +63,17 @@ SKIP_RE = re.compile(
 DISCOUNT_LINE_RE = re.compile(r'^.+[$](-\d+\.\d{2})\s*$')
 DISCOUNT_LABEL_RE = re.compile(r'(?:discount|employee|member|\d+%)', re.I)
 
-# Item line: optional barcode + name + positive price + optional tax flag
-ITEM_RE = re.compile(r'^(?:\d{5,13}\s+)?(.+?)\s{2,}[$](\d+\.\d{2})\s*[A-Z]?\s*$')
+# Item line: optional barcode + name + positive price + optional tax flag.
+# Keep the barcode: it is the safest join key to CPW's UPC/product catalogue.
+ITEM_RE = re.compile(r'^(?:(\d{5,14})\s+)?(.+?)\s{2,}[$](\d+\.\d{2})\s*[A-Z]?\s*$')
 
 # Quantity sub-line: "2 @ $3.99" — continuation, not a new item
-QTY_RE = re.compile(r'^\d+\s*@\s*\$\d+\.\d{2}')
+QTY_RE = re.compile(
+    r'^(?P<quantity>\d+(?:\.\d+)?)\s*'
+    r'(?P<unit>lb|oz|ct|ea)?\s*@\s*\$?'
+    r'(?P<unit_price>\d+\.\d{2})(?:\s*/\s*(?P<price_unit>lb|oz|ct|ea))?',
+    re.I,
+)
 
 
 class _TdExtractor(HTMLParser):
@@ -132,8 +138,8 @@ def _decode_eml(path: Path):
 
 def _parse_receipt_html(html: str):
     """
-    Returns list of (item_name, retail_price, category, discount_amount) tuples.
-    discount_amount is 0.0 if no per-item discount was found.
+    Returns structured line-item dictionaries. Raw UPC/barcode, quantity, unit,
+    unit price, and discount are retained for later CPW/producer reconciliation.
     Retail price is NEVER adjusted — discount is metadata only.
     """
     parser = _TdExtractor()
@@ -145,11 +151,13 @@ def _parse_receipt_html(html: str):
 
     def flush_pending():
         if pending_item:
-            name, price, cat, disc = pending_item
+            item = pending_item
+            name = item['name']
             # Strip trailing bulk marker '#' and stray weight words
             name = re.sub(r'\s*#\s*$', '', name).strip()
             name = re.sub(r'\s+Manual\s*$', '', name).strip()
-            items.append((name, price, cat, disc))
+            item['name'] = name
+            items.append(item)
 
     for text, is_bold in parser.rows:
         # Category header (bold td with no price)
@@ -170,15 +178,19 @@ def _parse_receipt_html(html: str):
             pending_item = None
             continue
 
-        if QTY_RE.match(text):
+        qty_match = QTY_RE.match(text)
+        if pending_item and qty_match:
+            pending_item['quantity'] = float(qty_match.group('quantity'))
+            pending_item['unit'] = (qty_match.group('unit') or qty_match.group('price_unit') or 'ea').lower()
+            pending_item['unitPrice'] = float(qty_match.group('unit_price'))
             continue
 
         # Discount continuation after an item
         if pending_item and DISCOUNT_LINE_RE.match(text) and DISCOUNT_LABEL_RE.search(text):
             dm = DISCOUNT_LINE_RE.match(text)
             discount_amount = abs(float(dm.group(1)))
-            name, price, cat, _ = pending_item
-            pending_item = (name, price, cat, discount_amount)
+            pending_item['discountAmount'] = round(
+                pending_item.get('discountAmount', 0.0) + discount_amount, 2)
             continue
 
         # Discount label continuation (e.g. "Discount" on its own line)
@@ -189,13 +201,23 @@ def _parse_receipt_html(html: str):
         m = ITEM_RE.match(text)
         if m:
             flush_pending()
-            raw_name = re.sub(r'^\d{1,13}\s+', '', m.group(1)).strip()
+            barcode = (m.group(1) or '').strip() or None
+            raw_name = m.group(2).strip()
             # Strip trailing bulk marker '#' and any inline TARE suffix
             raw_name = re.sub(r'#?\s*TARE:[^\s]+(?:\s+lb)?(?:\s+Manual)?', '', raw_name).strip()
             raw_name = re.sub(r'\s*#\s*$', '', raw_name).strip()
-            price = float(m.group(2))
+            price = float(m.group(3))
             if price > 0 and len(raw_name) >= 2 and not DISCOUNT_LABEL_RE.match(raw_name):
-                pending_item = (raw_name, price, current_category, 0.0)
+                pending_item = {
+                    'name': raw_name,
+                    'linePrice': price,
+                    'category': current_category,
+                    'discountAmount': 0.0,
+                    'upc': barcode,
+                    'quantity': 1.0,
+                    'unit': 'ea',
+                    'unitPrice': price,
+                }
             else:
                 pending_item = None
             continue
@@ -206,8 +228,7 @@ def _parse_receipt_html(html: str):
             if re.match(r'TARE:\S+', text) or re.match(r'\d+\s*@\s*\$', text):
                 pass
             else:
-                name, price, cat, disc = pending_item
-                pending_item = (f'{name} {text}'.strip(), price, cat, disc)
+                pending_item['name'] = f'{pending_item["name"]} {text}'.strip()
         else:
             flush_pending()
             pending_item = None
@@ -269,9 +290,11 @@ def run(dry_run: bool = False) -> dict:
         if dry_run:
             date_s = occurred_at.strftime('%Y-%m-%d') if occurred_at else '?'
             print(f'  [DRY] {eml_path.name} — {date_s} — {len(items)} items')
-            for name, price, cat, disc in items[:8]:
+            for item in items[:8]:
+                disc = item['discountAmount']
                 disc_s = f' (disc -${disc:.2f})' if disc else ''
-                print(f'    ${price:.2f}{disc_s}  [{cat}]  {name!r}')
+                print(f'    ${item["linePrice"]:.2f}{disc_s}  '
+                      f'[{item["category"]}]  {item["name"]!r}')
             if len(items) > 8:
                 print(f'    ... +{len(items)-8} more')
             receipts_processed += 1
@@ -281,7 +304,7 @@ def run(dry_run: bool = False) -> dict:
             print(f'  [skip] {eml_path.name} — no parseable items')
             continue
 
-        total = sum(p for _, p, _, _ in items)
+        total = sum(item['linePrice'] - item['discountAmount'] for item in items)
 
         ledger_id = write_ledger_event(
             event_type='extraction.receipts',
@@ -316,7 +339,11 @@ def run(dry_run: bool = False) -> dict:
         )
         assertions_written += 1
 
-        for item_name, price, category, discount in items:
+        for item in items:
+            item_name = item['name']
+            price = item['linePrice']
+            category = item['category']
+            discount = item['discountAmount']
             ing_id, ing_created = find_or_create_entity('Ingredient', item_name)
             if ing_created:
                 ingredients_written += 1
@@ -326,21 +353,48 @@ def run(dry_run: bool = False) -> dict:
                 'source': 'eastside_receipt',
                 'store': STORE_NAME,
                 'unitPrice': price,
+                'linePrice': price,
+                'quantity': item['quantity'],
+                'unit': item['unit'],
+                'observedUnitPrice': item['unitPrice'],
                 'department': category,
                 'file': eml_path.name,
+                'sellerRole': 'retailer',
             }
+            if item.get('upc'):
+                meta['upc'] = item['upc']
             if discount:
                 meta['memberDiscountApplied'] = True
                 meta['memberDiscountAmount'] = round(discount, 2)
 
             write_assertion(
-                src_id=ing_id, dst_id=ing_id,
+                src_id=ing_id, dst_id=vendor_id,
                 rel_type='PRICED_AT',
                 ledger_event_id=ledger_id,
                 confidence=0.95,
                 metadata=meta,
                 valid_from=occurred_at,
                 provisional=False,
+            )
+            assertions_written += 1
+
+            # A receipt proves Eastside sold/supplied the item, but does not prove
+            # that Eastside produced it. Keep the retailer role explicit and
+            # provisional so the partner-review layer can replace it with a
+            # UPC-matched producer without conflating the two organizations.
+            write_assertion(
+                src_id=vendor_id, dst_id=ing_id,
+                rel_type='SUPPLIES',
+                ledger_event_id=ledger_id,
+                confidence=0.9,
+                metadata={
+                    'source': 'eastside_receipt',
+                    'relationshipRole': 'retailer',
+                    'upc': item.get('upc'),
+                    'file': eml_path.name,
+                },
+                valid_from=occurred_at,
+                provisional=True,
             )
             assertions_written += 1
 

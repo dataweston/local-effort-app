@@ -92,6 +92,12 @@
     },
     {
       "method": "GET",
+      "path": "/api/public/partners",
+      "description": "Founder-reviewed vendor, producer, stockist, venue, and collaborator relationships. Private evidence is excluded.",
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
       "path": "/api/store/products",
       "description": "Current sale catalog: titles, descriptions, prices in cents, availability. Product pages at /product/{slug}.",
       "response": "application/json"

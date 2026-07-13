@@ -2284,18 +2284,24 @@ const normalizeMealStyle = (value) =>
 
   useEffect(() => {
     let mounted = true;
-    fetch('/api/search-images?query=partner&per_page=48')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!mounted || !data || !Array.isArray(data.images)) return;
-        const items = data.images.map((img) => {
+    Promise.all([
+      fetch('/api/public/partners').then(r => (r.ok ? r.json() : { partners: [] })).catch(() => ({ partners: [] })),
+      fetch('/api/search-images?query=partner&per_page=48').then(r => (r.ok ? r.json() : { images: [] })).catch(() => ({ images: [] })),
+    ]).then(([graphData, imageData]) => {
+        if (!mounted) return;
+        const images = (imageData.images || []).map((img) => {
           const ctx = img.context && (img.context.custom || img.context);
           return {
             publicId: img.public_id || img.publicId,
             name: (ctx && (ctx.name || ctx.title || ctx.alt)) || img.public_id || 'Partner',
             url: ctx && (ctx.url || ctx.link || ctx.href),
           };
-      }).filter((p) => p.publicId);
+        });
+        const byName = new Map(images.map(item => [String(item.name || '').toLowerCase(), item]));
+        const items = (graphData.partners || []).map(partner => ({
+          ...byName.get(String(partner.name || '').toLowerCase()), ...partner,
+          url: partner.website || partner.instagram || byName.get(String(partner.name || '').toLowerCase())?.url,
+        }));
         setPartners(items);
       })
       .catch(() => {});
@@ -3253,7 +3259,7 @@ const normalizeMealStyle = (value) =>
   }, [showFeedback, fb, fbStatus, normalizeFeedbackEntry]);
 
   const PartnerGrid = () => {
-    const items = (partners || []).filter((p) => p && p.publicId);
+    const items = (partners || []).filter((p) => p && p.name);
     if (!items.length) return null;
     return (
       <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 items-center px-4">
@@ -3276,7 +3282,8 @@ const normalizeMealStyle = (value) =>
             viewport={{ once: true }}
             transition={{ duration: 0.25, ease: 'easeOut', delay: i * 0.03 }}
           >
-            <div className="w-full">
+            <div className="w-full text-center">
+              {p.publicId ? (
               <div className="relative w-full" style={{ paddingTop: '18.2%' }}>
                 <CloudinaryImage
                   publicId={p.publicId}
@@ -3292,6 +3299,9 @@ const normalizeMealStyle = (value) =>
                   responsiveSteps={[320, 560, 820, 1000]}
                 />
               </div>
+              ) : <div className="font-semibold text-sm text-slate-900">{p.name}</div>}
+              {p.whatWeBuy?.length > 0 && <div className="mt-2 text-xs text-slate-600">We buy {p.whatWeBuy.join(', ')}</div>}
+              {p.physicalAddress && <div className="mt-1 text-[11px] text-slate-500">{p.physicalAddress}</div>}
             </div>
           </motion.a>
         ))}

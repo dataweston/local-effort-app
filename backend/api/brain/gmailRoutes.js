@@ -16,6 +16,10 @@ const {
   syncGmailThreads,
   verifyOAuthState,
 } = require('./gmailSync');
+const {
+  runNextVendorDocumentBatch,
+  getVendorDocumentSyncStatus,
+} = require('./gmailVendorDocumentSync');
 
 function hasBrainAdminHeader(req) {
   const provided = String(req.headers['x-brain-admin-key'] || '');
@@ -91,6 +95,39 @@ function registerGmailRoutes(app, { logger } = {}) {
         return res.status(401).json({ error: message, authUrl: '/api/brain/gmail/auth' });
       }
       return res.status(500).json({ error: message });
+    }
+  });
+
+  // Process exactly one bounded page of likely vendor documents. Repeated calls
+  // resume from BrainSyncCursor and work newest-to-oldest over three years.
+  app.post('/api/brain/gmail/vendor-documents/batch', async (req, res) => {
+    try {
+      const isAdmin = await verifyAdminRequest(req);
+      const keyOk = hasBrainAdminHeader(req);
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
+
+      const { batchSize = 50, monthsBack = 36 } = req.body || {};
+      const result = await runNextVendorDocumentBatch({ batchSize, monthsBack, logger });
+      return res.json({ ok: true, ...result });
+    } catch (err) {
+      const message = err?.message || 'vendor-document-sync-failed';
+      logger?.error({ err }, 'brain/gmail vendor-document batch error');
+      if (message.includes('not authorized')) {
+        return res.status(401).json({ error: message, authUrl: '/api/brain/gmail/auth' });
+      }
+      return res.status(500).json({ error: message });
+    }
+  });
+
+  app.get('/api/brain/gmail/vendor-documents/status', async (req, res) => {
+    try {
+      const isAdmin = await verifyAdminRequest(req);
+      const keyOk = hasBrainAdminHeader(req);
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
+      return res.json({ ok: true, ...(await getVendorDocumentSyncStatus()) });
+    } catch (err) {
+      logger?.error({ err }, 'brain/gmail vendor-document status error');
+      return res.status(500).json({ error: err?.message || 'vendor-document-status-failed' });
     }
   });
 }

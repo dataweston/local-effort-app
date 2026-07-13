@@ -135,6 +135,20 @@ async function loadGmailTokens() {
   return raw;
 }
 
+/** Build an authenticated, read-only Gmail client for bounded specialist syncs. */
+async function getAuthorizedGmailClient() {
+  const tokens = await loadGmailTokens();
+  if (!tokens) {
+    throw new Error('Gmail not authorized — visit /api/brain/gmail/auth to connect');
+  }
+  const oauth2Client = getOAuthClient();
+  oauth2Client.setCredentials(tokens);
+  oauth2Client.on('tokens', async (newTokens) => {
+    if (newTokens.refresh_token) await storeGmailTokens({ ...tokens, ...newTokens });
+  });
+  return createGmailClient({ version: 'v1', auth: oauth2Client });
+}
+
 // ── Sync logic ───────────────────────────────────────────────────────────────
 
 /**
@@ -311,4 +325,11 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
   return { processed, skipped, errors, queryCounts };
 }
 
-module.exports = { getAuthUrl, exchangeCodeForTokens, storeGmailTokens, syncGmailThreads, verifyOAuthState };
+module.exports = {
+  getAuthUrl,
+  exchangeCodeForTokens,
+  storeGmailTokens,
+  syncGmailThreads,
+  verifyOAuthState,
+  getAuthorizedGmailClient,
+};

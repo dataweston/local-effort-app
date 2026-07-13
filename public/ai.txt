@@ -4,7 +4,7 @@
 site: https://www.localeffortfood.com/
 manifest: https://www.localeffortfood.com/ai/manifest.json
 llms-txt: https://www.localeffortfood.com/llms.txt
-last-updated: 2026-07-04
+last-updated: 2026-07-12
 
 primary-pages:
 - /              Home page with service overview, testimonials, and business information
@@ -25,6 +25,7 @@ support:
 - API: GET /api/public/site                    Machine-readable summary of routes, feeds, and APIs
 - API: GET /api/public/pricing-faq             Pricing FAQ JSON
 - API: GET /api/public/estimator-help          Estimator guidance JSON
+- API: GET /api/public/partners                Founder-reviewed vendors, producers, stockists, venues, and collaborators
 - API: GET /api/search-images?query=TAG        Public image search results
 - Email: POST /api/messages/submit             General contact endpoint (JSON: name, email, phone, subject, message; leave "website" empty)
 

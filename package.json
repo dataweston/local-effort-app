@@ -166,6 +166,8 @@
     "cloudinary:tag:dry": "node tools/cloudinary-tag-all.js --prefix gallery",
     "cloudinary:tag:apply": "node tools/cloudinary-tag-all.js --prefix gallery --apply",
     "cloudinary:tag:apply:map": "node tools/cloudinary-tag-all.js --prefix gallery --mapFile tools/tag-synonyms.json --apply",
+    "partners:cloudinary:dry": "node scripts/project-partner-cloudinary-metadata.cjs",
+    "partners:cloudinary": "node scripts/project-partner-cloudinary-metadata.cjs --apply",
     "emails:extract": "node tools/email-extract.js --include yum@localeffortfood.com",
     "brevo:import": "node tools/brevo-import-csv.mjs",
     "square:to-brevo": "node tools/square-to-brevo.mjs",
@@ -203,7 +205,9 @@
     "decision:seed-priorities": "node scripts/seed-decision-priorities.mjs --apply",
     "neo4j:test": "node scripts/brain-neo4j-test.js",
     "neo4j:brain:sync": "node scripts/brain-neo4j-sync.js",
-    "neo4j:brain:sync:reset": "node scripts/brain-neo4j-sync.js --reset"
+    "neo4j:brain:sync:reset": "node scripts/brain-neo4j-sync.js --reset",
+    "partners:evidence:dry": "node scripts/project-partner-evidence.cjs",
+    "partners:evidence": "node scripts/project-partner-evidence.cjs --apply"
   },
   "browserslist": {
     "production": [

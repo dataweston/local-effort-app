@@ -26,6 +26,7 @@ How to engage:
 - [Site summary API](https://www.localeffortfood.com/api/public/site): JSON summary of routes, feeds, and APIs
 - [Support search](https://www.localeffortfood.com/api/support/search?q=pricing): semantic FAQ/support search
 - [Pricing FAQ](https://www.localeffortfood.com/api/public/pricing-faq): pricing questions and answers as JSON
+- [Vendor and partner graph](https://www.localeffortfood.com/api/public/partners): founder-reviewed sourcing and business relationships; private invoices and payments are never exposed
 - [Sitemap](https://www.localeffortfood.com/sitemap.xml)
 
 ## Agent commerce

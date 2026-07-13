@@ -918,6 +918,78 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
   );
 }
 
+function PartnerReviewPanel({ accessToken }) {
+  const [items, setItems] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState({});
+  const [decisionReason, setDecisionReason] = useState('');
+  const [learnRule, setLearnRule] = useState(true);
+  const [operation, setOperation] = useState('');
+  const [operationResult, setOperationResult] = useState(null);
+  const load = useCallback(() => {
+    setLoading(true);
+    fetch(`${API_BASE}/api/brain/partners/review?limit=250`, { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then(r => r.json()).then(d => { setItems(d.items || []); setLoading(false); }).catch(() => setLoading(false));
+  }, [accessToken]);
+  useEffect(() => { if (accessToken) load(); }, [accessToken, load]);
+  const choose = item => { setSelected(item); setDraft({ ...item.properties }); setDecisionReason(''); };
+  const save = async () => {
+    if (!selected) return;
+    setSaving(true);
+    await fetch(`${API_BASE}/api/brain/partners/${selected.id}/review`, {
+      method: 'PATCH', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...draft, decisionReason, learnRule, evidenceIds: selected.evidence.map(e => e.id) }),
+    });
+    setSaving(false); load();
+  };
+  const runOperation = async (path, body) => {
+    setOperation(path);
+    const response = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    setOperationResult(await response.json().catch(() => ({ error: 'request failed' })));
+    setOperation(''); load();
+  };
+  if (loading) return <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading partner review…</div>;
+  return (
+    <div className="flex-1 flex overflow-hidden w-full">
+      <div className="w-2/5 overflow-y-auto border-r border-gray-200 bg-white">
+        <div className="p-3 text-xs text-gray-500 border-b">Ranked by unresolved evidence, then relationship strength. Nothing becomes public without your approval.</div>
+        <div className="p-3 border-b flex flex-wrap gap-2 text-[11px]">
+          <button disabled={!!operation} onClick={() => runOperation('/api/brain/gmail/vendor-documents/batch', { batchSize: 50, monthsBack: 36 })} className="border rounded px-2 py-1">Ingest next Gmail batch</button>
+          <button disabled={!!operation} onClick={() => runOperation('/api/brain/partners/reconcile-payments', { apply: false, daysBack: 1095 })} className="border rounded px-2 py-1">Preview invoice matches</button>
+          <button disabled={!!operation} onClick={() => runOperation('/api/brain/partners/reconcile-payments', { apply: true, daysBack: 1095 })} className="border rounded px-2 py-1 bg-amber-50">Create match suggestions</button>
+          {operationResult && <div className="w-full text-gray-500">{operationResult.error || `${operationResult.processed ?? operationResult.suggestions ?? 0} processed; ${operationResult.errors ?? operationResult.autoEligible ?? 0} flagged`}</div>}
+        </div>
+        {items.map(item => (
+          <button key={item.id} onClick={() => choose(item)} className={`w-full text-left p-3 border-b hover:bg-gray-50 ${selected?.id === item.id ? 'bg-amber-50' : ''}`}>
+            <div className="font-medium text-sm">{item.name}</div>
+            <div className="text-xs text-gray-500 mt-1">guess: {item.relationshipGuess.value} · {Math.round(item.relationshipGuess.confidence * 100)}% · evidence {item.evidenceScore}</div>
+            {item.pendingCount > 0 && <span className="text-[10px] text-amber-800">{item.pendingCount} needs review</span>}
+          </button>
+        ))}
+      </div>
+      <div className="w-3/5 overflow-y-auto p-5">
+        {!selected ? <div className="text-sm text-gray-400">Choose a vendor to review.</div> : <>
+          <h2 className="text-xl font-semibold">{selected.name}</h2>
+          <div className="grid grid-cols-2 gap-3 mt-4 text-xs">
+            <label>Relationship<select value={draft.partnerRelationshipType || selected.relationshipGuess.value} onChange={e => setDraft({ ...draft, partnerRelationshipType: e.target.value })} className="block w-full border rounded p-2 mt-1"><option>observed</option><option>vendor</option><option>valued_vendor</option><option>stockist</option><option>distributor</option><option>producer</option><option>collaborator</option><option>venue</option><option>historical_vendor</option><option>do_not_publish</option></select></label>
+            <label>Partner tier<select value={draft.partnerTier || ''} onChange={e => setDraft({ ...draft, partnerTier: e.target.value })} className="block w-full border rounded p-2 mt-1"><option value="">none</option><option value="featured">featured</option><option value="core">core</option><option value="supporting">supporting</option></select></label>
+            <label className="col-span-2 flex items-center gap-2"><input type="checkbox" checked={!!draft.publicEligible} onChange={e => setDraft({ ...draft, publicEligible: e.target.checked })} /> Approved for public graph projections</label>
+            {['website', 'instagram', 'physicalAddress', 'whatWeBuy'].map(k => <label key={k} className={k === 'whatWeBuy' ? 'col-span-2' : ''}>{k}<input value={Array.isArray(draft[k]) ? draft[k].join(', ') : (draft[k] || '')} onChange={e => setDraft({ ...draft, [k]: k === 'whatWeBuy' ? e.target.value.split(',').map(x => x.trim()).filter(Boolean) : e.target.value })} className="block w-full border rounded p-2 mt-1" /></label>)}
+            <label className="col-span-2">Review notes<textarea value={draft.reviewNotes || ''} onChange={e => setDraft({ ...draft, reviewNotes: e.target.value })} className="block w-full border rounded p-2 mt-1" rows={3} /></label>
+            <label className="col-span-2">Why this correction?<input value={decisionReason} onChange={e => setDecisionReason(e.target.value)} placeholder="A short reason improves future suggestions" className="block w-full border rounded p-2 mt-1" /></label>
+            <label className="col-span-2 flex items-center gap-2"><input type="checkbox" checked={learnRule} onChange={e => setLearnRule(e.target.checked)} /> Learn a vendor-scoped rule from identity and relationship corrections</label>
+          </div>
+          <button onClick={save} disabled={saving} className="mt-3 px-4 py-2 rounded bg-gray-900 text-white text-xs">{saving ? 'Saving…' : 'Save relationship review'}</button>
+          <h3 className="font-semibold mt-6 mb-2">Evidence timeline</h3>
+          <div className="space-y-2">{selected.evidence.map(ev => <div key={ev.id} className="border rounded p-3 text-xs bg-white"><div className="font-mono">{ev.relType} · {ev.sourceType} · {Math.round(ev.confidence * 100)}% {ev.provisional ? '· provisional' : ''}</div><div className="text-gray-600 mt-1">{ev.other?.entityType}: {ev.other?.name}</div>{ev.ledgerEvent && <div className="text-gray-500 mt-1">{ev.ledgerEvent.source} · {new Date(ev.ledgerEvent.occurredAt).toLocaleDateString()}</div>}</div>)}</div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function BrainBrowserPage() {
@@ -1051,6 +1123,12 @@ export default function BrainBrowserPage() {
               >
                 Quality
               </button>
+              <button
+                onClick={() => { setViewMode('partners'); setSelectedId(null); }}
+                className={`px-3 py-1.5 ${viewMode === 'partners' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Partners
+              </button>
             </div>
             {viewMode === 'table' && (
               <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -1101,6 +1179,8 @@ export default function BrainBrowserPage() {
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>
         {viewMode === 'explore' ? (
           <BrainExplorePanel accessToken={auth.accessToken} />
+        ) : viewMode === 'partners' ? (
+          <PartnerReviewPanel accessToken={auth.accessToken} />
         ) : viewMode === 'quality' ? (
           <BrainQualityPanel accessToken={auth.accessToken} onMerged={handleRefresh} />
         ) : viewMode === 'graph' ? (

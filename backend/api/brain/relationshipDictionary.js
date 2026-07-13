@@ -9,6 +9,14 @@
 const ANY = ['*'];
 
 const RELATIONSHIPS = {
+  MENTIONS: {
+    src: ['ContentArtifact', 'SocialPost', 'Note', 'EmailThread'],
+    dst: ['Vendor', 'Supplier', 'Ingredient', 'Product', 'Person', 'BusinessLine'],
+    inverseLabel: 'MENTIONED_IN',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A source artifact explicitly mentions an entity. This records visibility, not a commercial relationship.',
+  },
   AVOIDS: {
     src: ['Customer', 'Person'],
     dst: ['Ingredient', 'Dish', 'Constraint'],

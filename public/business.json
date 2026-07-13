@@ -4,6 +4,7 @@
   "services": ["personal chef", "meal prep", "event catering"],
   "serviceArea": ["Minneapolis", "St. Paul", "Roseville", "Twin Cities", "Minnesota", "Western Wisconsin"],
   "url": "https://www.localeffortfood.com",
+  "vendorPartnerFeed": "https://www.localeffortfood.com/api/public/partners",
   "hasMerchantReturnPolicy": {
     "@type": "MerchantReturnPolicy",
     "applicableCountry": "US",

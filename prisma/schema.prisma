@@ -956,6 +956,69 @@ model BrainInference {
   @@index([knownUntil])
 }
 
+model BrainSyncCursor {
+  id              String   @id @default(uuid())
+  source          String
+  stream          String
+  windowStart     DateTime
+  windowEnd       DateTime
+  pageToken       String?
+  status          String   @default("pending")
+  processedCount  Int      @default(0)
+  errorCount      Int      @default(0)
+  retryAfter      DateTime?
+  lastObservedAt  DateTime?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([source, stream, windowStart, windowEnd])
+  @@index([source, stream, status, windowEnd])
+}
+
+model PartnerReviewDecision {
+  id              String   @id @default(uuid())
+  vendorEntityId  String
+  taskType        String
+  fieldName       String?
+  proposedValue   Json?
+  chosenValue     Json?
+  action          String
+  reason          String?
+  evidenceIds     String[]
+  featureSnapshot Json?
+  ruleVersion     String?
+  reviewer        String
+  supersedesId    String?
+  revertedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([vendorEntityId, taskType, createdAt])
+  @@index([taskType, fieldName, action])
+}
+
+model PartnerLearnedRule {
+  id              String   @id @default(uuid())
+  taskType        String
+  scopeType       String
+  scopeKey        String
+  conditions      Json
+  outcome         Json
+  supportCount    Int      @default(1)
+  successCount    Int      @default(1)
+  failureCount    Int      @default(0)
+  confidence      Float    @default(1)
+  enabled         Boolean  @default(true)
+  createdBy       String
+  lastAppliedAt   DateTime?
+  disabledAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([taskType, scopeType, scopeKey])
+  @@index([taskType, enabled, confidence])
+}
+
 // ============================================================================
 // COMPANY BRAIN — Capture + Auth
 // ============================================================================
