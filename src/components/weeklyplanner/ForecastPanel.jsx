@@ -149,6 +149,12 @@ export function ForecastPanel({ accessToken, enabled }) {
               status={data.sources.planner.status}
               detail={`${data.sources.planner.laborCardCount} scheduled items${data.sources.localBudget.averageLaborCents ? ` · ${money(data.sources.localBudget.averageLaborCents)}/mo actual baseline` : ''}`}
             />
+            <SourcePill
+              label="Square Payroll"
+              status={data.sources.squarePayroll.status}
+              detail="Report import needed"
+              stale
+            />
           </div>
 
           <div className="mb-4 grid grid-cols-3 gap-2 sm:max-w-xl">
@@ -196,6 +202,7 @@ export function ForecastPanel({ accessToken, enabled }) {
           <div className="mt-3 space-y-1 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
             <p>Square includes only invoices already scheduled in Square. Drafts and unpaid receivables are shown in source data but excluded from forecast revenue.</p>
             <p>Happy Monday is a trend forecast from the latest 56 days. Local Budget inventory and operating costs use the latest three complete observed months. Labor in the table comes from scheduled Hub work; the Local Budget labor baseline is a comparison, not an added cost.</p>
+            <p>Square Payroll company totals are not included yet. A payroll-history export is needed to capture gross wages, employer taxes, reimbursements, and adjustments that do not appear in Square timecards or Local Budget.</p>
             <p>Planner event revenue ({money(data.sources.planner.excludedEventRevenueCents)}) is excluded until event forecasting is added. Amazon and Costco remain in their Local Budget categories until item-level purchase data can distinguish food, packaging, and paper goods.</p>
           </div>
         </div>

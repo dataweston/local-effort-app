@@ -86,6 +86,7 @@ async function main() {
         COALESCE(NULLIF(t."merchantName", ''), 'Unknown merchant') AS merchant,
         COALESCE(t.classification::text, c."defaultClassification"::text, 'UNCLASSIFIED') AS classification,
         COALESCE(c.name, 'Uncategorized') AS category,
+        t.type::text AS direction,
         SUM(ABS(t.amount)) AS amount,
         COUNT(*)::int AS "transactionCount",
         MAX(t.date) AS "lastSeen"
@@ -94,15 +95,16 @@ async function main() {
       WHERE t.date >= $1::date AND t.date < $2::date
         AND t.status::text = 'POSTED'
         AND (
-          COALESCE(t."merchantName", '') ~* '(alan|payroll|wage|contractor)'
-          OR COALESCE(t.description, '') ~* '(alan|payroll|wage|contractor)'
-          OR COALESCE(t."userDescription", '') ~* '(alan|payroll|wage|contractor)'
+          COALESCE(t."merchantName", '') ~* '(alan|payroll|wage|contractor|square|block[ .]*inc)'
+          OR COALESCE(t.description, '') ~* '(alan|payroll|wage|contractor|square payroll|block[ .]*inc)'
+          OR COALESCE(t."userDescription", '') ~* '(alan|payroll|wage|contractor|square payroll|block[ .]*inc)'
           OR COALESCE(t."merchantName", '') ~* '(amazon|costco)'
         )
       GROUP BY
         COALESCE(NULLIF(t."merchantName", ''), 'Unknown merchant'),
         COALESCE(t.classification::text, c."defaultClassification"::text, 'UNCLASSIFIED'),
-        COALESCE(c.name, 'Uncategorized')
+        COALESCE(c.name, 'Uncategorized'),
+        t.type::text
       ORDER BY SUM(ABS(t.amount)) DESC
     `, `${year}-01-01`, `${year + 1}-01-01`);
     await prisma.$disconnect();
@@ -149,6 +151,7 @@ async function main() {
       merchant: row.merchant,
       classification: row.classification,
       category: row.category,
+      direction: row.direction,
       amount: Number(row.amount || 0),
       transactionCount: Number(row.transactionCount || 0),
       lastSeen: row.lastSeen || null,

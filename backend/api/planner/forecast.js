@@ -322,9 +322,19 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
     ok: true,
     generatedAt: new Date().toISOString(),
     currency: 'USD',
-    methodology: 'Known scheduled Square invoices + Happy Monday 56-day run rate - Local Budget trailing complete-month costs - planner labor. Planner event revenue is excluded.',
+    methodology: 'Known scheduled Square invoices + Happy Monday 56-day run rate - Local Budget trailing complete-month costs - planner labor. Square Payroll register costs and planner event revenue are excluded until their source feeds are connected.',
     months,
-    sources: { square, happyMonday, localBudget, planner },
+    sources: {
+      square,
+      happyMonday,
+      localBudget,
+      planner,
+      squarePayroll: {
+        status: 'report_required',
+        includedInForecast: false,
+        note: 'Square Payroll company totals or payroll history export is required for gross wages, employer taxes, and adjustments.',
+      },
+    },
   };
 }
 
