@@ -1,7 +1,9 @@
 const express = require('express');
 const { prisma } = require('../utils/prisma');
 const { getSupabase } = require('../supabaseClient');
+const { isAdminEmail } = require('../utils/adminVerifier');
 const { postBotMessage } = require('../../../api-handlers/hub/_bot');
+const { buildPlannerForecast } = require('../planner/forecast');
 
 const router = express.Router();
 
@@ -30,10 +32,25 @@ async function requireAuth(req, res, next) {
   const user = await verifySupabaseToken(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
   req.plannerUid = user.id;
+  req.plannerUser = user;
   next();
 }
 
 router.use(requireAuth);
+
+router.get('/forecast', async (req, res) => {
+  if (!isAdminEmail(req.plannerUser?.email)) return res.status(403).json({ error: 'admin only' });
+  try {
+    const plannerUid = process.env.HUB_MASTER_SUPABASE_UID
+      || process.env.VITE_HUB_MASTER_SUPABASE_UID
+      || req.plannerUid;
+    const forecast = await buildPlannerForecast({ prisma, plannerUid });
+    return res.status(200).json(forecast);
+  } catch (err) {
+    console.error('GET /api/planner/forecast error:', err);
+    return res.status(500).json({ error: 'Failed to build forecast' });
+  }
+});
 
 // ─── CARDS ───────────────────────────────────────────────
 

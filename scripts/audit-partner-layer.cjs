@@ -7,7 +7,7 @@ async function run() {
   });
   const rows = await prisma.brainEntity.findMany({
     where: { entityType: { in: ['Vendor', 'Supplier'] }, tombstonedAt: null },
-    select: { id: true, properties: true, _count: { select: { srcAssertions: true, dstAssertions: true } } },
+    select: { id: true, name: true, properties: true, aliases: { select: { alias: true } }, _count: { select: { srcAssertions: true, dstAssertions: true } } },
   });
   const assertions = await prisma.brainAssertion.groupBy({
     by: ['relType', 'sourceType', 'provisional'],
@@ -20,6 +20,10 @@ async function run() {
     reviewed: rows.filter(row => row.properties?.partnerReviewedAt).length,
     publicApproved: rows.filter(row => row.properties?.publicEligible === true).length,
     zeroAssertionVendors: rows.filter(row => row._count.srcAssertions + row._count.dstAssertions === 0).length,
+    clusters: {
+      meta: rows.filter(row => /facebook|meta platforms|meta pay|fbads|facebk/i.test([row.name, ...row.aliases.map(a => a.alias)].join(' '))).map(row => ({ id: row.id, name: row.name })),
+      fuel: rows.filter(row => /shell|speedway|holiday station|kwik trip|exxon|\bmobil\b|marathon|circle k|superamerica|fuel|gas station/i.test([row.name, ...row.aliases.map(a => a.alias)].join(' '))).map(row => ({ id: row.id, name: row.name })),
+    },
     decisions: await prisma.partnerReviewDecision.count(),
     assertions: assertions.sort((a, b) => b._count._all - a._count._all),
     cursors,

@@ -52,25 +52,14 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       })
       .then((data) => {
         if (cancelled) return;
-        if (data.cards && data.cards.length > 0) {
-          setCards(data.cards);
-        } else {
-          const today = getToday();
-          const year = parseInt(today.split('-')[0], 10);
-          const defaults = generateCardsForRange(today, `${year}-12-31`);
-          setCards(defaults);
-          persistCards(defaults);
-        }
+        setCards(data.cards || []);
         setLoaded(true);
       })
       .catch((err) => {
         if (cancelled) return;
-        // Keep schedule usable when API responses are malformed/unavailable.
-        console.error('Failed to load planner cards, using default schedule fallback.', err);
-        const today = getToday();
-        const year = parseInt(today.split('-')[0], 10);
-        const defaults = generateCardsForRange(today, `${year}-12-31`);
-        setCards(defaults);
+        // Keep the schedule usable without manufacturing a large speculative calendar.
+        console.error('Failed to load planner cards.', err);
+        setCards([]);
         setLoaded(true);
       });
 
@@ -254,7 +243,8 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     (updatedCard) => {
       // If "repeat weekly" was toggled on a new card, generate weekly copies
       if (updatedCard._repeatWeekly && !updatedCard.templateId) {
-        const { _repeatWeekly, ...cardData } = updatedCard;
+        const cardData = { ...updatedCard };
+        delete cardData._repeatWeekly;
         const templateKey = `custom-${cardData.id}`;
         const today = getToday();
         const year = parseInt(today.split('-')[0], 10);
@@ -292,7 +282,8 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       if (updatedCard.templateId) {
         setPendingChange({ type: 'save', card: updatedCard });
       } else {
-        const { _repeatWeekly, ...clean } = updatedCard;
+        const clean = { ...updatedCard };
+        delete clean._repeatWeekly;
         updateCards((prev) =>
           prev.map((c) => (c.id === clean.id ? clean : c))
         );
@@ -499,9 +490,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     ({ title, dayOfWeek, costPerHour, startTime, endTime }) => {
       const today = getToday();
       const ws = getWeekStart(today);
-      const weekDts = getWeekDates(ws);
       const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(dayOfWeek);
-      const baseDate = dayIndex >= 0 ? weekDts[dayIndex] : weekDts[0];
       const templateKey = `whatif-${++_nextCardId}`;
 
       const year = parseInt(today.split('-')[0], 10);

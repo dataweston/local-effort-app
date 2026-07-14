@@ -47,6 +47,14 @@ function getLbClient() {
 
 const EXPENSE_CLASSIFICATIONS = ['COGS', 'OPERATING'];
 
+function costBucket(classification, categoryName) {
+  const category = String(categoryName || '').toLowerCase();
+  if (/labor|payroll|wage|contractor|staff/.test(category)) return 'LABOR';
+  if (classification === 'COGS') return 'INVENTORY';
+  if (classification === 'OPERATING') return 'OPERATING';
+  return null;
+}
+
 function toCents(amount) {
   return Math.round(Number(amount || 0) * 100);
 }
@@ -93,10 +101,17 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
 
   // ── EXPENSE (COGS|OPERATING) → payment.completed ──
   const expenses = await lb.$queryRawUnsafe(
-    `SELECT id, "externalId", date, "merchantName", amount, classification::text AS classification, description
-     FROM transactions
-     WHERE type::text='EXPENSE' AND classification::text = ANY($1::text[]) ${dateFilter}
-     ORDER BY date DESC LIMIT ${parseInt(limit)}`,
+    `SELECT t.id, t."externalId", t.date, t."merchantName", t.amount,
+            COALESCE(t.classification::text, c."defaultClassification"::text) AS classification,
+            c.name AS "categoryName", t.description
+     FROM transactions t
+     LEFT JOIN categories c ON c.id = t."categoryId"
+     WHERE t.type::text='EXPENSE'
+       AND (
+         COALESCE(t.classification::text, c."defaultClassification"::text) = ANY($1::text[])
+         OR LOWER(COALESCE(c.name, '')) ~ '(labor|payroll|wage|contractor|staff)'
+       ) ${dateFilter}
+     ORDER BY t.date DESC LIMIT ${parseInt(limit)}`,
     EXPENSE_CLASSIFICATIONS
   );
 
@@ -144,6 +159,8 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
           amountCents: toCents(tx.amount),
           direction: 'outflow',
           classification: tx.classification,
+          categoryName: tx.categoryName || null,
+          costBucket: costBucket(tx.classification, tx.categoryName),
           vendorEntityId,
           description: tx.description || null,
         },

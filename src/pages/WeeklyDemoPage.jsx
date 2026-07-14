@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, RotateCcw, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers } from 'lucide-react';
+import { DollarSign, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
 import { WeeklyView } from '../components/weeklyplanner/WeeklyView';
 import { DailyView } from '../components/weeklyplanner/DailyView';
 import { MonthlyView } from '../components/weeklyplanner/MonthlyView';
+import { AgendaView } from '../components/weeklyplanner/AgendaView';
 import { ProjectsView } from '../components/weeklyplanner/ProjectsView';
 import { EditPanel } from '../components/weeklyplanner/EditPanel';
 import { RecurringChangeDialog } from '../components/weeklyplanner/RecurringChangeDialog';
-import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useBrainInbox } from '../hooks/useBrainInbox';
 import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
 import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
+import { ForecastPanel } from '../components/weeklyplanner/ForecastPanel';
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -166,12 +167,6 @@ export default function WeeklyDemoPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              {auth.user && (
-                <GoogleCalendarSync
-                  accessToken={auth.accessToken}
-                  weekStart={weekStart}
-                />
-              )}
               {auth.isAdmin && (
                 <button
                   onClick={() => setInboxOpen(v => !v)}
@@ -197,14 +192,6 @@ export default function WeeklyDemoPage() {
                   )}
                 </button>
               )}
-              <button
-                onClick={planner.handlers.handleReset}
-                className="p-2 rounded-lg transition-colors touch-target-ios"
-                style={{ color: 'var(--color-text-secondary)' }}
-                title="Reset to defaults"
-              >
-                <RotateCcw size={16} />
-              </button>
               {auth.user ? (
                 <button
                   onClick={auth.signOut}
@@ -323,6 +310,10 @@ export default function WeeklyDemoPage() {
         </div>
       )}
 
+      <div className="max-w-[1800px] mx-auto">
+        <ForecastPanel accessToken={auth.accessToken} enabled={!!auth.isAdmin} />
+      </div>
+
       {/* View tabs + content */}
       <div className="max-w-[1800px] mx-auto px-4 py-4">
         <Tabs value={view} onValueChange={setView}>
@@ -330,6 +321,13 @@ export default function WeeklyDemoPage() {
             className="inline-flex h-10 items-center justify-center rounded-lg p-1 mb-4"
             style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-card) 80%, var(--color-border-default))' }}
           >
+            <TabsTrigger
+              value="agenda"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+            >
+              <ListChecks size={14} />
+              <span>Agenda</span>
+            </TabsTrigger>
             <TabsTrigger
               value="daily"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
@@ -362,6 +360,15 @@ export default function WeeklyDemoPage() {
               </TabsTrigger>
             )}
           </TabsList>
+
+          <TabsContent value="agenda">
+            <AgendaView
+              planner={planner}
+              weekDates={weekDates}
+              onNextWeek={goNextWeek}
+              onPrevWeek={goPrevWeek}
+            />
+          </TabsContent>
 
           <TabsContent value="daily">
             <DailyView

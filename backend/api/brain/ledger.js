@@ -154,6 +154,28 @@ async function findVendorByName(merchantName) {
   if (!merchantName) return null;
 
   const normalized = merchantName.toLowerCase().trim();
+  const descriptor = normalized
+    .replace(/\b(pos|debit|purchase|recurring|payment|invoice|online|store|marketplace)\b/g, ' ')
+    .replace(/\b(llc|inc|corp|corporation|company|cooperative|coop|co)\b/g, ' ')
+    .replace(/\b\d{3,}\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // Founder-confirmed descriptor rules are checked before fuzzy aliases.
+  const learnedRule = await prisma.partnerLearnedRule.findFirst({
+    where: {
+      taskType: 'vendor_identity', enabled: true,
+      OR: [
+        { scopeType: 'merchant_descriptor', scopeKey: descriptor },
+        ...(normalized.startsWith('facebk ') ? [{ scopeType: 'merchant_prefix', scopeKey: 'facebk' }] : []),
+      ],
+    },
+    orderBy: { confidence: 'desc' },
+  });
+  const learnedVendorId = learnedRule?.outcome?.vendorEntityId;
+  if (learnedVendorId) {
+    const learnedVendor = await prisma.brainEntity.findFirst({ where: { id: learnedVendorId, entityType: 'Vendor', tombstonedAt: null }, select: { id: true } });
+    if (learnedVendor) return learnedVendor.id;
+  }
 
   // Direct name match (case-insensitive)
   const direct = await prisma.brainEntity.findFirst({
@@ -179,7 +201,7 @@ async function findVendorByName(merchantName) {
   // Normalized alias match
   const normalizedAlias = await prisma.brainEntityAlias.findFirst({
     where: {
-      alias: { contains: normalized, mode: 'insensitive' },
+      alias: { contains: descriptor || normalized, mode: 'insensitive' },
       entity: { entityType: 'Vendor', status: { not: 'tombstoned' } },
     },
     select: { entityId: true },

@@ -931,6 +931,8 @@ function PartnerReviewPanel({ accessToken }) {
   const [saveState, setSaveState] = useState(null);
   const [filter, setFilter] = useState('needs_review');
   const [query, setQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [batchRelationship, setBatchRelationship] = useState('operational_vendor');
   const load = useCallback((keepSelectedId) => {
     setLoading(true);
     fetch(`${API_BASE}/api/brain/partners/review?limit=250`, { headers: { Authorization: `Bearer ${accessToken}` } })
@@ -976,6 +978,29 @@ function PartnerReviewPanel({ accessToken }) {
     setOperationResult(await response.json().catch(() => ({ error: 'request failed' })));
     setOperation(''); load(selected?.id);
   };
+  const toggleSelected = id => setSelectedIds(previous => {
+    const next = new Set(previous);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const selectCluster = clusterKey => setSelectedIds(previous => {
+    const next = new Set(previous);
+    visibleItems.filter(item => item.cluster.key === clusterKey).forEach(item => next.add(item.id));
+    return next;
+  });
+  const runBatch = async action => {
+    if (!selectedIds.size) return;
+    await runOperation('/api/brain/partners/batch-review', { vendorIds: [...selectedIds], action, partnerRelationshipType: batchRelationship, reason: 'batch triage from Partners view' });
+    setSelectedIds(new Set());
+  };
+  const runMerge = async (targetId, sourceIds) => {
+    const sources = items.filter(item => sourceIds.includes(item.id));
+    const target = items.find(item => item.id === targetId);
+    if (!target || !sources.length) return;
+    if (!window.confirm(`Merge ${sources.map(item => item.name).join(', ')} into ${target.name}? All graph history moves to ${target.name}; source names become aliases.`)) return;
+    await runOperation('/api/brain/partners/merge', { targetId, sourceIds, reason: 'confirmed in partner merge review' });
+    setSelectedIds(new Set());
+  };
   const visibleItems = items.filter(item => {
     if (query && !item.name.toLowerCase().includes(query.toLowerCase())) return false;
     if (filter === 'needs_review') return item.reviewStatus === 'unreviewed' && item.rawEvidenceCount > 0;
@@ -988,8 +1013,8 @@ function PartnerReviewPanel({ accessToken }) {
   const formatMoney = cents => cents ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : null;
   if (loading && !items.length) return <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading partner review…</div>;
   return (
-    <div className="flex-1 flex overflow-hidden w-full">
-      <div className="w-2/5 overflow-y-auto border-r border-gray-200 bg-white">
+    <div className="flex-1 flex overflow-hidden w-full h-full min-h-0">
+      <div className="w-2/5 h-full min-h-0 overflow-y-auto border-r border-gray-200 bg-white">
         <div className="p-3 border-b space-y-2">
           <div className="text-xs text-gray-500">Grouped evidence, not individual purchases. Approval is explicit and publishes only reviewed profile fields.</div>
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Find vendor…" className="w-full border rounded px-2 py-1.5 text-xs" />
@@ -1001,20 +1026,39 @@ function PartnerReviewPanel({ accessToken }) {
           <button disabled={!!operation} onClick={() => runOperation('/api/brain/partners/reconcile-payments', { apply: true, daysBack: 1095 })} className="border rounded px-2 py-1 bg-amber-50">Create match suggestions</button>
           {operationResult && <div className="w-full text-gray-500">{operationResult.error || `${operationResult.processed ?? operationResult.suggestions ?? 0} processed; ${operationResult.errors ?? operationResult.autoEligible ?? 0} flagged`}</div>}
         </div>
+        <div className="sticky top-0 z-10 bg-white border-b p-2 text-[11px] shadow-sm">
+          <div className="flex items-center gap-2 flex-wrap">
+            <strong>{selectedIds.size} selected</strong>
+            <button onClick={() => setSelectedIds(new Set(visibleItems.map(item => item.id)))} className="underline">select visible</button>
+            <button onClick={() => setSelectedIds(new Set())} className="underline">clear</button>
+            {[...new Map(visibleItems.map(item => [item.cluster.key, item.cluster])).values()].map(cluster => <button key={cluster.key} onClick={() => selectCluster(cluster.key)} className="rounded bg-gray-100 px-1.5 py-1">+ {cluster.label}</button>)}
+          </div>
+          {selectedIds.size > 0 && <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <select value={batchRelationship} onChange={e => setBatchRelationship(e.target.value)} className="border rounded px-2 py-1"><option value="operational_vendor">operational vendor</option><option value="advertising_platform">advertising platform</option><option value="service_provider">service provider</option><option value="retailer">retailer</option><option value="vendor">food vendor</option><option value="valued_vendor">valued vendor</option><option value="do_not_publish">do not publish</option></select>
+            <button disabled={!!operation} onClick={() => runBatch('save_draft')} className="rounded bg-gray-900 text-white px-2 py-1">Batch set</button>
+            <button disabled={!!operation} onClick={() => runBatch('approve')} className="rounded bg-green-700 text-white px-2 py-1">Batch approve</button>
+            <button disabled={!!operation} onClick={() => runBatch('reject')} className="rounded border border-red-300 text-red-700 px-2 py-1">Batch reject</button>
+            {selected && [...selectedIds].some(id => id !== selected.id) && <button disabled={!!operation} onClick={() => runMerge(selected.id, [...selectedIds].filter(id => id !== selected.id))} className="rounded border border-purple-300 text-purple-800 px-2 py-1">Merge selected into {selected.name}</button>}
+          </div>}
+        </div>
         {visibleItems.map(item => (
-          <button key={item.id} onClick={() => choose(item)} className={`w-full text-left p-3 border-b hover:bg-gray-50 ${selected?.id === item.id ? 'bg-amber-50' : ''}`}>
-            <div className="flex justify-between gap-2"><span className="font-medium text-sm">{item.name}</span><span className={`text-[9px] uppercase rounded px-1.5 py-0.5 ${item.reviewStatus === 'approved' ? 'bg-green-100 text-green-800' : item.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' : item.reviewStatus === 'draft' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}>{item.reviewStatus}</span></div>
-            <div className="text-xs text-gray-500 mt-1">{item.relationshipGuess.value} · {item.rawEvidenceCount} facts in {item.evidenceSummary.length} groups</div>
-          </button>
+          <div key={item.id} className={`flex items-start border-b hover:bg-gray-50 ${selected?.id === item.id ? 'bg-amber-50' : ''}`}>
+            <label className="p-3 pr-0"><input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleSelected(item.id)} aria-label={`Select ${item.name}`} /></label>
+            <button onClick={() => choose(item)} className="flex-1 min-w-0 text-left p-3">
+              <div className="flex justify-between gap-2"><span className="font-medium text-sm truncate">{item.name}</span><span className={`text-[9px] uppercase rounded px-1.5 py-0.5 ${item.reviewStatus === 'approved' ? 'bg-green-100 text-green-800' : item.reviewStatus === 'rejected' ? 'bg-red-100 text-red-700' : item.reviewStatus === 'draft' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}>{item.reviewStatus}</span></div>
+              <div className="text-xs text-gray-500 mt-1">{item.cluster.label} · {item.rawEvidenceCount} facts in {item.evidenceSummary.length} groups</div>
+            </button>
+          </div>
         ))}
         {!visibleItems.length && <div className="p-6 text-center text-xs text-gray-400">No vendors in this view.</div>}
       </div>
-      <div className="w-3/5 overflow-y-auto p-5">
+      <div className="w-3/5 h-full min-h-0 overflow-y-auto p-5 overscroll-contain">
         {!selected ? <div className="text-sm text-gray-400">Choose a vendor to review.</div> : <>
           <div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">{selected.name}</h2><div className="text-xs text-gray-500 mt-1">{selected.rawEvidenceCount} raw facts collapsed into {selected.evidenceSummary.length} useful groups</div></div><span className="text-xs uppercase font-semibold">{selected.reviewStatus}</span></div>
           <div className="grid grid-cols-2 gap-2 mt-4">{selected.evidenceSummary.map(group => <div key={group.key} className="border rounded p-3 bg-white"><div className="text-[10px] uppercase text-gray-500">{group.bucket} · {group.source}</div><div className="font-semibold text-sm mt-1">{group.count} {group.relType.toLowerCase().replaceAll('_', ' ')}</div>{formatMoney(group.totalCents) && <div className="text-xs text-gray-600">{formatMoney(group.totalCents)} observed</div>}<div className="text-[10px] text-gray-400 mt-1">latest {new Date(group.lastAt).toLocaleDateString()}</div></div>)}</div>
+          {selected.mergeCandidates?.length > 0 && <div className="mt-4 border border-purple-200 bg-purple-50 rounded p-3"><h3 className="text-xs font-semibold text-purple-950">Possible duplicate identities</h3><div className="mt-2 space-y-2">{selected.mergeCandidates.map(candidate => <div key={candidate.id} className="flex items-center justify-between gap-2 text-xs"><span>{candidate.name} · {Math.round(candidate.score * 100)}% · {candidate.evidenceCount} facts</span><div className="flex gap-1"><button onClick={() => runMerge(selected.id, [candidate.id])} className="border border-purple-300 rounded px-2 py-1">merge into {selected.name}</button><button onClick={() => runMerge(candidate.id, [selected.id])} className="border border-purple-300 rounded px-2 py-1">use {candidate.name}</button></div></div>)}</div></div>}
           <div className="grid grid-cols-2 gap-3 mt-4 text-xs">
-            <label>Relationship<select value={draft.partnerRelationshipType || selected.relationshipGuess.value} onChange={e => setDraft({ ...draft, partnerRelationshipType: e.target.value })} className="block w-full border rounded p-2 mt-1"><option>observed</option><option>vendor</option><option>valued_vendor</option><option>stockist</option><option>distributor</option><option>producer</option><option>collaborator</option><option>venue</option><option>historical_vendor</option><option>do_not_publish</option></select></label>
+            <label>Relationship<select value={draft.partnerRelationshipType || selected.relationshipGuess.value} onChange={e => setDraft({ ...draft, partnerRelationshipType: e.target.value })} className="block w-full border rounded p-2 mt-1"><option>observed</option><option>vendor</option><option>valued_vendor</option><option>operational_vendor</option><option>advertising_platform</option><option>service_provider</option><option>retailer</option><option>stockist</option><option>distributor</option><option>producer</option><option>collaborator</option><option>venue</option><option>historical_vendor</option><option>do_not_publish</option></select></label>
             <label>Partner tier<select value={draft.partnerTier || ''} onChange={e => setDraft({ ...draft, partnerTier: e.target.value })} className="block w-full border rounded p-2 mt-1"><option value="">none</option><option value="featured">featured</option><option value="core">core</option><option value="supporting">supporting</option></select></label>
             {['website', 'instagram', 'physicalAddress', 'whatWeBuy'].map(k => <label key={k} className={k === 'whatWeBuy' ? 'col-span-2' : ''}>{k}<input value={Array.isArray(draft[k]) ? draft[k].join(', ') : (draft[k] || '')} onChange={e => setDraft({ ...draft, [k]: k === 'whatWeBuy' ? e.target.value.split(',').map(x => x.trim()).filter(Boolean) : e.target.value })} className="block w-full border rounded p-2 mt-1" /></label>)}
             <label className="col-span-2">Review notes<textarea value={draft.reviewNotes || ''} onChange={e => setDraft({ ...draft, reviewNotes: e.target.value })} className="block w-full border rounded p-2 mt-1" rows={3} /></label>

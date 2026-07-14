@@ -7,7 +7,7 @@ export function usePlannerNav() {
 
   const today = getToday();
 
-  const view = searchParams.get('view') || 'weekly';
+  const view = searchParams.get('view') || 'agenda';
   const weekStart = searchParams.get('week') || getWeekStart(today);
   const selectedDate = searchParams.get('date') || today;
   const selectedMonth = searchParams.get('month') || today.slice(0, 7);
