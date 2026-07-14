@@ -78,6 +78,8 @@ export function ForecastPanel({ accessToken, enabled }) {
       net: sum.net + month.netCents,
     }), { revenue: 0, costs: 0, net: 0 });
   }, [data]);
+  const localBudgetWarnings = data?.sources?.localBudget?.warnings || [];
+  const localBudgetQuality = data?.sources?.localBudget?.quality || {};
 
   if (!enabled) return null;
 
@@ -141,8 +143,8 @@ export function ForecastPanel({ accessToken, enabled }) {
             <SourcePill
               label="Local Budget"
               status={data.sources.localBudget.status}
-              stale={(data.sources.localBudget.freshnessDays || 0) > 7}
-              detail={freshnessLabel(data.sources.localBudget.lastEventAt)}
+              stale={(data.sources.localBudget.freshnessDays || 0) > 7 || localBudgetWarnings.length > 0 || (localBudgetQuality.unclassifiedCents || 0) > 0 || (localBudgetQuality.splitMismatchCount || 0) > 0}
+              detail={`${freshnessLabel(data.sources.localBudget.lastEventAt)}${localBudgetWarnings.length ? ` · ${localBudgetWarnings.length} quality warning${localBudgetWarnings.length === 1 ? '' : 's'}` : ''}`}
             />
             <SourcePill
               label="Labor"
@@ -199,6 +201,12 @@ export function ForecastPanel({ accessToken, enabled }) {
             <p>Local Budget actual baseline ({data.sources.localBudget.baselineMonths.join(', ')}): {money(data.sources.localBudget.averageCogsCents)}/mo inventory, {money(data.sources.localBudget.averageOperatingCents)}/mo operating, and {money(data.sources.localBudget.averageLaborCents)}/mo categorized labor.</p>
             <p>Labor in the table comes only from the rebuilt Hub schedule. Local Budget labor is shown as an actual comparison and is not added again.</p>
             <p>Planner event revenue ({money(data.sources.planner.excludedEventRevenueCents)}) is excluded until event forecasting is added. Amazon and Costco remain in their Local Budget categories until item-level purchase data can distinguish food, packaging, and paper goods.</p>
+            {data.sources.localBudget.status === 'ready' && ((localBudgetQuality.unclassifiedCents || 0) > 0 || (localBudgetQuality.splitMismatchCount || 0) > 0 || localBudgetWarnings.length > 0) && (
+              <p style={{ color: '#9a5b25' }}>
+                Local Budget quality: {money(localBudgetQuality.unclassifiedCents)} unclassified, {localBudgetQuality.splitMismatchCount || 0} split mismatch{localBudgetQuality.splitMismatchCount === 1 ? '' : 'es'}.
+                {localBudgetWarnings.length ? ` ${localBudgetWarnings.join(' ')}` : ''}
+              </p>
+            )}
           </div>
         </div>
       )}

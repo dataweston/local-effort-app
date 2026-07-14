@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer } = require('./_auth');
-const { toIsoDate, startOfLocalDay, endOfLocalDay, getWeekEnd } = require('./_dates');
+const { toIsoDate, endOfLocalDay, getWeekEnd } = require('./_dates');
+const { plannerCardObjectType } = require('./_planner');
 
 let prisma = null;
 try {
@@ -205,7 +206,7 @@ async function buildPlannerSlice({ supabaseUid }) {
 
   const objects = cards.map((card) => ({
     id: `planner_card:${card.id}`,
-    type: card.zone === 'timed' ? 'shift' : 'prep_task',
+    type: plannerCardObjectType(card),
     title: card.title,
     subtitle: card.people?.length ? card.people.join(', ') : null,
     horizon: card.date === todayDate ? 'today' : 'week',
@@ -231,7 +232,7 @@ async function buildPlannerSlice({ supabaseUid }) {
     .map((card) => ({
       id: `planner_card:${card.id}:plan`,
       title: `Decide on ${card.title}`,
-      objectType: card.zone === 'timed' ? 'shift' : 'prep_task',
+      objectType: plannerCardObjectType(card),
       objectId: card.id,
       dueAt: card.startTime ? `${card.date}T${card.startTime}:00` : null,
       status: 'open',

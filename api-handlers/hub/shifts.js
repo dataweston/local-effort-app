@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
 const { masterPlannerUid } = require('./_masterPlanner');
+const { isShiftCard } = require('./_planner');
 
 let prisma = null;
 try {
@@ -22,6 +23,13 @@ function isDate(value) {
 function isTime(value) {
   return typeof value === 'string' && /^\d{2}:\d{2}$/.test(value);
 }
+
+const effectiveShiftWhere = {
+  OR: [
+    { objectType: 'shift' },
+    { objectType: null, zone: 'timed' },
+  ],
+};
 
 function shiftIsOpen(card, activeClaims = []) {
   // A shift is up for pickup when it was explicitly put up (optional) or when
@@ -63,7 +71,7 @@ module.exports = async (req, res) => {
     if (req.method === 'POST' && req.body?.action === 'claim') {
       const plannerCardId = cleanString(req.body?.plannerCardId, 120);
       if (!plannerCardId) return res.status(400).json({ error: 'plannerCardId is required' });
-      const card = await prisma.plannerCard.findFirst({ where: { id: plannerCardId, supabaseUid, zone: 'timed' } });
+      const card = await prisma.plannerCard.findFirst({ where: { id: plannerCardId, supabaseUid, ...effectiveShiftWhere } });
       if (!card) return res.status(404).json({ error: 'Open shift not found' });
       const existingClaims = await prisma.hubShiftClaim.findMany({ where: { plannerCardId } });
       if (!shiftIsOpen(card, existingClaims.filter((claim) => claim.status === 'claimed'))) {
@@ -105,7 +113,7 @@ module.exports = async (req, res) => {
     if (req.method === 'POST' && req.body?.action === 'putUp') {
       const plannerCardId = cleanString(req.body?.plannerCardId, 120);
       if (!plannerCardId) return res.status(400).json({ error: 'plannerCardId is required' });
-      const card = await prisma.plannerCard.findFirst({ where: { id: plannerCardId, supabaseUid, zone: 'timed' } });
+      const card = await prisma.plannerCard.findFirst({ where: { id: plannerCardId, supabaseUid, ...effectiveShiftWhere } });
       if (!card) return res.status(404).json({ error: 'Shift not found' });
 
       const name = auth.hubProfile?.displayName || auth.viewer.email;
@@ -147,6 +155,7 @@ module.exports = async (req, res) => {
           date,
           dayOfWeek: dayOfWeek(date),
           zone: 'timed',
+          objectType: 'shift',
           startTime,
           endTime: isTime(endTime) ? endTime : null,
           people: [],
@@ -164,9 +173,9 @@ module.exports = async (req, res) => {
     const cards = await prisma.plannerCard.findMany({
       where: {
         supabaseUid,
-        zone: 'timed',
         date: { gte: from, lte: to },
         enabled: true,
+        ...effectiveShiftWhere,
       },
       orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
       take: 250,
@@ -180,7 +189,7 @@ module.exports = async (req, res) => {
     });
     return res.status(200).json({
       ok: true,
-      shifts: cards.map((card) => publicShift(card, byCard.get(card.id) || [])),
+      shifts: cards.filter(isShiftCard).map((card) => publicShift(card, byCard.get(card.id) || [])),
     });
   } catch (err) {
     console.error('[hub/shifts] error', err);

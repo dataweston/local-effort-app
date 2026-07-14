@@ -1,8 +1,16 @@
 const { asIso } = require('./_http');
 const { toIsoDate, addDays, startOfLocalDay, getWeekStart, getMonthRange } = require('./_dates');
 
+function plannerCardObjectType(card) {
+  return card.objectType || (card.zone === 'timed' ? 'shift' : 'prep_task');
+}
+
+function isShiftCard(card) {
+  return plannerCardObjectType(card) === 'shift';
+}
+
 function cardToObject(card) {
-  const type = card.zone === 'timed' ? 'shift' : 'prep_task';
+  const type = plannerCardObjectType(card);
   return {
     id: `planner_card:${card.id}`,
     type,
@@ -19,6 +27,7 @@ function cardToObject(card) {
       date: card.date,
       dayOfWeek: card.dayOfWeek,
       zone: card.zone,
+      objectType: card.objectType || null,
       people: card.people || [],
       revenue: card.revenue,
       cost: card.cost,
@@ -63,4 +72,4 @@ async function getPlannerObjects(prisma, { supabaseUid, view = 'week', anchor = 
   return { range, objects: cards.map(cardToObject), cards };
 }
 
-module.exports = { cardToObject, rangeForView, getPlannerObjects };
+module.exports = { cardToObject, getPlannerObjects, isShiftCard, plannerCardObjectType, rangeForView };

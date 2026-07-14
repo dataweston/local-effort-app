@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { sourceIdFor, writeLedger } = require('./_ledger');
-const { cardToObject } = require('./_planner');
+const { cardToObject, plannerCardObjectType } = require('./_planner');
 
 let prisma = null;
 try {
@@ -86,6 +86,9 @@ module.exports = async (req, res) => {
       },
     });
     if (!card) return res.status(404).json({ error: 'Planner object not found' });
+    if (parsed.type !== 'planner_card' && parsed.type !== plannerCardObjectType(card)) {
+      return res.status(409).json({ error: 'Planner object type does not match the stored card' });
+    }
 
     const source = cleanString(body.source, 80) || 'mobile';
     const sourceId = sourceIdFor({ ...body, source }, ['plan', parsed.type, parsed.id, scheduleStatus || 'update']);

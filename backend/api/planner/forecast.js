@@ -1,25 +1,10 @@
 const { getSupabase } = require('../supabaseClient');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
-const { PrismaClient } = require('@prisma/client');
 
 const DAY_MS = 86_400_000;
-let localBudgetClient = null;
-
-function getLocalBudgetClient() {
-  if (localBudgetClient) return localBudgetClient;
-  let url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim();
-  url = url.replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
-  if (!url) return null;
-  localBudgetClient = new PrismaClient({ datasources: { db: { url } } });
-  return localBudgetClient;
-}
 
 function isoDate(value = new Date()) {
   return new Date(value).toISOString().slice(0, 10);
-}
-
-function monthKey(value) {
-  return isoDate(value).slice(0, 7);
 }
 
 function monthKeys(count = 6, now = new Date()) {
@@ -48,6 +33,33 @@ function median(values) {
 function daysOld(value) {
   if (!value) return null;
   return Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / DAY_MS));
+}
+
+function localBudgetApiConfig() {
+  const baseUrl = String(process.env.LOCAL_BUDGET_API_URL || '').trim().replace(/\/+$/, '');
+  const token = String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
+  if (!baseUrl || !token) throw new Error('LOCAL_BUDGET_API_URL and LOCAL_BUDGET_API_TOKEN are required');
+  return { baseUrl, token };
+}
+
+function unavailableLocalBudgetForecast(error) {
+  return {
+    status: 'unavailable',
+    cogsByMonth: {},
+    operatingByMonth: {},
+    laborBaselineByMonth: {},
+    averageCogsCents: 0,
+    averageOperatingCents: 0,
+    averageLaborCents: 0,
+    baselineMonths: [],
+    lastEventAt: null,
+    freshnessDays: null,
+    error: error?.message || String(error || 'Local Budget actuals are unavailable'),
+  };
+}
+
+function isCents(value) {
+  return Number.isSafeInteger(value);
 }
 
 function hoursBetween(startTime, endTime) {
@@ -255,134 +267,76 @@ async function happyMondayForecast(keys, today) {
   }
 }
 
-async function localBudgetCostForecast(prisma, keys) {
-  const empty = {
-    status: 'unavailable',
-    cogsByMonth: {},
-    operatingByMonth: {},
-    laborBaselineByMonth: {},
-    averageCogsCents: 0,
-    averageOperatingCents: 0,
-    averageLaborCents: 0,
-    baselineMonths: [],
-    lastEventAt: null,
-    freshnessDays: null,
-  };
+async function localBudgetCostForecast(keys, fetchImpl = fetch) {
   const [forecastYear, forecastMonth] = keys[0].split('-').map(Number);
   const baselineStart = new Date(Date.UTC(forecastYear, forecastMonth - 7, 1));
   const baselineEnd = new Date(Date.UTC(forecastYear, forecastMonth - 1, 1));
   const baselineMonths = monthKeys(6, baselineStart);
-  const lb = getLocalBudgetClient();
-  if (lb) {
-    try {
-      const rows = await lb.$queryRawUnsafe(`
-        WITH cost_lines AS (
-          SELECT
-            t.date,
-            COALESCE(sc.name, c.name, 'Uncategorized') AS category,
-            COALESCE(
-              s.classification::text,
-              sc."defaultClassification"::text,
-              t.classification::text,
-              c."defaultClassification"::text
-            ) AS classification,
-            ABS(CASE WHEN s.id IS NULL THEN t.amount ELSE s.amount END) AS amount
-          FROM transactions t
-          LEFT JOIN categories c ON c.id = t."categoryId"
-          LEFT JOIN transaction_splits s ON s."transactionId" = t.id
-          LEFT JOIN categories sc ON sc.id = s."categoryId"
-          WHERE t.date >= $1 AND t.date < $2 AND t.status::text = 'POSTED'
-        )
-        SELECT
-          TO_CHAR(DATE_TRUNC('month', date), 'YYYY-MM') AS month,
-          CASE
-            WHEN LOWER(category) ~ '(labor|payroll|wage|contractor|staff)' THEN 'labor'
-            WHEN classification = 'COGS' THEN 'cogs'
-            WHEN classification = 'OPERATING' THEN 'operating'
-          END AS bucket,
-          SUM(amount) AS amount
-        FROM cost_lines
-        WHERE classification IN ('COGS', 'OPERATING')
-           OR LOWER(category) ~ '(labor|payroll|wage|contractor|staff)'
-        GROUP BY month, bucket
-      `, baselineStart, baselineEnd);
-      const latest = await lb.$queryRawUnsafe(`
-        SELECT MAX(date) AS "lastEventAt" FROM transactions WHERE status::text = 'POSTED'
-      `);
-      const actualByMonth = Object.fromEntries(baselineMonths.map((key) => [key, { cogs: 0, operating: 0, labor: 0 }]));
-      for (const row of rows) {
-        if (!actualByMonth[row.month] || !row.bucket) continue;
-        actualByMonth[row.month][row.bucket] += Math.round(Number(row.amount || 0) * 100);
-      }
-      const averageCogsCents = average(baselineMonths.map((key) => actualByMonth[key].cogs));
-      const averageOperatingCents = average(baselineMonths.map((key) => actualByMonth[key].operating));
-      const averageLaborCents = average(baselineMonths.map((key) => actualByMonth[key].labor));
-      const lastEventAt = latest[0]?.lastEventAt?.toISOString() || null;
-      return {
-        status: 'ready',
-        source: 'local_budget_read_only',
-        cogsByMonth: Object.fromEntries(keys.map((key) => [key, averageCogsCents])),
-        operatingByMonth: Object.fromEntries(keys.map((key) => [key, averageOperatingCents])),
-        laborBaselineByMonth: Object.fromEntries(keys.map((key) => [key, averageLaborCents])),
-        actualByMonth,
-        averageCogsCents,
-        averageOperatingCents,
-        averageLaborCents,
-        baselineMonths,
-        lastEventAt,
-        freshnessDays: daysOld(lastEventAt),
-      };
-    } catch (_directError) {
-      // Fall back to the Brain mirror when the read-only Local Budget connection is unavailable.
-    }
-  }
+
   try {
-    const since = new Date(Date.now() - 240 * DAY_MS);
-    const events = await prisma.ledgerEvent.findMany({
-      where: {
-        source: 'local_budget',
-        eventType: 'payment.completed',
-        occurredAt: { gte: since },
-        tombstonedAt: null,
-      },
-      select: { occurredAt: true, payload: true },
+    const { baseUrl, token } = localBudgetApiConfig();
+    const from = isoDate(baselineStart);
+    const to = isoDate(baselineEnd);
+    const url = new URL(`${baseUrl}/api/integration/v1/cashflow-actuals`);
+    url.searchParams.set('from', from);
+    url.searchParams.set('to', to);
+    url.searchParams.set('grain', 'month');
+    const response = await fetchImpl(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     });
-    if (!events.length) return empty;
-
-    const actualByMonth = {};
-    for (const event of events) {
-      const key = monthKey(event.occurredAt);
-      if (!actualByMonth[key]) actualByMonth[key] = { cogs: 0, operating: 0, labor: 0 };
-      const cents = Number(event.payload?.amountCents || 0);
-      const bucket = event.payload?.costBucket;
-      if (bucket === 'LABOR') actualByMonth[key].labor += cents;
-      else if (bucket === 'INVENTORY' || event.payload?.classification === 'COGS') actualByMonth[key].cogs += cents;
-      else if (bucket === 'OPERATING' || event.payload?.classification === 'OPERATING') actualByMonth[key].operating += cents;
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Local Budget API ${response.status}: ${body.slice(0, 300)}`);
+    }
+    const payload = await response.json();
+    if (payload?.contractVersion !== 1 || payload?.methodVersion !== 'cashflow-actuals-v1' || payload?.currency !== 'USD') {
+      throw new Error('Local Budget API returned an unsupported cashflow contract');
+    }
+    if (payload?.range?.from !== from || payload?.range?.toExclusive !== to || payload?.range?.completeMonthsOnly !== true) {
+      throw new Error('Local Budget API returned a mismatched cashflow range');
     }
 
-    const observedMonths = Object.keys(actualByMonth).sort();
-    const latestObservedMonth = observedMonths.at(-1);
-    const baselineMonths = observedMonths.filter((key) => key !== latestObservedMonth).slice(-6);
+    const rowsByMonth = new Map((payload.months || []).map((row) => [row?.month, row]));
+    const actualByMonth = {};
+    for (const key of baselineMonths) {
+      const row = rowsByMonth.get(key);
+      if (!row || row.complete !== true || !isCents(row.inventoryCents) || !isCents(row.operatingCents) || !isCents(row.laborCents)) {
+        throw new Error(`Local Budget API returned incomplete actuals for ${key}`);
+      }
+      actualByMonth[key] = {
+        cogs: row.inventoryCents,
+        operating: row.operatingCents,
+        labor: row.laborCents,
+      };
+    }
+
     const averageCogsCents = average(baselineMonths.map((key) => actualByMonth[key].cogs));
     const averageOperatingCents = average(baselineMonths.map((key) => actualByMonth[key].operating));
     const averageLaborCents = average(baselineMonths.map((key) => actualByMonth[key].labor));
-    const lastEventAt = events.map((event) => event.occurredAt).sort((a, b) => a - b).at(-1)?.toISOString() || null;
 
     return {
-      status: baselineMonths.length ? 'ready' : 'unavailable',
-      source: 'brain_mirror',
+      status: 'ready',
+      source: 'local_budget_api',
       cogsByMonth: Object.fromEntries(keys.map((key) => [key, averageCogsCents])),
       operatingByMonth: Object.fromEntries(keys.map((key) => [key, averageOperatingCents])),
       laborBaselineByMonth: Object.fromEntries(keys.map((key) => [key, averageLaborCents])),
+      actualByMonth,
       averageCogsCents,
       averageOperatingCents,
       averageLaborCents,
       baselineMonths,
-      lastEventAt,
-      freshnessDays: daysOld(lastEventAt),
+      lastEventAt: payload.sourceMaxDate || null,
+      freshnessDays: daysOld(payload.sourceMaxDate),
+      contractVersion: payload.contractVersion,
+      methodVersion: payload.methodVersion,
+      currency: payload.currency,
+      generatedAt: payload.generatedAt || null,
+      sourceMaxDate: payload.sourceMaxDate || null,
+      quality: payload.quality || {},
+      warnings: payload.quality?.warnings || [],
     };
   } catch (err) {
-    return { ...empty, error: err.message };
+    return unavailableLocalBudgetForecast(err);
   }
 }
 
@@ -420,7 +374,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
   const [square, happyMonday, localBudget, planner] = await Promise.all([
     squareForecast(keys, today),
     happyMondayForecast(keys, today),
-    localBudgetCostForecast(prisma, keys),
+    localBudgetCostForecast(keys),
     plannerForecast(prisma, plannerUid, keys),
   ]);
 
@@ -459,4 +413,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
   };
 }
 
-module.exports = { buildPlannerForecast };
+module.exports = {
+  buildPlannerForecast,
+  __internals: { localBudgetCostForecast, localBudgetApiConfig, unavailableLocalBudgetForecast },
+};

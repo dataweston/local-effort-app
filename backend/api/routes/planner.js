@@ -6,6 +6,86 @@ const { postBotMessage } = require('../../../api-handlers/hub/_bot');
 const { buildPlannerForecast } = require('../planner/forecast');
 
 const router = express.Router();
+const PLANNER_OBJECT_TYPES = new Set(['shift', 'event', 'prep_task']);
+
+function plannerObjectType(value) {
+  return PLANNER_OBJECT_TYPES.has(value) ? value : null;
+}
+
+async function saveAllPlannerCards(prismaClient, uid, bulkCards) {
+  const rows = bulkCards.map((c) => ({
+    id: c.id,
+    supabaseUid: uid,
+    templateId: c.templateId ?? null,
+    title: c.title || 'Untitled',
+    date: c.date || '',
+    dayOfWeek: c.dayOfWeek || '',
+    zone: c.zone || 'timed',
+    objectType: plannerObjectType(c.objectType),
+    people: c.people || [],
+    startTime: c.startTime ?? null,
+    endTime: c.endTime ?? null,
+    revenue: c.revenue ?? 0,
+    cost: c.cost ?? 0,
+    costPerHour: c.costPerHour ?? null,
+    optional: c.optional ?? false,
+    enabled: c.enabled ?? true,
+    effectTarget: c.effectTarget ?? null,
+    effectType: c.effectType ?? null,
+    sortOrder: c.order ?? c.sortOrder ?? 0,
+    status: c.status ?? 'todo',
+    projectId: c.projectId ?? null,
+    assigneeId: c.assigneeId ?? null,
+    priority: c.priority ?? 0,
+    dueDate: c.dueDate ?? null,
+  }));
+  const rowIds = [...new Set(rows.map((row) => row.id).filter(Boolean))];
+
+  await prismaClient.$transaction(async (tx) => {
+    if (rowIds.length === 0) {
+      await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
+      return;
+    }
+
+    await tx.plannerCard.deleteMany({
+      where: { supabaseUid: uid, id: { notIn: rowIds } },
+    });
+
+    for (const row of rows) {
+      await tx.plannerCard.upsert({
+        where: { id: row.id },
+        update: {
+          supabaseUid: uid,
+          templateId: row.templateId,
+          title: row.title,
+          date: row.date,
+          dayOfWeek: row.dayOfWeek,
+          zone: row.zone,
+          objectType: row.objectType,
+          people: row.people,
+          startTime: row.startTime,
+          endTime: row.endTime,
+          revenue: row.revenue,
+          cost: row.cost,
+          costPerHour: row.costPerHour,
+          optional: row.optional,
+          enabled: row.enabled,
+          effectTarget: row.effectTarget,
+          effectType: row.effectType,
+          sortOrder: row.sortOrder,
+          status: row.status,
+          projectId: row.projectId,
+          assigneeId: row.assigneeId,
+          priority: row.priority,
+          dueDate: row.dueDate,
+        },
+        create: row,
+      });
+    }
+  }, { timeout: 30000 });
+
+  return rows.length;
+}
 
 // --- Auth helper: verify Supabase JWT and return user ---
 async function verifySupabaseToken(req) {
@@ -85,6 +165,7 @@ router.get('/cards', async (req, res) => {
       date: c.date,
       dayOfWeek: c.dayOfWeek,
       zone: c.zone,
+      objectType: c.objectType ?? null,
       people: c.people || [],
       startTime: c.startTime,
       endTime: c.endTime,
@@ -116,37 +197,8 @@ router.post('/cards', async (req, res) => {
 
   if (action === 'save-all' && Array.isArray(bulkCards)) {
     try {
-      const rows = bulkCards.map((c) => ({
-        supabaseUid: uid,
-        templateId: c.templateId ?? null,
-        title: c.title || 'Untitled',
-        date: c.date || '',
-        dayOfWeek: c.dayOfWeek || '',
-        zone: c.zone || 'timed',
-        people: c.people || [],
-        startTime: c.startTime ?? null,
-        endTime: c.endTime ?? null,
-        revenue: c.revenue ?? 0,
-        cost: c.cost ?? 0,
-        costPerHour: c.costPerHour ?? null,
-        optional: c.optional ?? false,
-        enabled: c.enabled ?? true,
-        effectTarget: c.effectTarget ?? null,
-        effectType: c.effectType ?? null,
-        sortOrder: c.order ?? c.sortOrder ?? 0,
-        status: c.status ?? 'todo',
-        projectId: c.projectId ?? null,
-        assigneeId: c.assigneeId ?? null,
-        priority: c.priority ?? 0,
-        dueDate: c.dueDate ?? null,
-      }));
-
-      await prisma.$transaction(async (tx) => {
-        await tx.plannerCard.deleteMany({ where: { supabaseUid: uid } });
-        await tx.plannerCard.createMany({ data: rows });
-      }, { timeout: 30000 });
-
-      return res.status(200).json({ ok: true, count: bulkCards.length });
+      const count = await saveAllPlannerCards(prisma, uid, bulkCards);
+      return res.status(200).json({ ok: true, count });
     } catch (err) {
       console.error('POST save-all error:', err);
       return res.status(500).json({ error: 'Failed to save cards' });
@@ -160,6 +212,7 @@ router.post('/cards', async (req, res) => {
         data: {
           title: card.title,
           zone: card.zone,
+          objectType: plannerObjectType(card.objectType),
           people: card.people || [],
           startTime: card.startTime ?? null,
           endTime: card.endTime ?? null,
@@ -484,4 +537,4 @@ function createPlannerRouter() {
   return router;
 }
 
-module.exports = { createPlannerRouter };
+module.exports = { createPlannerRouter, __internals: { plannerObjectType, saveAllPlannerCards } };

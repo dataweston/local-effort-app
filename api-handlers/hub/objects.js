@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
-const { cardToObject } = require('./_planner');
+const { cardToObject, plannerCardObjectType } = require('./_planner');
 
 let prisma = null;
 try {
@@ -164,7 +164,7 @@ async function buildPlannerCardDetail(auth, id) {
       ? [{
           id: `planner_card:${card.id}:plan`,
           title: `Decide on ${card.title}`,
-          objectType: card.zone === 'timed' ? 'shift' : 'prep_task',
+          objectType: plannerCardObjectType(card),
           objectId: card.id,
           dueAt: card.startTime ? `${card.date}T${card.startTime}:00` : null,
           status: 'open',

@@ -379,6 +379,7 @@ model PlannerCard {
   date         String
   dayOfWeek    String
   zone         String   @default("timed")
+  objectType   String?
   people       String[] @default([])
   startTime    String?
   endTime      String?

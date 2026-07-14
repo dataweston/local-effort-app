@@ -415,6 +415,7 @@ export default function WeeklyDemoPage() {
                   date: today,
                   dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
                   zone: 'untimed',
+                  objectType: 'prep_task',
                   people: [],
                   revenue: 0,
                   cost: 0,

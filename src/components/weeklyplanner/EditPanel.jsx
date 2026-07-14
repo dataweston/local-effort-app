@@ -11,6 +11,11 @@ const STATUSES = [
 ];
 
 const PRIORITY_LABELS = ['Low', 'Medium', 'High', 'Critical'];
+const OBJECT_TYPES = [
+  { key: 'shift', label: 'Shift' },
+  { key: 'event', label: 'Event' },
+  { key: 'prep_task', label: 'Prep task' },
+];
 
 function useProjects(accessToken) {
   const [projects, setProjects] = useState([]);
@@ -178,6 +183,24 @@ export function EditPanel({ card, onSave, onDelete, onClose, accessToken }) {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Operational type */}
+        <div>
+          <label htmlFor="planner-card-object-type" className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Operational type
+          </label>
+          <select
+            id="planner-card-object-type"
+            value={form.objectType || (form.zone === 'timed' ? 'shift' : 'prep_task')}
+            onChange={(e) => set('objectType', e.target.value)}
+            className={inputClass}
+            style={{ backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border-default)', color: 'var(--color-text-primary)' }}
+          >
+            {OBJECT_TYPES.map((type) => (
+              <option key={type.key} value={type.key}>{type.label}</option>
+            ))}
+          </select>
         </div>
 
         {/* People */}
