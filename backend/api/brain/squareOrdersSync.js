@@ -237,8 +237,11 @@ async function runSquareOrdersSync({ logger, daysBack = 7 } = {}) {
     }
   } while (cursor && pages < 30);
 
-  logger?.info({ ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, pages, daysBack }, 'brain/square-orders: sync complete');
-  return { ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, pages, errors };
+  const { promoteEligibleMealPrepCustomers } = require('../../../api-handlers/hub/_mealPrepLifecycle');
+  const mealPrepPromotions = await promoteEligibleMealPrepCustomers(prisma);
+
+  logger?.info({ ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, mealPrepPromotions: mealPrepPromotions.promoted, pages, daysBack }, 'brain/square-orders: sync complete');
+  return { ordersSeen, eventsWritten, eventsEnriched, customersMatched, identityRecovered, mealPrepPromotions: mealPrepPromotions.promoted, pages, errors };
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────

@@ -94,7 +94,7 @@ export function ForecastPanel({ accessToken, enabled }) {
             Six-month operating outlook
           </h2>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Known Square invoices, Happy Monday run rate, Local Budget costs, and scheduled labor
+            Recurring Square invoices, committed orders, Local Budget actuals, and scheduled labor
           </p>
         </div>
         <button
@@ -131,12 +131,12 @@ export function ForecastPanel({ accessToken, enabled }) {
             <SourcePill
               label="Square"
               status={data.sources.square.status}
-              detail={`${data.sources.square.scheduledInvoiceCount} scheduled · ${freshnessLabel(data.sources.square.lastUpdatedAt)}`}
+              detail={`${data.sources.square.recurringSeriesCount} monthly series · ${money(data.sources.square.recurringMonthlyCents)}/mo`}
             />
             <SourcePill
               label="Happy Monday"
               status={data.sources.happyMonday.status}
-              detail={`${data.sources.happyMonday.lookbackDays}-day run rate · through ${data.sources.happyMonday.lastOrderDate || '—'}`}
+              detail={`${data.sources.happyMonday.futureOrderCount} committed orders · through ${data.sources.happyMonday.lastOrderDate || '—'}`}
             />
             <SourcePill
               label="Local Budget"
@@ -147,13 +147,7 @@ export function ForecastPanel({ accessToken, enabled }) {
             <SourcePill
               label="Labor"
               status={data.sources.planner.status}
-              detail={`${data.sources.planner.laborCardCount} scheduled items${data.sources.localBudget.averageLaborCents ? ` · ${money(data.sources.localBudget.averageLaborCents)}/mo actual baseline` : ''}`}
-            />
-            <SourcePill
-              label="Square Payroll"
-              status={data.sources.squarePayroll.status}
-              detail="Report import needed"
-              stale
+              detail={`${data.sources.planner.laborCardCount} scheduled items${data.sources.localBudget.averageLaborCents ? ` · ${money(data.sources.localBudget.averageLaborCents)}/mo Local Budget actual` : ''}`}
             />
           </div>
 
@@ -175,7 +169,7 @@ export function ForecastPanel({ accessToken, enabled }) {
               <thead>
                 <tr style={{ color: 'var(--color-text-muted)' }}>
                   <th className="border-b px-2 py-2 text-left font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Month</th>
-                  <th className="border-b px-2 py-2 text-right font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Square known</th>
+                  <th className="border-b px-2 py-2 text-right font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Square invoices</th>
                   <th className="border-b px-2 py-2 text-right font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Happy Monday</th>
                   <th className="border-b px-2 py-2 text-right font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Inventory/COGS</th>
                   <th className="border-b px-2 py-2 text-right font-medium" style={{ borderColor: 'var(--color-border-default)' }}>Operating</th>
@@ -200,9 +194,10 @@ export function ForecastPanel({ accessToken, enabled }) {
           </div>
 
           <div className="mt-3 space-y-1 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-            <p>Square includes only invoices already scheduled in Square. Drafts and unpaid receivables are shown in source data but excluded from forecast revenue.</p>
-            <p>Happy Monday is a trend forecast from the latest 56 days. Local Budget inventory and operating costs use the latest three complete observed months. Labor in the table comes from scheduled Hub work; the Local Budget labor baseline is a comparison, not an added cost.</p>
-            <p>Square Payroll company totals are not included yet. A payroll-history export is needed to capture gross wages, employer taxes, reimbursements, and adjustments that do not appear in Square timecards or Local Budget.</p>
+            <p>Square revenue uses four repeated monthly invoice series detected from actual invoice history, plus future one-off invoices already scheduled. Subscription records are not used.</p>
+            <p>Happy Monday includes only orders already committed in its ledger; no run-rate extrapolation is applied. Local Budget inventory and operating projections use the average of six complete actual months.</p>
+            <p>Local Budget actual baseline ({data.sources.localBudget.baselineMonths.join(', ')}): {money(data.sources.localBudget.averageCogsCents)}/mo inventory, {money(data.sources.localBudget.averageOperatingCents)}/mo operating, and {money(data.sources.localBudget.averageLaborCents)}/mo categorized labor.</p>
+            <p>Labor in the table comes only from the rebuilt Hub schedule. Local Budget labor is shown as an actual comparison and is not added again.</p>
             <p>Planner event revenue ({money(data.sources.planner.excludedEventRevenueCents)}) is excluded until event forecasting is added. Amazon and Costco remain in their Local Budget categories until item-level purchase data can distinguish food, packaging, and paper goods.</p>
           </div>
         </div>

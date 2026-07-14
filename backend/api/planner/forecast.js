@@ -1,7 +1,18 @@
 const { getSupabase } = require('../supabaseClient');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
+const { PrismaClient } = require('@prisma/client');
 
 const DAY_MS = 86_400_000;
+let localBudgetClient = null;
+
+function getLocalBudgetClient() {
+  if (localBudgetClient) return localBudgetClient;
+  let url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim();
+  url = url.replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
+  if (!url) return null;
+  localBudgetClient = new PrismaClient({ datasources: { db: { url } } });
+  return localBudgetClient;
+}
 
 function isoDate(value = new Date()) {
   return new Date(value).toISOString().slice(0, 10);
@@ -26,6 +37,12 @@ function endOfMonthIso(key) {
 function average(values) {
   if (!values.length) return 0;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function median(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
 }
 
 function daysOld(value) {
@@ -83,12 +100,15 @@ async function squareForecast(keys, today) {
   const empty = {
     status: 'unavailable',
     scheduledByMonth: {},
+    recurringByMonth: {},
+    recurringMonthlyCents: 0,
+    recurringSeriesCount: 0,
+    scheduledOneOffCents: 0,
     scheduledInvoiceCount: 0,
     knownScheduledCents: 0,
     outstandingCents: 0,
     draftCents: 0,
     overlapExcludedCents: 0,
-    recurringSeriesObserved: 0,
     lastUpdatedAt: null,
   };
 
@@ -104,17 +124,42 @@ async function squareForecast(keys, today) {
       cursor = response.result?.cursor;
     } while (cursor && invoices.length < 2000);
 
-    const scheduledByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+    const recurringByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+    const scheduledOneOffByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
     let scheduledInvoiceCount = 0;
     let knownScheduledCents = 0;
     let outstandingCents = 0;
     let draftCents = 0;
     let overlapExcludedCents = 0;
 
-    const candidates = invoices.filter((invoice) => ['SCHEDULED', 'UNPAID', 'PARTIALLY_PAID', 'DRAFT'].includes(invoice.status));
-    for (const invoice of candidates) {
+    const rows = [];
+    for (const invoice of invoices) {
       const cents = await invoiceAmountCents(client, invoice);
       const date = invoiceForecastDate(invoice);
+      const recipient = invoice.primaryRecipient?.customerId
+        || invoice.primaryRecipient?.emailAddress
+        || invoice.primaryRecipient?.companyName
+        || 'unknown';
+      const seriesKey = `${recipient}|${String(invoice.title || '').trim().toLowerCase()}`;
+      rows.push({ invoice, cents, date, seriesKey });
+    }
+
+    const groups = new Map();
+    for (const row of rows.filter(({ invoice, cents, date }) => invoice.status !== 'CANCELED' && cents > 0 && date)) {
+      if (!groups.has(row.seriesKey)) groups.set(row.seriesKey, []);
+      groups.get(row.seriesKey).push(row);
+    }
+    const recurringSeries = [...groups.entries()].map(([seriesKey, items]) => {
+      const sorted = items.sort((a, b) => a.date.localeCompare(b.date));
+      const intervals = sorted.slice(1).map((item, index) => Math.round((new Date(item.date) - new Date(sorted[index].date)) / DAY_MS));
+      const cadenceDays = median(intervals);
+      return { seriesKey, items: sorted, cadenceDays, latest: sorted.at(-1) };
+    }).filter((series) => series.items.length >= 2 && series.cadenceDays >= 25 && series.cadenceDays <= 35);
+    const recurringKeys = new Set(recurringSeries.map((series) => series.seriesKey));
+    const recurringMonthlyCents = recurringSeries.reduce((sum, series) => sum + series.latest.cents, 0);
+    for (const key of keys) recurringByMonth[key] = recurringMonthlyCents;
+
+    for (const { invoice, cents, date, seriesKey } of rows) {
       if (invoice.status === 'DRAFT') {
         draftCents += cents;
         continue;
@@ -123,26 +168,35 @@ async function squareForecast(keys, today) {
         outstandingCents += cents;
         continue;
       }
-      if (!date || date < today || !Object.hasOwn(scheduledByMonth, date.slice(0, 7))) continue;
+      if (invoice.status !== 'SCHEDULED' || !date || date < today || !Object.hasOwn(scheduledOneOffByMonth, date.slice(0, 7))) continue;
+      if (recurringKeys.has(seriesKey)) continue;
       if (looksLikeHappyMonday(invoice)) {
         overlapExcludedCents += cents;
         continue;
       }
-      scheduledByMonth[date.slice(0, 7)] += cents;
+      scheduledOneOffByMonth[date.slice(0, 7)] += cents;
       knownScheduledCents += cents;
       scheduledInvoiceCount += 1;
     }
+
+    const scheduledByMonth = Object.fromEntries(keys.map((key) => [
+      key,
+      recurringByMonth[key] + scheduledOneOffByMonth[key],
+    ]));
 
     const lastUpdatedAt = invoices.map((invoice) => invoice.updatedAt).filter(Boolean).sort().at(-1) || null;
     return {
       status: 'ready',
       scheduledByMonth,
+      recurringByMonth,
+      recurringMonthlyCents,
+      recurringSeriesCount: recurringSeries.length,
+      scheduledOneOffCents: knownScheduledCents,
       scheduledInvoiceCount,
       knownScheduledCents,
       outstandingCents,
       draftCents,
       overlapExcludedCents,
-      recurringSeriesObserved: new Set(invoices.map((invoice) => invoice.subscriptionId).filter(Boolean)).size,
       lastUpdatedAt,
     };
   } catch (err) {
@@ -154,8 +208,8 @@ async function happyMondayForecast(keys, today) {
   const empty = {
     status: 'unavailable',
     forecastByMonth: {},
-    averageMonthlyCents: 0,
-    lookbackDays: 56,
+    actualByMonth: {},
+    historyMonths: 6,
     orderCount: 0,
     futureOrderCount: 0,
     lastOrderDate: null,
@@ -163,7 +217,7 @@ async function happyMondayForecast(keys, today) {
   try {
     const supabase = getSupabase();
     if (!supabase) return empty;
-    const historyStart = isoDate(Date.now() - empty.lookbackDays * DAY_MS);
+    const historyStart = isoDate(Date.now() - 183 * DAY_MS);
     const horizonEnd = endOfMonthIso(keys.at(-1));
     const { data, error } = await supabase
       .from('happymonday_orders')
@@ -174,21 +228,24 @@ async function happyMondayForecast(keys, today) {
     if (error) throw error;
 
     const usable = (data || []).filter((row) => !['refunded', 'canceled'].includes(String(row.status || '').toLowerCase()));
-    const history = usable.filter((row) => row.order_date <= today);
-    const future = usable.filter((row) => row.order_date > today);
-    const historyCents = history.reduce((sum, row) => sum + Number(row.total_cents || 0), 0);
-    const dailyRunRate = historyCents / Math.max(empty.lookbackDays, 1);
-    const forecastByMonth = {};
-    for (const key of keys) {
-      const [year, month] = key.split('-').map(Number);
-      forecastByMonth[key] = Math.round(dailyRunRate * new Date(Date.UTC(year, month, 0)).getUTCDate());
+    const history = usable.filter((row) => row.order_date < today);
+    const future = usable.filter((row) => row.order_date >= today);
+    const forecastByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+    const actualByMonth = {};
+    for (const row of history) {
+      const key = row.order_date.slice(0, 7);
+      actualByMonth[key] = (actualByMonth[key] || 0) + Number(row.total_cents || 0);
+    }
+    for (const row of future) {
+      const key = row.order_date.slice(0, 7);
+      if (Object.hasOwn(forecastByMonth, key)) forecastByMonth[key] += Number(row.total_cents || 0);
     }
 
     return {
       status: 'ready',
       forecastByMonth,
-      averageMonthlyCents: Math.round(dailyRunRate * (365.25 / 12)),
-      lookbackDays: empty.lookbackDays,
+      actualByMonth,
+      historyMonths: empty.historyMonths,
       orderCount: history.length,
       futureOrderCount: future.length,
       lastOrderDate: usable.map((row) => row.order_date).sort().at(-1) || null,
@@ -211,6 +268,74 @@ async function localBudgetCostForecast(prisma, keys) {
     lastEventAt: null,
     freshnessDays: null,
   };
+  const [forecastYear, forecastMonth] = keys[0].split('-').map(Number);
+  const baselineStart = new Date(Date.UTC(forecastYear, forecastMonth - 7, 1));
+  const baselineEnd = new Date(Date.UTC(forecastYear, forecastMonth - 1, 1));
+  const baselineMonths = monthKeys(6, baselineStart);
+  const lb = getLocalBudgetClient();
+  if (lb) {
+    try {
+      const rows = await lb.$queryRawUnsafe(`
+        WITH cost_lines AS (
+          SELECT
+            t.date,
+            COALESCE(sc.name, c.name, 'Uncategorized') AS category,
+            COALESCE(
+              s.classification::text,
+              sc."defaultClassification"::text,
+              t.classification::text,
+              c."defaultClassification"::text
+            ) AS classification,
+            ABS(CASE WHEN s.id IS NULL THEN t.amount ELSE s.amount END) AS amount
+          FROM transactions t
+          LEFT JOIN categories c ON c.id = t."categoryId"
+          LEFT JOIN transaction_splits s ON s."transactionId" = t.id
+          LEFT JOIN categories sc ON sc.id = s."categoryId"
+          WHERE t.date >= $1 AND t.date < $2 AND t.status::text = 'POSTED'
+        )
+        SELECT
+          TO_CHAR(DATE_TRUNC('month', date), 'YYYY-MM') AS month,
+          CASE
+            WHEN LOWER(category) ~ '(labor|payroll|wage|contractor|staff)' THEN 'labor'
+            WHEN classification = 'COGS' THEN 'cogs'
+            WHEN classification = 'OPERATING' THEN 'operating'
+          END AS bucket,
+          SUM(amount) AS amount
+        FROM cost_lines
+        WHERE classification IN ('COGS', 'OPERATING')
+           OR LOWER(category) ~ '(labor|payroll|wage|contractor|staff)'
+        GROUP BY month, bucket
+      `, baselineStart, baselineEnd);
+      const latest = await lb.$queryRawUnsafe(`
+        SELECT MAX(date) AS "lastEventAt" FROM transactions WHERE status::text = 'POSTED'
+      `);
+      const actualByMonth = Object.fromEntries(baselineMonths.map((key) => [key, { cogs: 0, operating: 0, labor: 0 }]));
+      for (const row of rows) {
+        if (!actualByMonth[row.month] || !row.bucket) continue;
+        actualByMonth[row.month][row.bucket] += Math.round(Number(row.amount || 0) * 100);
+      }
+      const averageCogsCents = average(baselineMonths.map((key) => actualByMonth[key].cogs));
+      const averageOperatingCents = average(baselineMonths.map((key) => actualByMonth[key].operating));
+      const averageLaborCents = average(baselineMonths.map((key) => actualByMonth[key].labor));
+      const lastEventAt = latest[0]?.lastEventAt?.toISOString() || null;
+      return {
+        status: 'ready',
+        source: 'local_budget_read_only',
+        cogsByMonth: Object.fromEntries(keys.map((key) => [key, averageCogsCents])),
+        operatingByMonth: Object.fromEntries(keys.map((key) => [key, averageOperatingCents])),
+        laborBaselineByMonth: Object.fromEntries(keys.map((key) => [key, averageLaborCents])),
+        actualByMonth,
+        averageCogsCents,
+        averageOperatingCents,
+        averageLaborCents,
+        baselineMonths,
+        lastEventAt,
+        freshnessDays: daysOld(lastEventAt),
+      };
+    } catch (_directError) {
+      // Fall back to the Brain mirror when the read-only Local Budget connection is unavailable.
+    }
+  }
   try {
     const since = new Date(Date.now() - 240 * DAY_MS);
     const events = await prisma.ledgerEvent.findMany({
@@ -237,7 +362,7 @@ async function localBudgetCostForecast(prisma, keys) {
 
     const observedMonths = Object.keys(actualByMonth).sort();
     const latestObservedMonth = observedMonths.at(-1);
-    const baselineMonths = observedMonths.filter((key) => key !== latestObservedMonth).slice(-3);
+    const baselineMonths = observedMonths.filter((key) => key !== latestObservedMonth).slice(-6);
     const averageCogsCents = average(baselineMonths.map((key) => actualByMonth[key].cogs));
     const averageOperatingCents = average(baselineMonths.map((key) => actualByMonth[key].operating));
     const averageLaborCents = average(baselineMonths.map((key) => actualByMonth[key].labor));
@@ -245,6 +370,7 @@ async function localBudgetCostForecast(prisma, keys) {
 
     return {
       status: baselineMonths.length ? 'ready' : 'unavailable',
+      source: 'brain_mirror',
       cogsByMonth: Object.fromEntries(keys.map((key) => [key, averageCogsCents])),
       operatingByMonth: Object.fromEntries(keys.map((key) => [key, averageOperatingCents])),
       laborBaselineByMonth: Object.fromEntries(keys.map((key) => [key, averageLaborCents])),
@@ -322,18 +448,13 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
     ok: true,
     generatedAt: new Date().toISOString(),
     currency: 'USD',
-    methodology: 'Known scheduled Square invoices + Happy Monday 56-day run rate - Local Budget trailing complete-month costs - planner labor. Square Payroll register costs and planner event revenue are excluded until their source feeds are connected.',
+    methodology: 'Square monthly invoice series inferred from repeated 25-35 day invoice history, plus scheduled one-offs and committed Happy Monday orders, less six complete months of Local Budget actual cost averages and scheduled planner labor. Event revenue is excluded.',
     months,
     sources: {
       square,
       happyMonday,
       localBudget,
       planner,
-      squarePayroll: {
-        status: 'report_required',
-        includedInForecast: false,
-        note: 'Square Payroll company totals or payroll history export is required for gross wages, employer taxes, and adjustments.',
-      },
     },
   };
 }

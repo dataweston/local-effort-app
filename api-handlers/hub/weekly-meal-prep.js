@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
+const { promoteEligibleMealPrepCustomers } = require('./_mealPrepLifecycle');
 
 let prisma = null;
 try {
@@ -553,6 +554,7 @@ async function handler(req, res) {
     }
 
     const showRoster = !auth.isCustomer || auth.isPrivileged;
+    if (showRoster) await promoteEligibleMealPrepCustomers(prisma, { today: localToday() });
     const [tableCustomers, brainCustomers, upcomingCustomers, notes] = await Promise.all([
       loadCustomers(auth),
       showRoster ? loadBrainRosterCustomers() : Promise.resolve([]),

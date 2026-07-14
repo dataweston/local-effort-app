@@ -2297,11 +2297,33 @@ const normalizeMealStyle = (value) =>
             url: ctx && (ctx.url || ctx.link || ctx.href),
           };
         });
-        const byName = new Map(images.map(item => [String(item.name || '').toLowerCase(), item]));
-        const items = (graphData.partners || []).map(partner => ({
-          ...byName.get(String(partner.name || '').toLowerCase()), ...partner,
-          url: partner.website || partner.instagram || byName.get(String(partner.name || '').toLowerCase())?.url,
-        }));
+        // Cloudinary remains the visual source for this grid. The partner graph
+        // enriches matching logos, but an incomplete review queue must not make
+        // existing partner artwork disappear from the public About section.
+        const partnerKey = (value) => String(value || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim();
+        const graphPartners = graphData.partners || [];
+        const graphByName = new Map(graphPartners.map(partner => [partnerKey(partner.name), partner]));
+        const matchedGraphIds = new Set();
+        const logoItems = images.filter(item => item.publicId).map((image) => {
+          const graphPartner = graphByName.get(partnerKey(image.name));
+          if (graphPartner?.id) matchedGraphIds.add(graphPartner.id);
+          return {
+            ...image,
+            ...graphPartner,
+            publicId: image.publicId,
+            url: graphPartner?.website || graphPartner?.instagram || image.url,
+          };
+        });
+        const graphOnlyItems = graphPartners
+          .filter(partner => !matchedGraphIds.has(partner.id))
+          .map(partner => ({
+            ...partner,
+            url: partner.website || partner.instagram,
+          }));
+        const items = [...logoItems, ...graphOnlyItems];
         setPartners(items);
       })
       .catch(() => {});
