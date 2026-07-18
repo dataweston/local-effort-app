@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
@@ -891,13 +891,13 @@ function GraphLoader({ nodes, edges, onNodeClick, onNodeHover }) {
   return null;
 }
 
-function GraphCameraBinding({ onChange }) {
+function GraphCameraBinding({ sigmaRef }) {
   const sigma = useSigma();
 
   useEffect(() => {
-    onChange(sigma);
-    return () => onChange(null);
-  }, [onChange, sigma]);
+    sigmaRef.current = sigma;
+    return () => { sigmaRef.current = null; };
+  }, [sigma, sigmaRef]);
 
   return null;
 }
@@ -910,7 +910,7 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
   const [focusDepth, setFocusDepth] = useState(0);
   const [labelMode, setLabelMode] = useState('auto');
   const [hoveredId, setHoveredId] = useState(null);
-  const [sigmaInstance, setSigmaInstance] = useState(null);
+  const sigmaRef = useRef(null);
 
   const availableTypes = useMemo(
     () => [...new Set(nodes.map(node => node.entityType))].sort(),
@@ -1000,14 +1000,18 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
     setFocusDepth(0);
     setLabelMode('auto');
     setHoveredId(null);
-    sigmaInstance?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 });
+    sigmaRef.current?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 });
   };
 
   const focusSelected = () => {
-    if (!selectedId) return;
+    if (!selectedId || !visibleNodes.some(node => node.id === selectedId)) return;
     setFocusDepth(1);
-    const node = sigmaInstance?.getNodeDisplayData(selectedId);
-    if (node) sigmaInstance.getCamera().setState({ x: node.x, y: node.y, ratio: 0.45 });
+    try {
+      const node = sigmaRef.current?.getNodeDisplayData(selectedId);
+      if (node) sigmaRef.current.getCamera().setState({ x: node.x, y: node.y, ratio: 0.45 });
+    } catch {
+      // Sigma can briefly lag a graph replacement; the selected node remains inspectable.
+    }
   };
 
   if (!nodes.length) {
@@ -1082,7 +1086,7 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
           </div>
         </details>
         <div className="flex border border-gray-200 bg-white/95 shadow-sm">
-          <button type="button" onClick={() => sigmaInstance?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 })} title="Fit graph" aria-label="Fit graph" className="p-2 text-gray-600 hover:bg-gray-50"><Maximize2 size={15} /></button>
+          <button type="button" onClick={() => sigmaRef.current?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 })} title="Fit graph" aria-label="Fit graph" className="p-2 text-gray-600 hover:bg-gray-50"><Maximize2 size={15} /></button>
           <button type="button" onClick={focusSelected} disabled={!selectedId} title="Focus selected entity" aria-label="Focus selected entity" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"><Crosshair size={15} /></button>
           <button type="button" onClick={resetGraph} title="Reset graph controls" aria-label="Reset graph controls" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50"><RotateCcw size={15} /></button>
         </div>
@@ -1109,7 +1113,7 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
         }}
       >
         <GraphLoader nodes={visibleNodes} edges={visibleEdges} onNodeClick={onNodeClick} onNodeHover={setHoveredId} />
-        <GraphCameraBinding onChange={setSigmaInstance} />
+        <GraphCameraBinding sigmaRef={sigmaRef} />
       </SigmaContainer>
       <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 rounded px-2 py-1 pointer-events-none">
         {visibleNodes.length} entities · {visibleEdges.length} links
