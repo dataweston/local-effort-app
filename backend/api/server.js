@@ -38,3 +38,7 @@ if (require.main === module) {
 }
 
 module.exports = handler;
+
+// Give the long brain cron passes (inference, projection, syncs) room to
+// finish instead of dying at the default serverless duration.
+module.exports.config = { maxDuration: 300 };

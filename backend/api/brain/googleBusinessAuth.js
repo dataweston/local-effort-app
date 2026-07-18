@@ -165,37 +165,51 @@ function googleErrorMessage(body, status, rawText) {
   return messages.filter(Boolean).join(' | ') || `Google API HTTP ${status}`;
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Business Profile APIs enforce tight per-minute quotas; a burst of discovery +
+// metrics calls can 429 every run. Waiting out the minute window and retrying
+// turns those runs into slow successes instead of guaranteed failures.
+const RETRY_DELAYS_MS = [15_000, 30_000, 65_000];
+
 async function googleApiRequest(auth, url, {
   method = 'GET',
   body,
   headers = {},
 } = {}) {
   const token = await getGoogleAccessToken(auth);
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...headers,
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const rawText = await response.text();
-  let data = {};
-  if (rawText) {
-    try {
-      data = JSON.parse(rawText);
-    } catch {
-      data = {};
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...headers,
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+    const rawText = await response.text();
+    let data = {};
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = {};
+      }
     }
+    if (!response.ok) {
+      const retryable = response.status === 429 || response.status === 503;
+      if (retryable && attempt < RETRY_DELAYS_MS.length) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      const error = new Error(googleErrorMessage(data, response.status, rawText));
+      error.status = response.status;
+      error.requestId = response.headers.get('request-id') || null;
+      throw error;
+    }
+    return data;
   }
-  if (!response.ok) {
-    const error = new Error(googleErrorMessage(data, response.status, rawText));
-    error.status = response.status;
-    error.requestId = response.headers.get('request-id') || null;
-    throw error;
-  }
-  return data;
 }
 
 function timingSafeEqual(left, right) {

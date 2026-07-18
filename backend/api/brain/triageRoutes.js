@@ -35,7 +35,8 @@ function registerTriageRoutes(app, { logger } = {}) {
       if (running) return res.status(409).json({ error: 'triage already running', lastRun });
 
       running = true;
-      runTriagePass({ logger, limit: parseInt(req.body?.limit) || 30 })
+      const { withJobRun } = require('./jobRuns');
+      withJobRun('triage-run', () => runTriagePass({ logger, limit: parseInt(req.body?.limit) || 30 }))
         .then((result) => {
           lastRun = { completedAt: new Date().toISOString(), ...result };
           logger?.info(lastRun, 'brain/triage: run finished');

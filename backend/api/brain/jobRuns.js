@@ -88,7 +88,10 @@ async function withJobRun(jobName, fn) {
   try {
     const summary = (await fn()) || {};
     const hasErrors = Array.isArray(summary.errors) && summary.errors.length > 0;
-    await recordJobRun(prisma, { jobName, status: hasErrors ? 'partial' : 'success', startedAt, summary });
+    // A job that reports ok:false failed even if it threw nothing — a config
+    // no-op (e.g. missing env var) must not count as a success for the SLA.
+    const status = summary.ok === false ? 'error' : (hasErrors ? 'partial' : 'success');
+    await recordJobRun(prisma, { jobName, status, startedAt, summary, error: summary.ok === false ? summary.error : null });
     return summary;
   } catch (error) {
     await recordJobRun(prisma, { jobName, status: 'error', startedAt, error: error?.message || String(error) });

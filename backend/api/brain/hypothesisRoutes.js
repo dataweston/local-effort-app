@@ -140,7 +140,8 @@ function registerHypothesisRoutes(app, { logger } = {}) {
       if (running) return res.status(409).json({ error: 'already running', lastRun });
 
       running = true;
-      runHypothesisPass({ logger })
+      const { withJobRun } = require('./jobRuns');
+      withJobRun('hypothesis-run', () => runHypothesisPass({ logger }))
         .then(result => { lastRun = { completedAt: new Date().toISOString(), ...result }; })
         .catch(err => { logger?.error({ err }, 'brain/hypothesis: pass error'); })
         .finally(() => { running = false; });
