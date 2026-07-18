@@ -209,7 +209,13 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
   }
 
   logger?.info(stats, 'brain/local-budget: sync complete');
-  return { ok: true, ...stats };
+  return {
+    ok: true,
+    ...stats,
+    // jobRuns freshness reads these; without them the run shows written=null.
+    itemsProcessed: stats.expenseSeen + stats.incomeSeen,
+    itemsWritten: stats.expenseWritten + stats.incomeWritten,
+  };
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────

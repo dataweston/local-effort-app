@@ -144,11 +144,67 @@ vercel env add ANTHROPIC_API_KEY production
 node scripts/_tmp-backfill-lb-sync.js   # delete the script afterwards
 ```
 
-## Verification checklist (after P0)
+## Verification pass — 2026-07-18 ~20:15 UTC (independent re-audit)
+
+**Confirmed working:**
+- All P0.2/P0.3/P1-GBP code changes verified in source, committed and pushed
+  on `min`; production deployment created 19:56:40 UTC, **after** the env vars
+  landed in Vercel (`LOCAL_BUDGET_DATABASE_URL` ~19:52, `GOOGLE_ADS_CUSTOMER_ID`
+  ~19:54; `ANTHROPIC_API_KEY` pre-existed, scoped Production). Tonight's crons
+  are the first fully-wired run.
+- LB backfill ran 19:55 UTC: 600 `payment.completed` + 78 `payment.received`
+  written; re-run at 19:58 wrote 0 (idempotency confirmed). 471/500 sampled new
+  expense events carry a resolved `vendorEntityId`.
+- LB DB: `transactions.vendorId` column live, vendors table populating
+  (380→517 rows during the audit window), all *named* COGS/OPERATING expenses
+  linked.
+
+**Still open / watch tomorrow (first cron cycle ≥ 02:50 UTC 07-19):**
+1. `inference-run` has NOT yet run against the new data (0 inferences computed
+   since 07-18). The 03:00 UTC cron on the new deploy is the real test of the
+   pool fix. To verify early: trigger `/api/brain/inference/run` as admin.
+2. **Unexplained cron gap**: `local-budget-sync` and `inference-run` left zero
+   BrainJobRun rows 07-15→07-17 while sibling crons (square, cogs, ga4) ran
+   daily. If tomorrow's 02:50/03:00 rows are missing again, suspect the
+   fire-and-forget response pattern (res.json before work completes) getting
+   frozen by Vercel, or cron delivery itself — not env vars.
+3. Anthropic account still has **zero credit** (key valid). Triage will now
+   run and record errors until credit is purchased.
+4. NEW: `search-console-sync` failing with "User does not have sufficient
+   permission for site 'sc-domain:localeffortfood.com'" — the shared grant
+   lacks `webmasters.readonly` on that property.
+5. GBP quota fix deployed 19:56; today's 04:16 failure predates it — check
+   tomorrow's 04:15 run.
+6. The Eastside truncation split persists in the brain (cogs-rollup 07-18
+   still shows "…Cooperative" $9,689 + "…Cooperati" $4,140). Fix = LB vendor
+   dedup + brain switch to `vendorId` resolution + `/brain` Quality-tab merge.
+7. `scripts/_tmp-backfill-lb-sync.js` still on disk — delete it.
+
+## Update — 2026-07-18 ~20:30 UTC (post-deploy, resolves items 1 & 7 above)
+
+- Item 1 RESOLVED: `inference-run` executed 20:05:56 UTC (locally, same prod
+  DB, recorded via `withJobRun`) → **success, 97 inferences written, 0 errors**
+  (PREFERS 18, AVOIDS 35, REPEAT_CUSTOMER 9, PRICE_DRIFT 6, CHANNEL_TRAFFIC_
+  TREND 2, WEB_CONVERSION 1, business-inference 26; superseded 49, staleMarked
+  5; diagnostics: 1,752 payments / 320 orders / 933 webTraffic). Pool fix
+  verified on a full pass. `order-projection` likewise run ~20:25 → success,
+  317 orders seen, 300 customers resolved, all 117 edges already existing
+  (idempotent), no pool timeout. Both formerly-dying passes are healthy; the
+  03:00 UTC cron on the new deploy remains the serverless confirmation.
+- Item 7 RESOLVED: `_tmp-backfill-lb-sync.js` deleted. Read-only health tool
+  added at `scripts/brain-verify.js` (freshness + last runs + LB max date).
+- Also: `runLocalBudgetSync` now returns `itemsProcessed`/`itemsWritten` so
+  freshness stops showing `written=-` for this job (uncommitted — include in
+  next push).
+- Note: LB data itself currently ends at 07-12 (expenses/income) — brain ledger
+  matches it exactly. Further freshness is an LB-side bank-import task
+  (companion doc), not a sync gap.
+
+## Verification checklist (repeat after first cron cycle)
 
 1. `GET /api/brain/jobs/freshness` → `local-budget-sync` shows real
-   `itemsWritten > 0` and no stale jobs you didn't expect.
-2. `SELECT max("occurredAt") FROM "LedgerEvent" WHERE source='local_budget'`
-   → within 48h.
+   `itemsWritten ≥ 0` with `ok:true` detail and no stale jobs you didn't expect.
+2. `SELECT max("createdAt") FROM "LedgerEvent" WHERE source='local_budget'`
+   → advances daily.
 3. `inference-run` BrainJobRun row with status `success` dated after the fix.
-4. /weeklydemo BrainPulsePanel shows inferences computed after the fix date.
+4. /weeklydemo BrainPulsePanel shows inferences computed after 2026-07-18.
