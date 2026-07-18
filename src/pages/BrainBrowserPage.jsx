@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
-import { FileText, RefreshCw, Search as SearchIcon } from 'lucide-react';
+import { Crosshair, Maximize2, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
 import Graph from 'graphology';
-import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
 import { BrainExplorePanel } from '../components/brain/BrainExplorePanel';
+import { BrainInsightsPanel } from '../components/brain/BrainInsightsPanel';
 import { BrainQualityPanel } from '../components/brain/BrainQualityPanel';
 
 const ENTITY_TYPES = [
@@ -827,23 +827,37 @@ function SmartReviewPanel({ accessToken, enabled, onApplied }) {
   );
 }
 
-function GraphLoader({ nodes, edges, onNodeClick }) {
+function graphPosition(id) {
+  let xHash = 2166136261;
+  let yHash = 2166136261;
+  for (let index = 0; index < id.length; index += 1) {
+    const code = id.charCodeAt(index);
+    xHash = Math.imul(xHash ^ code, 16777619);
+    yHash = Math.imul(yHash ^ (code + index), 2246822519);
+  }
+  return {
+    x: ((xHash >>> 0) % 997) / 997,
+    y: ((yHash >>> 0) % 991) / 991,
+  };
+}
+
+function GraphLoader({ nodes, edges, onNodeClick, onNodeHover }) {
   const loadGraph = useLoadGraph();
   const registerEvents = useRegisterEvents();
   const sigma = useSigma();
 
   useEffect(() => {
-    if (!nodes.length) return;
     const graph = new Graph({ multi: false, type: 'directed' });
 
     nodes.forEach(e => {
       if (!graph.hasNode(e.id)) {
+        const position = graphPosition(e.id);
         graph.addNode(e.id, {
           label: e.name,
           size: Math.max(4, Math.min(18, 4 + Math.sqrt(e.assertionCount || 0) * 2)),
           color: TYPE_COLORS[e.entityType] || '#999',
-          x: Math.random(),
-          y: Math.random(),
+          x: position.x,
+          y: position.y,
         });
       }
     });
@@ -852,7 +866,7 @@ function GraphLoader({ nodes, edges, onNodeClick }) {
       if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) return;
       if (edge.source === edge.target) return;
       if (graph.hasEdge(edge.source, edge.target)) return;
-      graph.addDirectedEdge(edge.source, edge.target, {
+      graph.addDirectedEdgeWithKey(edge.id, edge.source, edge.target, {
         label: edge.relType,
         size: 1,
         color: edge.provisional ? '#e8c98a' : '#cbd5e1',
@@ -860,21 +874,142 @@ function GraphLoader({ nodes, edges, onNodeClick }) {
     });
 
     loadGraph(graph);
-    circular.assign(graph);
-    forceAtlas2.assign(graph, { iterations: 150, settings: { gravity: 1, scalingRatio: 4, barnesHutOptimize: true } });
+    if (graph.order > 1) {
+      forceAtlas2.assign(graph, { iterations: 150, settings: { gravity: 1, scalingRatio: 4, barnesHutOptimize: true } });
+    }
   }, [nodes, edges, loadGraph]);
 
   useEffect(() => {
     registerEvents({
       clickNode: ({ node }) => onNodeClick(node),
+      enterNode: ({ node }) => onNodeHover(node),
+      leaveNode: () => onNodeHover(null),
       doubleClickStage: () => sigma.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 }),
     });
-  }, [registerEvents, onNodeClick, sigma]);
+  }, [registerEvents, onNodeClick, onNodeHover, sigma]);
+
+  return null;
+}
+
+function GraphCameraBinding({ onChange }) {
+  const sigma = useSigma();
+
+  useEffect(() => {
+    onChange(sigma);
+    return () => onChange(null);
+  }, [onChange, sigma]);
 
   return null;
 }
 
 function GraphView({ nodes, edges, onNodeClick, selectedId }) {
+  const [hiddenTypes, setHiddenTypes] = useState([]);
+  const [hiddenRelationships, setHiddenRelationships] = useState([]);
+  const [showProvisional, setShowProvisional] = useState(true);
+  const [hideOrphans, setHideOrphans] = useState(false);
+  const [focusDepth, setFocusDepth] = useState(0);
+  const [labelMode, setLabelMode] = useState('auto');
+  const [hoveredId, setHoveredId] = useState(null);
+  const [sigmaInstance, setSigmaInstance] = useState(null);
+
+  const availableTypes = useMemo(
+    () => [...new Set(nodes.map(node => node.entityType))].sort(),
+    [nodes]
+  );
+  const availableRelationships = useMemo(
+    () => [...new Set(edges.map(edge => edge.relType))].sort(),
+    [edges]
+  );
+
+  const { visibleNodes, visibleEdges } = useMemo(() => {
+    const typeVisibleNodes = nodes.filter(node => !hiddenTypes.includes(node.entityType));
+    const typeVisibleIds = new Set(typeVisibleNodes.map(node => node.id));
+    const filteredEdges = edges.filter(edge => (
+      typeVisibleIds.has(edge.source) &&
+      typeVisibleIds.has(edge.target) &&
+      (showProvisional || !edge.provisional) &&
+      !hiddenRelationships.includes(edge.relType)
+    ));
+
+    let visibleIds = new Set(typeVisibleIds);
+    if (selectedId && focusDepth > 0 && typeVisibleIds.has(selectedId)) {
+      const adjacency = new Map();
+      filteredEdges.forEach(edge => {
+        if (!adjacency.has(edge.source)) adjacency.set(edge.source, new Set());
+        if (!adjacency.has(edge.target)) adjacency.set(edge.target, new Set());
+        adjacency.get(edge.source).add(edge.target);
+        adjacency.get(edge.target).add(edge.source);
+      });
+      const focusedIds = new Set([selectedId]);
+      let frontier = new Set([selectedId]);
+      for (let depth = 0; depth < focusDepth; depth += 1) {
+        const next = new Set();
+        frontier.forEach(id => (adjacency.get(id) || new Set()).forEach(neighbor => {
+          if (!focusedIds.has(neighbor)) next.add(neighbor);
+        }));
+        next.forEach(id => focusedIds.add(id));
+        frontier = next;
+      }
+      visibleIds = focusedIds;
+    }
+
+    if (hideOrphans) {
+      const connectedIds = new Set();
+      filteredEdges.forEach(edge => {
+        if (visibleIds.has(edge.source) && visibleIds.has(edge.target)) {
+          connectedIds.add(edge.source);
+          connectedIds.add(edge.target);
+        }
+      });
+      visibleIds = new Set([...visibleIds].filter(id => connectedIds.has(id)));
+    }
+
+    return {
+      visibleNodes: nodes.filter(node => visibleIds.has(node.id)),
+      visibleEdges: filteredEdges.filter(edge => visibleIds.has(edge.source) && visibleIds.has(edge.target)),
+    };
+  }, [edges, focusDepth, hiddenRelationships, hiddenTypes, hideOrphans, nodes, selectedId, showProvisional]);
+
+  const activeNodeId = hoveredId || selectedId;
+  const activeNeighborhood = useMemo(() => {
+    if (!activeNodeId) return new Set();
+    const neighbors = new Set([activeNodeId]);
+    visibleEdges.forEach(edge => {
+      if (edge.source === activeNodeId) neighbors.add(edge.target);
+      if (edge.target === activeNodeId) neighbors.add(edge.source);
+    });
+    return neighbors;
+  }, [activeNodeId, visibleEdges]);
+  const activeEdgeIds = useMemo(() => new Set(
+    visibleEdges
+      .filter(edge => edge.source === activeNodeId || edge.target === activeNodeId)
+      .map(edge => edge.id)
+  ), [activeNodeId, visibleEdges]);
+
+  const toggleHiddenFilter = (value, setFilters) => {
+    setFilters(current => current.includes(value)
+      ? current.filter(item => item !== value)
+      : [...current, value]);
+  };
+
+  const resetGraph = () => {
+    setHiddenTypes([]);
+    setHiddenRelationships([]);
+    setShowProvisional(true);
+    setHideOrphans(false);
+    setFocusDepth(0);
+    setLabelMode('auto');
+    setHoveredId(null);
+    sigmaInstance?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 });
+  };
+
+  const focusSelected = () => {
+    if (!selectedId) return;
+    setFocusDepth(1);
+    const node = sigmaInstance?.getNodeDisplayData(selectedId);
+    if (node) sigmaInstance.getCamera().setState({ x: node.x, y: node.y, ratio: 0.45 });
+  };
+
   if (!nodes.length) {
     return (
       <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
@@ -885,19 +1020,77 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
 
   return (
     <div className="flex-1 relative" style={{ minHeight: 0 }}>
-      {/* Type legend */}
-      <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur rounded shadow-sm p-2 flex flex-wrap gap-x-3 gap-y-1 max-w-xs text-xs text-gray-600">
-        {Object.entries(TYPE_COLORS).map(([type, color]) => (
+      <div className="absolute top-3 left-3 z-10 bg-white/95 border border-gray-200 shadow-sm p-2 flex flex-wrap gap-x-3 gap-y-1 max-w-xs text-xs text-gray-600">
+        {availableTypes.map(type => (
           <span key={type} className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: color }} />
+            <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: TYPE_COLORS[type] || '#999' }} />
             {type}
           </span>
         ))}
       </div>
+      <div className="absolute top-3 right-3 z-10 flex items-start gap-2">
+        <details className="border border-gray-200 bg-white/95 shadow-sm">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 px-2.5 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50">
+            <SlidersHorizontal size={14} aria-hidden="true" />
+            Filters
+          </summary>
+          <div className="w-72 border-t border-gray-100 p-3 space-y-3 text-xs">
+            <div>
+              <div className="mb-1.5 font-semibold uppercase tracking-wide text-[10px] text-gray-500">Entity types</div>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 max-h-28 overflow-y-auto">
+                {availableTypes.map(type => (
+                  <label key={type} className="flex min-w-0 items-center gap-1.5 text-gray-700">
+                    <input type="checkbox" checked={!hiddenTypes.includes(type)} onChange={() => toggleHiddenFilter(type, setHiddenTypes)} />
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TYPE_COLORS[type] || '#999' }} />
+                    <span className="truncate">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1.5 font-semibold uppercase tracking-wide text-[10px] text-gray-500">Relationships</div>
+              <div className="max-h-28 space-y-1 overflow-y-auto">
+                {availableRelationships.map(relType => (
+                  <label key={relType} className="flex min-w-0 items-center gap-1.5 text-gray-700">
+                    <input type="checkbox" checked={!hiddenRelationships.includes(relType)} onChange={() => toggleHiddenFilter(relType, setHiddenRelationships)} />
+                    <span className="font-mono truncate">{relType}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5 border-t border-gray-100 pt-2">
+              <label className="flex items-center gap-1.5 text-gray-700"><input type="checkbox" checked={showProvisional} onChange={e => setShowProvisional(e.target.checked)} /> Show provisional</label>
+              <label className="flex items-center gap-1.5 text-gray-700"><input type="checkbox" checked={hideOrphans} onChange={e => setHideOrphans(e.target.checked)} /> Hide orphans</label>
+              <label className="flex items-center justify-between gap-2 text-gray-700">
+                Focus depth
+                <select value={focusDepth} onChange={e => setFocusDepth(Number(e.target.value))} className="border border-gray-300 bg-white px-1.5 py-1 text-xs">
+                  <option value={0}>Entire graph</option>
+                  <option value={1}>1 hop</option>
+                  <option value={2}>2 hops</option>
+                  <option value={3}>3 hops</option>
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-2 text-gray-700">
+                Labels
+                <select value={labelMode} onChange={e => setLabelMode(e.target.value)} className="border border-gray-300 bg-white px-1.5 py-1 text-xs">
+                  <option value="auto">Auto</option>
+                  <option value="all">All</option>
+                  <option value="none">None</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </details>
+        <div className="flex border border-gray-200 bg-white/95 shadow-sm">
+          <button type="button" onClick={() => sigmaInstance?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 })} title="Fit graph" aria-label="Fit graph" className="p-2 text-gray-600 hover:bg-gray-50"><Maximize2 size={15} /></button>
+          <button type="button" onClick={focusSelected} disabled={!selectedId} title="Focus selected entity" aria-label="Focus selected entity" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"><Crosshair size={15} /></button>
+          <button type="button" onClick={resetGraph} title="Reset graph controls" aria-label="Reset graph controls" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50"><RotateCcw size={15} /></button>
+        </div>
+      </div>
       <SigmaContainer
         style={{ width: '100%', height: '100%' }}
         settings={{
-          renderLabels: nodes.length < 150,
+          renderLabels: labelMode !== 'none' && (labelMode === 'all' || visibleNodes.length < 150),
           labelSize: 11,
           labelColor: { color: '#374151' },
           defaultEdgeColor: '#d1d5db',
@@ -905,14 +1098,21 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
           nodeReducer: (node, data) => ({
             ...data,
             highlighted: node === selectedId,
-            size: node === selectedId ? data.size * 1.5 : data.size,
+            color: activeNodeId && !activeNeighborhood.has(node) ? '#e2e8f0' : data.color,
+            size: node === selectedId ? data.size * 1.5 : node === hoveredId ? data.size * 1.25 : data.size,
+          }),
+          edgeReducer: (edge, data) => ({
+            ...data,
+            color: activeNodeId && !activeEdgeIds.has(edge) ? '#e2e8f0' : data.color,
+            size: activeEdgeIds.has(edge) ? data.size * 1.5 : data.size,
           }),
         }}
       >
-        <GraphLoader nodes={nodes} edges={edges} onNodeClick={onNodeClick} />
+        <GraphLoader nodes={visibleNodes} edges={visibleEdges} onNodeClick={onNodeClick} onNodeHover={setHoveredId} />
+        <GraphCameraBinding onChange={setSigmaInstance} />
       </SigmaContainer>
       <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 rounded px-2 py-1 pointer-events-none">
-        scroll=zoom · drag=pan · click=inspect · dbl-click=reset
+        {visibleNodes.length} entities · {visibleEdges.length} links
       </div>
     </div>
   );
@@ -1152,6 +1352,21 @@ export default function BrainBrowserPage() {
 
   const handleRefresh = () => fetchEntities(activeQuery, typeFilter, sort, offset);
 
+  const handleInsightTypeSelect = type => {
+    if (!type) return;
+    setTypeFilter(type);
+    setOffset(0);
+    setSelectedId(null);
+    setViewMode('table');
+  };
+
+  const openProvisionalReview = () => {
+    setReviewMode(true);
+    setOffset(0);
+    setSelectedId(null);
+    setViewMode('table');
+  };
+
   if (!auth.isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">
@@ -1194,6 +1409,12 @@ export default function BrainBrowserPage() {
                 className={`px-3 py-1.5 ${viewMode === 'graph' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
               >
                 Graph
+              </button>
+              <button
+                onClick={() => { setViewMode('insights'); setSelectedId(null); }}
+                className={`px-3 py-1.5 ${viewMode === 'insights' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Insights
               </button>
               <button
                 onClick={() => { setViewMode('explore'); setSelectedId(null); }}
@@ -1261,7 +1482,13 @@ export default function BrainBrowserPage() {
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto" style={{ minHeight: 0 }}>
-        {viewMode === 'explore' ? (
+        {viewMode === 'insights' ? (
+          <BrainInsightsPanel
+            accessToken={auth.accessToken}
+            onSelectType={handleInsightTypeSelect}
+            onOpenReview={openProvisionalReview}
+          />
+        ) : viewMode === 'explore' ? (
           <BrainExplorePanel accessToken={auth.accessToken} />
         ) : viewMode === 'partners' ? (
           <PartnerReviewPanel accessToken={auth.accessToken} />
