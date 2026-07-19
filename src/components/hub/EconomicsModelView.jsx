@@ -169,6 +169,13 @@ function ActualsPanel({ model }) {
                   </div>
                 </details>
               )}
+              {line.attributionMethods?.some((item) => item.method.includes('identity') || item.method.includes('cross_source')) && (
+                <div className="econ-recovery-note">
+                  Cross-source identity recovered {money(line.attributionMethods
+                    .filter((item) => item.method.includes('identity') || item.method.includes('cross_source'))
+                    .reduce((sum, item) => sum + Number(item.revenue || 0), 0))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -271,6 +278,7 @@ function ScenarioPanel({ model, draft, setDraft, onRun, onSeed, running, dirty }
 }
 
 function EvidencePanel({ model }) {
+  const recoveredLines = model.evidenceRecovery?.lines || [];
   return (
     <div className="econ-evidence-grid">
       <section className="econ-panel">
@@ -281,8 +289,44 @@ function EvidencePanel({ model }) {
         <div className="econ-source-list">
           <div><strong>Cash actuals</strong><span>Local Budget · {model.sources.cashActuals.postingCount} postings</span><small>Current through {shortDate(model.sources.cashActuals.lastTransactionDate)}</small></div>
           <div><strong>Line attribution</strong><span>Company Brain · Square order events</span><small>Latest order {shortDate(model.sources.revenueAttribution.latestOrderDate)}</small></div>
+          <div><strong>Recovered evidence</strong><span>Gmail + Brain + Local Budget</span><small>{percent(model.evidenceRecovery?.squareRevenueAttributionCoverage)} of observed Square revenue assigned</small></div>
           <div><strong>Founder compensation</strong><span>Owner-stated policy</span><small>$160K annual combined · month-end assessment</small></div>
         </div>
+      </section>
+
+      <section className="econ-panel econ-wide">
+        <div className="econ-section-head">
+          <div><span className="econ-eyebrow">Partial line economics</span><h3>Recovered components, without invented allocations</h3></div>
+          <CheckCircle2 size={20} />
+        </div>
+        <div className="econ-recovered-grid">
+          {recoveredLines.map((line) => (
+            <article className="econ-recovered-card" key={line.id}>
+              <div className="econ-recovered-head">
+                <strong>{line.name}</strong>
+                <span>{line.status === 'unresolved' ? 'Unresolved' : 'Partial evidence'}</span>
+              </div>
+              <div className="econ-recovered-numbers">
+                <div><span>Observed revenue</span><strong>{money(line.observedRevenue)}</strong></div>
+                <div><span>Relevant shared pool</span><strong>{money(line.sharedCogsPoolRelevantToLine)}</strong></div>
+                <div><span>Channel spend</span><strong>{money(line.lineRelatedOperatingSpend)}</strong></div>
+              </div>
+              {line.costPools?.map((pool) => (
+                <p className="econ-evidence-note" key={pool.id}><b>{pool.name}: {money(pool.amount)}</b> {pool.note}</p>
+              ))}
+              {line.referenceEvidence?.map((item) => (
+                <details className="econ-evidence-detail" key={item.id}>
+                  <summary>{item.title} <span>{item.confidence.replace('_', ' ')} confidence</span></summary>
+                  <ul>{item.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
+                  <p>{item.note}</p>
+                  <small>{item.sourceLabel}</small>
+                </details>
+              ))}
+              {!line.referenceEvidence?.length && !line.costPools?.length && <p className="econ-evidence-note">No line-specific evidence recovered for this period.</p>}
+            </article>
+          ))}
+        </div>
+        <p className="econ-footnote">Shared COGS and candidate delivery costs are shown as relevant pools, never deducted from more than one line. A full contribution margin remains blank until production or job-level matching supports the allocation.</p>
       </section>
 
       <section className="econ-panel">
@@ -301,7 +345,7 @@ function EvidencePanel({ model }) {
           <div><strong>Observed</strong><p>Directly supported by the named source and comparable period.</p></div>
           <div><strong>Modeled</strong><p>An editable operating assumption, never silently promoted to fact.</p></div>
           <div><strong>Unallocated</strong><p>Preserved when product or cost evidence cannot support a line assignment.</p></div>
-          <div><strong>Blocked</strong><p>The requested precision would require invented inputs.</p></div>
+          <div><strong>Candidate cost</strong><p>A real expense relevant to a line but not yet matched closely enough to deduct.</p></div>
         </div>
       </section>
     </div>
@@ -390,13 +434,13 @@ export default function EconomicsModelView({ accessToken }) {
       {model && (
         <>
           <div className="econ-blocked-banner">
-            <ShieldAlert size={18} />
-            <div><strong>Raise sizing is blocked</strong><span>Line costs, capacity, target mix, and uses of funds are not complete enough for a defensible point estimate.</span></div>
+            <Database size={18} />
+            <div><strong>Partial line economics recovered</strong><span>Exact identities, unit prices, quotes, and real cost pools are visible below. Full margins and a raise point estimate still need job-level cost and capacity matches.</span></div>
           </div>
 
           <div className="econ-metrics">
             <MetricCard label="Operating revenue" value={money(model.companyBridge.cashRevenue, { compact: true })} detail={`${model.period.completeCalendarMonths ?? 'Partial'} month period`} tone="positive" />
-            <MetricCard label="Square attribution" value={percent(model.revenueAttribution.squareToCashRevenueRatio)} detail={`${money(model.revenueAttribution.observedSquareOrderRevenue, { compact: true })} observed`} tone="neutral" />
+            <MetricCard label="Square line coverage" value={percent(model.revenueAttribution.squareRevenueAttributionCoverage)} detail={`${money(model.revenueAttribution.unallocatedSquareRevenue)} remains unallocated`} tone="positive" />
             <MetricCard label="Cash contribution" value={money(model.companyBridge.cashContributionBeforeFounderDraws, { compact: true })} detail="Before founder draws" tone={model.companyBridge.cashContributionBeforeFounderDraws >= 0 ? 'positive' : 'negative'} />
             <MetricCard label="Fully loaded result" value={money(model.companyBridge.fullyLoadedOperatingResult, { compact: true })} detail="After founder policy" tone={model.companyBridge.fullyLoadedOperatingResult >= 0 ? 'positive' : 'negative'} />
             <MetricCard label="Deferred founder comp" value={money(model.companyBridge.deferredFounderCompensationIncrease, { compact: true })} detail="Increase in period" tone="warning" />
@@ -489,6 +533,7 @@ const economicsCss = `
 .econ-track { height:7px; border-radius:99px; background:#eeeae2; overflow:hidden; }.econ-track span { display:block; height:100%; border-radius:inherit; background:var(--hub-accent); }
 .econ-line-row details summary { width:max-content; color:var(--hub-muted); font-size:10px; cursor:pointer; }
 .econ-label-list { display:flex; flex-wrap:wrap; gap:5px; padding-top:5px; }.econ-label-list span { background:var(--hub-row-hover); border:1px solid var(--hub-border-light); border-radius:99px; padding:2px 7px; font-size:9px; }.econ-label-list b { margin-left:3px; }
+.econ-recovery-note { width:max-content; max-width:100%; color:var(--econ-good); background:#eaf4ee; border-radius:99px; padding:3px 7px; font-size:9px; font-weight:750; }
 .econ-scenario-intro,.econ-portfolio-result { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:14px; }
 .econ-scenario-intro p { margin:4px 0 0; color:var(--hub-muted); font-size:11px; }
 .econ-scenario-lines { grid-column:1/-1; display:grid; gap:8px; }
@@ -505,9 +550,15 @@ const economicsCss = `
 .econ-evidence-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }.econ-wide { grid-column:1/-1; }
 .econ-source-list { display:grid; gap:7px; }.econ-source-list>div { border:1px solid var(--hub-border-light); border-radius:7px; padding:8px 9px; }.econ-source-list strong,.econ-source-list span,.econ-source-list small { display:block; }.econ-source-list span { margin-top:1px; }.econ-source-list small { color:var(--hub-muted); }
 .econ-blocker-list { margin:0; padding-left:18px; display:grid; gap:7px; color:#684b21; }.econ-blocker-list li::marker { color:var(--econ-warn); }
+.econ-recovered-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.econ-recovered-card { border:1px solid var(--hub-border-light); border-radius:8px; padding:10px; min-width:0; display:grid; gap:8px; background:#fff; }
+.econ-recovered-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }.econ-recovered-head>span { color:#755113; background:#fff1d8; border-radius:99px; padding:3px 7px; font-size:9px; font-weight:800; }
+.econ-recovered-numbers { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }.econ-recovered-numbers>div { background:var(--hub-row-hover); border-radius:6px; padding:6px 7px; }.econ-recovered-numbers span,.econ-recovered-numbers strong { display:block; }.econ-recovered-numbers span { color:var(--hub-muted); font-size:8px; text-transform:uppercase; letter-spacing:.035em; }.econ-recovered-numbers strong { margin-top:2px; font-size:12px; }
+.econ-evidence-note { margin:0; color:var(--hub-muted); font-size:9px; line-height:1.45; }.econ-evidence-note b { color:var(--hub-ink); }
+.econ-evidence-detail { border-top:1px solid var(--hub-border-light); padding-top:7px; }.econ-evidence-detail summary { cursor:pointer; font-size:10px; font-weight:700; }.econ-evidence-detail summary span { color:var(--econ-good); font-size:8px; text-transform:uppercase; }.econ-evidence-detail ul { margin:7px 0; padding-left:17px; display:grid; gap:3px; font-size:9px; }.econ-evidence-detail p,.econ-evidence-detail small { color:var(--hub-muted); font-size:9px; line-height:1.4; }.econ-evidence-detail p { margin:5px 0; }.econ-evidence-detail small { display:block; }
 .econ-definition-grid { margin-top:8px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }.econ-definition-grid>div { background:var(--hub-row-hover); border-radius:7px; padding:9px; }.econ-definition-grid p { margin:3px 0 0; color:var(--hub-muted); font-size:10px; }
 .econ-footer { display:flex; justify-content:space-between; color:var(--hub-muted); font-size:9px; padding:2px 1px 18px; }
 .econ-loading { min-height:280px; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--hub-muted); }.econ-spin { animation:econ-spin .9s linear infinite; } @keyframes econ-spin { to { transform:rotate(360deg); } }
 @media (max-width:980px) { .econ-metrics { grid-template-columns:repeat(3,1fr); }.econ-stack,.econ-evidence-grid { grid-template-columns:1fr; }.econ-scenario-intro,.econ-portfolio-result,.econ-wide { grid-column:1; }.econ-definition-grid { grid-template-columns:repeat(2,1fr); } }
-@media (max-width:640px) { .econ-toolbar,.econ-scenario-intro { align-items:stretch; flex-direction:column; }.econ-period-controls { display:grid; grid-template-columns:1fr 1fr; }.econ-period-controls .econ-button { grid-column:1/-1; }.econ-metrics { grid-template-columns:1fr 1fr; }.econ-metric strong { font-size:19px; }.econ-input-grid { grid-template-columns:1fr 1fr; }.econ-result-strip { grid-template-columns:1fr 1fr; }.econ-portfolio-numbers,.econ-definition-grid { grid-template-columns:1fr; }.econ-footer { display:grid; gap:2px; } }
+@media (max-width:640px) { .econ-toolbar,.econ-scenario-intro { align-items:stretch; flex-direction:column; }.econ-period-controls { display:grid; grid-template-columns:1fr 1fr; }.econ-period-controls .econ-button { grid-column:1/-1; }.econ-metrics { grid-template-columns:1fr 1fr; }.econ-metric strong { font-size:19px; }.econ-input-grid { grid-template-columns:1fr 1fr; }.econ-result-strip { grid-template-columns:1fr 1fr; }.econ-portfolio-numbers,.econ-definition-grid,.econ-recovered-grid,.econ-recovered-numbers { grid-template-columns:1fr; }.econ-footer { display:grid; gap:2px; } }
 `;

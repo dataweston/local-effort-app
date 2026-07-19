@@ -71,6 +71,23 @@ function mapLine(name, config) {
   return config.unallocatedLine;
 }
 
+function mapOrderIdentity(payload, sourceId, config) {
+  const signals = payload?.identitySignals || {};
+  const customerIds = new Set([
+    signals.orderCustomerId,
+    ...(signals.paymentCustomerIds || []),
+  ].filter(Boolean).map(String));
+  for (const line of config.lines) {
+    if ((line.squareOrderIds || []).map(String).includes(String(payload?.orderId || sourceId || ''))) {
+      return { line, method: 'square_order_id_cross_source_match' };
+    }
+    if ((line.squareCustomerIds || []).some((id) => customerIds.has(String(id)))) {
+      return { line, method: 'square_customer_identity' };
+    }
+  }
+  return null;
+}
+
 function blankLineResult(line) {
   return {
     id: line.id,
@@ -79,6 +96,7 @@ function blankLineResult(line) {
     observedOrders: new Set(),
     observedUnits: 0,
     itemLabels: new Map(),
+    attributionMethods: new Map(),
   };
 }
 
@@ -95,7 +113,83 @@ function finalizeLine(line, squareRevenue) {
     observedItemLabels: [...line.itemLabels.entries()]
       .map(([name, amount]) => ({ name, revenue: roundMoney(amount) }))
       .sort((a, b) => b.revenue - a.revenue),
-    contributionMarginStatus: 'blocked_missing_line_cost_drivers',
+    attributionMethods: [...line.attributionMethods.entries()]
+      .map(([method, amount]) => ({ method, revenue: roundMoney(amount) }))
+      .sort((a, b) => b.revenue - a.revenue),
+    contributionMarginStatus: 'partial_components_observed_full_margin_incomplete',
+  };
+}
+
+function matchesVendorRule(row, rule) {
+  if (rule.classifications?.length && !rule.classifications.includes(String(row.classification || '').toUpperCase())) return false;
+  const haystack = `${row.merchant || ''} ${row.description || ''}`;
+  return (rule.merchantPatterns || []).some((pattern) => new RegExp(pattern, 'i').test(haystack));
+}
+
+function buildVendorEvidence(rows, rules = []) {
+  return rules.map((rule) => {
+    const matches = rows.filter((row) => matchesVendorRule(row, rule));
+    return {
+      id: rule.id,
+      name: rule.name,
+      kind: rule.kind,
+      lineIds: rule.lineIds || [],
+      amount: roundMoney(matches.reduce((sum, row) => sum + Number(row.amount || 0), 0)),
+      postingCount: matches.length,
+      dates: [...new Set(matches.map((row) => row.date?.toISOString?.().slice(0, 10) || String(row.date).slice(0, 10)))],
+      transactionIds: [...new Set(matches.map((row) => row.id))],
+      note: rule.note,
+      source: 'local_budget_transaction_and_split_rows',
+    };
+  }).filter((item) => item.postingCount > 0);
+}
+
+function buildEvidenceRecovery(config, squareLines, vendorEvidence, referenceEvidence) {
+  const squareByLine = new Map(squareLines.map((line) => [line.id, line]));
+  const referenceItems = referenceEvidence?.items || [];
+  const lines = config.lines.map((line) => {
+    const actual = squareByLine.get(line.id);
+    const references = referenceItems.filter((item) => (item.lineIds || []).includes(line.id));
+    const costs = vendorEvidence.filter((item) => item.lineIds.includes(line.id));
+    const directMatched = costs.filter((item) => item.kind === 'direct_variable_cost')
+      .reduce((sum, item) => sum + item.amount, 0);
+    const candidateDirect = costs.filter((item) => item.kind === 'candidate_direct_variable_cost')
+      .reduce((sum, item) => sum + item.amount, 0);
+    const shared = costs.filter((item) => item.kind === 'shared_cogs_pool')
+      .reduce((sum, item) => sum + item.amount, 0);
+    const lineRelatedOperating = costs.filter((item) => item.kind === 'line_related_operating_spend')
+      .reduce((sum, item) => sum + item.amount, 0);
+    const observedRevenue = Number(actual?.observedSquareRevenue || 0);
+    let status = 'unresolved';
+    if (observedRevenue && references.length) status = 'revenue_and_operating_components_observed';
+    else if (observedRevenue) status = 'revenue_observed_cost_incomplete';
+    else if (references.length || costs.length) status = 'reference_or_cost_evidence_only';
+    return {
+      id: line.id,
+      name: line.name,
+      status,
+      observedRevenue: roundMoney(observedRevenue),
+      directlyMatchedVariableCost: roundMoney(directMatched),
+      candidateDirectVariableCost: roundMoney(candidateDirect),
+      sharedCogsPoolRelevantToLine: roundMoney(shared),
+      lineRelatedOperatingSpend: roundMoney(lineRelatedOperating),
+      revenueLessDirectlyMatchedVariableCost: observedRevenue ? roundMoney(observedRevenue - directMatched) : null,
+      fullContributionMargin: null,
+      costPools: costs,
+      referenceEvidence: references,
+      caveat: 'Shared and candidate costs are surfaced, not deducted. Revenue less directly matched cost is an incomplete component subtotal, not contribution margin.',
+    };
+  });
+  const observedRevenue = squareLines.reduce((sum, line) => sum + Number(line.observedSquareRevenue || 0), 0);
+  const unallocated = Number(squareByLine.get(config.unallocatedLine.id)?.observedSquareRevenue || 0);
+  return {
+    status: 'partial_line_economics_available',
+    attributedSquareRevenue: roundMoney(observedRevenue - unallocated),
+    unallocatedSquareRevenue: roundMoney(unallocated),
+    squareRevenueAttributionCoverage: observedRevenue ? Math.round((observedRevenue - unallocated) / observedRevenue * 10000) / 10000 : null,
+    vendorCostPools: vendorEvidence,
+    lines,
+    note: 'Exact transaction identities, measured unit prices, quote/service facts, and candidate cost pools are retained separately so partial knowledge can improve decisions without fabricating a full margin.',
   };
 }
 
@@ -189,7 +283,7 @@ function classifyPosting(row) {
   return 'unknownOrUnresolved';
 }
 
-async function localBudgetActuals(repo, startText, endExclusiveText) {
+async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvidenceRules = []) {
   const url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim()
     .replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
   if (!url) throw new Error('LOCAL_BUDGET_DATABASE_URL is required for authoritative cash actuals');
@@ -201,6 +295,8 @@ async function localBudgetActuals(repo, startText, endExclusiveText) {
         t.id,
         t.date,
         t.type::text AS type,
+        COALESCE(NULLIF(t."merchantName", ''), 'Unknown merchant') AS merchant,
+        COALESCE(NULLIF(t."userDescription", ''), NULLIF(t.description, ''), '') AS description,
         COALESCE(sc.name, c.name, 'Uncategorized') AS category,
         COALESCE(
           s.classification::text,
@@ -239,6 +335,7 @@ async function localBudgetActuals(repo, startText, endExclusiveText) {
       lastTransactionDate: freshness[0]?.lastTransactionDate?.toISOString?.().slice(0, 10) || null,
       postingCount: rows.length,
       totals,
+      vendorEvidence: buildVendorEvidence(rows, vendorEvidenceRules),
     };
   } finally {
     await prisma.$disconnect();
@@ -265,16 +362,19 @@ async function squareAttribution(repo, start, endExclusive, config) {
     let lineRevenue = 0;
     for (const event of deduped) {
       const payload = event.payload || {};
+      const identityMatch = mapOrderIdentity(payload, event.sourceId || event.id, config);
       orderRevenue += Number(payload.totalCents || 0) / 100;
       for (const item of payload.lineItems || []) {
         const amount = Number(item.totalCents || 0) / 100;
-        const lineDef = mapLine(item.name, config);
+        const lineDef = identityMatch?.line || mapLine(item.name, config);
+        const attributionMethod = identityMatch?.method || (lineDef.id === config.unallocatedLine.id ? 'unallocated_label' : 'square_item_label');
         const result = byLine.get(lineDef.id);
         result.observedSquareRevenue += amount;
         result.observedOrders.add(event.sourceId || event.id);
         result.observedUnits += Number(item.quantity || 0);
         const label = normalizeName(item.name) || 'unnamed';
         result.itemLabels.set(label, (result.itemLabels.get(label) || 0) + amount);
+        result.attributionMethods.set(attributionMethod, (result.attributionMethods.get(attributionMethod) || 0) + amount);
         lineRevenue += amount;
       }
     }
@@ -297,6 +397,10 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   for (const name of ['.env', '.env.local', '.env.vercel.production']) loadEnv(path.join(repo, name));
   const configPath = path.resolve(configInput || path.join(__dirname, '..', 'references', 'line-model-config.json'));
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  const observedEvidencePath = path.join(path.dirname(configPath), 'observed-line-evidence.json');
+  const observedEvidence = fs.existsSync(observedEvidencePath)
+    ? JSON.parse(fs.readFileSync(observedEvidencePath, 'utf8'))
+    : { schemaVersion: 1, asOf: null, items: [] };
   const overrides = new Map((Array.isArray(scenarioInputs) ? scenarioInputs : []).map((line) => [line.id, line]));
   config.lines = config.lines.map((line) => ({
     ...line,
@@ -308,9 +412,10 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   const endExclusive = addDays(end, 1);
   const endExclusiveText = endExclusive.toISOString().slice(0, 10);
   const [cash, square] = await Promise.all([
-    localBudgetActuals(repo, startText, endExclusiveText),
+    localBudgetActuals(repo, startText, endExclusiveText, config.vendorEvidenceRules),
     squareAttribution(repo, start, endExclusive, config),
   ]);
+  const evidenceRecovery = buildEvidenceRecovery(config, square.lines, cash.vendorEvidence, observedEvidence);
   const months = completeCalendarMonths(start, end);
   const annualFounderPolicy = config.founderCompensation.westonAnnual + config.founderCompensation.catherineAnnual;
   const founderPolicyCompensation = months == null ? null : roundMoney(annualFounderPolicy / 12 * months);
@@ -322,7 +427,7 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
     cashContributionBeforeFounderDraws - t.unknownOrUnresolved
   );
   const result = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     period: { start: startText, end: endText, completeCalendarMonths: months },
     taxonomy: {
@@ -332,6 +437,7 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
     sources: {
       cashActuals: { source: cash.source, lastTransactionDate: cash.lastTransactionDate, postingCount: cash.postingCount },
       revenueAttribution: { source: square.source, latestOrderDate: square.latestOrderDate, orderCount: square.orderCount },
+      recoveredEvidence: { source: 'gmail_company_brain_and_local_budget_cross_source_matches', asOf: observedEvidence.asOf },
     },
     companyBridge: {
       cashRevenue: t.revenue,
@@ -359,25 +465,29 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
       observedSquareLineItemRevenue: square.observedLineItemRevenue,
       squareToCashRevenueRatio: t.revenue ? Math.round(square.observedOrderRevenue / t.revenue * 10000) / 10000 : null,
       cashLessObservedSquareOrders: roundMoney(t.revenue - square.observedOrderRevenue),
+      attributedSquareRevenue: evidenceRecovery.attributedSquareRevenue,
+      unallocatedSquareRevenue: evidenceRecovery.unallocatedSquareRevenue,
+      squareRevenueAttributionCoverage: evidenceRecovery.squareRevenueAttributionCoverage,
       reconciliationCaveat: 'This difference is not automatically unallocated line revenue: order dates and cash settlement dates differ, and non-Square receipts may exist.',
     },
     lineActuals: square.lines,
+    evidenceRecovery,
     scenarioInputs: config.lines.map((line) => ({ id: line.id, name: line.name, ...line.scenarioInputs })),
     scenario: buildScenario(config),
     kitchenCostPolicy: config.kitchen,
     dataQuality: {
       cashActuals: 'usable_subject_to_classification_review',
-      lineRevenue: 'partial_square_attribution_only',
-      lineContributionMargins: 'blocked',
+      lineRevenue: 'near_complete_for_observed_square_orders_cross_source_identity_matches_applied',
+      lineContributionMargins: 'partial_components_available_full_margins_incomplete',
       raiseSizingFromLineModel: 'blocked',
       missingRequiredEvidence: [
-        'transaction-level mapping for Custom Amount, unnamed, and unfamiliar Square labels',
-        'line-specific ingredient cost per order or event',
-        'line-specific paid labor hours and payroll burden',
-        'line-specific founder labor hours and chosen economic hourly cost',
-        'line-specific kitchen hours and shared-facility allocation rule',
-        'packaging, delivery, and other variable costs by line',
-        'monthly capacity and demand assumptions by line'
+        'resolve the remaining Square residual and reconcile non-Square receipts to business lines',
+        'join COGS receipts and purchase lots to recipes, production runs, customers, or events',
+        'match paid labor hours and payroll burden to production runs and events',
+        'measure founder labor hours and choose the economic hourly cost policy',
+        'match kitchen bookings, courier invoices, packaging, and delivery costs to jobs',
+        'value trade consideration and close final invoices for events with mixed cash and in-kind terms',
+        'measure monthly capacity, target mix, ramp timing, and uses of funds before sizing a raise'
       ],
     },
   };

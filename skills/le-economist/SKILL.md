@@ -39,11 +39,12 @@ node <skill-dir>\scripts\build-line-model.cjs --repo <local-effort-app> --start 
 The period should normally contain complete calendar months. The model:
 
 - reconciles Local Budget cash actuals to Brain Square order events;
-- maps only supported item labels into the working line taxonomy;
-- retains Custom Amount, unnamed, and unfamiliar labels as Unallocated;
+- maps supported item labels plus exact Square customer and order identities into the working line taxonomy;
+- retains only unsupported Custom Amount, unnamed, and unfamiliar transactions as Unallocated;
 - calculates observed line revenue and coverage;
+- surfaces measured prices, quantities, purchase lots, quotes, directly matched costs, candidate direct costs, shared COGS, and channel spend as separate evidence layers;
 - calculates scenario contribution only after all required cost and capacity drivers are populated in `references/line-model-config.json`;
-- reports blocked outputs and missing evidence explicitly.
+- leaves the full contribution field blank when allocation is unsupported, while preserving all known components and missing joins explicitly.
 
 Read `references/line-model.md` before editing mappings or scenario inputs. Treat its business-line taxonomy as working management structure, not a canonical owner decision.
 

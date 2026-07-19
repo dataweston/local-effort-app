@@ -19,6 +19,9 @@ Authority is domain-specific. An owner statement does not replace a posted cash 
 - Never equate Square order date with Local Budget settlement date without a timing bridge.
 - Preserve Unallocated and unresolved categories.
 - Do not allocate pooled COGS, labor, rent, or founder time to lines by revenue share and call the result observed.
+- Do not call a line wholly blocked when exact revenue, price, quantity, quote, purchase-lot, or candidate-cost evidence exists. Report the known component and leave the unsupported subtotal blank.
+- Distinguish directly matched variable cost, candidate direct cost, shared COGS, and channel operating spend. Only the first may be deducted automatically from line contribution.
+- Use exact order/customer identities to resolve opaque payment labels when Gmail, Square, or Brain provenance supports the match.
 - Record the extraction date and source maximum date.
 - If a result depends on a classification judgment, show the result before and after that judgment.
 

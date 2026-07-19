@@ -18,6 +18,9 @@
     {
       "id": "weekly_meal_subscription",
       "name": "Weekly Meal Subscription",
+      "squareOrderIds": [
+        "lk23DpSVIvKKdwZejdmGw8RkcDCZY"
+      ],
       "squareNamePatterns": [
         "^weekly\\s*meals?$",
         "^weeklymeals$",
@@ -41,6 +44,9 @@
     {
       "id": "private_dinners_events",
       "name": "Private Dinners & Events",
+      "squareOrderIds": [
+        "pUDI4Uft668FX6PW0uSEGdvUSz5YY"
+      ],
       "squareNamePatterns": [
         "private dinner",
         "team hat dinner",
@@ -81,7 +87,10 @@
     },
     {
       "id": "wholesale_bread",
-      "name": "Wholesale & Bread",
+      "name": "Partner Wholesale",
+      "squareCustomerIds": [
+        "NJRVRVQFFB0R0P3GTQ3F8FJ0Y8"
+      ],
       "squareNamePatterns": ["happy monday", "wholesale", "bread"],
       "scenarioInputs": {
         "monthlyOrders": null,
@@ -114,6 +123,40 @@
         "otherVariableCostPerOrder": null,
         "monthlyOrderCapacity": null
       }
+    }
+  ],
+  "vendorEvidenceRules": [
+    {
+      "id": "bakers_field_flour",
+      "name": "Baker's Field flour purchases",
+      "merchantPatterns": ["baker.?s field flour"],
+      "classifications": ["COGS"],
+      "kind": "shared_cogs_pool",
+      "lineIds": [
+        "weekly_meal_subscription",
+        "private_dinners_events",
+        "local_effort_pizza",
+        "wholesale_bread"
+      ],
+      "note": "Observed flour cash cost. It is relevant to flour-using lines but is not allocated without a production-lot or recipe join."
+    },
+    {
+      "id": "thumbtack_lead_spend",
+      "name": "Thumbtack lead spend",
+      "merchantPatterns": ["thumbtack"],
+      "classifications": ["OPERATING"],
+      "kind": "line_related_operating_spend",
+      "lineIds": ["private_dinners_events"],
+      "note": "Observed acquisition spend for the events channel. It belongs in CAC/channel economics, not food contribution unless the decision model explicitly includes acquisition cost."
+    },
+    {
+      "id": "accell_partner_delivery",
+      "name": "Accell partner delivery",
+      "merchantPatterns": ["accell"],
+      "classifications": ["COGS", "OPERATING"],
+      "kind": "candidate_direct_variable_cost",
+      "lineIds": ["wholesale_bread"],
+      "note": "Courier invoices are candidate direct partner-delivery costs. Match service date and destination before deducting them from contribution."
     }
   ],
   "unallocatedLine": {

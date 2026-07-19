@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-07-18",
+  "items": [
+    {
+      "id": "happy_monday_unit_prices_2026_04_10",
+      "lineIds": ["wholesale_bread"],
+      "evidenceType": "measured_unit_prices",
+      "confidence": "high",
+      "title": "Happy Monday wholesale unit prices",
+      "sourceLabel": "Gmail report attached to message 19d785ce68c3c800",
+      "observedAt": "2026-04-10",
+      "facts": [
+        "Egg salad sandwich $5.10",
+        "Turkey sandwich $6.10",
+        "Yogurt and granola $3.85",
+        "4-inch pizza $3.60",
+        "12-inch cheese pizza $7.10",
+        "12-inch pepperoni or seasonal pizza $8.10"
+      ],
+      "note": "These are wholesale selling prices observed in the partner ledger, not retail prices and not contribution margins."
+    },
+    {
+      "id": "happy_monday_report_totals_2026_spring",
+      "lineIds": ["wholesale_bread"],
+      "evidenceType": "measured_units_and_revenue",
+      "confidence": "high",
+      "title": "Partner ledger volume samples",
+      "sourceLabel": "Gmail report attachments dated 2026-04-10, 2026-04-19, and 2026-05-16",
+      "observedAt": "2026-05-16",
+      "facts": [
+        "Mar 30-Apr 11: 297 units and $1,540.70 net sales",
+        "Apr 13-19: 88 units and $458.80 net sales",
+        "May 10-16: 100 units and $520.50 net sales"
+      ],
+      "note": "Report totals establish realized partner mix and price. Square payment dates can lag the report period."
+    },
+    {
+      "id": "bakers_field_flour_lot_2026_04",
+      "lineIds": ["weekly_meal_subscription", "private_dinners_events", "local_effort_pizza", "wholesale_bread"],
+      "evidenceType": "measured_input_purchase",
+      "confidence": "high",
+      "title": "Baker's Field flour lot",
+      "sourceLabel": "Brain Gmail event 8496ec3d-1cfd-4a81-b601-ca6c633cd8ad; invoice 84270; Local Budget payment 2026-05-09",
+      "observedAt": "2026-05-09",
+      "facts": [
+        "150 lb ordered across Bolles, durum, Red Fife, and Forefront bolted flour",
+        "$193.50 invoice and matching cash payment",
+        "$1.29/lb blended invoice cost derived from the lot"
+      ],
+      "note": "The $1.29/lb figure is a blended invoice result and may include fees or mixed SKU prices. The Brain's older working ingredient value is $1.50/lb; retain both until SKU-level invoice detail resolves the difference."
+    },
+    {
+      "id": "weekly_meal_pilot_2026_06",
+      "lineIds": ["weekly_meal_subscription"],
+      "evidenceType": "quote_to_payment_match",
+      "confidence": "high",
+      "title": "Weekly-meal pilot payment recovered",
+      "sourceLabel": "Gmail message 19e7f6d4dc8aa4af and Square order lk23DpSVIvKKdwZejdmGw8RkcDCZY",
+      "observedAt": "2026-06-09",
+      "facts": [
+        "Quoted $65 per family dinner",
+        "Quoted $195-$260 weekly for 3-4 dinners, plus possible $5-$10 delivery",
+        "$205 Custom Amount payment matched to the meal-prep thread"
+      ],
+      "note": "The payment is line-attributable; the exact meals and delivery component still need an order-level fulfillment join."
+    },
+    {
+      "id": "haus_of_well_2026_06",
+      "lineIds": ["private_dinners_events"],
+      "evidenceType": "event_quote_and_execution",
+      "confidence": "high",
+      "title": "Haus of Well event evidence",
+      "sourceLabel": "Gmail thread 19e269e856835408 and Square order pUDI4Uft668FX6PW0uSEGdvUSz5YY",
+      "observedAt": "2026-06-14",
+      "facts": [
+        "Two-day event for roughly 200 rotating guests",
+        "Quote evolved from $40/person to $35/person or $7,000, then to roughly $2,000 as portions, service, and supplied ingredients changed",
+        "$750 Square payment directly matched to the event",
+        "Client supplied matcha, protein powder, and other branded products",
+        "A separate kitchen booking created a requested $100 incremental charge"
+      ],
+      "note": "The $750 payment is observed cash, not proof of the final total consideration; trade value and any remaining invoice are unresolved."
+    },
+    {
+      "id": "masters_dinner_thumbtack_2026_04",
+      "lineIds": ["private_dinners_events"],
+      "evidenceType": "lead_quote_service_load",
+      "confidence": "medium_high",
+      "title": "Thumbtack-sourced Masters dinner quote",
+      "sourceLabel": "Brain Gmail event d2b507ae-fb2c-400a-adad-0b7ce87be6fe",
+      "observedAt": "2026-04-09",
+      "facts": [
+        "12-14 guests; modeled at $125 per guest and 14 guests",
+        "15% deposit requested",
+        "Two staff described as normally sufficient",
+        "Typical arrival 90 minutes before first course"
+      ],
+      "note": "This recovers quote and service-load evidence from a Thumbtack lead, but final guest count, payment, ingredient purchases, and labor hours remain unmatched."
+    }
+  ]
+}

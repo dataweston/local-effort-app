@@ -872,7 +872,11 @@ function GraphLoader({ nodes, edges, layoutMode, sizeMode, onNodeClick, onNodeHo
   const sigma = useSigma();
 
   useEffect(() => {
-    const graph = new Graph({ multi: true, type: 'directed' });
+    // Sigma's internal graph is a simple directed graph, even when the graph
+    // passed to useLoadGraph is configured as multi. Collapse parallel
+    // assertions here so graph.import cannot throw when two relationships
+    // connect the same pair of entities.
+    const graph = new Graph({ type: 'directed' });
     const typeOrder = [...new Set(nodes.map(node => node.entityType))].sort();
     const typeIndex = new Map(typeOrder.map((type, index) => [type, index]));
     const visibleDegree = new Map(nodes.map(node => [node.id, 0]));
@@ -905,6 +909,7 @@ function GraphLoader({ nodes, edges, layoutMode, sizeMode, onNodeClick, onNodeHo
     (edges || []).forEach(edge => {
       if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) return;
       if (edge.source === edge.target) return;
+      if (graph.hasEdge(edge.id) || graph.hasDirectedEdge(edge.source, edge.target)) return;
       graph.addDirectedEdgeWithKey(edge.id, edge.source, edge.target, {
         label: edge.relType,
         size: edge.provisional ? 1 : 1.25,
@@ -1126,7 +1131,7 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
   }
 
   return (
-    <div className="flex-1 relative bg-[#edf4ef]" style={{ minHeight: 0 }}>
+    <div className="relative flex-1 min-w-0 bg-[#edf4ef]" style={{ minHeight: 0 }}>
       <aside className={`absolute top-0 left-0 z-20 h-full w-72 overflow-y-auto border-r border-[#d8e3db] bg-[#fbfdfb]/95 shadow-[8px_0_24px_rgba(25,52,43,0.08)] transition-transform duration-200 ${panelOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="bg-[#163d35] px-4 py-4 text-white">
           <div className="flex items-center justify-between gap-2">
@@ -1330,8 +1335,9 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
           <button type="button" onClick={resetGraph} title="Reset graph controls" aria-label="Reset graph controls" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50"><RotateCcw size={15} /></button>
         </div>
       </div>
-      <SigmaContainer
-        style={{ width: '100%', height: '100%', backgroundColor: '#edf4ef' }}
+      <div className="absolute inset-0 min-w-0">
+        <SigmaContainer
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', minWidth: 1, minHeight: 1, backgroundColor: '#edf4ef' }}
         settings={{
           renderLabels: labelMode !== 'none' && (labelMode === 'all' || visibleNodes.length < 150),
           labelSize: 11,
@@ -1363,10 +1369,11 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
             size: activeEdgeIds.has(edge) ? Math.max(2.5, data.size * 2.25) : activeNodeId ? 0.55 : data.size,
           }),
         }}
-      >
-        <GraphLoader nodes={visibleNodes} edges={visibleEdges} layoutMode={layoutMode} sizeMode={sizeMode} onNodeClick={onNodeClick} onNodeHover={setHoveredId} onStageClick={() => setNodeQuery('')} />
-        <GraphCameraBinding sigmaRef={sigmaRef} />
-      </SigmaContainer>
+        >
+          <GraphLoader nodes={visibleNodes} edges={visibleEdges} layoutMode={layoutMode} sizeMode={sizeMode} onNodeClick={onNodeClick} onNodeHover={setHoveredId} onStageClick={() => setNodeQuery('')} />
+          <GraphCameraBinding sigmaRef={sigmaRef} />
+        </SigmaContainer>
+      </div>
       {hoveredNode && hoveredNode.id !== selectedId && (
         <div className="pointer-events-none absolute bottom-12 left-1/2 z-10 min-w-48 -translate-x-1/2 border border-[#d8e3db] bg-white/95 px-3 py-2 shadow-lg">
           <div className="flex items-center gap-2">
