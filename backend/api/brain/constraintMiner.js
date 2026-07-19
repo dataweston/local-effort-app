@@ -15,11 +15,10 @@
  * that already produced constraint assertions are skipped.
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
 const { getPrisma } = require('../utils/prisma');
 const { writeLedgerEvent, findOrCreateEntity } = require('./ledger');
+const { llmJson, hasLlm } = require('./llmJson');
 
-const MODEL = process.env.BRAIN_TRIAGE_MODEL || 'claude-opus-4-8';
 const CONSTRAINT_REL_TYPES = ['AVOIDS', 'PREFERS', 'MEDICAL_CONSTRAINT'];
 
 const EXTRACTION_SCHEMA = {
@@ -45,12 +44,6 @@ const EXTRACTION_SCHEMA = {
   additionalProperties: false,
 };
 
-let anthropicClient = null;
-function getAnthropic() {
-  if (!anthropicClient) anthropicClient = new Anthropic();
-  return anthropicClient;
-}
-
 function intakeConstraintText(answers = {}) {
   const fields = [
     ['Allergies', answers.allergies],
@@ -69,13 +62,7 @@ function intakeConstraintText(answers = {}) {
 }
 
 async function extractConstraints(text) {
-  const client = getAnthropic();
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 2048,
-    messages: [{
-      role: 'user',
-      content: `Extract dietary constraints from this meal-prep intake form for a Minneapolis meal-subscription business.
+  const prompt = `Extract dietary constraints from this meal-prep intake form for a Minneapolis meal-subscription business.
 
 RULES:
 - Allergies and intolerances -> direction "avoids", severity "medical".
@@ -88,13 +75,9 @@ RULES:
 - If there is nothing constraint-like, return an empty list.
 
 FORM ANSWERS:
-${text}`,
-    }],
-    output_config: { format: { type: 'json_schema', schema: EXTRACTION_SCHEMA } },
-  });
-  const out = response.content.find((b) => b.type === 'text')?.text;
-  if (!out) return [];
-  return JSON.parse(out).constraints || [];
+${text}`;
+  const { data, via } = await llmJson({ prompt, schema: EXTRACTION_SCHEMA, maxTokens: 2048, schemaName: 'dietary_constraints' });
+  return { constraints: data.constraints || [], via };
 }
 
 // Deterministic fallback — used when the Anthropic API is unavailable (no key
@@ -205,9 +188,11 @@ async function runConstraintMiner({ logger, force = false, ledgerEventId = null 
 
       let constraints;
       let extractor = 'llm';
-      if (process.env.ANTHROPIC_API_KEY) {
+      if (hasLlm()) {
         try {
-          constraints = await extractConstraints(text);
+          const extracted = await extractConstraints(text);
+          constraints = extracted.constraints;
+          extractor = extracted.via;
         } catch (err) {
           logger?.warn({ err, eventId: event.id }, 'brain/constraints: LLM extraction failed, using deterministic fallback');
           constraints = deterministicConstraints(payload.answers || {});

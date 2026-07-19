@@ -13,6 +13,7 @@ const { Prisma } = require('@prisma/client');
 const { getPrisma } = require('../utils/prisma');
 const { writeLedgerEvent } = require('./ledger');
 const { process: ingestProcess } = require('./ingest/engine');
+const { hasLlm } = require('./llmJson');
 
 const AUTO_ACT_THRESHOLD = 0.85;
 const OPS_SOURCES = new Set(['gmail', 'square', 'Obsidian']);
@@ -59,9 +60,9 @@ async function routeToHub(prisma, { source, action, raw, entityName }, logger) {
 
 async function runTriagePass({ logger, limit = 30 } = {}) {
   const prisma = getPrisma();
-  if (!process.env.ANTHROPIC_API_KEY) {
-    logger?.warn('brain/triage: ANTHROPIC_API_KEY not set — skipping pass');
-    return { acted: 0, deferred: 0, errors: ['ANTHROPIC_API_KEY not set'] };
+  if (!hasLlm()) {
+    logger?.warn('brain/triage: no LLM provider configured — skipping pass');
+    return { acted: 0, deferred: 0, errors: ['no ANTHROPIC_API_KEY or OPENAI_API_KEY set'] };
   }
 
   const items = await prisma.brainInboxItem.findMany({

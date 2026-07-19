@@ -1586,6 +1586,15 @@ app.all('/api/hub/brain-publish', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/economics-model', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/economics-model')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub economics model handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/calendar', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/calendar')(req, res);

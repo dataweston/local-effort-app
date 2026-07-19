@@ -2,7 +2,7 @@
 
 > Goal (founder, 2026-06-27): ONE ingest engine, no drift. Every capture path —
 > Hub panel (me + staff), Drafts, gmail/square feeds, MCP — flows through the
-> same classify→resolve→apply core. Deterministic-first with Claude fallback.
+> same classify→resolve→apply core. Deterministic-first with Anthropic→OpenAI fallback.
 > Surface results in Brain and Hub. Make it easy to parse + apply with *less*
 > verification (not none). Especially: simple updates to customer needs.
 
@@ -26,7 +26,7 @@ Every entry point calls the orchestrator; nothing re-implements a stage.
             ┌───────────── ingestEngine.process(text, ctx) ─────────────┐
  entry      │                                                            │
  points  →  │  1. CLASSIFY  → intent + structured fields + confidence    │ → result
- (below)    │     deterministic rules first; Claude fallback on miss     │   {intent, fields,
+ (below)    │     deterministic rules first; provider fallback on miss   │   {intent, fields,
             │  2. RESOLVE   → bind to existing entities (customer,        │    resolved, confidence,
             │     vendor, ingredient…) — never mint silently             │    needsConfirm, preview}
             │  3. APPLY     → one switch over intents → the canonical     │
@@ -34,16 +34,16 @@ Every entry point calls the orchestrator; nothing re-implements a stage.
             └────────────────────────────────────────────────────────────┘
 ```
 
-### Stage 1 — CLASSIFY (deterministic-first, Claude fallback)
+### Stage 1 — CLASSIFY (deterministic-first, provider fallback)
 - A `classifiers[]` list of cheap deterministic matchers, each returns
   `{intent, fields, confidence}` or null. Order = priority. Light optional tags
   (`diet:`, `price:`, `task:`, `vendor:`, `note:`, `#avoid`/`#medical`) boost a
   matcher to high confidence; plain language still matches at lower confidence.
-- If the best deterministic confidence < threshold (e.g. 0.6) AND
-  `ANTHROPIC_API_KEY` is set → call Claude with ONE schema that is the union of
-  all intents (extends the current TRIAGE_SCHEMA with `constraint_correction`
-  and `vendor_price`). Claude returns the same `{intent, fields, confidence}`.
-- If no key and deterministic missed → intent `needs_human`.
+- If the best deterministic confidence < threshold (e.g. 0.6) and at least one
+  provider is configured, request ONE union schema. Anthropic is primary and
+  OpenAI is attempted if Anthropic is missing or fails. Both return the same
+  `{intent, fields, confidence}` shape.
+- If no provider succeeds and deterministic matching missed → intent `needs_human`.
 
 Intents (v1): `constraint_correction`, `vendor_price`, `task`, `new_entity`,
 `append_note`, `trash`, `needs_human`.
@@ -100,7 +100,7 @@ A per-intent `autoApplyThreshold` + severity gate:
   the existing `routeToHub` ops-alert threads for noteworthy items.
 
 ## Migration (no big-bang)
-1. Build `ingest/` engine with the deterministic classifiers + Claude fallback +
+1. Build `ingest/` engine with deterministic classifiers + provider fallback +
    the apply switch (wrapping existing helpers — no logic moved yet, just called).
 2. Add `POST /api/brain/capture` (preview + commit) → Hub panel uses it.
 3. Point `triageEngine` cron at `ingestEngine.process` (delete its private

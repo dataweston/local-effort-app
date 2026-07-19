@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
-import { Crosshair, Maximize2, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, Crosshair, LayoutGrid, Maximize2, Network, RotateCcw, Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react';
 import Graph from 'graphology';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
@@ -827,7 +827,7 @@ function SmartReviewPanel({ accessToken, enabled, onApplied }) {
   );
 }
 
-function graphPosition(id) {
+function graphPosition(id, layoutMode, typeIndex, typeCount) {
   let xHash = 2166136261;
   let yHash = 2166136261;
   for (let index = 0; index < id.length; index += 1) {
@@ -835,29 +835,69 @@ function graphPosition(id) {
     xHash = Math.imul(xHash ^ code, 16777619);
     yHash = Math.imul(yHash ^ (code + index), 2246822519);
   }
+  const unitX = ((xHash >>> 0) % 997) / 997;
+  const unitY = ((yHash >>> 0) % 991) / 991;
+  if (layoutMode !== 'groups') return { x: unitX, y: unitY };
+
+  // Stable type clusters make the map interpretable before the user touches it.
+  const angle = ((typeIndex || 0) / Math.max(1, typeCount)) * Math.PI * 2 - Math.PI / 2;
+  const clusterRadius = typeCount > 1 ? 0.34 : 0;
+  const jitterAngle = unitX * Math.PI * 2;
+  const jitterRadius = 0.04 + unitY * 0.13;
   return {
-    x: ((xHash >>> 0) % 997) / 997,
-    y: ((yHash >>> 0) % 991) / 991,
+    x: 0.5 + Math.cos(angle) * clusterRadius + Math.cos(jitterAngle) * jitterRadius,
+    y: 0.5 + Math.sin(angle) * clusterRadius + Math.sin(jitterAngle) * jitterRadius,
   };
 }
 
-function GraphLoader({ nodes, edges, onNodeClick, onNodeHover }) {
+const RELATION_COLORS = ['#0f766e', '#2563eb', '#b45309', '#be123c', '#6d28d9', '#4d7c0f', '#0369a1', '#9f1239'];
+
+function relationshipColor(relType = '', provisional) {
+  if (provisional) return '#d6a84b';
+  let hash = 0;
+  for (let index = 0; index < relType.length; index += 1) {
+    hash = ((hash << 5) - hash) + relType.charCodeAt(index);
+    hash |= 0;
+  }
+  return RELATION_COLORS[Math.abs(hash) % RELATION_COLORS.length];
+}
+
+function relationshipLabel(relType) {
+  return relType.toLowerCase().replaceAll('_', ' ');
+}
+
+function GraphLoader({ nodes, edges, layoutMode, sizeMode, onNodeClick, onNodeHover, onStageClick }) {
   const loadGraph = useLoadGraph();
   const registerEvents = useRegisterEvents();
   const sigma = useSigma();
 
   useEffect(() => {
-    const graph = new Graph({ multi: false, type: 'directed' });
+    const graph = new Graph({ multi: true, type: 'directed' });
+    const typeOrder = [...new Set(nodes.map(node => node.entityType))].sort();
+    const typeIndex = new Map(typeOrder.map((type, index) => [type, index]));
+    const visibleDegree = new Map(nodes.map(node => [node.id, 0]));
+    edges.forEach(edge => {
+      visibleDegree.set(edge.source, (visibleDegree.get(edge.source) || 0) + 1);
+      visibleDegree.set(edge.target, (visibleDegree.get(edge.target) || 0) + 1);
+    });
 
     nodes.forEach(e => {
       if (!graph.hasNode(e.id)) {
-        const position = graphPosition(e.id);
+        const position = graphPosition(e.id, layoutMode, typeIndex.get(e.entityType), typeOrder.length);
+        const magnitude = sizeMode === 'uniform'
+          ? 1
+          : sizeMode === 'visible'
+            ? visibleDegree.get(e.id) || 0
+            : e.assertionCount || 0;
         graph.addNode(e.id, {
           label: e.name,
-          size: Math.max(4, Math.min(18, 4 + Math.sqrt(e.assertionCount || 0) * 2)),
+          size: sizeMode === 'uniform' ? 5 : Math.max(4, Math.min(17, 4 + Math.sqrt(magnitude) * 1.65)),
           color: TYPE_COLORS[e.entityType] || '#999',
           x: position.x,
           y: position.y,
+          entityType: e.entityType,
+          activity: e.assertionCount || 0,
+          degree: visibleDegree.get(e.id) || 0,
         });
       }
     });
@@ -865,28 +905,31 @@ function GraphLoader({ nodes, edges, onNodeClick, onNodeHover }) {
     (edges || []).forEach(edge => {
       if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) return;
       if (edge.source === edge.target) return;
-      if (graph.hasEdge(edge.source, edge.target)) return;
       graph.addDirectedEdgeWithKey(edge.id, edge.source, edge.target, {
         label: edge.relType,
-        size: 1,
-        color: edge.provisional ? '#e8c98a' : '#cbd5e1',
+        size: edge.provisional ? 1 : 1.25,
+        color: relationshipColor(edge.relType, edge.provisional),
       });
     });
 
-    loadGraph(graph);
-    if (graph.order > 1) {
-      forceAtlas2.assign(graph, { iterations: 150, settings: { gravity: 1, scalingRatio: 4, barnesHutOptimize: true } });
+    if (graph.order > 1 && layoutMode === 'network') {
+      forceAtlas2.assign(graph, {
+        iterations: Math.min(220, Math.max(90, graph.order)),
+        settings: { gravity: 0.8, scalingRatio: 7, slowDown: 2, barnesHutOptimize: graph.order > 80 },
+      });
     }
-  }, [nodes, edges, loadGraph]);
+    loadGraph(graph);
+  }, [nodes, edges, layoutMode, loadGraph, sizeMode]);
 
   useEffect(() => {
     registerEvents({
       clickNode: ({ node }) => onNodeClick(node),
       enterNode: ({ node }) => onNodeHover(node),
       leaveNode: () => onNodeHover(null),
-      doubleClickStage: () => sigma.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 }),
+      clickStage: () => onStageClick?.(),
+      doubleClickStage: () => sigma.getCamera().animatedReset({ duration: 350 }),
     });
-  }, [registerEvents, onNodeClick, onNodeHover, sigma]);
+  }, [registerEvents, onNodeClick, onNodeHover, onStageClick, sigma]);
 
   return null;
 }
@@ -909,7 +952,11 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
   const [hideOrphans, setHideOrphans] = useState(false);
   const [focusDepth, setFocusDepth] = useState(0);
   const [labelMode, setLabelMode] = useState('auto');
+  const [layoutMode, setLayoutMode] = useState('network');
+  const [sizeMode, setSizeMode] = useState('visible');
   const [hoveredId, setHoveredId] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [nodeQuery, setNodeQuery] = useState('');
   const sigmaRef = useRef(null);
 
   const availableTypes = useMemo(
@@ -985,6 +1032,36 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
       .filter(edge => edge.source === activeNodeId || edge.target === activeNodeId)
       .map(edge => edge.id)
   ), [activeNodeId, visibleEdges]);
+  const nodeById = useMemo(() => new Map(visibleNodes.map(node => [node.id, node])), [visibleNodes]);
+  const visibleTypeSummary = useMemo(() => (
+    visibleNodes.reduce((summary, node) => {
+      summary[node.entityType] = (summary[node.entityType] || 0) + 1;
+      return summary;
+    }, {})
+  ), [visibleNodes]);
+  const relationshipSummary = useMemo(() => (
+    Object.entries(visibleEdges.reduce((summary, edge) => {
+      summary[edge.relType] = (summary[edge.relType] || 0) + 1;
+      return summary;
+    }, {}))
+      .map(([relType, count]) => ({ relType, count }))
+      .sort((left, right) => right.count - left.count)
+  ), [visibleEdges]);
+  const selectedNode = selectedId ? nodeById.get(selectedId) : null;
+  const selectedConnections = useMemo(() => (
+    selectedId ? visibleEdges.filter(edge => edge.source === selectedId || edge.target === selectedId) : []
+  ), [selectedId, visibleEdges]);
+  const selectedOutgoing = selectedConnections.filter(edge => edge.source === selectedId).length;
+  const selectedIncoming = selectedConnections.length - selectedOutgoing;
+  const hoveredNode = hoveredId ? nodeById.get(hoveredId) : null;
+  const nodeMatches = useMemo(() => {
+    const query = nodeQuery.trim().toLowerCase();
+    if (query.length < 2) return [];
+    return visibleNodes
+      .filter(node => node.name.toLowerCase().includes(query) || node.entityType.toLowerCase().includes(query))
+      .sort((left, right) => (right.assertionCount || 0) - (left.assertionCount || 0))
+      .slice(0, 7);
+  }, [nodeQuery, visibleNodes]);
 
   const toggleHiddenFilter = (value, setFilters) => {
     setFilters(current => current.includes(value)
@@ -999,19 +1076,45 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
     setHideOrphans(false);
     setFocusDepth(0);
     setLabelMode('auto');
+    setLayoutMode('network');
+    setSizeMode('visible');
     setHoveredId(null);
-    sigmaRef.current?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 });
+    setNodeQuery('');
+    sigmaRef.current?.getCamera().animatedReset({ duration: 350 });
   };
 
-  const focusSelected = () => {
-    if (!selectedId || !visibleNodes.some(node => node.id === selectedId)) return;
-    setFocusDepth(1);
+  const isolateType = type => setHiddenTypes(current => (
+    current.length === availableTypes.length - 1 && !current.includes(type)
+      ? []
+      : availableTypes.filter(candidate => candidate !== type)
+  ));
+
+  const isolateRelationship = relType => setHiddenRelationships(current => (
+    current.length === availableRelationships.length - 1 && !current.includes(relType)
+      ? []
+      : availableRelationships.filter(candidate => candidate !== relType)
+  ));
+
+  const moveCameraTo = id => {
+    if (!id || !visibleNodes.some(node => node.id === id)) return;
     try {
-      const node = sigmaRef.current?.getNodeDisplayData(selectedId);
-      if (node) sigmaRef.current.getCamera().setState({ x: node.x, y: node.y, ratio: 0.45 });
+      const node = sigmaRef.current?.getNodeDisplayData(id);
+      if (node) sigmaRef.current.getCamera().animate({ x: node.x, y: node.y, ratio: 0.42 }, { duration: 350 });
     } catch {
       // Sigma can briefly lag a graph replacement; the selected node remains inspectable.
     }
+  };
+
+  const chooseNode = id => {
+    onNodeClick(id);
+    setNodeQuery('');
+    window.setTimeout(() => moveCameraTo(id), 0);
+  };
+
+  const focusSelected = () => {
+    if (!selectedId) return;
+    setFocusDepth(1);
+    window.setTimeout(() => moveCameraTo(selectedId), 0);
   };
 
   if (!nodes.length) {
@@ -1023,14 +1126,135 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
   }
 
   return (
-    <div className="flex-1 relative" style={{ minHeight: 0 }}>
-      <div className="absolute top-3 left-3 z-10 bg-white/95 border border-gray-200 shadow-sm p-2 flex flex-wrap gap-x-3 gap-y-1 max-w-xs text-xs text-gray-600">
-        {availableTypes.map(type => (
-          <span key={type} className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: TYPE_COLORS[type] || '#999' }} />
-            {type}
-          </span>
-        ))}
+    <div className="flex-1 relative bg-[#edf4ef]" style={{ minHeight: 0 }}>
+      <aside className={`absolute top-0 left-0 z-20 h-full w-72 overflow-y-auto border-r border-[#d8e3db] bg-[#fbfdfb]/95 shadow-[8px_0_24px_rgba(25,52,43,0.08)] transition-transform duration-200 ${panelOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="bg-[#163d35] px-4 py-4 text-white">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Network size={17} aria-hidden="true" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Knowledge map</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex border border-white/25 text-[10px]">
+                <button type="button" onClick={() => setFocusDepth(0)} className={`px-2 py-1 ${focusDepth === 0 ? 'bg-white text-[#163d35]' : 'text-white/75 hover:bg-white/10'}`}>Full</button>
+                <button type="button" onClick={() => selectedId && setFocusDepth(1)} disabled={!selectedId} className={`border-l border-white/20 px-2 py-1 ${focusDepth > 0 ? 'bg-white text-[#163d35]' : 'text-white/75 hover:bg-white/10'} disabled:cursor-not-allowed disabled:opacity-40`}>Local</button>
+              </div>
+              <button type="button" onClick={() => setPanelOpen(false)} className="p-1 text-white/65 hover:bg-white/10 hover:text-white" title="Collapse analysis panel" aria-label="Collapse analysis panel"><ChevronLeft size={15} /></button>
+            </div>
+          </div>
+          <div className="mt-3 text-lg font-semibold leading-tight truncate">{selectedNode?.name || 'Network overview'}</div>
+          <div className="mt-1 text-[11px] text-white/65">{selectedNode?.entityType || `${availableTypes.length} entity types`}</div>
+        </div>
+
+        <div className="border-b border-[#dce7df] p-3">
+          <div className="relative">
+            <SearchIcon size={14} className="pointer-events-none absolute left-2.5 top-2.5 text-gray-400" />
+            <input value={nodeQuery} onChange={event => setNodeQuery(event.target.value)} placeholder="Find an entity" className="w-full border border-[#cddbd2] bg-white py-2 pl-8 pr-8 text-xs text-gray-800 outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e]" />
+            {nodeQuery && <button type="button" onClick={() => setNodeQuery('')} className="absolute right-2 top-2 p-0.5 text-gray-400 hover:text-gray-700" aria-label="Clear map search"><X size={14} /></button>}
+          </div>
+          {nodeMatches.length > 0 && (
+            <div className="mt-1 max-h-48 overflow-y-auto border border-[#d8e3db] bg-white">
+              {nodeMatches.map(node => (
+                <button type="button" key={node.id} onClick={() => chooseNode(node.id)} className="flex w-full items-center gap-2 border-b border-gray-100 px-2 py-2 text-left last:border-0 hover:bg-[#f0f7f3]">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: TYPE_COLORS[node.entityType] || '#999' }} />
+                  <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-800">{node.name}</span>
+                  <span className="max-w-16 truncate text-[10px] text-gray-400">{node.entityType}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="border-b border-[#dce7df] px-4 py-3">
+          <div className="grid grid-cols-3 divide-x divide-[#dce7df] text-center">
+            <div><div className="text-lg font-semibold tabular-nums text-[#163d35]">{visibleNodes.length}</div><div className="text-[10px] uppercase tracking-wide text-gray-500">Entities</div></div>
+            <div><div className="text-lg font-semibold tabular-nums text-[#163d35]">{visibleEdges.length}</div><div className="text-[10px] uppercase tracking-wide text-gray-500">Links</div></div>
+            <div><div className="text-lg font-semibold tabular-nums text-[#163d35]">{relationshipSummary.length}</div><div className="text-[10px] uppercase tracking-wide text-gray-500">Relations</div></div>
+          </div>
+        </div>
+
+        {selectedNode ? (
+          <div className="border-b border-[#dce7df] px-4 py-4">
+            <div className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Connection profile</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="border border-[#dce7df] bg-white px-3 py-2">
+                <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-gray-500"><ArrowUpRight size={12} /> Outgoing</div>
+                <div className="mt-1 text-xl font-semibold tabular-nums text-[#163d35]">{selectedOutgoing}</div>
+              </div>
+              <div className="border border-[#dce7df] bg-white px-3 py-2">
+                <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-gray-500"><ArrowDownRight size={12} /> Incoming</div>
+                <div className="mt-1 text-xl font-semibold tabular-nums text-[#163d35]">{selectedIncoming}</div>
+              </div>
+            </div>
+            <div className="mt-3 max-h-40 space-y-1 overflow-y-auto">
+              {selectedConnections.slice(0, 6).map(edge => {
+                const isOutgoing = edge.source === selectedId;
+                const other = nodeById.get(isOutgoing ? edge.target : edge.source);
+                return (
+                  <button type="button" key={edge.id} onClick={() => other && chooseNode(other.id)} className="flex w-full items-center gap-2 py-1 text-left text-xs text-gray-700 hover:text-[#0f766e]">
+                    {isOutgoing ? <ArrowUpRight size={12} className="shrink-0 text-[#0f766e]" /> : <ArrowDownRight size={12} className="shrink-0 text-[#2563eb]" />}
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: relationshipColor(edge.relType, edge.provisional) }} />
+                    <span className="min-w-0 flex-1 truncate">{other?.name || 'Unknown entity'}</span>
+                    <span className="max-w-24 truncate font-mono text-[10px] text-gray-400">{relationshipLabel(edge.relType)}</span>
+                  </button>
+                );
+              })}
+              {!selectedConnections.length && <div className="text-xs text-gray-400">No visible connections</div>}
+            </div>
+          </div>
+        ) : (
+          <div className="border-b border-[#dce7df] px-4 py-4">
+            <div className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Entity mix</div>
+            <div className="space-y-2">
+              {Object.entries(visibleTypeSummary).sort(([, left], [, right]) => right - left).slice(0, 6).map(([type, count]) => (
+                <button type="button" key={type} onClick={() => isolateType(type)} className="flex w-full items-center gap-2 text-left text-xs hover:text-[#0f766e]" title={`Show only ${type}; click again to restore`}>
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: TYPE_COLORS[type] || '#999' }} />
+                  <span className="min-w-0 flex-1 truncate text-gray-700">{type}</span>
+                  <span className="font-mono text-gray-400">{count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="px-4 py-4">
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Relationship mix</div>
+          <div className="space-y-2">
+            {relationshipSummary.slice(0, 5).map(({ relType, count }) => (
+              <button type="button" key={relType} onClick={() => isolateRelationship(relType)} className="block w-full text-left" title={`Show only ${relationshipLabel(relType)}; click again to restore`}>
+                <div className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+                  <span className="truncate text-gray-700">{relationshipLabel(relType)}</span>
+                  <span className="font-mono text-gray-400">{count}</span>
+                </div>
+                <div className="h-1.5 bg-[#dce7df]"><div className="h-full" style={{ width: `${Math.max(4, (count / (relationshipSummary[0]?.count || 1)) * 100)}%`, backgroundColor: relationshipColor(relType, false) }} /></div>
+              </button>
+            ))}
+            {!relationshipSummary.length && <div className="text-xs text-gray-400">No visible relationships</div>}
+          </div>
+        </div>
+      </aside>
+      {!panelOpen && (
+        <button type="button" onClick={() => setPanelOpen(true)} className="absolute left-3 top-3 z-20 flex items-center gap-1.5 border border-[#cddbd2] bg-white/95 px-2.5 py-2 text-xs font-medium text-[#163d35] shadow-sm hover:bg-white" aria-label="Open analysis panel">
+          <ChevronRight size={14} /> Analyze
+        </button>
+      )}
+      <div className={`absolute left-[6.75rem] top-3 z-10 w-64 ${panelOpen ? 'hidden' : ''}`}>
+        <div className="relative shadow-sm">
+          <SearchIcon size={14} className="pointer-events-none absolute left-2.5 top-2.5 text-gray-400" />
+          <input value={nodeQuery} onChange={event => setNodeQuery(event.target.value)} placeholder="Find an entity in this map" className="w-full border border-[#cddbd2] bg-white/95 py-2 pl-8 pr-8 text-xs text-gray-800 outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e]" />
+          {nodeQuery && <button type="button" onClick={() => setNodeQuery('')} className="absolute right-2 top-2 p-0.5 text-gray-400 hover:text-gray-700" aria-label="Clear map search"><X size={14} /></button>}
+        </div>
+        {nodeMatches.length > 0 && (
+          <div className="mt-1 max-h-64 overflow-y-auto border border-[#d8e3db] bg-white shadow-lg">
+            {nodeMatches.map(node => (
+              <button type="button" key={node.id} onClick={() => chooseNode(node.id)} className="flex w-full items-center gap-2 border-b border-gray-100 px-3 py-2 text-left last:border-0 hover:bg-[#f0f7f3]">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: TYPE_COLORS[node.entityType] || '#999' }} />
+                <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-800">{node.name}</span>
+                <span className="text-[10px] text-gray-400">{node.entityType}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="absolute top-3 right-3 z-10 flex items-start gap-2">
         <details className="border border-gray-200 bg-white/95 shadow-sm">
@@ -1082,41 +1306,78 @@ function GraphView({ nodes, edges, onNodeClick, selectedId }) {
                   <option value="none">None</option>
                 </select>
               </label>
+              <label className="flex items-center justify-between gap-2 text-gray-700">
+                Layout
+                <select value={layoutMode} onChange={e => setLayoutMode(e.target.value)} className="border border-gray-300 bg-white px-1.5 py-1 text-xs">
+                  <option value="network">Connections</option>
+                  <option value="groups">Entity groups</option>
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-2 text-gray-700">
+                Node size
+                <select value={sizeMode} onChange={e => setSizeMode(e.target.value)} className="border border-gray-300 bg-white px-1.5 py-1 text-xs">
+                  <option value="visible">Visible links</option>
+                  <option value="activity">All activity</option>
+                  <option value="uniform">Uniform</option>
+                </select>
+              </label>
             </div>
           </div>
         </details>
         <div className="flex border border-gray-200 bg-white/95 shadow-sm">
-          <button type="button" onClick={() => sigmaRef.current?.getCamera().setState({ x: 0.5, y: 0.5, ratio: 1 })} title="Fit graph" aria-label="Fit graph" className="p-2 text-gray-600 hover:bg-gray-50"><Maximize2 size={15} /></button>
+          <button type="button" onClick={() => sigmaRef.current?.getCamera().animatedReset({ duration: 350 })} title="Fit graph" aria-label="Fit graph" className="p-2 text-gray-600 hover:bg-gray-50"><Maximize2 size={15} /></button>
           <button type="button" onClick={focusSelected} disabled={!selectedId} title="Focus selected entity" aria-label="Focus selected entity" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"><Crosshair size={15} /></button>
           <button type="button" onClick={resetGraph} title="Reset graph controls" aria-label="Reset graph controls" className="border-l border-gray-200 p-2 text-gray-600 hover:bg-gray-50"><RotateCcw size={15} /></button>
         </div>
       </div>
       <SigmaContainer
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', backgroundColor: '#edf4ef' }}
         settings={{
           renderLabels: labelMode !== 'none' && (labelMode === 'all' || visibleNodes.length < 150),
           labelSize: 11,
           labelColor: { color: '#374151' },
+          labelWeight: '500',
+          labelDensity: 0.12,
+          labelGridCellSize: 120,
+          labelRenderedSizeThreshold: 5,
           defaultEdgeColor: '#d1d5db',
           defaultEdgeType: 'arrow',
+          renderEdgeLabels: Boolean(activeNodeId),
+          edgeLabelSize: 9,
+          edgeLabelWeight: '600',
+          edgeLabelColor: { color: '#36594f' },
+          hideEdgesOnMove: visibleEdges.length > 700,
+          zIndex: true,
           nodeReducer: (node, data) => ({
             ...data,
             highlighted: node === selectedId,
-            color: activeNodeId && !activeNeighborhood.has(node) ? '#e2e8f0' : data.color,
-            size: node === selectedId ? data.size * 1.5 : node === hoveredId ? data.size * 1.25 : data.size,
+            forceLabel: labelMode !== 'none' && (node === selectedId || node === hoveredId),
+            zIndex: node === selectedId ? 3 : activeNeighborhood.has(node) ? 2 : 1,
+            color: activeNodeId && !activeNeighborhood.has(node) ? '#cbd9d0' : data.color,
+            size: node === selectedId ? data.size * 2.35 : activeNodeId && activeNeighborhood.has(node) ? data.size * 1.3 : activeNodeId ? Math.max(2, data.size * 0.6) : data.size,
           }),
           edgeReducer: (edge, data) => ({
             ...data,
-            color: activeNodeId && !activeEdgeIds.has(edge) ? '#e2e8f0' : data.color,
-            size: activeEdgeIds.has(edge) ? data.size * 1.5 : data.size,
+            forceLabel: activeEdgeIds.has(edge),
+            color: activeNodeId && !activeEdgeIds.has(edge) ? '#d5e0d9' : data.color,
+            size: activeEdgeIds.has(edge) ? Math.max(2.5, data.size * 2.25) : activeNodeId ? 0.55 : data.size,
           }),
         }}
       >
-        <GraphLoader nodes={visibleNodes} edges={visibleEdges} onNodeClick={onNodeClick} onNodeHover={setHoveredId} />
+        <GraphLoader nodes={visibleNodes} edges={visibleEdges} layoutMode={layoutMode} sizeMode={sizeMode} onNodeClick={onNodeClick} onNodeHover={setHoveredId} onStageClick={() => setNodeQuery('')} />
         <GraphCameraBinding sigmaRef={sigmaRef} />
       </SigmaContainer>
-      <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 rounded px-2 py-1 pointer-events-none">
-        {visibleNodes.length} entities · {visibleEdges.length} links
+      {hoveredNode && hoveredNode.id !== selectedId && (
+        <div className="pointer-events-none absolute bottom-12 left-1/2 z-10 min-w-48 -translate-x-1/2 border border-[#d8e3db] bg-white/95 px-3 py-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: TYPE_COLORS[hoveredNode.entityType] || '#999' }} />
+            <span className="max-w-64 truncate text-xs font-semibold text-gray-900">{hoveredNode.name}</span>
+          </div>
+          <div className="mt-1 text-[10px] text-gray-500">{hoveredNode.entityType} · {activeEdgeIds.size} visible connections · click to inspect</div>
+        </div>
+      )}
+      <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-white/85 px-2 py-1 text-[10px] text-gray-500 shadow-sm pointer-events-none">
+        <LayoutGrid size={11} /> {layoutMode === 'network' ? 'Connection layout' : 'Grouped by entity type'} · {visibleNodes.length} entities · {visibleEdges.length} links
       </div>
     </div>
   );
@@ -1500,7 +1761,7 @@ export default function BrainBrowserPage() {
           <BrainQualityPanel accessToken={auth.accessToken} onMerged={handleRefresh} />
         ) : viewMode === 'graph' ? (
           <>
-            <div className={`flex overflow-hidden ${showDetail ? 'w-1/2' : 'w-full'}`} style={{ minHeight: 0 }}>
+            <div className={`flex overflow-hidden ${showDetail ? 'w-3/5' : 'w-full'}`} style={{ minHeight: 0 }}>
               {graphLoading ? (
                 <div className="flex-1 flex items-center justify-center text-sm text-gray-400">Loading…</div>
               ) : (
@@ -1513,7 +1774,7 @@ export default function BrainBrowserPage() {
               )}
             </div>
             {showDetail && (
-              <div className="w-1/2 bg-white border-l border-gray-200 overflow-hidden flex flex-col">
+              <div className="w-2/5 min-w-[20rem] bg-white border-l border-gray-200 overflow-hidden flex flex-col">
                 <EntityDetail
                   id={selectedId}
                   accessToken={auth.accessToken}

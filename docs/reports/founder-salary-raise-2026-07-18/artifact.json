@@ -1,0 +1,166 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Founder salary funding plan",
+    "description": "Recommended raise size and revenue target based on the founder compensation policy and April-June 2026 operating results.",
+    "generatedAt": "2026-07-19T02:20:00Z",
+    "cards": [
+      {
+        "id": "raise_target_card",
+        "description": "Recommended gross raise before deducting any verified unrestricted business cash.",
+        "dataset": "headline",
+        "sourceId": "funding_model",
+        "metrics": [
+          { "label": "Recommended raise", "field": "recommendedRaise", "format": "currency" },
+          { "label": "15-month modeled need", "field": "fifteenMonthNeed", "format": "currency" }
+        ]
+      },
+      {
+        "id": "revenue_target_card",
+        "description": "Practical annual run-rate target under the modeled cost structure.",
+        "dataset": "headline",
+        "sourceId": "funding_model",
+        "metrics": [
+          { "label": "Annual revenue target", "field": "revenueTarget", "format": "currency" },
+          { "label": "Break-even revenue", "field": "breakEvenRevenue", "format": "currency" }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "revenue_scenario_chart",
+        "title": "Annual revenue by margin scenario",
+        "subtitle": "Current cost structure; values include founder compensation.",
+        "type": "horizontalBar",
+        "dataset": "revenueScenarios",
+        "sourceId": "funding_model",
+        "valueFormat": "currency",
+        "encodings": {
+          "x": { "field": "shortScenario", "type": "nominal" },
+          "y": { "field": "annualRevenue", "type": "quantitative" },
+          "tooltip": [
+            { "field": "scenario", "type": "nominal", "label": "Scenario" },
+            { "field": "monthlyRevenue", "type": "quantitative", "label": "Monthly revenue", "format": "currency" }
+          ]
+        }
+      }
+    ],
+    "tables": [],
+    "sources": [
+      { "id": "local_budget_actuals", "label": "Local Budget operating actuals, April-June 2026" },
+      { "id": "brain_owner_correction", "label": "Founder compensation policy in Brain" },
+      { "id": "funding_model", "label": "Founder salary funding model", "path": "scripts/model-founder-salary-raise.cjs" }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "layout": "full",
+        "body": "# Founder salary funding plan"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "layout": "full",
+        "sourceId": "funding_model",
+        "body": "## Executive Summary\n\n- **Raise about $225k:** roughly 15 months of salary-adjusted runway plus contingency.\n- **Target a $400k annual revenue run rate:** break-even is about $344k; $400k yields roughly 9% operating margin.\n- **Do not close below $170k** unless the founders accept less than 12 months of runway."
+      },
+      {
+        "id": "decision_basis",
+        "type": "markdown",
+        "layout": "full",
+        "sourceId": "funding_model",
+        "body": "## Why these are the right planning numbers\n\nApril-June revenue averaged **$9.7k/month**. After COGS, operating costs, and non-founder labor, only **$1.0k/month** remained for the **$13.3k/month** founder policy: modeled burn is **$12.3k/month**. At the observed **65% gross margin**, break-even is **$28.7k/month** and a strict 10% margin requires **$33.9k/month / $407k annually**."
+      },
+      {
+        "id": "revenue_scenario_visual",
+        "type": "chart",
+        "layout": "half",
+        "chartId": "revenue_scenario_chart"
+      },
+      {
+        "id": "actions_and_caveats",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Recommended next steps\n\n1. Seek **$225k**; use **$170k** as the minimum and **$255k** as the 18-month ceiling.\n2. Manage monthly toward **$33k-$34k revenue** while holding gross margin near 65%.\n3. Reforecast after three clean months and preserve nine months of forward cash.\n\n### Caveats and further questions\n\nThis planning model holds April-June margins and costs constant, adds unclassified Labor explicitly, and excludes payroll burden, financing fees, new growth spending, and unverified business cash. The key question is how quickly each line can scale without reducing margin."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-19T02:20:00Z",
+    "status": "ready",
+    "datasets": {
+      "headline": [
+        {
+          "recommendedRaise": 225000,
+          "fifteenMonthNeed": 212456.98,
+          "revenueTarget": 400000,
+          "breakEvenRevenue": 344311.22
+        }
+      ],
+      "revenueScenarios": [
+        { "scenario": "Current run rate", "shortScenario": "Current", "annualRevenue": 116988.04, "monthlyRevenue": 9749.00, "marginRate": -1.2633 },
+        { "scenario": "Break-even", "shortScenario": "0%", "annualRevenue": 344311.22, "monthlyRevenue": 28692.60, "marginRate": 0 },
+        { "scenario": "5% margin", "shortScenario": "5%", "annualRevenue": 372996.23, "monthlyRevenue": 31083.02, "marginRate": 0.05 },
+        { "scenario": "10% margin", "shortScenario": "10%", "annualRevenue": 406895.20, "monthlyRevenue": 33907.93, "marginRate": 0.10 },
+        { "scenario": "15% margin", "shortScenario": "15%", "annualRevenue": 447571.80, "monthlyRevenue": 37297.65, "marginRate": 0.15 }
+      ],
+      "raiseScenarios": [
+        { "months": 12, "beforeContingency": 147796.16, "contingency": 22169.42, "total": 169965.58 },
+        { "months": 15, "beforeContingency": 184745.20, "contingency": 27711.78, "total": 212456.98 },
+        { "months": 18, "beforeContingency": 221694.24, "contingency": 33254.14, "total": 254948.38 }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "local_budget_actuals",
+      "label": "Local Budget operating actuals, April-June 2026",
+      "query": {
+        "engine": "postgresql",
+        "language": "sql",
+        "description": "Aggregates posted Local Budget transactions and splits by month and reviewed classification.",
+        "executed_at": "2026-07-19T02:10:00Z",
+        "tables_used": ["public.transactions", "public.transaction_splits", "public.categories"],
+        "filters": ["2026-04-01 through 2026-06-30", "status = POSTED", "transfers and reimbursements excluded from operating model"],
+        "metric_definitions": {
+          "revenue": "Posted transaction lines classified as INCOME.",
+          "cogs": "Posted transaction lines classified as COGS.",
+          "operatingExpenses": "Posted transaction lines classified as OPERATING.",
+          "nonFounderLabor": "Posted transactions assigned to the Labor category; currently unclassified in Local Budget."
+        },
+        "sql": "WITH lines AS (SELECT date_trunc('month', t.date)::date AS period_month, t.type::text AS txn_type, COALESCE(s.classification::text, sc.\"defaultClassification\"::text, t.classification::text, c.\"defaultClassification\"::text, CASE WHEN t.type::text = 'INCOME' THEN 'INCOME' WHEN t.type::text = 'TRANSFER' THEN 'TRANSFER' ELSE 'PERSONAL' END) AS class, COALESCE(sc.name, c.name, 'Uncategorized') AS category, ABS(CASE WHEN s.id IS NULL THEN t.amount ELSE s.amount END) AS amount FROM transactions t LEFT JOIN categories c ON c.id = t.\"categoryId\" LEFT JOIN transaction_splits s ON s.\"transactionId\" = t.id LEFT JOIN categories sc ON sc.id = s.\"categoryId\" WHERE t.date >= '2026-04-01'::date AND t.date < '2026-07-01'::date AND t.status::text = 'POSTED') SELECT period_month, txn_type, class, category, SUM(amount) AS amount FROM lines GROUP BY period_month, txn_type, class, category ORDER BY period_month, txn_type, class, category"
+      }
+    },
+    {
+      "id": "brain_owner_correction",
+      "label": "Founder compensation policy in Brain",
+      "path": "Brain ledger event 5bbbbe3a-8374-4bc4-82da-ded95f099381",
+      "description": "Owner-confirmed policy: Weston $90k annually, Catherine $70k annually, assessed month-end from April 1, 2026."
+    },
+    {
+      "id": "funding_model",
+      "label": "Founder salary funding model",
+      "path": "scripts/model-founder-salary-raise.cjs",
+      "description": "Reproducible scenario model combining Local Budget actuals with the owner-confirmed founder compensation policy.",
+      "query": {
+        "engine": "postgresql",
+        "language": "sql",
+        "description": "Calculates revenue and runway scenarios from April-June Local Budget actuals and the owner-confirmed $160,000 annual founder compensation policy.",
+        "executed_at": "2026-07-19T02:20:00Z",
+        "tables_used": ["public.transactions", "public.transaction_splits", "public.categories"],
+        "filters": ["2026-04-01 through 2026-06-30", "status = POSTED", "founder annual compensation = $160,000", "contingency = 15%"],
+        "metric_definitions": {
+          "grossMarginRate": "One minus April-June COGS divided by April-June revenue.",
+          "revenueTarget": "Revenue required to cover non-founder costs and founder compensation at a selected operating margin.",
+          "raiseNeed": "Current salary-adjusted monthly burn times runway months, increased by a 15% contingency."
+        },
+        "sql": "WITH lines AS (SELECT t.type::text AS txn_type, COALESCE(s.classification::text, sc.\"defaultClassification\"::text, t.classification::text, c.\"defaultClassification\"::text, CASE WHEN t.type::text = 'INCOME' THEN 'INCOME' ELSE 'PERSONAL' END) AS class, COALESCE(sc.name, c.name, 'Uncategorized') AS category, ABS(CASE WHEN s.id IS NULL THEN t.amount ELSE s.amount END) AS amount FROM transactions t LEFT JOIN categories c ON c.id = t.\"categoryId\" LEFT JOIN transaction_splits s ON s.\"transactionId\" = t.id LEFT JOIN categories sc ON sc.id = s.\"categoryId\" WHERE t.date >= '2026-04-01'::date AND t.date < '2026-07-01'::date AND t.status::text = 'POSTED'), actuals AS (SELECT SUM(amount) FILTER (WHERE txn_type = 'INCOME' AND class = 'INCOME') AS revenue, SUM(amount) FILTER (WHERE class = 'COGS') AS cogs, SUM(amount) FILTER (WHERE class = 'OPERATING') AS operating_expenses, SUM(amount) FILTER (WHERE category = 'Labor') AS non_founder_labor FROM lines), model AS (SELECT *, 1 - cogs / revenue AS gross_margin_rate, revenue / 3 AS monthly_revenue, (operating_expenses + non_founder_labor) / 3 AS monthly_non_founder_costs, 160000.0 / 12 AS monthly_founder_comp, 160000.0 / 12 - (revenue - cogs - operating_expenses - non_founder_labor) / 3 AS monthly_burn FROM actuals), margins(target_margin) AS (VALUES (0.0), (0.05), (0.10), (0.15)), runway(months) AS (VALUES (12), (15), (18)) SELECT 'revenue_scenario' AS result_type, target_margin, 12 * (monthly_non_founder_costs + monthly_founder_comp) / (gross_margin_rate - target_margin) AS result_value FROM model CROSS JOIN margins UNION ALL SELECT 'raise_scenario' AS result_type, months::numeric AS target_margin, monthly_burn * months * 1.15 AS result_value FROM model CROSS JOIN runway ORDER BY result_type, target_margin"
+      }
+    }
+  ]
+}

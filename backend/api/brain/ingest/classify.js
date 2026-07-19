@@ -5,16 +5,18 @@
  * { intent, fields, confidence } or null. Light optional tags (diet:, price:,
  * task:, vendor:, note:, #avoid, #medical) push a match to high confidence;
  * plain language still matches at lower confidence. If the best deterministic
- * confidence is below CLAUDE_FALLBACK_THRESHOLD and a key is configured, Claude
- * is asked with the union schema. No key + deterministic miss => needs_human.
+ * confidence is below LLM_FALLBACK_THRESHOLD and a provider is configured,
+ * the shared LLM fallback is asked with the union schema. No provider plus a
+ * deterministic miss => needs_human.
  *
  * Intents: constraint_correction | vendor_price | task | new_entity |
  *          append_note | trash | needs_human
  */
 
 const { parseCorrectionText } = require('../constraintCorrection');
+const { llmJson, hasLlm } = require('../llmJson');
 
-const CLAUDE_FALLBACK_THRESHOLD = 0.6;
+const LLM_FALLBACK_THRESHOLD = 0.6;
 
 // ── tag detection (optional, sharpen only) ─────────────────────────────────────
 const TAG_RE = /^\s*(diet|constraint|price|cost|task|todo|vendor|supplier|contact|note)\s*[:#]\s*/i;
@@ -133,7 +135,7 @@ function classifyDeterministic(text, ctx) {
   return best;
 }
 
-// ── Claude fallback (union schema) ─────────────────────────────────────────────
+// ── LLM fallback (union schema) ────────────────────────────────────────────────
 
 const UNION_SCHEMA = {
   type: 'object',
@@ -170,16 +172,7 @@ const UNION_SCHEMA = {
   additionalProperties: false,
 };
 
-let anthropicClient = null;
-function getAnthropic() {
-  const Anthropic = require('@anthropic-ai/sdk');
-  if (!anthropicClient) anthropicClient = new Anthropic();
-  return anthropicClient;
-}
-
-async function classifyWithClaude(text, ctx) {
-  const model = process.env.BRAIN_TRIAGE_MODEL || 'claude-opus-4-8';
-  const client = getAnthropic();
+async function classifyWithLlm(text, ctx) {
   const customerHint = ctx?.customerName
     ? `\nThe operator has pre-selected customer "${ctx.customerName}" — treat ambiguous "customer" references as this person.`
     : '';
@@ -196,36 +189,29 @@ INTENTS:
 
 Read literally; do not invent. CONTENT:
 ${text}`;
-  const response = await client.messages.create({
-    model, max_tokens: 1024,
-    messages: [{ role: 'user', content: prompt }],
-    output_config: { format: { type: 'json_schema', schema: UNION_SCHEMA } },
-  });
-  const out = response.content.find(b => b.type === 'text')?.text;
-  if (!out) throw new Error('classify: empty model response');
-  const d = JSON.parse(out);
+  const { data: d, via } = await llmJson({ prompt, schema: UNION_SCHEMA, maxTokens: 1024, schemaName: 'brain_ingest_classification' });
   const { intent, confidence, rationale, ...rest } = d;
   return {
     intent,
     confidence: Math.min(0.95, Math.max(0.1, Number(confidence) || 0.5)),
     fields: rest,
     rationale,
-    via: 'claude',
+    via,
   };
 }
 
 /**
  * Classify text → { intent, confidence, fields, via }.
- * Deterministic-first; Claude fallback when below threshold and key present.
+ * Deterministic-first; provider fallback when below threshold and a key is present.
  */
 async function classify(text, ctx = {}) {
   const det = classifyDeterministic(text, ctx);
-  if (det && det.confidence >= CLAUDE_FALLBACK_THRESHOLD) {
+  if (det && det.confidence >= LLM_FALLBACK_THRESHOLD) {
     return { ...det, via: 'deterministic' };
   }
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (hasLlm()) {
     try {
-      const llm = await classifyWithClaude(text, ctx);
+      const llm = await classifyWithLlm(text, ctx);
       // Prefer the more confident of the two.
       if (!det || llm.confidence >= det.confidence) return llm;
       return { ...det, via: 'deterministic' };
@@ -238,4 +224,4 @@ async function classify(text, ctx = {}) {
   return { intent: 'needs_human', confidence: 0.2, fields: {}, via: 'no-llm' };
 }
 
-module.exports = { classify, classifyDeterministic, CLAUDE_FALLBACK_THRESHOLD };
+module.exports = { classify, classifyDeterministic, LLM_FALLBACK_THRESHOLD };

@@ -64,7 +64,7 @@ const AppContent = () => {
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
     location.pathname === '/native-mobile-hub' ||
-    location.pathname === '/hub';
+    location.pathname.startsWith('/hub');
   const hideFooter =
     location.pathname === '/' ||
     location.pathname === '/sale' ||
@@ -75,7 +75,7 @@ const AppContent = () => {
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
     location.pathname === '/native-mobile-hub' ||
-    location.pathname === '/hub';
+    location.pathname.startsWith('/hub');
 
   useEffect(() => {
     document.fonts?.ready?.then(() => document.body.classList.add('fonts-loaded'));

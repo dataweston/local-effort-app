@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PortableText } from '@portabletext/react';
 import {
   CalendarDays,
+  ChartNoAxesCombined,
   CheckCircle2,
   ClipboardList,
   Copy,
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { GoogleCalendarSync } from '../components/weeklyplanner/GoogleCalendarSync';
+import EconomicsModelView from '../components/hub/EconomicsModelView';
 import { createPortableTextComponents } from '../utils/portableTextComponents';
 
 const tabs = [
@@ -41,6 +43,7 @@ const tabs = [
 
 const mealPrepTab = { id: 'weeklyMealPrep', label: 'Meal Prep', icon: Soup };
 const foodInputsTab = { id: 'foodInputs', label: 'Ingredient Intake', icon: Utensils };
+const economicsTab = { id: 'economics', label: 'Economics', icon: ChartNoAxesCombined };
 
 const LOCALIST_CUSTOMER_OPTIONS = [
   { key: 'glutenFree', label: 'Gluten free' },
@@ -3366,10 +3369,11 @@ export default function HubPage() {
   const hubPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
   const isSecurityRoute = hubPath === '/hub/security';
   const isInputsRoute = hubPath === '/hub/inputs';
+  const isEconomicsRoute = hubPath === '/hub/economics';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : 'today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : 'today');
   // Privileged-only "view as" override: see the whole Hub as a staff or customer
   // would. null = view with your real (privileged) access. Production-safe: only
   // a genuinely privileged profile can set this; it never elevates access.
@@ -3462,7 +3466,7 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [...tabs, mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
+    ? [...tabs, mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
     : [...tabs, mealPrepTab, foodInputsTab, localistTab, securityTab];
   const mobileNavTabs = isInputsRoute
     ? [foodInputsTab]
@@ -3471,7 +3475,7 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, adminTab, localistTab, securityTab]
+    ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
     : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
   // Tabs a customer is allowed to land on; anything else falls back to Today.
   const customerTabIds = new Set(customerTabs.map((t) => t.id));
@@ -3481,6 +3485,8 @@ export default function HubPage() {
     ? 'localist'
     : isCustomer
     ? (customerTabIds.has(tab) ? tab : 'today')
+    : !isPrivileged && tab === 'economics'
+    ? 'today'
     : tab;
 
   if (localistToken) {
@@ -3591,6 +3597,7 @@ export default function HubPage() {
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} isPrivileged={isPrivileged} isCustomer={isCustomer} />}
         {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
+        {activeTab === 'economics' && isPrivileged && <EconomicsModelView accessToken={auth.accessToken} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
         {activeTab === 'security' && <SecurityView />}

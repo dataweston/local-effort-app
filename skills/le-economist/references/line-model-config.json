@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "modelStatus": "working_taxonomy_not_canonical",
+  "currency": "USD",
+  "founderCompensation": {
+    "westonAnnual": 90000,
+    "catherineAnnual": 70000,
+    "policyEffectiveDate": "2026-04-01",
+    "personalTransactionsOffsetAccrual": true
+  },
+  "kitchen": {
+    "firstTierHoursPerMonth": 20,
+    "firstTierHourlyRate": 40,
+    "remainingHourlyRate": 35,
+    "monthlyStorage": 200
+  },
+  "lines": [
+    {
+      "id": "weekly_meal_subscription",
+      "name": "Weekly Meal Subscription",
+      "squareNamePatterns": [
+        "^weekly\\s*meals?$",
+        "^weeklymeals$",
+        "monthly billing for weekly meals",
+        "^weekly cost$"
+      ],
+      "scenarioInputs": {
+        "monthlyOrders": null,
+        "averageRevenuePerOrder": null,
+        "ingredientCostPerOrder": null,
+        "paidLaborHoursPerOrder": null,
+        "paidLaborHourlyRate": 35,
+        "founderLaborHoursPerOrder": null,
+        "founderLaborHourlyRate": null,
+        "kitchenHoursPerOrder": null,
+        "packagingDeliveryPerOrder": null,
+        "otherVariableCostPerOrder": null,
+        "monthlyOrderCapacity": null
+      }
+    },
+    {
+      "id": "private_dinners_events",
+      "name": "Private Dinners & Events",
+      "squareNamePatterns": [
+        "private dinner",
+        "team hat dinner",
+        "single dinner",
+        "event deposit"
+      ],
+      "scenarioInputs": {
+        "monthlyOrders": null,
+        "averageRevenuePerOrder": null,
+        "ingredientCostPerOrder": null,
+        "paidLaborHoursPerOrder": null,
+        "paidLaborHourlyRate": 35,
+        "founderLaborHoursPerOrder": null,
+        "founderLaborHourlyRate": null,
+        "kitchenHoursPerOrder": null,
+        "packagingDeliveryPerOrder": null,
+        "otherVariableCostPerOrder": null,
+        "monthlyOrderCapacity": null
+      }
+    },
+    {
+      "id": "local_effort_pizza",
+      "name": "Local Effort Pizza",
+      "squareNamePatterns": ["pizza"],
+      "scenarioInputs": {
+        "monthlyOrders": null,
+        "averageRevenuePerOrder": null,
+        "ingredientCostPerOrder": null,
+        "paidLaborHoursPerOrder": null,
+        "paidLaborHourlyRate": 35,
+        "founderLaborHoursPerOrder": null,
+        "founderLaborHourlyRate": null,
+        "kitchenHoursPerOrder": null,
+        "packagingDeliveryPerOrder": null,
+        "otherVariableCostPerOrder": null,
+        "monthlyOrderCapacity": null
+      }
+    },
+    {
+      "id": "wholesale_bread",
+      "name": "Wholesale & Bread",
+      "squareNamePatterns": ["happy monday", "wholesale", "bread"],
+      "scenarioInputs": {
+        "monthlyOrders": null,
+        "averageRevenuePerOrder": null,
+        "ingredientCostPerOrder": null,
+        "paidLaborHoursPerOrder": null,
+        "paidLaborHourlyRate": 35,
+        "founderLaborHoursPerOrder": null,
+        "founderLaborHourlyRate": null,
+        "kitchenHoursPerOrder": null,
+        "packagingDeliveryPerOrder": null,
+        "otherVariableCostPerOrder": null,
+        "monthlyOrderCapacity": null
+      }
+    },
+    {
+      "id": "farmers_market",
+      "name": "Farmers Market",
+      "squareNamePatterns": ["farmers? market", "market booth"],
+      "scenarioInputs": {
+        "monthlyOrders": null,
+        "averageRevenuePerOrder": null,
+        "ingredientCostPerOrder": null,
+        "paidLaborHoursPerOrder": null,
+        "paidLaborHourlyRate": 35,
+        "founderLaborHoursPerOrder": null,
+        "founderLaborHourlyRate": null,
+        "kitchenHoursPerOrder": null,
+        "packagingDeliveryPerOrder": null,
+        "otherVariableCostPerOrder": null,
+        "monthlyOrderCapacity": null
+      }
+    }
+  ],
+  "unallocatedLine": {
+    "id": "unallocated",
+    "name": "Unallocated",
+    "neverAutoMapPatterns": ["^custom amount$", "^unnamed$", "^$"],
+    "note": "Never allocate Custom Amount, unnamed items, or unfamiliar labels without transaction-level evidence."
+  }
+}

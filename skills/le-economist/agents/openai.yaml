@@ -1,0 +1,4 @@
+interface:
+  display_name: "LE Economist"
+  short_description: "Evidence-first Local Effort economics"
+  default_prompt: "Use $le-economist to evaluate this Local Effort decision with current evidence and fully loaded economics."

@@ -44,10 +44,13 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 | 04:45 daily | `/api/brain/google-ads/sync` | Google Ads campaign and search-term performance |
 | 05:00 daily | `/api/brain/search-console/sync` | Search Console daily query + page performance (`searchConsoleSync.js`; needs `webmasters.readonly` on the shared grant) |
 | 05:15 daily | `/api/brain/google-projection/run` | Google ledger events → graph (`googleGraphProjector.js`): `Web: <group>` Channel entities with traffic rollups, Offer/BusinessLine `USES_CHANNEL` Website edges from mapped landing pages, `DEMAND_SIGNAL_FOR` edges from search terms/keywords/queries, Campaign entities from Ads data |
-| 11:00 + 23:00 | `/api/brain/triage/run` | LLM inbox triage (`triageEngine.js`, Claude via `@anthropic-ai/sdk`, model `claude-opus-4-8`) — auto-trash / auto-create safe entities / hint everything else |
+| 11:00 + 23:00 | `/api/brain/triage/run` | LLM inbox triage (`triageEngine.js`; Anthropic primary, OpenAI fallback) — auto-trash / auto-create safe entities / hint everything else |
 
 Recurring jobs accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.
-**The triage and constraint LLM paths need `ANTHROPIC_API_KEY` with credit.**
+**The triage and constraint LLM paths need at least one funded provider:**
+`ANTHROPIC_API_KEY` (primary) or `OPENAI_API_KEY` (fallback). Optional
+`BRAIN_OPENAI_MODEL` overrides the OpenAI model and `BRAIN_LLM_TIMEOUT_MS`
+controls the per-provider timeout.
 
 ## Dietary constraints
 
@@ -58,8 +61,8 @@ exact shape `menuRoutes.checkConstraints` enforces at menu broadcast
 (medical blocks, avoid needs override). Runs automatically on each intake
 submission (hooked in `mealPrepIntakeIngest.js`) and on demand via
 `POST /api/brain/constraints/mine` (`{force:true}` re-mines). Falls back to a
-deterministic parser of the structured fields when the Anthropic API is
-unavailable; rows are tagged `metadata.extractor: llm|deterministic|manual`.
+deterministic parser of the structured fields when both LLM providers are
+unavailable; rows are tagged `metadata.extractor: claude|openai|deterministic|manual`.
 
 ## Entity merge
 
@@ -82,8 +85,9 @@ search in prod matters.)
 
 ## Known gaps / next candidates
 
-- Anthropic API account had **no credits** as of 2026-06-11 — LLM triage and
-  LLM constraint extraction silently degrade until topped up.
+- Anthropic API account had **no credits** as of 2026-06-11. The Brain now
+  falls through to OpenAI when `OPENAI_API_KEY` is configured, then to its
+  deterministic parser if neither provider succeeds.
 - Inference types are vendor-payment-centric; with `order.placed` data now
   flowing, customer/seasonal inferences (repeat-customer, seasonality —
   order volume spikes Jul–Aug and Oct–Nov) are the natural additions.
