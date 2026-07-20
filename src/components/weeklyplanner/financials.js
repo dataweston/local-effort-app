@@ -18,9 +18,13 @@ export function hoursFromTimes(start, end) {
  */
 export function cardCost(card) {
   if (card.optional && !card.enabled) return 0;
+  if (card.costPerHourCents != null && card.costPerHourCents > 0) {
+    return (card.costPerHourCents / 100) * hoursFromTimes(card.startTime, card.endTime);
+  }
   if (card.costPerHour != null && card.costPerHour > 0) {
     return card.costPerHour * hoursFromTimes(card.startTime, card.endTime);
   }
+  if (card.costCents != null) return card.costCents / 100;
   return card.cost || 0;
 }
 
@@ -30,6 +34,7 @@ export function cardCost(card) {
  */
 export function cardBaseRevenue(card) {
   if (card.optional && !card.enabled) return 0;
+  if (card.revenueCents != null) return card.revenueCents / 100;
   return card.revenue || 0;
 }
 
@@ -64,7 +69,16 @@ export function dayTotals(cards, date) {
     cost += cardCost(c);
   }
 
-  return { revenue, cost, net: revenue - cost };
+  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, net: revenue - cost };
+}
+
+/** Apply an owner-entered actual for a date without blending it into the plan. */
+export function dayTotalsWithActual(cards, date, actualsByDate = {}) {
+  const planned = dayTotals(cards, date);
+  const actual = actualsByDate[date];
+  if (!actual) return planned;
+  const revenue = actual.revenueCents != null ? actual.revenueCents / 100 : Number(actual.revenue || 0);
+  return { ...planned, revenue, actualRevenue: revenue, hasActual: true, net: revenue - planned.cost };
 }
 
 /**
@@ -84,7 +98,25 @@ export function weekTotals(cards) {
     cost += cardCost(c);
   }
 
-  return { revenue, cost, net: revenue - cost };
+  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, net: revenue - cost };
+}
+
+export function weekTotalsWithActual(cards, actualsByDate = {}) {
+  const dates = [...new Set(cards.map((card) => card.date))];
+  const planned = weekTotals(cards);
+  let revenue = planned.revenue;
+  let actualRevenue = 0;
+  let hasActual = false;
+  for (const date of dates) {
+    const actual = actualsByDate[date];
+    if (!actual) continue;
+    hasActual = true;
+    const plannedDay = dayTotals(cards, date).revenue;
+    const actualAmount = actual.revenueCents != null ? actual.revenueCents / 100 : Number(actual.revenue || 0);
+    revenue += actualAmount - plannedDay;
+    actualRevenue += actualAmount;
+  }
+  return { ...planned, revenue, plannedRevenue: planned.revenue, actualRevenue: hasActual ? actualRevenue : null, hasActual, net: revenue - planned.cost };
 }
 
 /**
@@ -94,15 +126,15 @@ export function weekTotals(cards) {
  * @param {Array} cogsItems - array of { amount } objects (all COGS for the month)
  * @param {number} _weeksInMonth - unused, kept for API compat
  */
-export function monthTotals(monthCards, overheads = [], cogsItems = [], _weeksInMonth = 4) {
-  const cardTotals = weekTotals(monthCards);
+export function monthTotals(monthCards, overheads = [], cogsItems = [], _weeksInMonth = 4, actualsByDate = {}) {
+  const cardTotals = weekTotalsWithActual(monthCards, actualsByDate);
   const revenue = cardTotals.revenue;
   const labor = cardTotals.cost;
   const overhead = overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
-  const cogs = cogsItems.reduce((sum, c) => sum + (c.amount || 0), 0);
+  const cogs = cogsItems.reduce((sum, c) => sum + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0);
   const net = revenue - labor - overhead - cogs;
 
-  return { revenue, labor, overhead, cogs, net };
+  return { ...cardTotals, revenue, labor, overhead, cogs, net };
 }
 
 /**

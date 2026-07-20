@@ -72,6 +72,7 @@ export function WeeklyView({ planner, weekDates, weekStart, onDayClick, onNextWe
               date={date}
               cards={cardsByDate[date] || []}
               allCards={cards}
+              actualsByDate={planner.actualsByDate}
               onToggle={handlers.handleToggle}
               onCardClick={handlers.handleCardClick}
               onDayClick={onDayClick}
@@ -99,6 +100,7 @@ export function WeeklyView({ planner, weekDates, weekStart, onDayClick, onNextWe
               date={date}
               cards={cardsByDate[date] || []}
               allCards={cards}
+              actualsByDate={planner.actualsByDate}
               onToggle={handlers.handleToggle}
               onCardClick={handlers.handleCardClick}
               onDayClick={onDayClick}
@@ -130,6 +132,7 @@ export function WeeklyView({ planner, weekDates, weekStart, onDayClick, onNextWe
             date={weekDates[mobileDateIndex]}
             cards={cardsByDate[weekDates[mobileDateIndex]] || []}
             allCards={cards}
+            actualsByDate={planner.actualsByDate}
             onToggle={handlers.handleToggle}
             onCardClick={handlers.handleCardClick}
             onDayClick={onDayClick}

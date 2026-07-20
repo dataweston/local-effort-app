@@ -1,0 +1,156 @@
+{
+  "weekStart": "2026-07-20",
+  "cards": [
+    {
+      "id": "event-2026-10-10-laura-dotson-wedding",
+      "title": "Laura Dotson & Danny Lumbar wedding — Gibbs Farm",
+      "date": "2026-10-10",
+      "dayOfWeek": "Saturday",
+      "zone": "untimed",
+      "objectType": "event",
+      "people": [],
+      "revenueCents": 500000,
+      "cashReceivedCents": 41500,
+      "financialStatus": "booked_deposit_received_estimate",
+      "financialSource": "Owner estimate of approximately $5,000; Square invoice 000055 paid July 19",
+      "financialMetadata": {
+        "guestEstimate": 50,
+        "depositInvoiceId": "000055",
+        "depositPaidAt": "2026-07-19T14:52:00-05:00",
+        "depositCents": 41500,
+        "depositLabel": "15% deposit",
+        "originalDepositEstimateBasisCents": 275000,
+        "currentRevenueEstimateCents": 500000,
+        "eventTimeTbd": true,
+        "gmailThreadId": "19f62235cc9d74b7"
+      },
+      "notes": "BOOKED — deposit received. Approximately 50 guests, buffet at Gibbs Farm; event time TBD.\n\nWorking menu from Gmail:\nCocktail hour: local charcuterie and cheese (bresaola, salami, ham, smoked trout; gouda, aged cheddar, fresh chèvre); tomato jam, pimiento, sesame-free pumpkin hummus made with toasted sunflower seed and olive oil; pickled vegetables; focaccia or ciabatta TBD.\nMains/current direction: tri-tip glazed with roasted tomato, honey, red wine, and duck broth; braised turkey with sage-rosemary gravy and carrots, with cranberry component TBD; marinated winter squash with sage, honey, cider vinegar, fried sage, hazelnuts, toasted buckwheat, and roasted apple.\nSides: mashed potatoes, macaroni and cheese, butter rolls, fall greens with light herby vinaigrette, parmesan, and focaccia croutons; grilled vegetable dish TBD.\nAllergy: Laura has a sesame allergy — no tahini/sesame.\nTableware: mixed in-house plates and silverware are possible; matched settings require rental. Water glasses: 40–50 on hand plus supplementation.\nPricing note: current working menu was discussed around $60/person, while owner now expects total revenue around $5,000.",
+      "sortOrder": 10,
+      "priority": 2
+    }
+  ],
+  "recurringSeries": [
+    {
+      "id": "forecast-david-allison-monday",
+      "templateId": "meal-prep-david-allison-monday",
+      "startDate": "2026-07-27",
+      "endDate": "2026-09-14",
+      "paidThrough": "2026-08-10",
+      "dayOfWeek": "Monday",
+      "card": {
+        "title": "Meal prep — David and Allison",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 24200,
+        "financialStatus": "forecast",
+        "financialSource": "Square invoice history; July discounted payment 000044 allocated at $242/week",
+        "financialMetadata": {
+          "billingCadence": "every_4_weeks_thursday",
+          "nextInvoiceDue": "2026-08-13",
+          "nextInvoiceEstimateCents": 96800,
+          "julyInvoicePaidEarlyDays": 10,
+          "forecastMethod": "discounted_monthly_invoice_divided_by_four_service_weeks"
+        },
+        "notes": "Monday service. July invoice 000044 was paid July 5 at the discounted $968 rate, ten days before the prior billing date. The canceled recurring series shows a four-week Thursday cadence; next invoice should be due August 13 if that cadence continues.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-samantha-bailey-monday",
+      "templateId": "meal-prep-samantha-bailey-monday",
+      "startDate": "2026-07-27",
+      "endDate": "2026-09-14",
+      "dayOfWeek": "Monday",
+      "card": {
+        "title": "Meal prep — Samantha Bailey",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 24300,
+        "financialStatus": "forecast",
+        "financialSource": "Square recurring invoices; weekly Sunday cadence, latest two meal invoices $243",
+        "financialMetadata": {
+          "billingCadence": "weekly_sunday",
+          "forecastAmountMethod": "latest_stable_amount",
+          "latestInvoiceId": "000040-R-0005"
+        },
+        "notes": "Monday service. Forecast uses the latest stable weekly amount of $243; separate CSA-box invoices are excluded.",
+        "sortOrder": 20
+      }
+    },
+    {
+      "id": "forecast-gabriella-scarpa-tuesday",
+      "templateId": "meal-prep-gabriella-scarpa-tuesday",
+      "startDate": "2026-07-28",
+      "endDate": "2026-09-15",
+      "dayOfWeek": "Tuesday",
+      "card": {
+        "title": "Meal prep — Gabriella Scarpa",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 38100,
+        "financialStatus": "forecast",
+        "financialSource": "Square recurring invoice 000056-R-0001; weekly Sunday billing",
+        "financialMetadata": {
+          "billingCadence": "weekly_sunday",
+          "invoiceAmountCents": 38100,
+          "serviceDay": "Tuesday"
+        },
+        "notes": "Tuesday service: five dinners for four adults.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-catherine-squires-wednesday",
+      "templateId": "meal-prep-catherine-squires-wednesday",
+      "startDate": "2026-07-29",
+      "endDate": "2026-09-16",
+      "dayOfWeek": "Wednesday",
+      "card": {
+        "title": "Meal prep — Catherine Squires",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 12000,
+        "financialStatus": "forecast",
+        "financialSource": "Square weekly recurring history; $120 base meal plan excluding one-time $34 CSA box",
+        "financialMetadata": {
+          "billingCadence": "weekly_monday",
+          "baseMealPlanCents": 12000,
+          "excludedOneTimeCsaCents": 3400,
+          "serviceDay": "Wednesday"
+        },
+        "notes": "Wednesday service. Forecast excludes the explicitly one-time $34 CSA box that made invoice 000042-R-0003 total $154.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-sanjay-wednesday",
+      "templateId": "meal-prep-sanjay-wednesday",
+      "startDate": "2026-07-29",
+      "endDate": "2026-09-16",
+      "dayOfWeek": "Wednesday",
+      "card": {
+        "title": "Meal prep — Sanjay: 3 salmon + 3 ground beef bowls",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 11100,
+        "financialStatus": "forecast",
+        "financialSource": "Owner-confirmed weekly Wednesday program",
+        "financialMetadata": {
+          "billingCadence": "weekly",
+          "salmonBowls": 3,
+          "groundBeefBowls": 3,
+          "serviceDay": "Wednesday"
+        },
+        "notes": "Six bowls every Wednesday: three salmon and three ground beef.",
+        "sortOrder": 20
+      }
+    }
+  ],
+  "cogs": [],
+  "overheads": []
+}

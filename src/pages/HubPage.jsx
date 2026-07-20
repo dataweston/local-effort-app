@@ -904,7 +904,7 @@ function CalendarView({ accessToken, profile, isPrivileged }) {
   const [anchor, setAnchor] = useState(todayIso());
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [quickView, setQuickView] = useState('all');
+  const [quickView, setQuickView] = useState(isPrivileged ? 'all' : 'mine');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -973,10 +973,10 @@ function CalendarView({ accessToken, profile, isPrivileged }) {
             <section className="hub-day" key={date}>
               <h3>{formatDate(date)}</h3>
               {dayItems.map((item) => (
-                <div className="hub-calendar-item" key={item.id}>
+                <div className={`hub-calendar-item ${item.type === 'event' ? 'hub-calendar-event' : ''}`} key={item.id}>
                   <span>{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'}</span>
                   <strong>{item.title}</strong>
-                  <small>{item.subtitle || item.type} {item.metadata?.optional ? '/ open shift' : ''}</small>
+                  <small>{item.type === 'event' ? 'Event' : (item.subtitle || item.type)} {item.metadata?.optional ? '/ open shift' : ''}</small>
                 </div>
               ))}
             </section>
@@ -1186,11 +1186,22 @@ function PeopleView({ people, onMessage }) {
 function ShiftsView({ accessToken, profile, isPrivileged }) {
   const [from, setFrom] = useState(todayIso());
   const [shifts, setShifts] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [payroll, setPayroll] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState({ title: '', date: todayIso(), startTime: '09:00', endTime: '' });
+  const [requestDraft, setRequestDraft] = useState({
+    requestType: 'time_block', plannerCardId: '', date: todayIso(), startTime: '09:00', endTime: '', note: '',
+  });
 
   const load = useCallback(async () => {
-    const data = await api(`/api/hub/shifts?from=${from}&to=${addDays(from, 14)}`, accessToken);
+    const [data, payData] = await Promise.all([
+      api(`/api/hub/shifts?from=${from}&to=${addDays(from, 14)}`, accessToken),
+      api(`/api/hub/payroll?from=${from}&to=${addDays(from, 14)}`, accessToken).catch(() => null),
+    ]);
     setShifts(data.shifts || []);
+    setRequests(data.requests || []);
+    setPayroll(payData);
   }, [accessToken, from]);
 
   useEffect(() => { load().catch(() => {}); }, [load]);
@@ -1219,9 +1230,68 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
   };
 
   const viewerName = profile?.displayName || '';
+  const viewerFirstName = viewerName.split(/\s+/)[0];
+  const isMine = (shift) => shift.people.some((person) => {
+    const normalized = String(person || '').toLowerCase();
+    return normalized === viewerName.toLowerCase() || normalized === viewerFirstName.toLowerCase();
+  });
+  const visibleShifts = isPrivileged ? shifts : shifts.filter((shift) => isMine(shift) || shift.open);
+
+  const startEditing = (shift) => setEditing({
+    id: shift.id,
+    title: shift.title,
+    date: shift.date,
+    startTime: shift.startTime || '',
+    endTime: shift.endTime || '',
+  });
+
+  const saveShift = async (event) => {
+    event.preventDefault();
+    await api('/api/hub/shifts', accessToken, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'update', plannerCardId: editing.id, ...editing }),
+    });
+    setEditing(null);
+    await load();
+  };
+
+  const startChangeRequest = (shift) => setRequestDraft({
+    requestType: 'change',
+    plannerCardId: shift.id,
+    date: shift.date,
+    startTime: shift.startTime || '',
+    endTime: shift.endTime || '',
+    note: '',
+  });
+
+  const submitRequest = async (event) => {
+    event.preventDefault();
+    await api('/api/hub/shifts', accessToken, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'request', ...requestDraft }),
+    });
+    setRequestDraft({ requestType: 'time_block', plannerCardId: '', date: todayIso(), startTime: '09:00', endTime: '', note: '' });
+    await load();
+  };
+
+  const reviewRequest = async (request, status) => {
+    await api('/api/hub/shifts', accessToken, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'reviewRequest', requestId: request.id, status }),
+    });
+    await load();
+  };
+
+  const cancelRequest = async (request) => {
+    await api('/api/hub/shifts', accessToken, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'cancelRequest', requestId: request.id }),
+    });
+    await load();
+  };
 
   const shiftAction = (shift) => {
-    const mine = shift.people.includes(viewerName);
+    const mine = isMine(shift);
     if (shift.open && !mine) {
       return <button className="hub-shift-action" onClick={() => claim(shift)}><CheckCircle2 size={14} /> Pick up</button>;
     }
@@ -1235,31 +1305,86 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
   };
 
   return (
-    <div className="hub-grid">
+    <div className="hub-schedule-stack">
       <Panel
-        title="Staff Shifts"
-        icon={ClipboardList}
-        action={<button onClick={() => setFrom(addDays(from, 14))}>Next 2 weeks</button>}
+        title={isPrivileged ? 'Staff Shift Calendar' : 'My Shift Calendar'}
+        icon={CalendarDays}
+        action={(
+          <div className="hub-button-row">
+            <button onClick={() => setFrom(addDays(from, -14))}>Previous</button>
+            <button onClick={() => setFrom(todayIso())}>Today</button>
+            <button onClick={() => setFrom(addDays(from, 14))}>Next</button>
+          </div>
+        )}
       >
         <div className="hub-list">
-          {shifts.length === 0 && <p className="hub-empty">No shifts in this window.</p>}
-          {shifts.map((shift) => (
+          {visibleShifts.length === 0 && <p className="hub-empty">No shifts in this two-week window.</p>}
+          {visibleShifts.map((shift) => (
             <div className="hub-shift" key={shift.id}>
-              <div>
-                <strong>{shift.title}</strong>
-                <span>{formatDate(shift.date)} / {formatTime(shift.startTime)} {shift.endTime ? `to ${formatTime(shift.endTime)}` : ''}</span>
-                <small>
-                  {shift.people.length ? `Assigned: ${shift.people.join(', ')}` : 'No one assigned yet'}
-                  {shift.putUp ? ' / put up for pickup' : ''}
-                </small>
-              </div>
-              {shiftAction(shift)}
+              {editing?.id === shift.id ? (
+                <form className="hub-form hub-shift-edit" onSubmit={saveShift}>
+                  {isPrivileged && <Field label="Shift name"><input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} required /></Field>}
+                  <Field label="Date"><input type="date" value={editing.date} onChange={(e) => setEditing({ ...editing, date: e.target.value })} required /></Field>
+                  <Field label="Start"><input type="time" value={editing.startTime} onChange={(e) => setEditing({ ...editing, startTime: e.target.value })} required /></Field>
+                  <Field label="End"><input type="time" value={editing.endTime} onChange={(e) => setEditing({ ...editing, endTime: e.target.value })} /></Field>
+                  <div className="hub-button-row">
+                    <button className="hub-primary-button" type="submit">Save</button>
+                    <button type="button" onClick={() => setEditing(null)}>Cancel</button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div>
+                    <strong>{shift.title}</strong>
+                    <span>{formatDate(shift.date)} / {formatTime(shift.startTime)} {shift.endTime ? `to ${formatTime(shift.endTime)}` : ''}</span>
+                    <small>
+                      {shift.people.length ? `Assigned: ${shift.people.join(', ')}` : 'No one assigned yet'}
+                      {shift.putUp ? ' / put up for pickup' : ''}
+                    </small>
+                  </div>
+                  <div className="hub-button-row">
+                    {(isPrivileged || isMine(shift)) && <button onClick={() => startEditing(shift)}>Edit</button>}
+                    {isMine(shift) && <button onClick={() => startChangeRequest(shift)}>Request change</button>}
+                    {shiftAction(shift)}
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
       </Panel>
-      {isPrivileged && (
-        <Panel title="Add Open Shift" icon={Plus}>
+
+      <div className="hub-grid">
+        <Panel title="Availability or Schedule Request" icon={ClipboardList}>
+          <form className="hub-form" onSubmit={submitRequest}>
+            <Field label="Request type">
+              <select value={requestDraft.requestType} onChange={(e) => setRequestDraft({ ...requestDraft, requestType: e.target.value, plannerCardId: e.target.value === 'change' ? requestDraft.plannerCardId : '' })}>
+                <option value="time_block">Available time block</option>
+                <option value="time_off">Unavailable / time off</option>
+                <option value="change">Change an assigned shift</option>
+              </select>
+            </Field>
+            {requestDraft.requestType === 'change' && (
+              <Field label="Shift">
+                <select value={requestDraft.plannerCardId} onChange={(e) => {
+                  const shift = shifts.find((item) => item.id === e.target.value);
+                  setRequestDraft({ ...requestDraft, plannerCardId: e.target.value, date: shift?.date || requestDraft.date, startTime: shift?.startTime || '', endTime: shift?.endTime || '' });
+                }} required>
+                  <option value="">Choose a shift</option>
+                  {shifts.filter(isMine).map((shift) => <option key={shift.id} value={shift.id}>{formatDate(shift.date)} — {shift.title}</option>)}
+                </select>
+              </Field>
+            )}
+            <Field label="Date"><input type="date" value={requestDraft.date} onChange={(e) => setRequestDraft({ ...requestDraft, date: e.target.value })} required /></Field>
+            <Field label="Start"><input type="time" value={requestDraft.startTime} onChange={(e) => setRequestDraft({ ...requestDraft, startTime: e.target.value })} /></Field>
+            <Field label="End"><input type="time" value={requestDraft.endTime} onChange={(e) => setRequestDraft({ ...requestDraft, endTime: e.target.value })} /></Field>
+            <Field label="Note"><textarea value={requestDraft.note} onChange={(e) => setRequestDraft({ ...requestDraft, note: e.target.value })} rows={3} placeholder="What should the admin know?" /></Field>
+            <button className="hub-primary-button" type="submit">Submit request</button>
+          </form>
+        </Panel>
+
+        {isPrivileged && (
+          <Panel title="Add Open Shift" icon={Plus}>
           <form className="hub-form" onSubmit={createShift}>
             <Field label="Shift name"><input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} required /></Field>
             <Field label="Date"><input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} required /></Field>
@@ -1267,8 +1392,60 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
             <Field label="End"><input type="time" value={draft.endTime} onChange={(e) => setDraft({ ...draft, endTime: e.target.value })} /></Field>
             <button className="hub-primary-button" type="submit"><Plus size={13} /> Add shift</button>
           </form>
-        </Panel>
-      )}
+          </Panel>
+        )}
+      </div>
+
+      <Panel title={isPrivileged ? 'Schedule Requests' : 'My Requests'} icon={ClipboardList}>
+        <div className="hub-list">
+          {requests.length === 0 && <p className="hub-empty">No schedule requests in this window.</p>}
+          {requests.map((request) => (
+            <div className="hub-shift" key={request.id}>
+              <div>
+                <strong>{request.requesterName || 'Staff'} — {request.requestType.replace('_', ' ')}</strong>
+                <span>{formatDate(request.requestedDate)} / {formatTime(request.requestedStartTime)} {request.requestedEndTime ? `to ${formatTime(request.requestedEndTime)}` : ''}</span>
+                <small>{request.note || 'No note'} / {request.status}</small>
+              </div>
+              {request.status === 'pending' && (
+                <div className="hub-button-row">
+                  {isPrivileged ? (
+                    <>
+                      <button className="hub-primary-button" onClick={() => reviewRequest(request, 'approved')}>Approve</button>
+                      <button onClick={() => reviewRequest(request, 'declined')}>Decline</button>
+                    </>
+                  ) : <button onClick={() => cancelRequest(request)}>Cancel</button>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="My Pay Evidence" icon={CreditCard}>
+        {!payroll && <p className="hub-empty">Pay evidence is unavailable right now.</p>}
+        {payroll && (
+          <div className="hub-grid">
+            <div className="hub-row">
+              <strong>{payroll.currentHourlyRateCents ? `${formatMoneyCents(payroll.currentHourlyRateCents)} / hour` : 'Rate not available'}</strong>
+              <span>{payroll.square?.currentHourlyRateCents ? 'Current Square Labor wage setting' : 'Company Brain evidence'}</span>
+            </div>
+            <div className="hub-row">
+              <strong>{payroll.square?.paidHours ?? 0} closed timecard hours</strong>
+              <span>{formatDate(payroll.period.from)} through {formatDate(payroll.period.to)}</span>
+            </div>
+            <div className="hub-row">
+              <strong>{formatMoneyCents(payroll.square?.grossWagesCents || 0)} estimated gross</strong>
+              <span>Closed Square timecards only; pay stubs, tax, and deductions are not included.</span>
+            </div>
+            {payroll.brain?.documentedHours != null && (
+              <div className="hub-row">
+                <strong>{payroll.brain.documentedHours} documented hours / {formatMoneyCents(payroll.brain.documentedGrossCents || 0)} gross</strong>
+                <span>Square Payroll document evidence through {formatDate(payroll.brain.asOf)}; shown separately from live Labor timecards.</span>
+              </div>
+            )}
+          </div>
+        )}
+      </Panel>
     </div>
   );
 }
@@ -3800,6 +3977,7 @@ const hubCss = `
 .hub-calendar-item span { font-size: 11px; font-weight: 700; color: var(--hub-accent); }
 .hub-calendar-item strong { font-size: 13px; font-weight: 600; }
 .hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 11px; }
+.hub-calendar-event { border-left: 3px solid var(--hub-accent); }
 .hub-calendar-widget {
   margin: 12px 14px 12px 0;
   border: 1px solid var(--hub-border);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { dayTotals, teddyCoverage } from './financials';
+import { dayTotalsWithActual, teddyCoverage } from './financials';
 import { DayTotalsBar } from './DayTotalsBar';
 import { DailyCardExpanded } from './DailyCardExpanded';
 import { useSwipe } from '../../hooks/useSwipe';
@@ -8,7 +8,7 @@ import { formatDateFull, formatDateShort } from './dateUtils';
 
 export function DailyView({ selectedDate, weekDates, planner, onNextDay, onPrevDay, onDaySelect }) {
   const dayCards = planner.cardsByDate[selectedDate] || [];
-  const totals = dayTotals(planner.cards, selectedDate);
+  const totals = dayTotalsWithActual(planner.cards, selectedDate, planner.actualsByDate);
   const coverage = teddyCoverage(planner.cards, selectedDate);
 
   const timedCards = dayCards
@@ -93,6 +93,11 @@ export function DailyView({ selectedDate, weekDates, planner, onNextDay, onPrevD
         }}
       >
         <DayTotalsBar totals={totals} />
+        {totals.hasActual && (
+          <div className="mt-1 text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+            Planned ${totals.plannedRevenue} · Actual ${totals.actualRevenue}
+          </div>
+        )}
         {coverage.length > 0 && (
           <div
             className="mt-2 text-xs rounded px-2 py-1 inline-block"

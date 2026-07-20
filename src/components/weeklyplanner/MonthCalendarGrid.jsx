@@ -1,10 +1,10 @@
 import React from 'react';
 import { getMonthDates, getWeekStart, isToday, getDayOfWeek, formatDateShort } from './dateUtils';
-import { dayTotals } from './financials';
+import { dayTotalsWithActual } from './financials';
 
 const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export function MonthCalendarGrid({ year, month, cards, onSelectWeek }) {
+export function MonthCalendarGrid({ year, month, cards, actualsByDate = {}, onUpsertRevenueActual, onSelectWeek }) {
   const allDates = getMonthDates(year, month);
   // Group into weeks (rows of 7)
   const weeks = [];
@@ -53,7 +53,9 @@ export function MonthCalendarGrid({ year, month, cards, onSelectWeek }) {
               const isCurrentMonth = dateMonth === month;
               const today = isToday(date);
               const dateNum = parseInt(date.split('-')[2], 10);
-              const t = dayTotals(cards, date);
+              const t = dayTotalsWithActual(cards, date, actualsByDate);
+              const eventCount = cards.filter((card) => card.date === date && card.objectType === 'event').length;
+              const actual = actualsByDate[date];
 
               return (
                 <div
@@ -83,9 +85,14 @@ export function MonthCalendarGrid({ year, month, cards, onSelectWeek }) {
                   </div>
 
                   {/* Mini financial summary */}
-                  {(t.revenue > 0 || t.cost > 0) && isCurrentMonth && (
+                  {(t.revenue > 0 || t.plannedRevenue > 0 || t.cost > 0) && isCurrentMonth && (
                     <div className="mt-0.5 flex items-center justify-center gap-1">
-                      {t.revenue > 0 && (
+                      {t.hasActual ? (
+                        <>
+                          {t.plannedRevenue > 0 && <span className="text-[8px]" style={{ color: 'var(--color-text-muted)' }}>P {t.plannedRevenue}</span>}
+                          <span className="text-[8px] font-semibold" style={{ color: 'var(--color-state-success)' }}>A {t.actualRevenue}</span>
+                        </>
+                      ) : t.revenue > 0 && (
                         <span className="text-[8px] font-medium" style={{ color: 'var(--color-state-success)' }}>
                           +{t.revenue}
                         </span>
@@ -96,6 +103,25 @@ export function MonthCalendarGrid({ year, month, cards, onSelectWeek }) {
                         </span>
                       )}
                     </div>
+                  )}
+                  {eventCount > 0 && isCurrentMonth && (
+                    <div className="mt-0.5 text-center text-[8px] font-semibold" style={{ color: 'var(--color-action-primary-bg)' }}>
+                      • {eventCount} event{eventCount === 1 ? '' : 's'}
+                    </div>
+                  )}
+                  {isCurrentMonth && onUpsertRevenueActual && (
+                    <input
+                      aria-label={`Actual revenue for ${date}`}
+                      type="number"
+                      min="0"
+                      placeholder="Actual $"
+                      value={actual ? (actual.revenueCents != null ? actual.revenueCents / 100 : actual.revenue) : ''}
+                      step="0.01"
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={(event) => onUpsertRevenueActual(date, event.target.value, actual?.title === 'Actual revenue' ? '' : (actual?.title || ''))}
+                      className="mt-1 w-full rounded border px-1 py-0.5 text-[10px] text-center outline-none"
+                      style={{ backgroundColor: 'var(--color-bg-page)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-primary)' }}
+                    />
                   )}
                 </div>
               );

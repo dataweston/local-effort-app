@@ -70,9 +70,13 @@ function hoursBetween(startTime, endTime) {
 }
 
 function plannerCardLaborCents(card) {
+  if (card.costPerHourCents > 0) {
+    return Math.round(card.costPerHourCents * hoursBetween(card.startTime, card.endTime));
+  }
   if (card.costPerHour > 0) {
     return Math.round(card.costPerHour * hoursBetween(card.startTime, card.endTime) * 100);
   }
+  if (card.costCents != null) return Number(card.costCents || 0);
   return Math.round(Number(card.cost || 0) * 100);
 }
 
@@ -350,8 +354,11 @@ async function plannerForecast(prisma, plannerUid, keys) {
     select: {
       date: true,
       revenue: true,
+      revenueCents: true,
       cost: true,
+      costCents: true,
       costPerHour: true,
+      costPerHourCents: true,
       startTime: true,
       endTime: true,
     },
@@ -363,7 +370,9 @@ async function plannerForecast(prisma, plannerUid, keys) {
     const key = card.date.slice(0, 7);
     if (!Object.hasOwn(laborByMonth, key)) continue;
     laborByMonth[key] += plannerCardLaborCents(card);
-    excludedEventRevenueCents += Math.round(Number(card.revenue || 0) * 100);
+    excludedEventRevenueCents += card.revenueCents != null
+      ? Number(card.revenueCents || 0)
+      : Math.round(Number(card.revenue || 0) * 100);
   }
   return { status: 'ready', laborByMonth, laborCardCount: cards.length, excludedEventRevenueCents };
 }

@@ -7,14 +7,15 @@ export function COGSSection({ items = [], weekStart, onAdd, onDelete }) {
 
   const handleAdd = () => {
     const trimmed = name.trim();
-    const num = parseInt(amount, 10);
-    if (!trimmed || !num || num <= 0) return;
-    onAdd({ weekStart, name: trimmed, amount: num });
+    const amountCents = Math.round(Number(amount) * 100);
+    if (!trimmed || !amountCents || amountCents <= 0) return;
+    onAdd({ weekStart, name: trimmed, amount: Math.round(amountCents / 100), amountCents, status: 'projected' });
     setName('');
     setAmount('');
   };
 
-  const total = items.reduce((sum, i) => sum + (i.amount || 0), 0);
+  const itemAmount = (item) => item.amountCents != null ? item.amountCents / 100 : (item.amount || 0);
+  const total = items.reduce((sum, item) => sum + itemAmount(item), 0);
 
   return (
     <div
@@ -47,10 +48,16 @@ export function COGSSection({ items = [], weekStart, onAdd, onDelete }) {
             >
               <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                 {item.name}
+                {item.status && (
+                  <span className="ml-2 rounded-full px-1.5 py-0.5 text-[9px] uppercase" style={{ backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-muted)' }}>
+                    {item.status}
+                  </span>
+                )}
+                {item.notes && <span className="mt-0.5 block text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{item.notes}</span>}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium" style={{ color: 'var(--color-state-danger)' }}>
-                  ${item.amount}
+                  ${itemAmount(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <button
                   onClick={() => onDelete(item.id)}
@@ -73,7 +80,7 @@ export function COGSSection({ items = [], weekStart, onAdd, onDelete }) {
               Total COGS
             </span>
             <span className="text-sm flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-              <DollarSign size={12} />{total}
+              <DollarSign size={12} />{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
@@ -99,6 +106,7 @@ export function COGSSection({ items = [], weekStart, onAdd, onDelete }) {
           onChange={(e) => setAmount(e.target.value)}
           placeholder="$"
           min="0"
+          step="0.01"
           className="w-20 rounded-lg px-3 py-2 text-sm outline-none border"
           style={{
             borderColor: 'var(--color-border-default)',

@@ -152,12 +152,25 @@ async function buildPlannerCardDetail(auth, id) {
       ...(auth.isAdmin ? {} : { supabaseUid: auth.viewer.supabaseUid }),
     },
   });
-  if (!card) return null;
+  if (!card || card.objectType === 'revenue') return null;
+  const {
+    revenue: _revenue,
+    revenueCents: _revenueCents,
+    cashReceivedCents: _cashReceivedCents,
+    cost: _cost,
+    costCents: _costCents,
+    costPerHour: _costPerHour,
+    costPerHourCents: _costPerHourCents,
+    financialStatus: _financialStatus,
+    financialSource: _financialSource,
+    financialMetadata: _financialMetadata,
+    ...publicPlannerCard
+  } = card;
   return {
     object: {
       ...cardToObject(card),
       detail: {
-        plannerCard: card,
+        plannerCard: publicPlannerCard,
       },
     },
     actions: card.optional

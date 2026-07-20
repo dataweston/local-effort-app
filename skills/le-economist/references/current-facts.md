@@ -1,6 +1,11 @@
 # Current Local Effort facts
 
-As of 2026-07-18. Recheck live sources before any material decision.
+As of 2026-07-18. Recheck by 2026-08-22 (asOf + 35 days): after that date, re-verify these facts with the owner before relying on them for raise or other material work. Recheck live sources before any material decision regardless.
+
+## Maintenance rules
+
+- The Retired claims list below is append-only. Removing an entry requires an owner-approved row in `decisions-log.md`.
+- When the Renee 2%/$6,000 transfer mechanics or any of the four open settlement items change state, update this file and `decisions-log.md` in the same commit.
 
 ## Owner-confirmed policy and structure
 

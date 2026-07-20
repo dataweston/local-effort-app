@@ -1,0 +1,531 @@
+{
+  "weekStart": "2026-07-20",
+  "cards": [
+    {
+      "id": "ops-2026-07-20-maria-shift",
+      "title": "Maria — production shift",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Maria"],
+      "startTime": "10:00",
+      "endTime": "16:00",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Owner-confirmed schedule and Maria's current $35/hour rate",
+      "financialMetadata": {
+        "cashCostCents": 21000,
+        "evidenceAsOf": "2026-07-19"
+      },
+      "sortOrder": 10
+    },
+    {
+      "id": "ops-2026-07-20-catherine-shift",
+      "title": "Catherine — production shift",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Catherine"],
+      "startTime": "09:00",
+      "endTime": "16:00",
+      "costCents": 0,
+      "financialStatus": "founder_time_not_cash_wage",
+      "financialSource": "Owner schedule; founder compensation is tracked separately from hourly cash labor",
+      "sortOrder": 20
+    },
+    {
+      "id": "ops-2026-07-20-weston-shift",
+      "title": "Weston — production shift",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Weston"],
+      "startTime": "09:00",
+      "endTime": "16:00",
+      "costCents": 0,
+      "financialStatus": "founder_time_not_cash_wage",
+      "financialSource": "Owner schedule; founder compensation is tracked separately from hourly cash labor",
+      "sortOrder": 30
+    },
+    {
+      "id": "ops-2026-07-20-neon-rental",
+      "title": "Neon Kitchen rental",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": [],
+      "startTime": "09:00",
+      "endTime": "16:00",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Food Corridor approved-booking history shows July usage exceeded 20 hours by July 7; current Neon over-20-hour rate is $35/hour",
+      "financialMetadata": {
+        "scheduledHours": 7,
+        "cashCostCents": 24500,
+        "rateTier": "over_20_monthly_hours",
+        "rateThresholdReachedBy": "2026-07-07",
+        "evidenceSource": "Food Corridor approved booking emails"
+      },
+      "sortOrder": 40
+    },
+    {
+      "id": "ops-2026-07-20-happy-monday",
+      "title": "Happy Monday — 8 turkey, 8 egg, 5 granola, 10 × 4-inch pizza",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 15510,
+      "financialStatus": "committed",
+      "financialSource": "Owner quantities × Happy Monday catalog prices",
+      "financialMetadata": {
+        "unitPricesCents": {
+          "turkey": 710,
+          "egg": 585,
+          "granola": 310,
+          "fourInchPizza": 360
+        }
+      },
+      "sortOrder": 50
+    },
+    {
+      "id": "ops-2026-07-20-meal-prep-david-allison",
+      "title": "Meal prep — David and Allison",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 24200,
+      "cashReceivedCents": 24200,
+      "financialStatus": "paid",
+      "financialSource": "Square invoice 000044 paid July 5; $968 allocated across four service weeks",
+      "financialMetadata": {
+        "invoiceTotalCents": 96800,
+        "allocatedWeeks": 4,
+        "allocationMethod": "equal_weekly_allocation"
+      },
+      "sortOrder": 60
+    },
+    {
+      "id": "ops-2026-07-20-meal-prep-samantha",
+      "title": "Meal prep — Samantha Bailey",
+      "date": "2026-07-20",
+      "dayOfWeek": "Monday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 24300,
+      "cashReceivedCents": 24300,
+      "financialStatus": "paid",
+      "financialSource": "Square recurring invoice 000040-R-0005 paid July 19",
+      "sortOrder": 70
+    },
+    {
+      "id": "ops-2026-07-21-catherine-shift",
+      "title": "Catherine — meal prep shift",
+      "date": "2026-07-21",
+      "dayOfWeek": "Tuesday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Catherine"],
+      "startTime": "10:00",
+      "endTime": "12:00",
+      "costCents": 0,
+      "financialStatus": "founder_time_not_cash_wage",
+      "financialSource": "Owner schedule; founder compensation is tracked separately from hourly cash labor",
+      "sortOrder": 10
+    },
+    {
+      "id": "ops-2026-07-21-meal-prep-gabriella",
+      "title": "Meal prep — Gabriella",
+      "date": "2026-07-21",
+      "dayOfWeek": "Tuesday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 38100,
+      "cashReceivedCents": 38100,
+      "financialStatus": "paid",
+      "financialSource": "Square recurring invoice 000056-R-0001 paid July 19",
+      "sortOrder": 20
+    },
+    {
+      "id": "ops-2026-07-22-catherine-shift",
+      "title": "Catherine — production shift",
+      "date": "2026-07-22",
+      "dayOfWeek": "Wednesday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Catherine"],
+      "startTime": "09:00",
+      "endTime": "13:00",
+      "costCents": 0,
+      "financialStatus": "founder_time_not_cash_wage",
+      "financialSource": "Owner schedule; founder compensation is tracked separately from hourly cash labor",
+      "sortOrder": 10
+    },
+    {
+      "id": "ops-2026-07-22-happy-monday",
+      "title": "Happy Monday — 8 turkey, 8 egg, 5 granola, 5 cheese + 5 pepperoni 12-inch pizzas",
+      "date": "2026-07-22",
+      "dayOfWeek": "Wednesday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 19510,
+      "financialStatus": "committed",
+      "financialSource": "Owner-confirmed quantities × Happy Monday catalog prices",
+      "financialMetadata": {
+        "counts": {
+          "turkey": 8,
+          "egg": 8,
+          "granola": 5,
+          "twelveInchCheesePizza": 5,
+          "twelveInchPepperoniPizza": 5
+        },
+        "unitPricesCents": {
+          "turkey": 710,
+          "egg": 585,
+          "granola": 310,
+          "twelveInchCheesePizza": 710,
+          "twelveInchPepperoniPizza": 810
+        }
+      },
+      "notes": "Twelve-inch pizza split confirmed: five cheese and five pepperoni.",
+      "sortOrder": 20
+    },
+    {
+      "id": "ops-2026-07-22-meal-prep-sanjay",
+      "title": "Meal prep — Sanjay: 3 salmon + 3 ground beef bowls",
+      "date": "2026-07-22",
+      "dayOfWeek": "Wednesday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 11100,
+      "cashReceivedCents": 0,
+      "financialStatus": "scheduled_unpaid",
+      "financialSource": "Owner-confirmed new Wednesday program: six bowls for $111",
+      "financialMetadata": {
+        "cadence": "weekly_wednesday",
+        "salmonBowls": 3,
+        "groundBeefBowls": 3,
+        "needsPaymentConfirmation": true
+      },
+      "notes": "Weekly Wednesday program: six bowls total — three salmon and three ground beef.",
+      "sortOrder": 30
+    },
+    {
+      "id": "ops-2026-07-22-meal-prep-catherine-squires",
+      "title": "Meal prep — Catherine Squires",
+      "date": "2026-07-22",
+      "dayOfWeek": "Wednesday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 12000,
+      "cashReceivedCents": 0,
+      "financialStatus": "scheduled_unpaid",
+      "financialSource": "Activated weekly plan at $120/week with Wednesday delivery",
+      "financialMetadata": {
+        "needsPaymentConfirmation": true
+      },
+      "sortOrder": 40
+    },
+    {
+      "id": "ops-2026-07-24-happy-monday",
+      "title": "Happy Monday — 8 turkey, 8 egg, 5 granola, 10 × 4-inch pizza; Accell delivery",
+      "date": "2026-07-24",
+      "dayOfWeek": "Friday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "revenueCents": 15510,
+      "costCents": 4061,
+      "financialStatus": "committed",
+      "financialSource": "Owner confirmed Friday counts match Monday; catalog prices; latest two Accell invoices were $40.61",
+      "financialMetadata": {
+        "counts": {
+          "turkey": 8,
+          "egg": 8,
+          "granola": 5,
+          "fourInchPizza": 10
+        },
+        "unitPricesCents": {
+          "turkey": 710,
+          "egg": 585,
+          "granola": 310,
+          "fourInchPizza": 360
+        },
+        "deliveryProvider": "Accell",
+        "deliveryDay": "Friday",
+        "deliveryCostForecastCents": 4061,
+        "deliveryCostSourceInvoices": ["INVC5422", "INVC5469"],
+        "integrationStatus": "manual_until_courie_api_credentials"
+      },
+      "notes": "Deliver via Accell on Friday. Local Effort already has a Courie.ai/Accell account and prior Happy Monday tracking history. Forecast delivery cost is $40.61 based on the two latest Accell invoices. API credentials/documentation must be requested from Accell/Courie before automated dispatch can be enabled.",
+      "sortOrder": 10
+    },
+    {
+      "id": "ops-2026-07-24-maria-shift",
+      "title": "Maria — production and event prep shift",
+      "date": "2026-07-24",
+      "dayOfWeek": "Friday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Maria"],
+      "startTime": "09:00",
+      "endTime": "16:00",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Owner-confirmed all-day Friday shift and Maria's current Square wage setting of $35/hour",
+      "financialMetadata": {
+        "scheduledHours": 7,
+        "cashCostCents": 24500,
+        "evidenceAsOf": "2026-07-19"
+      },
+      "sortOrder": 15
+    },
+    {
+      "id": "ops-2026-07-24-rchs-prep",
+      "title": "Prep — Ramsey County Historical Society dinner",
+      "date": "2026-07-24",
+      "dayOfWeek": "Friday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "financialStatus": "scheduled",
+      "financialSource": "Owner schedule",
+      "sortOrder": 20
+    },
+    {
+      "id": "ops-2026-07-24-neon-rental",
+      "title": "Neon Kitchen rental",
+      "date": "2026-07-24",
+      "dayOfWeek": "Friday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": [],
+      "startTime": "09:00",
+      "endTime": "16:00",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Food Corridor approved-booking history shows July usage exceeded 20 hours by July 7; current Neon over-20-hour rate is $35/hour",
+      "financialMetadata": {
+        "scheduledHours": 7,
+        "cashCostCents": 24500,
+        "rateTier": "over_20_monthly_hours",
+        "rateThresholdReachedBy": "2026-07-07",
+        "evidenceSource": "Food Corridor approved booking emails"
+      },
+      "sortOrder": 30
+    },
+    {
+      "id": "ops-2026-07-25-rchs-prep",
+      "title": "AM prep — Gibbs Farm dinner",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "untimed",
+      "objectType": "prep_task",
+      "people": [],
+      "financialStatus": "scheduled_time_tbd",
+      "financialSource": "Owner schedule says prep in AM; exact hours not provided",
+      "sortOrder": 10
+    },
+    {
+      "id": "ops-2026-07-25-maria-shift",
+      "title": "Maria — Gibbs Farm prep, service, and cleanup shift",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": ["Maria"],
+      "startTime": "09:00",
+      "endTime": "20:30",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Owner-confirmed all-day Saturday shift through the scheduled cleanup endpoint; Maria's current Square wage setting is $35/hour",
+      "financialMetadata": {
+        "scheduledHours": 11.5,
+        "cashCostCents": 40250,
+        "breakDeductionCents": 0,
+        "needsBreakConfirmation": true,
+        "evidenceAsOf": "2026-07-19"
+      },
+      "notes": "Scheduled gross labor assumes the full 9:00 AM–8:30 PM window. No unpaid break has been deducted because none was specified.",
+      "sortOrder": 15
+    },
+    {
+      "id": "ops-2026-07-25-neon-rental",
+      "title": "Neon Kitchen rental",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "shift",
+      "people": [],
+      "startTime": "09:00",
+      "endTime": "15:00",
+      "costPerHourCents": 3500,
+      "financialStatus": "committed",
+      "financialSource": "Food Corridor approved-booking history shows July usage exceeded 20 hours by July 7; current Neon over-20-hour rate is $35/hour",
+      "financialMetadata": {
+        "scheduledHours": 6,
+        "cashCostCents": 21000,
+        "rateTier": "over_20_monthly_hours",
+        "rateThresholdReachedBy": "2026-07-07",
+        "evidenceSource": "Food Corridor approved booking emails"
+      },
+      "sortOrder": 20
+    },
+    {
+      "id": "ops-2026-07-25-caterer-arrival",
+      "title": "Gibbs Farm caterer arrival",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "event",
+      "people": [],
+      "startTime": "16:00",
+      "endTime": "16:15",
+      "financialStatus": "scheduled",
+      "financialSource": "Owner-confirmed Gibbs Farm arrival time on 2026-07-19",
+      "financialMetadata": {
+        "arrivalTime": "16:00",
+        "candlesTime": "16:30"
+      },
+      "sortOrder": 30
+    },
+    {
+      "id": "ops-2026-07-25-gibbs-dinner",
+      "title": "Gibbs Farm Dinner — Ramsey County Historical Society",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "event",
+      "people": [],
+      "startTime": "17:00",
+      "endTime": "19:30",
+      "revenueCents": 500000,
+      "cashReceivedCents": 240000,
+      "financialStatus": "owner_estimate_deposits_received",
+      "financialSource": "Owner-confirmed approximately $5,000 total and $2,400 already paid; Gmail provides count and timing detail",
+      "financialMetadata": {
+        "currentMealEquivalents": 74.5,
+        "counts": {
+          "beef": 27,
+          "beefNoDairy": 1,
+          "chicken": 28,
+          "chickenNoDairy": 1,
+          "vegetarian": 12,
+          "vegetarianNoDairy": 1,
+          "westonParty": 4.5
+        },
+        "ownerEstimatedRevenueCents": 500000,
+        "ownerConfirmedCashReceivedCents": 240000,
+        "modeledRateCents": 5500,
+        "targetRateRangeCents": [5500, 6000],
+        "revenueRangeCents": [409750, 447000],
+        "depositInvoiceIds": ["000045", "000052"],
+        "squareEvidenceCents": 240000,
+        "depositPayments": [
+          {
+            "date": "2026-02-05",
+            "amountCents": 90000,
+            "source": "Square daily sales summary",
+            "item": "Deposit - RCHS Dinner 2026"
+          },
+          {
+            "date": "2026-07-06",
+            "amountCents": 100000,
+            "source": "Square invoice 000045"
+          },
+          {
+            "date": "2026-07-14",
+            "amountCents": 50000,
+            "source": "Square invoice 000052"
+          }
+        ],
+        "needsFinalContractAmount": true
+      },
+      "notes": "Owner financial update: approximately $5,000 expected total; Youa's full $2,400 received is reconciled in Square — $900 on February 5 for Deposit - RCHS Dinner 2026, $1,000 via invoice 000045, and $500 via invoice 000052.\n\nShopping list:\n- Chicken breast: 1 per 2 people (most already purchased)\n- Beef: 1 lb sirloin, hanger, or flank per 5 people\n- Limes\n- Cilantro\n- Cucumber\n- Ginger\n- Shiso\n- Banana leaf\n- Melon\n- Mozzarella\n- Garlic\n- Red onion",
+      "sortOrder": 40
+    },
+    {
+      "id": "ops-2026-07-25-weston-welcome",
+      "title": "Weston welcome",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "event",
+      "people": ["Weston"],
+      "startTime": "18:05",
+      "endTime": "18:10",
+      "financialStatus": "scheduled",
+      "financialSource": "Youa's FTT Dinner Run of Show",
+      "sortOrder": 50
+    },
+    {
+      "id": "ops-2026-07-25-service-timeline",
+      "title": "Dinner service — courses 6:10, 6:35, and 7:05 PM",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "event",
+      "people": [],
+      "startTime": "18:10",
+      "endTime": "19:30",
+      "financialStatus": "scheduled",
+      "financialSource": "Youa's FTT Dinner Run of Show",
+      "financialMetadata": {
+        "firstCourse": "18:10",
+        "secondCourse": "18:35",
+        "thirdCourse": "19:05",
+        "staffDinner": "19:10",
+        "guestsLeave": "19:30"
+      },
+      "sortOrder": 60
+    },
+    {
+      "id": "ops-2026-07-25-pack-clean",
+      "title": "Pack up, dishes, recycling, and garbage",
+      "date": "2026-07-25",
+      "dayOfWeek": "Saturday",
+      "zone": "timed",
+      "objectType": "prep_task",
+      "people": [],
+      "startTime": "19:40",
+      "endTime": "20:30",
+      "financialStatus": "scheduled",
+      "financialSource": "Youa's FTT Dinner Run of Show",
+      "financialMetadata": {
+        "packUp": "19:40",
+        "dishes": "19:50",
+        "recyclingAndGarbage": "20:30"
+      },
+      "sortOrder": 70
+    }
+  ],
+  "cogs": [
+    {
+      "id": "ops-2026-07-20-ingredients",
+      "name": "Projected ingredients — allocation pending",
+      "amountCents": null,
+      "status": "unresolved",
+      "source": "Owner schedule plus Local Budget; current transactions are merchant-level and cannot be safely assigned to this week",
+      "notes": "Need projected ingredient spend, ideally split among Happy Monday, meal prep, and Gibbs Farm. Do not substitute recent merchant totals for job-level COGS."
+    }
+  ],
+  "overheads": [
+    {
+      "id": "ops-neon-monthly-storage",
+      "name": "Neon Kitchen monthly storage",
+      "monthlyCost": 200
+    }
+  ]
+}

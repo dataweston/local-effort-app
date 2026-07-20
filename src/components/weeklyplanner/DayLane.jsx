@@ -2,7 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { PlannerCard } from './PlannerCard';
-import { dayTotals, teddyCoverage } from './financials';
+import { dayTotalsWithActual, teddyCoverage } from './financials';
 import { DayTotalsBar } from './DayTotalsBar';
 import { getDayOfWeek, formatDateShort, isToday } from './dateUtils';
 
@@ -41,7 +41,7 @@ function DroppableZone({ id, children, label, isEmpty }) {
   );
 }
 
-export function DayLane({ date, cards, allCards, onToggle, onCardClick, onDayClick }) {
+export function DayLane({ date, cards, allCards, actualsByDate = {}, onToggle, onCardClick, onDayClick }) {
   const dayOfWeek = getDayOfWeek(date);
   const today = isToday(date);
 
@@ -56,7 +56,7 @@ export function DayLane({ date, cards, allCards, onToggle, onCardClick, onDayCli
     .filter((c) => c.zone === 'untimed')
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const totals = dayTotals(allCards, date);
+  const totals = dayTotalsWithActual(allCards, date, actualsByDate);
   const coverage = teddyCoverage(allCards, date);
 
   const effectMultipliers = {};
@@ -113,6 +113,7 @@ export function DayLane({ date, cards, allCards, onToggle, onCardClick, onDayCli
 
         <div className="mt-1.5">
           <DayTotalsBar totals={totals} />
+          {totals.hasActual && <div className="mt-1 text-[10px]" style={{ color: 'var(--color-text-muted)' }}>P ${totals.plannedRevenue} · A ${totals.actualRevenue}</div>}
         </div>
       </div>
 

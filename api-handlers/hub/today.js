@@ -199,6 +199,7 @@ async function buildPlannerSlice({ supabaseUid }) {
       supabaseUid,
       date: { gte: todayDate, lte: tomorrowDate || todayDate },
       enabled: true,
+      objectType: { not: 'revenue' },
     },
     orderBy: [{ date: 'asc' }, { sortOrder: 'asc' }],
     take: 25,
@@ -219,8 +220,7 @@ async function buildPlannerSlice({ supabaseUid }) {
     metadata: {
       date: card.date,
       dayOfWeek: card.dayOfWeek,
-      revenue: card.revenue,
-      cost: card.cost,
+      people: card.people || [],
       optional: card.optional,
       effectType: card.effectType,
     },

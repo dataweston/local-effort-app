@@ -2,6 +2,7 @@ const { McpServer, ResourceTemplate } = require('@modelcontextprotocol/sdk/serve
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { z } = require('zod');
 const { registerBrainTools } = require('./brainTools');
+const { registerEconomistTools } = require('./economistTools');
 
 const { searchSupport, normalizeKey } = require('../api/utils/supportSearchService');
 const { getSupabase } = require('../api/supabaseClient');
@@ -431,6 +432,7 @@ function createMcpServer({ name = 'local-effort-mcp', version = '0.1.0' } = {}) 
   registerUcpResources(server);
   registerUcpTools(server);
   registerBrainTools(server);
+  registerEconomistTools(server);
   return server;
 }
 

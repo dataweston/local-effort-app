@@ -3,6 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const { execSync } = require('child_process');
 // Static imports are intentional. Vercel's serverless dependency tracer cannot
 // reliably discover JSON loaded only through computed fs paths.
 const defaultLineModelConfig = require('../references/line-model-config.json');
@@ -305,6 +307,64 @@ function buildScenario(config) {
   };
 }
 
+function buildMethodVersion(configRawBytes, configHashSource) {
+  let scriptGitSha = null;
+  try {
+    const sha = execSync('git rev-parse --short=12 HEAD', {
+      cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString().trim();
+    const dirty = execSync('git status --porcelain -- .', {
+      cwd: path.join(__dirname, '..'), stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString().trim() !== '';
+    scriptGitSha = dirty ? `${sha}-dirty` : sha;
+  } catch {
+    // Deployed bundles have no git checkout; consumers must cite configSha256 alone.
+  }
+  return {
+    scriptGitSha,
+    configSha256: crypto.createHash('sha256').update(configRawBytes).digest('hex'),
+    configHashSource,
+  };
+}
+
+function buildBlockedFields(scenario, evidenceRecovery) {
+  const blocked = [];
+  for (const line of evidenceRecovery.lines) {
+    if (line.fullContributionMargin == null) {
+      blocked.push({
+        lineId: line.id,
+        field: 'observed.fullContributionMargin',
+        reason: 'missing_direct_cost_joins',
+        missingInputs: [
+          'recipe/production-lot join for shared COGS pools',
+          'paid labor hours matched to production runs',
+          'kitchen booking hours matched to jobs',
+          'packaging/delivery invoices matched to jobs',
+        ],
+      });
+    }
+  }
+  for (const line of scenario.lines) {
+    if (line.status === 'blocked') {
+      blocked.push({
+        lineId: line.id,
+        field: 'scenario.cashContributionBeforeStorageAndFixedOverhead',
+        reason: 'missing_scenario_inputs',
+        missingInputs: line.missingCashInputs,
+      });
+    }
+    if ((line.missingEconomicInputs || []).length) {
+      blocked.push({
+        lineId: line.id,
+        field: 'scenario.economicContributionBeforeStorageAndFixedOverhead',
+        reason: 'missing_scenario_inputs',
+        missingInputs: line.missingEconomicInputs,
+      });
+    }
+  }
+  return blocked;
+}
+
 function classifyPosting(row) {
   const category = String(row.category || '');
   const classification = String(row.classification || '').toUpperCase();
@@ -449,10 +509,14 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   for (const name of ['.env', '.env.local', '.env.vercel.production']) loadEnv(path.join(repo, name));
   let config;
   let observedEvidence;
+  let configRawBytes;
+  let configHashSource;
   try {
     if (configInput) {
       const configPath = path.resolve(configInput);
-      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      configRawBytes = fs.readFileSync(configPath);
+      configHashSource = 'file_bytes';
+      config = JSON.parse(configRawBytes.toString('utf8'));
       const observedEvidencePath = path.join(path.dirname(configPath), 'observed-line-evidence.json');
       observedEvidence = fs.existsSync(observedEvidencePath)
         ? JSON.parse(fs.readFileSync(observedEvidencePath, 'utf8'))
@@ -460,6 +524,14 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
     } else {
       config = cloneJson(defaultLineModelConfig);
       observedEvidence = cloneJson(defaultObservedLineEvidence);
+      try {
+        configRawBytes = fs.readFileSync(path.join(__dirname, '..', 'references', 'line-model-config.json'));
+        configHashSource = 'file_bytes';
+      } catch {
+        // Bundled deployments may not carry the raw file; hash the parsed default instead.
+        configRawBytes = Buffer.from(JSON.stringify(defaultLineModelConfig));
+        configHashSource = 'normalized_json';
+      }
     }
   } catch (error) {
     throw sourceError(
@@ -493,9 +565,11 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   const cashContributionAfterUnresolvedExpense = roundMoney(
     cashContributionBeforeFounderDraws - t.unknownOrUnresolved
   );
+  const scenario = buildScenario(config);
   const result = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: new Date().toISOString(),
+    methodVersion: buildMethodVersion(configRawBytes, configHashSource),
     period: { start: startText, end: endText, completeCalendarMonths: months },
     taxonomy: {
       status: config.modelStatus,
@@ -539,8 +613,14 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
     },
     lineActuals: square.lines,
     evidenceRecovery,
-    scenarioInputs: config.lines.map((line) => ({ id: line.id, name: line.name, ...line.scenarioInputs })),
-    scenario: buildScenario(config),
+    scenarioInputs: config.lines.map((line) => ({
+      id: line.id,
+      name: line.name,
+      ...line.scenarioInputs,
+      provenance: line.scenarioInputProvenance || {},
+    })),
+    scenario,
+    blockedFields: buildBlockedFields(scenario, evidenceRecovery),
     kitchenCostPolicy: config.kitchen,
     dataQuality: {
       cashActuals: 'usable_subject_to_classification_review',
@@ -576,7 +656,7 @@ async function main() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-module.exports = { buildLineModel, buildScenario, kitchenHourlyCost };
+module.exports = { buildLineModel, buildScenario, kitchenHourlyCost, buildBlockedFields, buildMethodVersion };
 
 if (require.main === module) {
   main().catch((error) => {

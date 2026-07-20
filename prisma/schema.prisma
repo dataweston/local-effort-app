@@ -384,8 +384,16 @@ model PlannerCard {
   startTime    String?
   endTime      String?
   revenue      Int      @default(0)
+  revenueCents Int?
+  cashReceivedCents Int @default(0)
   cost         Int      @default(0)
+  costCents    Int?
   costPerHour  Int?
+  costPerHourCents Int?
+  financialStatus String?
+  financialSource String?
+  financialMetadata Json?
+  notes         String?
   optional     Boolean  @default(false)
   enabled      Boolean  @default(true)
   effectTarget String?
@@ -439,6 +447,10 @@ model PlannerCOGS {
   weekStart   String
   name        String
   amount      Int      @default(0)
+  amountCents Int?
+  status      String   @default("projected")
+  source      String?
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -630,6 +642,26 @@ model HubShiftClaim {
   @@index([plannerCardId])
   @@index([userId])
   @@index([status])
+}
+
+model HubScheduleRequest {
+  id                 String    @id @default(uuid())
+  userId             String
+  plannerCardId      String?
+  requestType        String
+  requestedDate      String
+  requestedStartTime String?
+  requestedEndTime   String?
+  note               String?
+  status             String    @default("pending")
+  reviewedByUserId   String?
+  reviewedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId, status, requestedDate])
+  @@index([plannerCardId])
+  @@index([status, requestedDate])
 }
 
 model HubSpace {

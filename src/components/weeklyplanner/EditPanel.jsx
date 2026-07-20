@@ -268,9 +268,81 @@ export function EditPanel({ card, onSave, onDelete, onClose, accessToken }) {
           <input
             type="number"
             min="0"
-            value={form.revenue}
-            onChange={(e) => set('revenue', Number(e.target.value))}
+            value={form.revenueCents != null ? form.revenueCents / 100 : form.revenue}
+            step="0.01"
+            onChange={(e) => {
+              const cents = Math.round(Number(e.target.value) * 100);
+              setForm((prev) => ({ ...prev, revenue: Math.round(cents / 100), revenueCents: cents }));
+            }}
             className={inputClass}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+              Revenue status
+            </label>
+            <select
+              value={form.financialStatus || 'planned'}
+              onChange={(e) => set('financialStatus', e.target.value)}
+              className={inputClass}
+            >
+              <option value="planned">Planned</option>
+              <option value="forecast">Forecast</option>
+              <option value="committed">Committed</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="scheduled_unpaid">Scheduled — unpaid</option>
+              <option value="unresolved">Unresolved</option>
+              <option value="modeled_low_case">Modeled low case</option>
+              <option value="modeled_low_case_deposits_received">Modeled low case — deposits received</option>
+              <option value="owner_estimate_deposits_received">Owner estimate — deposits received</option>
+              <option value="booked_deposit_received_estimate">Booked — deposit received</option>
+              <option value="provisional_max_rate">Provisional max rate</option>
+              <option value="founder_time_not_cash_wage">Founder time — not cash wage</option>
+              <option value="paid">Paid</option>
+              <option value="actual">Actual</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+              Cash received ($)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={(form.cashReceivedCents || 0) / 100}
+              onChange={(e) => set('cashReceivedCents', Math.round(Number(e.target.value) * 100))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Financial source
+          </label>
+          <input
+            type="text"
+            value={form.financialSource || ''}
+            onChange={(e) => set('financialSource', e.target.value || null)}
+            placeholder="Square invoice, owner schedule, contract…"
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Event / operational details
+          </label>
+          <textarea
+            value={form.notes || ''}
+            onChange={(e) => set('notes', e.target.value || null)}
+            placeholder="Menu, shopping list, arrival instructions, allergies, invoice timing…"
+            rows={8}
+            className={inputClass}
+            style={{ resize: 'vertical' }}
           />
         </div>
 
@@ -283,8 +355,12 @@ export function EditPanel({ card, onSave, onDelete, onClose, accessToken }) {
             <input
               type="number"
               min="0"
-              value={form.cost}
-              onChange={(e) => set('cost', Number(e.target.value))}
+              value={form.costCents != null ? form.costCents / 100 : form.cost}
+              step="0.01"
+              onChange={(e) => {
+                const cents = Math.round(Number(e.target.value) * 100);
+                setForm((prev) => ({ ...prev, cost: Math.round(cents / 100), costCents: cents }));
+              }}
               className={inputClass}
             />
           </div>
@@ -295,8 +371,12 @@ export function EditPanel({ card, onSave, onDelete, onClose, accessToken }) {
             <input
               type="number"
               min="0"
-              value={form.costPerHour || 0}
-              onChange={(e) => set('costPerHour', Number(e.target.value))}
+              value={form.costPerHourCents != null ? form.costPerHourCents / 100 : (form.costPerHour || 0)}
+              step="0.01"
+              onChange={(e) => {
+                const cents = Math.round(Number(e.target.value) * 100);
+                setForm((prev) => ({ ...prev, costPerHour: Math.round(cents / 100), costPerHourCents: cents }));
+              }}
               className={inputClass}
             />
           </div>

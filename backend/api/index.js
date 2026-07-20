@@ -660,6 +660,8 @@ try {
   // and customer data plus a provisional-write path. They were previously
   // dispatched with NO auth — only checkout tools were gated. Require a bearer
   // token with brain:read (reads) or brain:write (mutations) for every brain.* tool.
+  // Economist tools (registerEconomistTools) expose private financials and are
+  // read-only by design; they require economist:read under the same bearer-only rule.
   const BRAIN_WRITE_TOOLS = new Set([
     'brain.assert.provisional',
     'brain.entity.create',
@@ -669,8 +671,10 @@ try {
     'brain.menu.broadcast',
     'brain.hypothesis.create',
   ]);
-  const brainRequiredScope = (toolName) => {
-    if (typeof toolName !== 'string' || !toolName.startsWith('brain.')) return null;
+  const privateToolRequiredScope = (toolName) => {
+    if (typeof toolName !== 'string') return null;
+    if (toolName.startsWith('economist.')) return 'economist:read';
+    if (!toolName.startsWith('brain.')) return null;
     return BRAIN_WRITE_TOOLS.has(toolName) ? 'brain:write' : 'brain:read';
   };
 
@@ -930,13 +934,13 @@ try {
         const tool = mcpServer?._registeredTools?.[toolName];
         if (!tool || tool.enabled === false) return res.status(404).json({ error: 'tool-not-found' });
         let finalToolParams = toolParams;
-        const brainScope = brainRequiredScope(toolName);
-        if (ucpCheckoutTools.has(toolName) || brainScope) {
-          const requiredScope = brainScope || ucpRequiredScopes[toolName] || null;
-          // Brain tools are bearer-only: a configured Authorization: Bearer token
-          // is required. Reject the self-asserted x-ucp-* header path that UCP
-          // permits, so private graph data can't be read by spoofing headers.
-          if (brainScope) {
+        const privateScope = privateToolRequiredScope(toolName);
+        if (ucpCheckoutTools.has(toolName) || privateScope) {
+          const requiredScope = privateScope || ucpRequiredScopes[toolName] || null;
+          // Brain and economist tools are bearer-only: a configured Authorization:
+          // Bearer token is required. Reject the self-asserted x-ucp-* header path
+          // that UCP permits, so private data can't be read by spoofing headers.
+          if (privateScope) {
             const authHeader = (req.headers.authorization || '').toString().trim();
             if (!authHeader.startsWith('Bearer ')) {
               return res.status(401).json({ error: 'mcp-bearer-token-required', requiredScope });
@@ -1483,6 +1487,15 @@ app.all('/api/hub/shifts', async (req, res, next) => {
     await require('../../api-handlers/hub/shifts')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub shifts handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/payroll', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/payroll')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub payroll handler failed');
     next(err);
   }
 });

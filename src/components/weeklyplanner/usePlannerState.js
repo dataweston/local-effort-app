@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { generateCardsForRange } from './defaultSchedule';
 import { getWeekDates, getWeekStart, getToday, getDayOfWeek, addWeeks, getMonthWeeks } from './dateUtils';
-import { weekTotals, monthTotals as computeMonthTotals } from './financials';
+import { weekTotalsWithActual, monthTotals as computeMonthTotals } from './financials';
 
 let _nextCardId = 5000;
 
@@ -99,15 +99,23 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   // Cards for the current week
   const weekCards = useMemo(() => {
     const dateSet = new Set(weekDates);
-    return cards.filter((c) => dateSet.has(c.date));
+    return cards.filter((c) => dateSet.has(c.date) && c.objectType !== 'revenue');
   }, [cards, weekDates]);
+
+  const actualsByDate = useMemo(() => {
+    const result = {};
+    for (const card of cards) {
+      if (card.objectType === 'revenue' && card.date) result[card.date] = card;
+    }
+    return result;
+  }, [cards]);
 
   // Cards grouped by date
   const cardsByDate = useMemo(() => {
     const map = {};
     for (const date of weekDates) map[date] = [];
     for (const card of cards) {
-      if (map[card.date]) map[card.date].push(card);
+      if (map[card.date] && card.objectType !== 'revenue') map[card.date].push(card);
     }
     return map;
   }, [cards, weekDates]);
@@ -117,7 +125,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     return cogs.filter((c) => c.weekStart === effectiveWeekStart);
   }, [cogs, effectiveWeekStart]);
 
-  const totals = useMemo(() => weekTotals(weekCards), [weekCards]);
+  const totals = useMemo(() => weekTotalsWithActual(weekCards, actualsByDate), [weekCards, actualsByDate]);
 
   // Month-level cards and totals (for monthly view top bar)
   const monthCards = useMemo(() => {
@@ -128,7 +136,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     for (const ws of weekStarts) {
       for (const d of getWeekDates(ws)) allDates.add(d);
     }
-    return cards.filter((c) => allDates.has(c.date));
+    return cards.filter((c) => allDates.has(c.date) && c.objectType !== 'revenue');
   }, [cards, selectedMonth]);
 
   // COGS filtered to month's weeks
@@ -141,8 +149,8 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   }, [cogs, selectedMonth]);
 
   const monthlyTotals = useMemo(
-    () => computeMonthTotals(monthCards, overheads, monthCogs),
-    [monthCards, overheads, monthCogs]
+    () => computeMonthTotals(monthCards, overheads, monthCogs, undefined, actualsByDate),
+    [monthCards, overheads, monthCogs, actualsByDate]
   );
 
   // Track save state for flush-on-unload
@@ -329,8 +337,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
                   startTime: card.startTime,
                   endTime: card.endTime,
                   revenue: card.revenue,
+                  revenueCents: card.revenueCents,
+                  cashReceivedCents: card.cashReceivedCents,
                   cost: card.cost,
+                  costCents: card.costCents,
                   costPerHour: card.costPerHour,
+                  costPerHourCents: card.costPerHourCents,
+                  financialStatus: card.financialStatus,
+                  financialSource: card.financialSource,
+                  financialMetadata: card.financialMetadata,
+                  notes: card.notes,
                   optional: card.optional,
                   enabled: card.enabled,
                   effectType: card.effectType,
@@ -400,8 +416,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         startTime: null,
         endTime: null,
         revenue: 0,
+        revenueCents: null,
+        cashReceivedCents: 0,
         cost: 0,
+        costCents: null,
         costPerHour: null,
+        costPerHourCents: null,
+        financialStatus: 'planned',
+        financialSource: 'weeklydemo',
+        financialMetadata: null,
+        notes: null,
         optional: false,
         enabled: true,
         effectTarget: null,
@@ -413,6 +437,23 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     },
     [updateCards]
   );
+
+  const handleUpsertRevenueActual = useCallback((date, value, note = '') => {
+    const amountCents = value === '' || value == null ? null : Math.max(0, Math.round(Number(value) * 100));
+    updateCards((prev) => {
+      const without = prev.filter((card) => !(card.objectType === 'revenue' && card.date === date));
+      if (amountCents == null || Number.isNaN(amountCents)) return without;
+      return [...without, {
+        id: String(++_nextCardId), templateId: null, title: note.trim() || 'Actual revenue',
+        date, dayOfWeek: getDayOfWeek(date), zone: 'untimed', objectType: 'revenue', people: [],
+        startTime: null, endTime: null, revenue: Math.round(amountCents / 100), revenueCents: amountCents,
+        cashReceivedCents: amountCents, cost: 0, costCents: 0, costPerHour: null, costPerHourCents: null,
+        financialStatus: 'actual', financialSource: 'owner_entry', financialMetadata: null,
+        notes: note.trim() || null,
+        optional: false, enabled: true, effectTarget: null, effectType: null, order: 0,
+      }];
+    });
+  }, [updateCards]);
 
   const handleReset = useCallback(() => {
     if (mode === 'demo') {
@@ -515,8 +556,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
             startTime: startTime || null,
             endTime: endTime || null,
             revenue: 0,
+            revenueCents: null,
+            cashReceivedCents: 0,
             cost: 0,
+            costCents: null,
             costPerHour: Number(costPerHour) || 0,
+            costPerHourCents: costPerHour ? Math.round(Number(costPerHour) * 100) : null,
+            financialStatus: 'planned',
+            financialSource: 'weeklydemo',
+            financialMetadata: null,
+            notes: null,
             optional: true,
             enabled: false,
             effectTarget: null,
@@ -655,12 +704,14 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
 
   return {
-    cards,
+    cards: cards.filter((c) => c.objectType !== 'revenue'),
+    allCards: cards,
     weekCards,
     monthCards,
     cardsByDate,
     totals,
     monthlyTotals,
+    actualsByDate,
     editingCard,
     activeId,
     activeCard,
@@ -676,6 +727,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       handleSave,
       handleDelete,
       handleAddCard,
+      handleUpsertRevenueActual,
       handleReset,
       handleDragStart,
       handleDragOver,

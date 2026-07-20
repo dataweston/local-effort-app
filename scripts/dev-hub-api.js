@@ -37,6 +37,7 @@ mount('/api/hub/localist-chat', '../api-handlers/hub/localist-chat');
 mount('/api/hub/localist-activity', '../api-handlers/hub/localist-activity');
 mount('/api/hub/shifts', '../api-handlers/hub/shifts');
 mount('/api/hub/brain-publish', '../api-handlers/hub/brain-publish');
+mount('/api/hub/economics-model', '../api-handlers/hub/economics-model');
 mount('/api/hub/today', '../api-handlers/hub/today');
 mount('/api/hub/calendar', '../api-handlers/hub/calendar');
 mount('/api/hub/inbox', '../api-handlers/hub/inbox');

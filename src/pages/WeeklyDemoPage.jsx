@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks } from 'lucide-react';
+import { DollarSign, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -15,6 +15,7 @@ import { useBrainInbox } from '../hooks/useBrainInbox';
 import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
 import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
 import { ForecastPanel } from '../components/weeklyplanner/ForecastPanel';
+import { StaffScheduleView } from '../components/weeklyplanner/StaffScheduleView';
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -53,7 +54,7 @@ export default function WeeklyDemoPage() {
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
   const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
-  const weeklyCogs = planner.weekCogs.reduce((sum, c) => sum + (c.amount || 0), 0);
+  const weeklyCogs = planner.weekCogs.reduce((sum, c) => sum + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0);
 
   // Use monthly totals when on monthly view, otherwise weekly
   const isMonthly = view === 'monthly';
@@ -350,6 +351,9 @@ export default function WeeklyDemoPage() {
               <BarChart3 size={14} />
               <span className="hidden sm:inline">Monthly</span>
             </TabsTrigger>
+            <TabsTrigger value="staff" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm">
+              <Users size={14} /><span className="hidden sm:inline">Staff</span>
+            </TabsTrigger>
             {auth.user && (
               <TabsTrigger
                 value="projects"
@@ -401,6 +405,10 @@ export default function WeeklyDemoPage() {
               onPrevMonth={goPrevMonth}
               onSelectWeek={selectWeekFromMonth}
             />
+          </TabsContent>
+
+          <TabsContent value="staff">
+            <StaffScheduleView planner={planner} weekDates={weekDates} onNextWeek={goNextWeek} onPrevWeek={goPrevWeek} />
           </TabsContent>
 
           <TabsContent value="projects">

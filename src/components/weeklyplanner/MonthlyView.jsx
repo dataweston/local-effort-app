@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getMonthWeeks, getWeekDates, getDayOfWeek } from './dateUtils';
-import { dayTotals, weekTotals, monthTotals } from './financials';
+import { dayTotalsWithActual, monthTotals } from './financials';
 import { MonthCalendarGrid } from './MonthCalendarGrid';
 import { OverheadSection } from './OverheadSection';
 import { WhatIfPanel } from './WhatIfPanel';
@@ -87,7 +87,7 @@ export function MonthlyView({
       const dates = getWeekDates(ws);
       for (const date of dates) {
         const dow = getDayOfWeek(date);
-        const t = dayTotals(planner.cards, date);
+        const t = dayTotalsWithActual(planner.cards, date, planner.actualsByDate);
         dayMap[dow].Revenue += t.revenue;
         dayMap[dow].Labor += t.cost;
         dayMap[dow].count += 1;
@@ -98,7 +98,7 @@ export function MonthlyView({
       Revenue: data.count > 0 ? Math.round(data.Revenue / data.count) : 0,
       Labor: data.count > 0 ? Math.round(data.Labor / data.count) : 0,
     }));
-  }, [planner.cards, weekStarts]);
+  }, [planner.cards, planner.actualsByDate, weekStarts]);
 
   // Monthly totals
   const weekCards = useMemo(() => {
@@ -107,8 +107,8 @@ export function MonthlyView({
   }, [monthCards]);
 
   const totals = useMemo(
-    () => monthTotals(weekCards, planner.overheads, planner.monthCogs || planner.cogs, weekStarts.length),
-    [weekCards, planner.overheads, planner.monthCogs, planner.cogs, weekStarts.length]
+    () => monthTotals(weekCards, planner.overheads, planner.monthCogs || planner.cogs, weekStarts.length, planner.actualsByDate),
+    [weekCards, planner.overheads, planner.monthCogs, planner.cogs, planner.actualsByDate, weekStarts.length]
   );
 
   const brandSuccess = '#7A846E';
@@ -146,17 +146,25 @@ export function MonthlyView({
         year={year}
         month={month}
         cards={planner.cards}
+        actualsByDate={planner.actualsByDate}
+        onUpsertRevenueActual={planner.handlers.handleUpsertRevenueActual}
         onSelectWeek={onSelectWeek}
       />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <SummaryCard label="Monthly Revenue" value={totals.revenue} type="revenue" />
+        <SummaryCard label={totals.hasActual ? 'Effective Revenue' : 'Planned Revenue'} value={totals.revenue} type="revenue" />
         <SummaryCard label="Monthly Labor" value={totals.labor} type="labor" />
         <SummaryCard label="Monthly COGS" value={totals.cogs} type="cogs" />
         <SummaryCard label="Monthly Overhead" value={totals.overhead} type="overhead" />
         <SummaryCard label="Monthly Net" value={totals.net} type="net" />
       </div>
+
+      {totals.hasActual && (
+        <div className="text-xs px-1" style={{ color: 'var(--color-text-muted)' }}>
+          Effective revenue uses owner-entered actuals on dates where available. Planned revenue remains visible in the calendar comparison.
+        </div>
+      )}
 
       {/* Projected note */}
       <div className="flex items-center gap-2 text-xs px-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -234,7 +242,7 @@ export function MonthlyView({
           </p>
           <div className="text-lg font-bold flex items-center gap-1" style={{ color: 'var(--color-state-danger)' }}>
             <DollarSign size={16} />
-            {(planner.monthCogs || planner.cogs).reduce((s, c) => s + (c.amount || 0), 0)}
+            {(planner.monthCogs || planner.cogs).reduce((s, c) => s + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
       )}

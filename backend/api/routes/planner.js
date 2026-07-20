@@ -6,7 +6,7 @@ const { postBotMessage } = require('../../../api-handlers/hub/_bot');
 const { buildPlannerForecast } = require('../planner/forecast');
 
 const router = express.Router();
-const PLANNER_OBJECT_TYPES = new Set(['shift', 'event', 'prep_task']);
+const PLANNER_OBJECT_TYPES = new Set(['shift', 'event', 'prep_task', 'revenue']);
 
 function plannerObjectType(value) {
   return PLANNER_OBJECT_TYPES.has(value) ? value : null;
@@ -26,8 +26,16 @@ async function saveAllPlannerCards(prismaClient, uid, bulkCards) {
     startTime: c.startTime ?? null,
     endTime: c.endTime ?? null,
     revenue: c.revenue ?? 0,
+    revenueCents: c.revenueCents ?? null,
+    cashReceivedCents: c.cashReceivedCents ?? 0,
     cost: c.cost ?? 0,
+    costCents: c.costCents ?? null,
     costPerHour: c.costPerHour ?? null,
+    costPerHourCents: c.costPerHourCents ?? null,
+    financialStatus: c.financialStatus ?? null,
+    financialSource: c.financialSource ?? null,
+    financialMetadata: c.financialMetadata ?? undefined,
+    notes: c.notes ?? null,
     optional: c.optional ?? false,
     enabled: c.enabled ?? true,
     effectTarget: c.effectTarget ?? null,
@@ -66,8 +74,16 @@ async function saveAllPlannerCards(prismaClient, uid, bulkCards) {
           startTime: row.startTime,
           endTime: row.endTime,
           revenue: row.revenue,
+          revenueCents: row.revenueCents,
+          cashReceivedCents: row.cashReceivedCents,
           cost: row.cost,
+          costCents: row.costCents,
           costPerHour: row.costPerHour,
+          costPerHourCents: row.costPerHourCents,
+          financialStatus: row.financialStatus,
+          financialSource: row.financialSource,
+          financialMetadata: row.financialMetadata,
+          notes: row.notes,
           optional: row.optional,
           enabled: row.enabled,
           effectTarget: row.effectTarget,
@@ -170,8 +186,16 @@ router.get('/cards', async (req, res) => {
       startTime: c.startTime,
       endTime: c.endTime,
       revenue: c.revenue,
+      revenueCents: c.revenueCents,
+      cashReceivedCents: c.cashReceivedCents,
       cost: c.cost,
+      costCents: c.costCents,
       costPerHour: c.costPerHour,
+      costPerHourCents: c.costPerHourCents,
+      financialStatus: c.financialStatus,
+      financialSource: c.financialSource,
+      financialMetadata: c.financialMetadata,
+      notes: c.notes,
       optional: c.optional,
       enabled: c.enabled,
       effectTarget: c.effectTarget,
@@ -217,8 +241,16 @@ router.post('/cards', async (req, res) => {
           startTime: card.startTime ?? null,
           endTime: card.endTime ?? null,
           revenue: card.revenue ?? 0,
+          revenueCents: card.revenueCents ?? null,
+          cashReceivedCents: card.cashReceivedCents ?? 0,
           cost: card.cost ?? 0,
+          costCents: card.costCents ?? null,
           costPerHour: card.costPerHour ?? null,
+          costPerHourCents: card.costPerHourCents ?? null,
+          financialStatus: card.financialStatus ?? null,
+          financialSource: card.financialSource ?? null,
+          financialMetadata: card.financialMetadata ?? undefined,
+          notes: card.notes ?? null,
           optional: card.optional ?? false,
           enabled: card.enabled ?? true,
           effectType: card.effectType ?? null,
@@ -377,13 +409,39 @@ router.post('/cogs', async (req, res) => {
       if (item.id) {
         const updated = await prisma.plannerCOGS.upsert({
           where: { id: item.id },
-          update: { name: item.name, amount: item.amount || 0, weekStart: item.weekStart },
-          create: { supabaseUid: uid, weekStart: item.weekStart || '', name: item.name || 'Expense', amount: item.amount || 0 },
+          update: {
+            name: item.name,
+            amount: item.amount || 0,
+            amountCents: item.amountCents ?? null,
+            weekStart: item.weekStart,
+            status: item.status || 'projected',
+            source: item.source || null,
+            notes: item.notes || null,
+          },
+          create: {
+            supabaseUid: uid,
+            weekStart: item.weekStart || '',
+            name: item.name || 'Expense',
+            amount: item.amount || 0,
+            amountCents: item.amountCents ?? null,
+            status: item.status || 'projected',
+            source: item.source || null,
+            notes: item.notes || null,
+          },
         });
         return res.status(200).json({ ok: true, item: updated });
       }
       const created = await prisma.plannerCOGS.create({
-        data: { supabaseUid: uid, weekStart: item.weekStart || '', name: item.name || 'Expense', amount: item.amount || 0 },
+        data: {
+          supabaseUid: uid,
+          weekStart: item.weekStart || '',
+          name: item.name || 'Expense',
+          amount: item.amount || 0,
+          amountCents: item.amountCents ?? null,
+          status: item.status || 'projected',
+          source: item.source || null,
+          notes: item.notes || null,
+        },
       });
       return res.status(200).json({ ok: true, item: created });
     } catch (err) {
