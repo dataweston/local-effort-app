@@ -17,6 +17,7 @@ import {
   Plus,
   RefreshCw,
   Send,
+  Share2,
   Sparkles,
   ShieldCheck,
   ShoppingCart,
@@ -225,6 +226,7 @@ function HubAuthScreen({ auth, inviteToken }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const sharedDocument = new URLSearchParams(window.location.search).has('doc');
 
   useEffect(() => {
     if (!inviteToken) return;
@@ -275,6 +277,12 @@ function HubAuthScreen({ auth, inviteToken }) {
         {invite && (
           <div className="hub-notice">
             Invite for {invite.email}. Continue with that Google account to accept it.
+          </div>
+        )}
+
+        {sharedDocument && !invite && (
+          <div className="hub-notice">
+            Sign in with Google to open the shared Hub document. Your Hub access is checked before the document loads.
           </div>
         )}
 
@@ -1082,21 +1090,69 @@ function ChatView({ accessToken, people, currentUserId }) {
   );
 }
 
-function DocsView({ accessToken, docs, reloadDocs, isPrivileged }) {
-  const [selectedId, setSelectedId] = useState(docs[0]?.id || null);
+function DocsView({ accessToken, docs, reloadDocs, isPrivileged, sharedDocId }) {
+  const [selectedId, setSelectedId] = useState(sharedDocId || docs[0]?.id || null);
   const [selected, setSelected] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [shareStatus, setShareStatus] = useState('');
   const [draft, setDraft] = useState({ title: '', summary: '', body: '', category: 'sop', visibility: 'staff' });
 
   useEffect(() => {
     if (!selectedId) return;
+    setLoadError('');
     api(`/api/hub/docs?id=${encodeURIComponent(selectedId)}`, accessToken)
-      .then((data) => setSelected(data.document))
-      .catch(() => setSelected(null));
+      .then((data) => {
+        setSelected(data.document);
+        setLoadError('');
+      })
+      .catch(() => {
+        setSelected(null);
+        setLoadError('This document is unavailable to this Google account. Ask the sender to confirm its Hub audience and your access.');
+      });
   }, [accessToken, selectedId]);
 
   useEffect(() => {
     if (!selectedId && docs[0]) setSelectedId(docs[0].id);
   }, [docs, selectedId]);
+
+  useEffect(() => {
+    if (sharedDocId) setSelectedId(sharedDocId);
+  }, [sharedDocId]);
+
+  const chooseDoc = (id) => {
+    setSelectedId(id);
+    setShareStatus('');
+    const url = new URL(window.location.href);
+    url.pathname = '/hub';
+    url.searchParams.set('tab', 'docs');
+    url.searchParams.set('doc', id);
+    url.searchParams.delete('shared');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+  };
+
+  const shareDoc = async (doc) => {
+    if (!doc) return;
+    const url = new URL('/hub', window.location.origin);
+    url.searchParams.set('tab', 'docs');
+    url.searchParams.set('doc', doc.id);
+    url.searchParams.set('shared', '1');
+    const audience = doc.visibility === 'privileged' ? 'privileged Hub members' : 'Hub staff';
+    const text = `${doc.title} — sign in with an authorized Local Effort Google account. Available to ${audience}.`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: doc.title, text, url: url.toString() });
+        setShareStatus('Share opened.');
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url.toString());
+        setShareStatus(`Link copied — ${audience} only.`);
+      } else {
+        window.prompt('Copy authenticated Hub document link', url.toString());
+        setShareStatus(`Link ready — ${audience} only.`);
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') setShareStatus('Unable to share this link.');
+    }
+  };
 
   const createDoc = async (event) => {
     event.preventDefault();
@@ -1106,7 +1162,7 @@ function DocsView({ accessToken, docs, reloadDocs, isPrivileged }) {
     });
     setDraft({ title: '', summary: '', body: '', category: 'sop', visibility: 'staff' });
     await reloadDocs();
-    setSelectedId(data.document.id);
+    chooseDoc(data.document.id);
   };
 
   return (
@@ -1115,19 +1171,42 @@ function DocsView({ accessToken, docs, reloadDocs, isPrivileged }) {
         <div className="hub-list">
           {docs.length === 0 && <p className="hub-empty">No documents yet.</p>}
           {docs.map((doc) => (
-            <button className={`hub-row hub-row-button ${selectedId === doc.id ? 'is-active' : ''}`} key={doc.id} onClick={() => setSelectedId(doc.id)}>
-              <strong>{doc.title}</strong>
-              <span>{doc.category} / {doc.visibility}</span>
-            </button>
+            <div className="hub-doc-list-row" key={doc.id}>
+              <button className={`hub-row hub-row-button ${selectedId === doc.id ? 'is-active' : ''}`} onClick={() => chooseDoc(doc.id)}>
+                <strong>{doc.title}</strong>
+                <span>{doc.category} / {doc.visibility}</span>
+              </button>
+              <button className="hub-doc-share-button" type="button" onClick={() => shareDoc(doc)} aria-label={`Share ${doc.title}`} title={`Share with ${doc.visibility === 'privileged' ? 'privileged Hub members' : 'Hub staff'}`}>
+                <Share2 size={14} aria-hidden="true" />
+              </button>
+            </div>
           ))}
         </div>
       </Panel>
-      <Panel title={selected?.title || 'Document'} icon={FileText}>
+      <Panel
+        title={selected?.title || 'Document'}
+        icon={FileText}
+        action={selected && (
+          <button type="button" onClick={() => shareDoc(selected)}>
+            <Share2 size={13} aria-hidden="true" /> Share
+          </button>
+        )}
+      >
         {selected ? (
           <article className="hub-doc-body">
             <p className="hub-doc-summary">{selected.summary}</p>
             <pre>{selected.body}</pre>
+            <div className="hub-doc-access-note">
+              <ShieldCheck size={13} aria-hidden="true" />
+              {selected.visibility === 'privileged' ? 'Privileged Hub members only' : 'Signed-in Hub staff'}
+            </div>
+            {shareStatus && <p className="hub-share-status" role="status">{shareStatus}</p>}
           </article>
+        ) : loadError ? (
+          <div className="hub-doc-denied">
+            <ShieldCheck size={22} aria-hidden="true" />
+            <p>{loadError}</p>
+          </div>
         ) : (
           <p className="hub-empty">Choose a document.</p>
         )}
@@ -3550,8 +3629,10 @@ function LocalistGuestShell({ localistWindow }) {
 
 export default function HubPage() {
   const auth = useSupabaseAuth();
-  const inviteToken = new URLSearchParams(window.location.search).get('invite') || '';
-  const localistToken = new URLSearchParams(window.location.search).get('localist') || '';
+  const hubParams = new URLSearchParams(window.location.search);
+  const inviteToken = hubParams.get('invite') || '';
+  const localistToken = hubParams.get('localist') || '';
+  const sharedDocId = hubParams.get('doc') || '';
   const hubPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
   const isSecurityRoute = hubPath === '/hub/security';
   const isInputsRoute = hubPath === '/hub/inputs';
@@ -3559,7 +3640,7 @@ export default function HubPage() {
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : 'today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : sharedDocId ? 'docs' : 'today');
   // Privileged-only "view as" override: see the whole Hub as a staff or customer
   // would. null = view with your real (privileged) access. Production-safe: only
   // a genuinely privileged profile can set this; it never elevates access.
@@ -3670,7 +3751,7 @@ export default function HubPage() {
     : isLocalist
     ? 'localist'
     : isCustomer
-    ? (customerTabIds.has(tab) ? tab : 'today')
+    ? (sharedDocId ? 'docs' : customerTabIds.has(tab) ? tab : 'today')
     : !isPrivileged && tab === 'economics'
     ? 'today'
     : tab;
@@ -3787,7 +3868,7 @@ export default function HubPage() {
         {/* Privileged "view as customer" hides the staff House Notepad via isCustomer above. */}
         {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
-        {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} />}
+        {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} sharedDocId={sharedDocId} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} isPrivileged={isPrivileged} isCustomer={isCustomer} />}
         {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
@@ -4062,9 +4143,26 @@ const hubCss = `
 .hub-field span { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: var(--hub-muted); text-transform: uppercase; letter-spacing: 0.03em; }
 
 /* ── Docs ── */
+.hub-doc-list-row { display: grid; grid-template-columns: minmax(0, 1fr) 38px; border-bottom: 1px solid var(--hub-border-light); }
+.hub-doc-list-row:last-child { border-bottom: 0; }
+.hub-doc-list-row .hub-row { border-bottom: 0; }
+.hub-doc-share-button {
+  border: 0;
+  border-left: 1px solid var(--hub-border-light);
+  background: transparent;
+  color: var(--hub-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.hub-doc-share-button:hover { background: var(--hub-accent-bg); color: var(--hub-accent); }
 .hub-doc-body { padding: 12px 14px; }
 .hub-doc-body pre { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.6; }
 .hub-doc-summary { color: var(--hub-muted); font-size: 12px; margin: 0 0 10px; }
+.hub-doc-access-note { display: flex; align-items: center; gap: 6px; color: var(--hub-muted); font-size: 11px; margin-top: 14px; }
+.hub-share-status { color: var(--hub-accent); font-size: 12px; margin: 8px 0 0; }
+.hub-doc-denied { color: var(--hub-muted); display: grid; gap: 8px; justify-items: start; padding: 18px 14px; }
+.hub-doc-denied p { font-size: 13px; line-height: 1.5; margin: 0; }
 
 /* ── People ── */
 .hub-people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; padding: 12px 14px; }
