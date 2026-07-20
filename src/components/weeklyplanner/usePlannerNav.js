@@ -6,10 +6,13 @@ export function usePlannerNav() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const today = getToday();
+  const calendarWeekStart = getWeekStart(today);
+  const isSunday = getWeekDates(calendarWeekStart)[6] === today;
+  const defaultPlanningDate = isSunday ? addDays(today, 1) : today;
 
   const view = searchParams.get('view') || 'agenda';
-  const weekStart = searchParams.get('week') || getWeekStart(today);
-  const selectedDate = searchParams.get('date') || today;
+  const weekStart = searchParams.get('week') || getWeekStart(defaultPlanningDate);
+  const selectedDate = searchParams.get('date') || defaultPlanningDate;
   const selectedMonth = searchParams.get('month') || today.slice(0, 7);
 
   const selectedYear = useMemo(() => parseInt(selectedMonth.split('-')[0], 10), [selectedMonth]);
