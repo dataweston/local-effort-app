@@ -219,14 +219,11 @@ function Field({ label, children }) {
 }
 
 function HubAuthScreen({ auth, inviteToken }) {
-  const [mode, setMode] = useState(inviteToken ? 'signup' : 'signin');
   const [invite, setInvite] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [title, setTitle] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -235,26 +232,28 @@ function HubAuthScreen({ auth, inviteToken }) {
       .then((data) => {
         setInvite(data.invite);
         setEmail(data.invite.email || '');
-        setDisplayName(data.invite.displayNameHint || '');
       })
       .catch((err) => setError(err.message));
   }, [inviteToken]);
 
-  const submit = async (event) => {
-    event.preventDefault();
+  const signInWithGoogle = async () => {
     setError('');
-    setMessage('');
     setBusy(true);
     try {
-      if (mode === 'reset') {
-        await auth.sendPasswordReset(email);
-        setMessage('Check your email for a password reset link. You can close this page after it arrives.');
-      } else if (mode === 'signup') {
-        await auth.signUpWithEmail(email, password, { display_name: displayName });
-        await auth.signInWithEmail(email, password);
-      } else {
-        await auth.signInWithEmail(email, password);
-      }
+      const destination = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+      await auth.signInWithGoogle(destination);
+    } catch (err) {
+      setError(err.message || 'Google sign-in is unavailable');
+      setBusy(false);
+    }
+  };
+
+  const signInWithPassword = async (event) => {
+    event.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      await auth.signInWithEmail(email, password);
     } catch (err) {
       setError(err.message || 'Unable to sign in');
     } finally {
@@ -275,56 +274,41 @@ function HubAuthScreen({ auth, inviteToken }) {
 
         {invite && (
           <div className="hub-notice">
-            Invite for {invite.email}. Access: {invite.accessLevel}.
+            Invite for {invite.email}. Continue with that Google account to accept it.
           </div>
         )}
 
-        <form onSubmit={submit} className="hub-form">
-          <Field label="Email">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
-          </Field>
-          {mode !== 'reset' && (
-            <Field label="Password">
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={8} required />
-            </Field>
-          )}
-          {mode === 'signup' && (
-            <>
-              <Field label="Display name">
-                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
-              </Field>
-              <Field label="Role or title">
-                <input value={title} onChange={(e) => setTitle(e.target.value)} />
-              </Field>
-            </>
-          )}
-          {error && <p className="hub-error">{error}</p>}
-          {message && <p className="hub-notice" role="status">{message}</p>}
-          <button className="hub-primary-button" type="submit" disabled={busy}>
-            <LogIn size={20} aria-hidden="true" />
-            {busy ? 'Working...' : mode === 'reset' ? 'Send reset link' : mode === 'signup' ? 'Create profile' : 'Sign in'}
-          </button>
-        </form>
+        <button className="hub-primary-button hub-google-button" type="button" onClick={signInWithGoogle} disabled={busy}>
+          <LogIn size={20} aria-hidden="true" />
+          {busy ? 'Opening Google...' : 'Continue with Google'}
+        </button>
 
-        {mode === 'signin' ? (
-          <>
-            <button className="hub-text-button" type="button" onClick={() => setMode('reset')}>
-              Forgot your password?
+        <p className="hub-help hub-auth-or">Use the Google account connected to your Hub profile.</p>
+
+        {showPassword ? (
+          <form onSubmit={signInWithPassword} className="hub-form hub-password-fallback">
+            <Field label="Email">
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+            </Field>
+            <Field label="Password">
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" minLength={8} required />
+            </Field>
+            <button className="hub-primary-button" type="submit" disabled={busy}>
+              {busy ? 'Signing in...' : 'Sign in with password'}
             </button>
-            <button className="hub-text-button" type="button" onClick={() => setMode('signup')}>
-              I have an invite and need a profile
+            <button className="hub-text-button" type="button" onClick={() => { setShowPassword(false); setError(''); }}>
+              Back to Google sign-in
             </button>
-          </>
+          </form>
         ) : (
-          <button className="hub-text-button" type="button" onClick={() => { setMode('signin'); setError(''); setMessage(''); }}>
-            Back to sign in
+          <button className="hub-text-button" type="button" onClick={() => setShowPassword(true)}>
+            Use an existing email and password instead
           </button>
         )}
 
+        {error && <p className="hub-error">{error}</p>}
         <p className="hub-help">
-          {mode === 'reset'
-            ? 'Use the same email address as your Hub account.'
-            : 'Use email and password. Invite links control who can create staff, customer, or privileged profiles.'}
+          New staff and customer access is created by invitation. If the wrong Google account opens, choose another account on the Google screen.
         </p>
       </div>
     </main>
@@ -347,6 +331,7 @@ function HubPasswordRecovery({ auth }) {
     setBusy(true);
     try {
       await auth.updatePassword(password);
+      window.location.replace('/hub');
     } catch (err) {
       setError(err.message || 'Unable to update password');
     } finally {
@@ -381,9 +366,11 @@ function HubPasswordRecovery({ auth }) {
   );
 }
 
-function ProfileSetup({ accessToken, inviteToken, onDone }) {
+function ProfileSetup({ accessToken, inviteToken, onDone, user }) {
   const [invite, setInvite] = useState(null);
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState(
+    user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || '',
+  );
   const [title, setTitle] = useState('');
   const [error, setError] = useState('');
 
@@ -1447,6 +1434,28 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
         )}
       </Panel>
     </div>
+  );
+}
+
+function HubAccessRequired({ auth }) {
+  return (
+    <main className="hub-auth-screen">
+      <div className="hub-auth-card">
+        <div className="hub-brand">
+          <ShieldCheck size={42} aria-hidden="true" />
+          <div>
+            <h1>Hub access not found</h1>
+            <p>You are signed in as {auth.user?.email}.</p>
+          </div>
+        </div>
+        <p className="hub-help">
+          This Google account does not have a Hub profile or matching invitation. Sign out and choose the invited account, or ask a Local Effort admin to check your access.
+        </p>
+        <button className="hub-primary-button" type="button" onClick={auth.signOut}>
+          <LogOut size={18} aria-hidden="true" /> Sign out and choose another account
+        </button>
+      </div>
+    </main>
   );
 }
 
@@ -3706,10 +3715,18 @@ export default function HubPage() {
     );
   }
   if (profileLoaded && !profile) {
+    if (!inviteToken && !auth.isAdmin) {
+      return (
+        <>
+          <style>{hubCss}</style>
+          <HubAccessRequired auth={auth} />
+        </>
+      );
+    }
     return (
       <>
         <style>{hubCss}</style>
-        <ProfileSetup accessToken={auth.accessToken} inviteToken={inviteToken} onDone={loadProfile} />
+        <ProfileSetup accessToken={auth.accessToken} inviteToken={inviteToken} onDone={loadProfile} user={auth.user} />
       </>
     );
   }
@@ -4780,6 +4797,9 @@ const hubCss = `
 .hub-auth-screen { min-height: 100vh; display: grid; place-items: center; background: var(--hub-bg, #f5f3ee); padding: 18px; }
 .hub-auth-card { width: min(440px, 100%); background: #fff; border: 1px solid var(--hub-border); border-radius: 8px; padding: 24px; }
 .hub-auth-card .hub-form { padding: 0; }
+.hub-google-button { width: 100%; justify-content: center; min-height: 46px; }
+.hub-auth-or { margin: 12px 0 2px; text-align: center; }
+.hub-password-fallback { margin-top: 12px; padding-top: 14px !important; border-top: 1px solid var(--hub-border-light); }
 .hub-brand { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
 .hub-brand h1, .hub-auth-card h1 { font-size: 20px; font-weight: 700; margin: 0; }
 .hub-brand p, .hub-help { color: var(--hub-muted); font-size: 13px; line-height: 1.5; }

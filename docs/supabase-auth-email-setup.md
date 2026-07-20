@@ -1,5 +1,12 @@
 # Supabase auth email setup (SMTP, redirect allowlist, branded templates)
 
+> Status as of 2026-07-19: this email flow is disabled in the Hub UI. Google
+> OAuth is the primary Hub sign-in; existing email/password accounts remain a
+> secondary fallback. Do not send Supabase magic-link, invite, or reset emails
+> unless the Brevo SMTP relay and branded template have been verified end to
+> end under the repository's human-communications rules. The callback code
+> below remains only for links that were already issued.
+
 Fixes the July 2026 incident where password-reset emails went out via Supabase's
 built-in mailer: spam-filtered, unbranded, and the link landed on the homepage.
 See `AGENTS.md` § "Human-facing communications (hard rules)".
@@ -105,7 +112,11 @@ Set your Local Effort Hub password
 </table>
 ```
 
-## Verification checklist (mandatory before any real send)
+## Future re-enable checklist (mandatory before any real send)
+
+The current Hub has no password-reset control. These steps apply only after the
+owner explicitly approves restoring that control and Supabase auth mail is
+confirmed to relay through Brevo with the branded template.
 
 Per `AGENTS.md`, the recipient's inbox is production. After completing 1–3:
 

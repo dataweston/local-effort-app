@@ -3,11 +3,28 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../../utils/prisma', () => ({ prisma: {} }));
 vi.mock('../../brain/postBotMessage', () => ({ postBotMessage: vi.fn() }));
 
+let plannerUidForUser;
 let saveAllPlannerCards;
 
 beforeEach(async () => {
   vi.resetModules();
-  ({ __internals: { saveAllPlannerCards } } = await import('../planner'));
+  ({ __internals: { plannerUidForUser, saveAllPlannerCards } } = await import('../planner'));
+});
+
+describe('planner identity helper', () => {
+  it('uses the shared master planner for admins', () => {
+    expect(plannerUidForUser(
+      { id: 'admin-user', email: 'dataweston@gmail.com' },
+      { HUB_MASTER_SUPABASE_UID: 'master-planner' },
+    )).toBe('master-planner');
+  });
+
+  it('keeps non-admin planners isolated', () => {
+    expect(plannerUidForUser(
+      { id: 'staff-user', email: 'staff@example.com' },
+      { HUB_MASTER_SUPABASE_UID: 'master-planner' },
+    )).toBe('staff-user');
+  });
 });
 
 describe('planner save-all helper', () => {

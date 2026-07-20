@@ -1,7 +1,7 @@
 const express = require('express');
 const { prisma } = require('../utils/prisma');
 const { getSupabase } = require('../supabaseClient');
-const { isAdminEmail } = require('../utils/adminVerifier');
+const { isAdminEmail, isReadOnlyAdminEmail, isReadOnlyMethod } = require('../utils/adminVerifier');
 const { postBotMessage } = require('../../../api-handlers/hub/_bot');
 const { buildPlannerForecast } = require('../planner/forecast');
 
@@ -10,6 +10,12 @@ const PLANNER_OBJECT_TYPES = new Set(['shift', 'event', 'prep_task', 'revenue'])
 
 function plannerObjectType(value) {
   return PLANNER_OBJECT_TYPES.has(value) ? value : null;
+}
+
+function plannerUidForUser(user, env = process.env) {
+  const masterPlannerUid = env.HUB_MASTER_SUPABASE_UID || env.VITE_HUB_MASTER_SUPABASE_UID;
+  if (masterPlannerUid && isAdminEmail(user?.email)) return masterPlannerUid;
+  return user?.id || null;
 }
 
 async function saveAllPlannerCards(prismaClient, uid, bulkCards) {
@@ -127,7 +133,10 @@ async function requireAuth(req, res, next) {
   if (!prisma) return res.status(500).json({ error: 'Database not configured' });
   const user = await verifySupabaseToken(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
-  req.plannerUid = user.id;
+  if (isReadOnlyAdminEmail(user.email) && !isReadOnlyMethod(req.method)) {
+    return res.status(403).json({ error: 'Read-only admin access' });
+  }
+  req.plannerUid = plannerUidForUser(user);
   req.plannerUser = user;
   next();
 }
@@ -137,10 +146,7 @@ router.use(requireAuth);
 router.get('/forecast', async (req, res) => {
   if (!isAdminEmail(req.plannerUser?.email)) return res.status(403).json({ error: 'admin only' });
   try {
-    const plannerUid = process.env.HUB_MASTER_SUPABASE_UID
-      || process.env.VITE_HUB_MASTER_SUPABASE_UID
-      || req.plannerUid;
-    const forecast = await buildPlannerForecast({ prisma, plannerUid });
+    const forecast = await buildPlannerForecast({ prisma, plannerUid: req.plannerUid });
     return res.status(200).json(forecast);
   } catch (err) {
     console.error('GET /api/planner/forecast error:', err);
@@ -595,4 +601,4 @@ function createPlannerRouter() {
   return router;
 }
 
-module.exports = { createPlannerRouter, __internals: { plannerObjectType, saveAllPlannerCards } };
+module.exports = { createPlannerRouter, __internals: { plannerObjectType, plannerUidForUser, saveAllPlannerCards } };
