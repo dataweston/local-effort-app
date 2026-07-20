@@ -3,6 +3,20 @@
 
 const fs = require('fs');
 const path = require('path');
+// Static imports are intentional. Vercel's serverless dependency tracer cannot
+// reliably discover JSON loaded only through computed fs paths.
+const defaultLineModelConfig = require('../references/line-model-config.json');
+const defaultObservedLineEvidence = require('../references/observed-line-evidence.json');
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function sourceError(code, message, cause) {
+  const error = new Error(message, { cause });
+  error.code = code;
+  return error;
+}
 
 function loadEnv(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -216,6 +230,12 @@ function buildScenario(config) {
     ? prepared.reduce((sum, { inputs }) => sum + inputs.monthlyOrders * inputs.kitchenHoursPerOrder, 0)
     : null;
   const hourlyKitchenCost = portfolioCashReady ? kitchenHourlyCost(totalKitchenHours, config.kitchen) : null;
+  const totalMonthlyOrders = portfolioCashReady
+    ? prepared.reduce((sum, { inputs }) => sum + inputs.monthlyOrders, 0)
+    : null;
+  const totalMonthlyRevenue = portfolioCashReady
+    ? prepared.reduce((sum, { inputs }) => sum + inputs.monthlyOrders * inputs.averageRevenuePerOrder, 0)
+    : null;
   const results = prepared.map(({ line, inputs, missingCash }) => {
     const missingEconomic = ['founderLaborHoursPerOrder', 'founderLaborHourlyRate']
       .filter((key) => !Number.isFinite(inputs[key]));
@@ -224,14 +244,23 @@ function buildScenario(config) {
     }
     const monthlyRevenue = inputs.monthlyOrders * inputs.averageRevenuePerOrder;
     const lineKitchenHours = inputs.monthlyOrders * inputs.kitchenHoursPerOrder;
-    const allocatedHourlyKitchen = totalKitchenHours > 0 ? hourlyKitchenCost * lineKitchenHours / totalKitchenHours : 0;
-    const cashVariableCosts = inputs.monthlyOrders * (
+    const kitchenAllocations = {
+      modeledKitchenHours: totalKitchenHours > 0 ? hourlyKitchenCost * lineKitchenHours / totalKitchenHours : 0,
+      modeledOrderCount: totalMonthlyOrders > 0 ? hourlyKitchenCost * inputs.monthlyOrders / totalMonthlyOrders : 0,
+      modeledRevenueShare: totalMonthlyRevenue > 0 ? hourlyKitchenCost * monthlyRevenue / totalMonthlyRevenue : 0,
+    };
+    const allocatedHourlyKitchen = kitchenAllocations.modeledKitchenHours;
+    const cashVariableCostsBeforeKitchen = inputs.monthlyOrders * (
       inputs.ingredientCostPerOrder
       + inputs.paidLaborHoursPerOrder * inputs.paidLaborHourlyRate
       + inputs.packagingDeliveryPerOrder
       + inputs.otherVariableCostPerOrder
-    ) + allocatedHourlyKitchen;
+    );
+    const cashVariableCosts = cashVariableCostsBeforeKitchen + allocatedHourlyKitchen;
     const cashContribution = monthlyRevenue - cashVariableCosts;
+    const contributionByAllocation = Object.fromEntries(Object.entries(kitchenAllocations)
+      .map(([method, allocation]) => [method, roundMoney(monthlyRevenue - cashVariableCostsBeforeKitchen - allocation)]));
+    const contributionRangeValues = Object.values(contributionByAllocation);
     const founderLaborCost = missingEconomic.length
       ? null
       : inputs.monthlyOrders * inputs.founderLaborHoursPerOrder * inputs.founderLaborHourlyRate;
@@ -246,9 +275,19 @@ function buildScenario(config) {
       monthlyRevenue: roundMoney(monthlyRevenue),
       monthlyKitchenHours: roundMoney(lineKitchenHours),
       allocatedHourlyKitchenCost: roundMoney(allocatedHourlyKitchen),
+      allocatedKitchenCostByMethod: Object.fromEntries(Object.entries(kitchenAllocations)
+        .map(([method, allocation]) => [method, roundMoney(allocation)])),
       cashVariableCosts: roundMoney(cashVariableCosts),
       cashContributionBeforeStorageAndFixedOverhead: roundMoney(cashContribution),
       cashContributionMargin: monthlyRevenue ? Math.round(cashContribution / monthlyRevenue * 10000) / 10000 : null,
+      cashContributionSensitivity: {
+        classification: 'modeled_interim_allocation_not_observed',
+        byKitchenAllocationMethod: contributionByAllocation,
+        range: {
+          low: roundMoney(Math.min(...contributionRangeValues)),
+          high: roundMoney(Math.max(...contributionRangeValues)),
+        },
+      },
       founderLaborCost: founderLaborCost == null ? null : roundMoney(founderLaborCost),
       economicContributionBeforeStorageAndFixedOverhead: founderLaborCost == null ? null : roundMoney(cashContribution - founderLaborCost),
       missingEconomicInputs: missingEconomic,
@@ -260,8 +299,9 @@ function buildScenario(config) {
     totalKitchenHours: totalKitchenHours == null ? null : roundMoney(totalKitchenHours),
     hourlyKitchenCost,
     monthlyStorageFixedOverhead: config.kitchen.monthlyStorage,
+    interimAllocationPolicy: config.interimAllocationPolicy,
     lines: results,
-    note: 'Hourly kitchen cost is allocated by modeled kitchen hours. Storage remains portfolio fixed overhead. Do not also include these amounts in another overhead line.',
+    note: 'Primary kitchen allocation uses modeled kitchen hours. Order-count and revenue-share allocations are required sensitivities. All are modeled, not observed. Storage remains portfolio fixed overhead.',
   };
 }
 
@@ -337,6 +377,12 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
       totals,
       vendorEvidence: buildVendorEvidence(rows, vendorEvidenceRules),
     };
+  } catch (error) {
+    throw sourceError(
+      'LOCAL_BUDGET_SOURCE_UNAVAILABLE',
+      'Local Budget cash actuals are unavailable',
+      error,
+    );
   } finally {
     await prisma.$disconnect();
   }
@@ -387,6 +433,12 @@ async function squareAttribution(repo, start, endExclusive, config) {
       latestOrderDate: maxOccurred?.toISOString?.().slice(0, 10) || null,
       lines: [...byLine.values()].map((line) => finalizeLine(line, lineRevenue)),
     };
+  } catch (error) {
+    throw sourceError(
+      'COMPANY_BRAIN_SOURCE_UNAVAILABLE',
+      'Company Brain Square order evidence is unavailable',
+      error,
+    );
   } finally {
     await prisma.$disconnect();
   }
@@ -395,12 +447,27 @@ async function squareAttribution(repo, start, endExclusive, config) {
 async function buildLineModel({ repo: repoInput, start: startText, end: endText, configPath: configInput, scenarioInputs = [] }) {
   const repo = path.resolve(repoInput || process.cwd());
   for (const name of ['.env', '.env.local', '.env.vercel.production']) loadEnv(path.join(repo, name));
-  const configPath = path.resolve(configInput || path.join(__dirname, '..', 'references', 'line-model-config.json'));
-  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  const observedEvidencePath = path.join(path.dirname(configPath), 'observed-line-evidence.json');
-  const observedEvidence = fs.existsSync(observedEvidencePath)
-    ? JSON.parse(fs.readFileSync(observedEvidencePath, 'utf8'))
-    : { schemaVersion: 1, asOf: null, items: [] };
+  let config;
+  let observedEvidence;
+  try {
+    if (configInput) {
+      const configPath = path.resolve(configInput);
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const observedEvidencePath = path.join(path.dirname(configPath), 'observed-line-evidence.json');
+      observedEvidence = fs.existsSync(observedEvidencePath)
+        ? JSON.parse(fs.readFileSync(observedEvidencePath, 'utf8'))
+        : { schemaVersion: 1, asOf: null, items: [] };
+    } else {
+      config = cloneJson(defaultLineModelConfig);
+      observedEvidence = cloneJson(defaultObservedLineEvidence);
+    }
+  } catch (error) {
+    throw sourceError(
+      'ECONOMICS_MODEL_CONFIG_UNAVAILABLE',
+      'Economics model configuration is unavailable',
+      error,
+    );
+  }
   const overrides = new Map((Array.isArray(scenarioInputs) ? scenarioInputs : []).map((line) => [line.id, line]));
   config.lines = config.lines.map((line) => ({
     ...line,

@@ -1,17 +1,16 @@
 # Evidence and modeling standard
 
-## Source precedence
+## Domain-specific authority
 
-Use the narrowest authoritative source for each fact:
+Do not apply one global precedence ladder to unlike facts.
 
-1. current owner correction for policy, intent, ownership acceptance, and facts unavailable in systems;
-2. Local Budget posted, split-aware records for cash actuals and reviewed classifications;
-3. native operating source such as Square orders or payroll documents for product, hours, rate, and invoice detail;
-4. Company Brain assertions that retain provenance and have current source coverage;
-5. current repository documentation;
-6. old plans and narrative documents as dated memory only.
+- **Policy, intent, definitions, decisions, and acceptance:** current owner statements control. Examples include what counts as a founder draw, what local-first means, whether an equity offer was accepted, and whether a raise is operationally ready.
+- **Cash amounts and reviewed classifications:** Local Budget posted, split-aware records control. Owner recollection may identify a classification problem but does not replace the reconciled total.
+- **Orders, payroll, hours, rates, invoices, and dates:** prefer the native operating document or system, then source-backed Brain records. Owner recollection remains empirical evidence, labeled `owner-reported empirical`, until corroborated when the distinction is material.
+- **Ownership economics:** use the current owner-confirmed accepted cap table for economic modeling; preserve document, approval, issuance, and counsel warnings as separate legal facts.
+- **Historical reasoning and intent:** use current repository records and the append-only decisions log. Treat old plans as dated memory only.
 
-Authority is domain-specific. An owner statement does not replace a posted cash total, and a bank descriptor does not replace a reviewed expense classification.
+An owner can authoritatively say that a prior claim had no known basis or was never adopted, which retires it as a standing premise. That does not prove the opposite empirical value. Likewise, an owner-described contract term can control an operating decision provisionally while remaining `owner-reported empirical` until the contract or invoices corroborate it.
 
 ## Reconciliation rules
 
@@ -19,6 +18,7 @@ Authority is domain-specific. An owner statement does not replace a posted cash 
 - Never equate Square order date with Local Budget settlement date without a timing bridge.
 - Preserve Unallocated and unresolved categories.
 - Do not allocate pooled COGS, labor, rent, or founder time to lines by revenue share and call the result observed.
+- Under a real decision deadline, a sanctioned allocation may be used only in the modeled layer. Use the configured causal driver, show alternative-driver sensitivity, preserve any residual pool, and state whether the decision changes. Never merge it into observed actuals.
 - Do not call a line wholly blocked when exact revenue, price, quantity, quote, purchase-lot, or candidate-cost evidence exists. Report the known component and leave the unsupported subtotal blank.
 - Distinguish directly matched variable cost, candidate direct cost, shared COGS, and channel operating spend. Only the first may be deducted automatically from line contribution.
 - Use exact order/customer identities to resolve opaque payment labels when Gmail, Square, or Brain provenance supports the match.

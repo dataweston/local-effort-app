@@ -69,6 +69,14 @@ The owner cannot identify a source or calculation for the claimed 20% EBITDA.
 Retire that figure completely; do not downgrade it to an estimate or use it as a
 baseline.
 
+The same evidentiary distinction applies if later measurement lands near an
+old number. April-June operating revenue is approximately $29.25K; a properly
+seasonalized annual reconstruction, especially with October at 2.37 times
+baseline, may eventually land near the retired $120K claim. That would validate
+the new reconstruction, not retroactively validate the unsupported claim. Keep
+the coincidence as a calibration result: retirement concerned provenance and
+decision fitness, not a prediction that the number must be numerically false.
+
 Between July 13 and July 18, the direct database added, among other items,
 $1,290.23 of INCOME, $615.17 of COGS, $136.88 of operating expense, $344.00 of
 unresolved Labor, and $91.68 of PERSONAL expense. Transfers and unresolved

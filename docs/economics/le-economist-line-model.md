@@ -10,8 +10,8 @@ It combines Local Budget cash actuals with Company Brain Square line items, then
 
 Run the closed-month baseline with:
 
-```powershell
-node skills\le-economist\scripts\build-line-model.cjs --repo . --start 2026-04-01 --end 2026-06-30
+```sh
+node "skills/le-economist/scripts/build-line-model.cjs" --repo . --start 2026-04-01 --end 2026-06-30
 ```
 
 ## April–June baseline
@@ -41,4 +41,8 @@ The founder policy accrued $40,000 for the three closed months. Confirmed PERSON
 
 ## Decision boundary
 
-The model does not yet support a defensible raise point estimate, but line economics are no longer treated as wholly blocked. It reports measured revenue, unit prices, purchase lots, quote/service facts, acquisition spend, and candidate/shared cost pools at their supported confidence. It deliberately leaves the full contribution-margin field blank until COGS receipts and lots are joined to recipes or jobs, payroll and founder time are matched to production, courier/kitchen/packaging costs are matched to work, and capacity and target mix are measured. Those remaining joins improve the same model without discarding what is already known or allocating pooled cost by revenue share.
+The model does not yet support a defensible raise point estimate, but line economics are no longer treated as wholly blocked. It reports measured revenue, unit prices, purchase lots, quote/service facts, acquisition spend, and candidate/shared cost pools at their supported confidence. It deliberately leaves the observed full contribution-margin field blank until COGS receipts and lots are joined to recipes or jobs, payroll and founder time are matched to production, courier/kitchen/packaging costs are matched to work, and capacity and target mix are measured.
+
+For a deadline decision, the scenario layer provides the sanctioned fallback rather than refusing to calculate: shared kitchen cash cost is allocated by modeled kitchen hours, while another documented shared production pool may be allocated by modeled direct production labor hours. Every fallback result is labeled modeled and paired with order-count and revenue-share sensitivities. The decision must report the range and whether the line ranking or recommendation reverses. Direct joins replace—not validate—the fallback when they arrive.
+
+One calibration point should remain visible: April-June operating revenue of approximately $29.25K, adjusted with measured seasonality including October at 2.37 times baseline, may ultimately imply an annual figure near the retired $120K claim. The claim was retired because it lacked provenance, not because proximity was impossible; a later nearby reconstruction would demonstrate the evidence system working.

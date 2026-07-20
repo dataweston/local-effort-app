@@ -82,7 +82,10 @@ async function requestModel(accessToken, input, method = 'GET') {
     ...(method === 'POST' ? { body: JSON.stringify(input) } : {}),
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || 'Unable to load the economics model');
+  if (!response.ok) {
+    const message = payload.error || 'Unable to load the economics model';
+    throw new Error(payload.code ? `${message} (${payload.code})` : message);
+  }
   return payload.model;
 }
 
@@ -198,7 +201,7 @@ function ScenarioPanel({ model, draft, setDraft, onRun, onSeed, running, dirty }
         <div>
           <span className="econ-eyebrow">Editable scenario</span>
           <h3>Build contribution from operating drivers</h3>
-          <p>Blank fields stay unknown. The model will not substitute pooled costs or revenue-share allocations.</p>
+          <p>Blank fields stay unknown. Primary kitchen allocation follows modeled kitchen hours; order-count and revenue-share results test whether that choice changes the answer.</p>
         </div>
         <div className="econ-actions">
           <button className="econ-button econ-button-secondary" onClick={onSeed}>Seed observed volume + price</button>
@@ -251,6 +254,7 @@ function ScenarioPanel({ model, draft, setDraft, onRun, onSeed, running, dirty }
                   <div className="econ-result-strip">
                     <div><span>Cash contribution</span><strong>{money(result.cashContributionBeforeStorageAndFixedOverhead)}</strong></div>
                     <div><span>Economic contribution</span><strong>{money(result.economicContributionBeforeStorageAndFixedOverhead)}</strong></div>
+                    <div><span>Allocation sensitivity</span><strong>{money(result.cashContributionSensitivity?.range?.low)}–{money(result.cashContributionSensitivity?.range?.high)}</strong></div>
                     <div><span>Kitchen hours</span><strong>{result.monthlyKitchenHours ?? '—'}</strong></div>
                     <div><span>Capacity use</span><strong>{percent(result.capacityUtilization)}</strong></div>
                   </div>
@@ -271,7 +275,7 @@ function ScenarioPanel({ model, draft, setDraft, onRun, onSeed, running, dirty }
           <div><span>Hourly kitchen cost</span><strong>{money(model.scenario?.hourlyKitchenCost)}</strong></div>
           <div><span>Storage overhead</span><strong>{money(model.scenario?.monthlyStorageFixedOverhead)}</strong></div>
         </div>
-        <p className="econ-footnote">The $200 storage charge remains portfolio overhead. Raise sizing remains blocked until contribution, capacity, target mix, ramp timing, and uses of funds are complete.</p>
+        <p className="econ-footnote">Modeled kitchen hours control the primary allocation; order-count and revenue-share allocations define the displayed sensitivity range. The $200 storage charge remains portfolio overhead. Raise sizing still requires target mix, ramp timing, and uses of funds.</p>
       </section>
     </div>
   );

@@ -14,6 +14,27 @@
     "remainingHourlyRate": 35,
     "monthlyStorage": 200
   },
+  "interimAllocationPolicy": {
+    "status": "sanctioned_for_deadline_decisions_only",
+    "presentation": "modeled_interim_allocation_not_observed",
+    "primaryMethods": {
+      "sharedKitchenCashCost": "modeled_kitchen_hours",
+      "otherSharedProductionCost": "modeled_direct_production_labor_hours"
+    },
+    "requiredSensitivityMethods": [
+      "modeled_order_count",
+      "modeled_revenue_share"
+    ],
+    "excludedPools": [
+      "channel_acquisition_spend",
+      "financing",
+      "transfers",
+      "founder_draws",
+      "fixed_storage",
+      "unrelated_overhead"
+    ],
+    "decisionRule": "Show the allocation range and whether the line ranking or recommendation reverses. Replace the fallback when direct joins exist."
+  },
   "lines": [
     {
       "id": "weekly_meal_subscription",

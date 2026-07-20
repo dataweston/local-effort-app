@@ -12,6 +12,17 @@ As of 2026-07-18. Recheck live sources before any material decision.
 - A Wefunder/SMBX raise is operationally ready to go, but no accepted financial model or final raise terms exist.
 - The managerial business-line taxonomy has not been chosen by the owner. The line model uses a configurable working taxonomy.
 
+### Deferred-compensation settlement policy
+
+The owner-designed intended settlement is cash for accrued founder compensation exchanged for founder shares moved into cooperative treasury. At settlement, founder ownership—not a new outside-investor issuance—supplies the shares; later issuance from treasury may have its own dilution effects. The intended economic purposes are to settle the related-party liability, make founder dilution bear the settlement, and create a treasury pool for future hires or investors.
+
+This is owner policy, not an executed or legally validated mechanism. Four items remain open:
+
+1. **Pricing peg:** use the most recent arm's-length round price or another independently supportable method; do not use an undocumented related-party price.
+2. **Minnesota 308B share class:** cooperative and securities counsel must confirm the permissible treasury, employee, member, and non-member instrument mechanics.
+3. **Milestone subordination:** subordinate settlement to a disclosed revenue, profitability, or liquidity milestone so financing proceeds visibly fund growth before founder repayment.
+4. **Disclosure order:** disclose the accrued liability first, then the proposed settlement mechanism, then the milestone and governance conditions. Accountant and counsel review are required before offering materials or execution.
+
 ## Current evidence cautions
 
 - Local Budget is the authority for cash money; Square/Brain order events provide product attribution and do not replace cash reconciliation.
@@ -29,3 +40,5 @@ Never use these as assumptions or downgrade them into estimates:
 - flat $1,850 monthly kitchen rent;
 - PropCo/OpCo as the current strategy;
 - SBA 504 or C-PACE as current financing assumptions.
+
+Retirement is evidentiary, not a prediction that the number must be false. If a future measured, seasonally reconstructed annual revenue figure lands near $120,000, record that as a calibration result: the measured estimate stands on its own method, while the unsupported historical claim remains invalid as a prior input.

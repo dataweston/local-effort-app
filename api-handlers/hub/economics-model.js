@@ -79,7 +79,16 @@ module.exports = async (req, res) => {
     res.setHeader('Cache-Control', 'private, no-store');
     return res.status(200).json({ ok: true, model });
   } catch (err) {
-    console.error('[hub/economics-model] error', err);
-    return res.status(503).json({ error: 'Unable to build the economics model from current sources' });
+    const code = String(err?.code || 'ECONOMICS_MODEL_UNAVAILABLE');
+    console.error('[hub/economics-model] error', {
+      code,
+      message: err?.message,
+      causeCode: err?.cause?.code,
+      causeMessage: err?.cause?.message,
+    });
+    return res.status(503).json({
+      error: 'Unable to build the economics model from current sources',
+      code,
+    });
   }
 };
