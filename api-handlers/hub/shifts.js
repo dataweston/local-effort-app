@@ -3,6 +3,7 @@ const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 const { masterPlannerUid } = require('./_masterPlanner');
 const { isShiftCard } = require('./_planner');
+const crypto = require('crypto');
 
 let prisma = null;
 try {
@@ -17,11 +18,13 @@ function dayOfWeek(date) {
 }
 
 function isDate(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 function isTime(value) {
-  return typeof value === 'string' && /^\d{2}:\d{2}$/.test(value);
+  return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
 }
 
 function normalizedName(value) {
@@ -43,6 +46,21 @@ function canEditShift(card, auth) {
 
 const REQUEST_TYPES = new Set(['change', 'time_block', 'time_off']);
 const REQUEST_STATUSES = new Set(['approved', 'declined']);
+const STAFF_WRITE_ACTIONS = new Set([
+  'claim',
+  'putUp',
+  'update',
+  'request',
+  'cancelRequest',
+  'saveAvailability',
+  'deleteAvailability',
+]);
+const MAX_AVAILABILITY_DAYS = 93;
+
+const availabilityWhere = {
+  objectType: 'prep_task',
+  status: 'unavailable',
+};
 
 const effectiveShiftWhere = {
   OR: [
@@ -76,6 +94,45 @@ function publicShift(card, claims = []) {
   };
 }
 
+function dateRange(startDate, endDate) {
+  if (!isDate(startDate) || !isDate(endDate) || endDate < startDate) return null;
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const end = new Date(`${endDate}T00:00:00Z`);
+  const dates = [];
+  while (start <= end && dates.length <= MAX_AVAILABILITY_DAYS) {
+    dates.push(start.toISOString().slice(0, 10));
+    start.setUTCDate(start.getUTCDate() + 1);
+  }
+  return dates.length > MAX_AVAILABILITY_DAYS ? null : dates;
+}
+
+function publicAvailabilityBlocks(cards) {
+  const groups = new Map();
+  for (const card of cards) {
+    const groupId = card.templateId || card.id;
+    groups.set(groupId, [...(groups.get(groupId) || []), card]);
+  }
+  return [...groups.entries()].map(([groupId, groupCards]) => {
+    const sorted = [...groupCards].sort((a, b) => a.date.localeCompare(b.date));
+    const first = sorted[0];
+    return {
+      id: groupId,
+      groupId,
+      cardIds: sorted.map((card) => card.id),
+      title: first.title,
+      people: first.people || [],
+      startDate: first.date,
+      endDate: sorted[sorted.length - 1].date,
+      allDay: !first.startTime,
+      startTime: first.startTime,
+      endTime: first.endTime,
+      note: first.notes || '',
+      createdAt: asIso(first.createdAt),
+      updatedAt: asIso(first.updatedAt),
+    };
+  });
+}
+
 function publicScheduleRequest(request, profilesByUserId = new Map()) {
   const profile = profilesByUserId.get(request.userId);
   return {
@@ -100,13 +157,97 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  const denied = requireHubAccess(auth, { privileged: req.method === 'POST' && !['claim', 'putUp'].includes(req.body?.action) });
+  const action = cleanString(req.body?.action, 40);
+  const denied = requireHubAccess(auth, { privileged: req.method === 'POST' && !STAFF_WRITE_ACTIONS.has(action) });
   if (denied) return res.status(denied.status).json({ error: denied.error });
   if (!auth.viewer.userId) return res.status(403).json({ error: 'Hub profile required' });
 
   const supabaseUid = masterPlannerUid(auth);
 
   try {
+    if (req.method === 'POST' && action === 'saveAvailability') {
+      const startDate = cleanString(req.body?.startDate, 20);
+      const endDate = cleanString(req.body?.endDate, 20) || startDate;
+      const dates = dateRange(startDate, endDate);
+      const allDay = req.body?.allDay !== false;
+      const startTime = allDay ? null : cleanString(req.body?.startTime, 20);
+      const endTime = allDay ? null : cleanString(req.body?.endTime, 20);
+      if (!dates) return res.status(400).json({ error: `Choose a valid range of up to ${MAX_AVAILABILITY_DAYS} days` });
+      if (!allDay && (!isTime(startTime) || !isTime(endTime) || endTime <= startTime)) {
+        return res.status(400).json({ error: 'Specific-hour blocks need a valid start and later end time' });
+      }
+
+      const requestedGroupId = cleanString(req.body?.groupId, 160);
+      let existing = [];
+      if (requestedGroupId) {
+        existing = await prisma.plannerCard.findMany({
+          where: { supabaseUid, templateId: requestedGroupId, ...availabilityWhere },
+        });
+        if (!existing.length) return res.status(404).json({ error: 'Availability block not found' });
+        if (!auth.isPrivileged && existing.some((card) => !canEditShift(card, auth))) {
+          return res.status(403).json({ error: 'You can only edit your own availability' });
+        }
+      }
+
+      const ownerName = existing[0]?.people?.[0] || auth.hubProfile?.displayName;
+      if (!ownerName) return res.status(400).json({ error: 'A Hub display name is required before blocking availability' });
+      const groupId = requestedGroupId || `availability:${auth.viewer.userId}:${crypto.randomUUID()}`;
+      const note = cleanString(req.body?.note, 1000);
+      const title = `${ownerName} — unavailable`;
+
+      await prisma.$transaction(async (tx) => {
+        if (existing.length) {
+          await tx.plannerCard.deleteMany({ where: { id: { in: existing.map((card) => card.id) }, supabaseUid } });
+        }
+        await tx.plannerCard.createMany({
+          data: dates.map((date, index) => ({
+            supabaseUid,
+            templateId: groupId,
+            title,
+            date,
+            dayOfWeek: dayOfWeek(date),
+            zone: allDay ? 'untimed' : 'timed',
+            objectType: 'prep_task',
+            people: [ownerName],
+            startTime,
+            endTime,
+            revenue: 0,
+            cost: 0,
+            optional: false,
+            enabled: true,
+            status: 'unavailable',
+            notes: note,
+            sortOrder: Date.now() + index,
+          })),
+        });
+      });
+
+      const saved = await prisma.plannerCard.findMany({
+        where: { supabaseUid, templateId: groupId, ...availabilityWhere },
+        orderBy: { date: 'asc' },
+      });
+      return res.status(requestedGroupId ? 200 : 201).json({
+        ok: true,
+        availabilityBlock: publicAvailabilityBlocks(saved)[0],
+      });
+    }
+
+    if (req.method === 'POST' && action === 'deleteAvailability') {
+      const groupId = cleanString(req.body?.groupId, 160);
+      if (!groupId) return res.status(400).json({ error: 'groupId is required' });
+      const cards = await prisma.plannerCard.findMany({
+        where: { supabaseUid, templateId: groupId, ...availabilityWhere },
+      });
+      if (!cards.length) return res.status(404).json({ error: 'Availability block not found' });
+      if (!auth.isPrivileged && cards.some((card) => !canEditShift(card, auth))) {
+        return res.status(403).json({ error: 'You can only remove your own availability' });
+      }
+      const deleted = await prisma.plannerCard.deleteMany({
+        where: { id: { in: cards.map((card) => card.id) }, supabaseUid },
+      });
+      return res.status(200).json({ ok: true, deleted: deleted.count });
+    }
+
     if (req.method === 'POST' && req.body?.action === 'update') {
       const plannerCardId = cleanString(req.body?.plannerCardId, 120);
       if (!plannerCardId) return res.status(400).json({ error: 'plannerCardId is required' });
@@ -356,6 +497,38 @@ module.exports = async (req, res) => {
     claims.forEach((claim) => {
       byCard.set(claim.plannerCardId, [...(byCard.get(claim.plannerCardId) || []), claim]);
     });
+    const availabilityCards = await prisma.plannerCard.findMany({
+      where: {
+        supabaseUid,
+        date: { gte: from, lte: to },
+        enabled: true,
+        ...availabilityWhere,
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      take: 500,
+    });
+    const visibleAvailabilityCards = auth.isPrivileged
+      ? availabilityCards
+      : availabilityCards.filter((card) => (card.people || []).some((person) => personMatchesProfile(person, auth.hubProfile)));
+    const visibleAvailabilityGroupIds = [...new Set(visibleAvailabilityCards
+      .map((card) => card.templateId)
+      .filter(Boolean))];
+    const completeAvailabilityCards = visibleAvailabilityGroupIds.length
+      ? await prisma.plannerCard.findMany({
+        where: {
+          supabaseUid,
+          templateId: { in: visibleAvailabilityGroupIds },
+          enabled: true,
+          ...availabilityWhere,
+        },
+        orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+        take: 2000,
+      })
+      : [];
+    const availabilityForResponse = [
+      ...completeAvailabilityCards,
+      ...visibleAvailabilityCards.filter((card) => !card.templateId),
+    ];
     const requests = await safePrisma([], () => prisma.hubScheduleRequest.findMany({
       where: {
         requestedDate: { gte: from, lte: to },
@@ -372,6 +545,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       shifts: cards.filter(isShiftCard).map((card) => publicShift(card, byCard.get(card.id) || [])),
+      availabilityBlocks: publicAvailabilityBlocks(availabilityForResponse),
       requests: requests.map((request) => publicScheduleRequest(request, profilesByUserId)),
     });
   } catch (err) {

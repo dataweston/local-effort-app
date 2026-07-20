@@ -31,6 +31,7 @@ function cardToObject(card) {
       people: card.people || [],
       optional: card.optional,
       enabled: card.enabled,
+      status: card.status || null,
       effectTarget: card.effectTarget,
       effectType: card.effectType,
       createdAt: asIso(card.createdAt),

@@ -123,8 +123,8 @@ Batch questions into one short exception list. Never block unrelated planner wri
 
 - Assigned staff see `My Shift Calendar` in Hub; admins see all staff shifts.
 - Assigned staff and admins can edit date/start/end for a shift.
-- Staff can submit change, available-time-block, and time-off requests.
-- Admin approval applies the requested change or creates the approved time block.
+- Staff directly add, edit, and remove their own calendar blocks for whole days, multi-day ranges, weeks, or specific hours.
+- Calendar blocks take effect immediately without an approval queue; admins can edit or remove any staff member's block.
 - Pay evidence is private to the employee and privileged admins. Never expose one employee's wage or timecards to another staff member.
 - No schedule change sends an email/SMS automatically. Human-facing notification remains a separately approved workflow.
 
@@ -146,8 +146,8 @@ Each job must be safe to rerun and must record a durable run status.
 3. A February event deposit plus two July payments reconcile to $2,400 cash without changing $5,000 projected revenue.
 4. Food Corridor usage crossing 20 July hours selects the $35/hour Neon tier for later July bookings.
 5. A discounted early meal-prep payment preserves service-week revenue and predicts the next invoice from the actual cadence.
-6. Maria can edit her assigned shift and submit a time block; another staff user cannot edit Maria's shift or view her pay evidence.
-7. An admin can approve or decline Maria's request and the resulting planner write is idempotent.
+6. Maria can edit her assigned shift and directly block an hourly or multi-day range; another staff user cannot edit Maria's shift, availability, or pay evidence.
+7. Maria and an admin can edit or remove her calendar block, and each resulting planner write is immediate and idempotent.
 8. Connector failure leaves a visible unresolved item rather than a fabricated value.
 9. No customer/staff email, SMS, dispatch, or external calendar event is created without the required approval workflow.
 

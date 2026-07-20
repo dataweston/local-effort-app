@@ -968,10 +968,10 @@ function CalendarView({ accessToken, profile, isPrivileged }) {
             <section className="hub-day" key={date}>
               <h3>{formatDate(date)}</h3>
               {dayItems.map((item) => (
-                <div className={`hub-calendar-item ${item.type === 'event' ? 'hub-calendar-event' : ''}`} key={item.id}>
+                <div className={`hub-calendar-item ${item.type === 'event' ? 'hub-calendar-event' : ''} ${item.metadata?.status === 'unavailable' ? 'hub-calendar-unavailable' : ''}`} key={item.id}>
                   <span>{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'}</span>
                   <strong>{item.title}</strong>
-                  <small>{item.type === 'event' ? 'Event' : (item.subtitle || item.type)} {item.metadata?.optional ? '/ open shift' : ''}</small>
+                  <small>{item.metadata?.status === 'unavailable' ? 'Unavailable' : (item.type === 'event' ? 'Event' : (item.subtitle || item.type))} {item.metadata?.optional ? '/ open shift' : ''}</small>
                 </div>
               ))}
             </section>
@@ -992,7 +992,7 @@ function CalendarView({ accessToken, profile, isPrivileged }) {
         </aside>
       </div>
     </Panel>
-    <ShiftsView accessToken={accessToken} profile={profile} isPrivileged={isPrivileged} />
+    <ShiftsView accessToken={accessToken} profile={profile} isPrivileged={isPrivileged} onCalendarChange={load} />
     </div>
   );
 }
@@ -1249,16 +1249,27 @@ function PeopleView({ people, onMessage }) {
   );
 }
 
-function ShiftsView({ accessToken, profile, isPrivileged }) {
+function newAvailabilityDraft() {
+  return {
+    groupId: '',
+    startDate: todayIso(),
+    endDate: todayIso(),
+    allDay: true,
+    startTime: '09:00',
+    endTime: '17:00',
+    note: '',
+  };
+}
+
+function ShiftsView({ accessToken, profile, isPrivileged, onCalendarChange }) {
   const [from, setFrom] = useState(todayIso());
   const [shifts, setShifts] = useState([]);
-  const [requests, setRequests] = useState([]);
+  const [availabilityBlocks, setAvailabilityBlocks] = useState([]);
   const [payroll, setPayroll] = useState(null);
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState({ title: '', date: todayIso(), startTime: '09:00', endTime: '' });
-  const [requestDraft, setRequestDraft] = useState({
-    requestType: 'time_block', plannerCardId: '', date: todayIso(), startTime: '09:00', endTime: '', note: '',
-  });
+  const [availabilityDraft, setAvailabilityDraft] = useState(newAvailabilityDraft);
+  const [availabilityStatus, setAvailabilityStatus] = useState('');
 
   const load = useCallback(async () => {
     const [data, payData] = await Promise.all([
@@ -1266,7 +1277,7 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
       api(`/api/hub/payroll?from=${from}&to=${addDays(from, 14)}`, accessToken).catch(() => null),
     ]);
     setShifts(data.shifts || []);
-    setRequests(data.requests || []);
+    setAvailabilityBlocks(data.availabilityBlocks || []);
     setPayroll(payData);
   }, [accessToken, from]);
 
@@ -1321,39 +1332,49 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
     await load();
   };
 
-  const startChangeRequest = (shift) => setRequestDraft({
-    requestType: 'change',
-    plannerCardId: shift.id,
-    date: shift.date,
-    startTime: shift.startTime || '',
-    endTime: shift.endTime || '',
-    note: '',
-  });
-
-  const submitRequest = async (event) => {
+  const saveAvailability = async (event) => {
     event.preventDefault();
-    await api('/api/hub/shifts', accessToken, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'request', ...requestDraft }),
-    });
-    setRequestDraft({ requestType: 'time_block', plannerCardId: '', date: todayIso(), startTime: '09:00', endTime: '', note: '' });
-    await load();
+    setAvailabilityStatus('Saving...');
+    try {
+      await api('/api/hub/shifts', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveAvailability', ...availabilityDraft }),
+      });
+      setAvailabilityDraft(newAvailabilityDraft());
+      setAvailabilityStatus('Calendar blocked.');
+      await Promise.all([load(), onCalendarChange?.()]);
+    } catch (error) {
+      setAvailabilityStatus(error.message || 'Unable to block the calendar.');
+    }
   };
 
-  const reviewRequest = async (request, status) => {
-    await api('/api/hub/shifts', accessToken, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'reviewRequest', requestId: request.id, status }),
+  const editAvailability = (block) => {
+    setAvailabilityDraft({
+      groupId: block.groupId,
+      startDate: block.startDate,
+      endDate: block.endDate,
+      allDay: block.allDay,
+      startTime: block.startTime || '09:00',
+      endTime: block.endTime || '17:00',
+      note: block.note || '',
     });
-    await load();
+    setAvailabilityStatus('Editing this calendar block.');
   };
 
-  const cancelRequest = async (request) => {
-    await api('/api/hub/shifts', accessToken, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'cancelRequest', requestId: request.id }),
-    });
-    await load();
+  const deleteAvailability = async (block) => {
+    if (!window.confirm('Remove this block from the calendar?')) return;
+    setAvailabilityStatus('Removing...');
+    try {
+      await api('/api/hub/shifts', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteAvailability', groupId: block.groupId }),
+      });
+      if (availabilityDraft.groupId === block.groupId) setAvailabilityDraft(newAvailabilityDraft());
+      setAvailabilityStatus('Calendar block removed.');
+      await Promise.all([load(), onCalendarChange?.()]);
+    } catch (error) {
+      setAvailabilityStatus(error.message || 'Unable to remove the calendar block.');
+    }
   };
 
   const shiftAction = (shift) => {
@@ -1410,7 +1431,6 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
                   </div>
                   <div className="hub-button-row">
                     {(isPrivileged || isMine(shift)) && <button onClick={() => startEditing(shift)}>Edit</button>}
-                    {isMine(shift) && <button onClick={() => startChangeRequest(shift)}>Request change</button>}
                     {shiftAction(shift)}
                   </div>
                 </>
@@ -1421,31 +1441,41 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
       </Panel>
 
       <div className="hub-grid">
-        <Panel title="Availability or Schedule Request" icon={ClipboardList}>
-          <form className="hub-form" onSubmit={submitRequest}>
-            <Field label="Request type">
-              <select value={requestDraft.requestType} onChange={(e) => setRequestDraft({ ...requestDraft, requestType: e.target.value, plannerCardId: e.target.value === 'change' ? requestDraft.plannerCardId : '' })}>
-                <option value="time_block">Available time block</option>
-                <option value="time_off">Unavailable / time off</option>
-                <option value="change">Change an assigned shift</option>
+        <Panel title="Block My Calendar" icon={CalendarDays}>
+          <form className="hub-form" onSubmit={saveAvailability}>
+            <Field label="From">
+              <input
+                type="date"
+                value={availabilityDraft.startDate}
+                onChange={(e) => setAvailabilityDraft({
+                  ...availabilityDraft,
+                  startDate: e.target.value,
+                  endDate: availabilityDraft.endDate < e.target.value ? e.target.value : availabilityDraft.endDate,
+                })}
+                required
+              />
+            </Field>
+            <Field label="Through">
+              <input type="date" min={availabilityDraft.startDate} value={availabilityDraft.endDate} onChange={(e) => setAvailabilityDraft({ ...availabilityDraft, endDate: e.target.value })} required />
+            </Field>
+            <Field label="Block">
+              <select value={availabilityDraft.allDay ? 'all_day' : 'hours'} onChange={(e) => setAvailabilityDraft({ ...availabilityDraft, allDay: e.target.value === 'all_day' })}>
+                <option value="all_day">Whole days</option>
+                <option value="hours">Specific hours each day</option>
               </select>
             </Field>
-            {requestDraft.requestType === 'change' && (
-              <Field label="Shift">
-                <select value={requestDraft.plannerCardId} onChange={(e) => {
-                  const shift = shifts.find((item) => item.id === e.target.value);
-                  setRequestDraft({ ...requestDraft, plannerCardId: e.target.value, date: shift?.date || requestDraft.date, startTime: shift?.startTime || '', endTime: shift?.endTime || '' });
-                }} required>
-                  <option value="">Choose a shift</option>
-                  {shifts.filter(isMine).map((shift) => <option key={shift.id} value={shift.id}>{formatDate(shift.date)} — {shift.title}</option>)}
-                </select>
-              </Field>
+            {!availabilityDraft.allDay && (
+              <div className="hub-grid">
+                <Field label="Start"><input type="time" value={availabilityDraft.startTime} onChange={(e) => setAvailabilityDraft({ ...availabilityDraft, startTime: e.target.value })} required /></Field>
+                <Field label="End"><input type="time" value={availabilityDraft.endTime} onChange={(e) => setAvailabilityDraft({ ...availabilityDraft, endTime: e.target.value })} required /></Field>
+              </div>
             )}
-            <Field label="Date"><input type="date" value={requestDraft.date} onChange={(e) => setRequestDraft({ ...requestDraft, date: e.target.value })} required /></Field>
-            <Field label="Start"><input type="time" value={requestDraft.startTime} onChange={(e) => setRequestDraft({ ...requestDraft, startTime: e.target.value })} /></Field>
-            <Field label="End"><input type="time" value={requestDraft.endTime} onChange={(e) => setRequestDraft({ ...requestDraft, endTime: e.target.value })} /></Field>
-            <Field label="Note"><textarea value={requestDraft.note} onChange={(e) => setRequestDraft({ ...requestDraft, note: e.target.value })} rows={3} placeholder="What should the admin know?" /></Field>
-            <button className="hub-primary-button" type="submit">Submit request</button>
+            <Field label="Optional context"><textarea value={availabilityDraft.note} onChange={(e) => setAvailabilityDraft({ ...availabilityDraft, note: e.target.value })} rows={3} placeholder="For example: class, appointment, or out of town" /></Field>
+            <div className="hub-button-row">
+              <button className="hub-primary-button" type="submit">{availabilityDraft.groupId ? 'Save calendar block' : 'Block calendar'}</button>
+              {availabilityDraft.groupId && <button type="button" onClick={() => { setAvailabilityDraft(newAvailabilityDraft()); setAvailabilityStatus(''); }}>Cancel edit</button>}
+            </div>
+            {availabilityStatus && <p className="hub-share-status" role="status">{availabilityStatus}</p>}
           </form>
         </Panel>
 
@@ -1462,26 +1492,23 @@ function ShiftsView({ accessToken, profile, isPrivileged }) {
         )}
       </div>
 
-      <Panel title={isPrivileged ? 'Schedule Requests' : 'My Requests'} icon={ClipboardList}>
+      <Panel title={isPrivileged ? 'Staff Availability Blocks' : 'My Availability Blocks'} icon={CalendarDays}>
         <div className="hub-list">
-          {requests.length === 0 && <p className="hub-empty">No schedule requests in this window.</p>}
-          {requests.map((request) => (
-            <div className="hub-shift" key={request.id}>
+          {availabilityBlocks.length === 0 && <p className="hub-empty">No calendar blocks overlap this two-week window.</p>}
+          {availabilityBlocks.map((block) => (
+            <div className="hub-shift" key={block.groupId}>
               <div>
-                <strong>{request.requesterName || 'Staff'} — {request.requestType.replace('_', ' ')}</strong>
-                <span>{formatDate(request.requestedDate)} / {formatTime(request.requestedStartTime)} {request.requestedEndTime ? `to ${formatTime(request.requestedEndTime)}` : ''}</span>
-                <small>{request.note || 'No note'} / {request.status}</small>
+                <strong>{block.people?.[0] || 'Staff'} - unavailable</strong>
+                <span>
+                  {formatDate(block.startDate)}{block.endDate !== block.startDate ? ` through ${formatDate(block.endDate)}` : ''}
+                  {' / '}{block.allDay ? 'whole day' : `${formatTime(block.startTime)} to ${formatTime(block.endTime)}`}
+                </span>
+                <small>{block.note || 'No additional context'}</small>
               </div>
-              {request.status === 'pending' && (
-                <div className="hub-button-row">
-                  {isPrivileged ? (
-                    <>
-                      <button className="hub-primary-button" onClick={() => reviewRequest(request, 'approved')}>Approve</button>
-                      <button onClick={() => reviewRequest(request, 'declined')}>Decline</button>
-                    </>
-                  ) : <button onClick={() => cancelRequest(request)}>Cancel</button>}
-                </div>
-              )}
+              <div className="hub-button-row">
+                <button onClick={() => editAvailability(block)}>Edit</button>
+                <button onClick={() => deleteAvailability(block)}>Remove</button>
+              </div>
             </div>
           ))}
         </div>
@@ -4076,6 +4103,10 @@ const hubCss = `
 .hub-calendar-item strong { font-size: 13px; font-weight: 600; }
 .hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 11px; }
 .hub-calendar-event { border-left: 3px solid var(--hub-accent); }
+.hub-calendar-unavailable {
+  border-left: 3px solid #a94e5d;
+  background: color-mix(in srgb, #a94e5d 8%, var(--hub-panel));
+}
 .hub-calendar-widget {
   margin: 12px 14px 12px 0;
   border: 1px solid var(--hub-border);
