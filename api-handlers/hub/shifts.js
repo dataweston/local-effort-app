@@ -1,16 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 const { masterPlannerUid } = require('./_masterPlanner');
 const { isShiftCard } = require('./_planner');
 const crypto = require('crypto');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function dayOfWeek(date) {
   const parsed = new Date(`${date}T00:00:00`);

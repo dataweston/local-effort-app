@@ -1,12 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const THREAD_TYPE = 'hub_localist';
 const THREAD_ID = 'public-localist';

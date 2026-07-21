@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const docsHandler = require('./docs');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);

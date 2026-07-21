@@ -1,13 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function dmObjectId(a, b) {
   return [a, b].sort().join(':');

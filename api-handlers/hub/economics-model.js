@@ -1,15 +1,8 @@
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed } = require('./_http');
 const { buildLineModel } = require('../../skills/le-economist/scripts/build-line-model.cjs');
-
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const MODEL_KEYS = new Set([
   'monthlyOrders',

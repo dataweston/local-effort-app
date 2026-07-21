@@ -1,16 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 
 const INGEST_SECRET =
   process.env.RECIPES_INGEST_SECRET ||
   process.env.WEEKLY_ORDER_INGEST_SECRET ||
   '';
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const MEAL_TIME_KEYWORDS = {
   breakfast: ['breakfast', 'brunch', 'am'],

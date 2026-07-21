@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { Client, Environment } = require('square');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { getSanityClient, getSanityReadClient } = require('../../backend/api/sanityClient');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { writeOrderBrainRecords } = require('./_localistOrderBrain');
@@ -33,12 +33,6 @@ try {
   squareClient = null;
 }
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const LOCALIST_ITEMS_QUERY = `
 *[

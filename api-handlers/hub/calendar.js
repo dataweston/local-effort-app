@@ -1,16 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso } = require('./_http');
 const { getPlannerObjects } = require('./_planner');
 const { getWeekEnd } = require('./_dates');
 const { masterPlannerUid } = require('./_masterPlanner');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function overlapsRange(start, end, range) {
   const s = String(start || '');

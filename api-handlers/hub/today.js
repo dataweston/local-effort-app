@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer } = require('./_auth');
 const { toIsoDate, endOfLocalDay, getWeekEnd } = require('./_dates');
 const { plannerCardObjectType } = require('./_planner');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function asIso(value) {
   if (!value) return null;

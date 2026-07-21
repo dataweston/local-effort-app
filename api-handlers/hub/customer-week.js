@@ -14,16 +14,10 @@
  * unchanged — only the auth + surface move to the Hub.
  */
 
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 async function loadThisWeek(customerId, userId) {
   const now = new Date();

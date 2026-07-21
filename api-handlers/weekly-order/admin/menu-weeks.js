@@ -1,12 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../_lib/prisma');
 const { requireWeeklyOrderAdmin } = require('./_auth');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const slugify = (value) => (value || '')
   .toString()

@@ -21,18 +21,12 @@
  *   GET /api/hub/meal-prep-labels?weekStart=YYYY-MM-DD&format=structured|text|dk
  */
 
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 // Reuse the rollup's line-item construction so labels and the rollup never drift.
 const rollup = require('./meal-prep-rollup');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const NOTE_SOURCE = 'drafts';
 

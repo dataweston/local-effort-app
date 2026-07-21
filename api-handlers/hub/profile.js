@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const {
   verifySupabaseToken,
   findUserByEmail,
@@ -8,12 +8,6 @@ const {
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 const { coerceHubAccess } = require('./_auth');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function publicProfile(profile, user) {
   if (!profile) return null;

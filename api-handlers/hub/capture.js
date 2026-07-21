@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer } = require('./_auth');
 const { cleanString } = require('./_http');
 const { parseDate, sourceIdFor, writeLedger } = require('./_ledger');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const INTENT_EVENT_TYPES = {
   note: 'hub.note_captured',

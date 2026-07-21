@@ -10,6 +10,62 @@ const { execSync } = require('child_process');
 const defaultLineModelConfig = require('../references/line-model-config.json');
 const defaultObservedLineEvidence = require('../references/observed-line-evidence.json');
 
+// --- Prisma client caching -------------------------------------------------
+//
+// This script is invoked two ways: (1) in-process from api-handlers/hub/
+// economics-model.js on every /api/hub/economics-model request, always
+// against THIS checkout (repo = path.resolve(__dirname, '../..')); and
+// (2) as a standalone CLI (`node build-line-model.cjs --repo /other/checkout`)
+// against a foreign repo's own @prisma/client + .env. Because of (2) we can't
+// just require() the app's fixed-location shared singleton
+// (backend/api/utils/prisma.js) — a foreign --repo's DATABASE_URL could differ
+// from this process's already-cached env/module state. Instead we cache one
+// client per resolved `repo` path at module scope, so repeated calls against
+// the SAME repo (i.e. every live request, which is the case that was actually
+// leaking connections) reuse one client, while a genuinely different --repo
+// still gets its own. Same connection_limit/pool_timeout treatment as
+// backend/api/utils/prisma.js, which fixed this exact "too many connections"
+// failure mode for the main app.
+const squareClientsByRepo = new Map();
+const lbClientsByUrl = new Map();
+
+function withPoolParams(url) {
+  if (!url || !/^postgres(ql)?:/i.test(url)) return url;
+  try {
+    const u = new URL(url);
+    if (!u.searchParams.has('connection_limit')) {
+      u.searchParams.set('connection_limit', process.env.PRISMA_CONNECTION_LIMIT || '10');
+    }
+    if (!u.searchParams.has('pool_timeout')) {
+      u.searchParams.set('pool_timeout', process.env.PRISMA_POOL_TIMEOUT || '30');
+    }
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+function getSquareClient(repo) {
+  const cached = squareClientsByRepo.get(repo);
+  if (cached) return cached;
+  const clientModule = require(require.resolve('@prisma/client', { paths: [repo] }));
+  const url = process.env.DATABASE_URL ? withPoolParams(process.env.DATABASE_URL) : undefined;
+  const client = url
+    ? new clientModule.PrismaClient({ datasources: { db: { url } } })
+    : new clientModule.PrismaClient();
+  squareClientsByRepo.set(repo, client);
+  return client;
+}
+
+function getLbClient(repo, url) {
+  const cached = lbClientsByUrl.get(url);
+  if (cached) return cached;
+  const clientModule = require(require.resolve('@prisma/client', { paths: [repo] }));
+  const client = new clientModule.PrismaClient({ datasources: { db: { url: withPoolParams(url) } } });
+  lbClientsByUrl.set(url, client);
+  return client;
+}
+
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -447,8 +503,7 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
   const url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim()
     .replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
   if (!url) throw new Error('LOCAL_BUDGET_DATABASE_URL is required for authoritative cash actuals');
-  const clientModule = require(require.resolve('@prisma/client', { paths: [repo] }));
-  const prisma = new clientModule.PrismaClient({ datasources: { db: { url } } });
+  const prisma = getLbClient(repo, url);
   try {
     const rows = await prisma.$queryRawUnsafe(`
       SELECT
@@ -503,14 +558,13 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
       'Local Budget cash actuals are unavailable',
       error,
     );
-  } finally {
-    await prisma.$disconnect();
   }
+  // No $disconnect() here: prisma is a cached, process-scoped client (see
+  // getLbClient above) reused across calls, not a fresh one per call.
 }
 
 async function squareAttribution(repo, start, endExclusive, config) {
-  const clientModule = require(require.resolve('@prisma/client', { paths: [repo] }));
-  const prisma = new clientModule.PrismaClient();
+  const prisma = getSquareClient(repo);
   try {
     const events = await prisma.ledgerEvent.findMany({
       where: {
@@ -559,9 +613,11 @@ async function squareAttribution(repo, start, endExclusive, config) {
       'Company Brain Square order evidence is unavailable',
       error,
     );
-  } finally {
-    await prisma.$disconnect();
   }
+  // No $disconnect() here: prisma is a cached, process-scoped client (see
+  // getSquareClient above) reused across calls — this was previously a fresh
+  // PrismaClient() constructed on every /api/hub/economics-model request,
+  // which was exhausting the DB's connection cap under concurrent traffic.
 }
 
 async function buildLineModel({ repo: repoInput, start: startText, end: endText, configPath: configInput, scenarioInputs = [] }) {

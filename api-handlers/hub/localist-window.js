@@ -1,17 +1,11 @@
 const crypto = require('crypto');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, tableMissing } = require('./_http');
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 const BREVO_SENDABLE_STATUSES = new Set(['sent', 'queued', 'inprocess', 'processing', 'scheduled']);
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function requestOrigin(req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';

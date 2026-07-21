@@ -34,18 +34,12 @@
  *     weekStart may be any day in the prep week; it's snapped to the Sun/Mon pair.
  */
 
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { resolveDishNames } = require('../../backend/api/brain/dishResolver');
 const { sectionsFromNotepad } = require('./_notepadParse');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const NOTE_SOURCE = 'drafts';
 

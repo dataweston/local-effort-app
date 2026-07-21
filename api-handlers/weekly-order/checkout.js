@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { Client, Environment } = require('square');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -22,12 +22,6 @@ try {
   squareClient = null;
 }
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const summarizeCounts = (items) => items.reduce(
   (acc, item) => {

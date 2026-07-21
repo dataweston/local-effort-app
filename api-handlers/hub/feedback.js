@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { sourceIdFor, writeLedger } = require('./_ledger');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function parseBoolean(value) {
   if (typeof value === 'boolean') return value;

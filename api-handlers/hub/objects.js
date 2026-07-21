@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
 const { cardToObject, plannerCardObjectType } = require('./_planner');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 function splitObjectId(rawId, queryType) {
   const id = cleanString(rawId, 160);

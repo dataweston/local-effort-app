@@ -1,14 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
 const { promoteEligibleMealPrepCustomers } = require('./_mealPrepLifecycle');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';

@@ -13,17 +13,11 @@
  * Each result: { query, resolved, dishEntityId, confidence, method, name, candidates }
  */
 
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed } = require('./_http');
 const { resolveDishName, resolveDishNames } = require('../../backend/api/brain/dishResolver');
 
-let prisma = null;
-try {
-  prisma = new PrismaClient();
-} catch (_err) {
-  prisma = null;
-}
 
 const MAX_BATCH = 60;
 
