@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getMonthWeeks, getWeekDates, getDayOfWeek } from './dateUtils';
-import { dayTotalsWithActual, monthTotals } from './financials';
+import { dayTotalsWithActual, monthTotals, money } from './financials';
 import { MonthCalendarGrid } from './MonthCalendarGrid';
 import { OverheadSection } from './OverheadSection';
 import { WhatIfPanel } from './WhatIfPanel';
@@ -25,6 +25,7 @@ function SummaryCard({ label, value, type }) {
   const colorMap = {
     revenue: 'var(--color-state-success)',
     labor: 'var(--color-state-danger)',
+    facility: 'var(--color-state-danger)',
     cogs: 'var(--color-state-danger)',
     overhead: 'var(--color-state-danger)',
     net: value >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)',
@@ -49,7 +50,7 @@ function SummaryCard({ label, value, type }) {
         style={{ color: colorMap[type] }}
       >
         <DollarSign size={18} />
-        {Math.abs(value).toLocaleString()}
+        {money(Math.abs(value))}
       </div>
     </div>
   );
@@ -152,9 +153,10 @@ export function MonthlyView({
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <SummaryCard label={totals.hasActual ? 'Effective Revenue' : 'Planned Revenue'} value={totals.revenue} type="revenue" />
         <SummaryCard label="Monthly Labor" value={totals.labor} type="labor" />
+        {totals.facility > 0 && <SummaryCard label="Monthly Facility" value={totals.facility} type="facility" />}
         <SummaryCard label="Monthly COGS" value={totals.cogs} type="cogs" />
         <SummaryCard label="Monthly Overhead" value={totals.overhead} type="overhead" />
         <SummaryCard label="Monthly Net" value={totals.net} type="net" />

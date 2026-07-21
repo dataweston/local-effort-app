@@ -46,7 +46,7 @@ export function ForecastPanel({ accessToken, enabled }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken) return;

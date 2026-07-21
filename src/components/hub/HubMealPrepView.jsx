@@ -271,7 +271,7 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                     <strong>{customer.name}</strong>
                     {customer.mealPrepStage === 'paused' && <span className="hub-pill hub-pill-muted">paused</span>}
                     {customer.source === 'brain' && customer.mealPrepStage !== 'paused' && <span className="hub-pill">from intake</span>}
-                    <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
+                    <span>{(customer.users || []).map((user) => user.email).join(', ') || customer.slug || ''}</span>
                   </td>
                   <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                   <td>
@@ -332,7 +332,7 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                     <tr key={customer.id}>
                       <td>
                         <strong>{customer.name}</strong>
-                        <span>{customer.users.map((user) => user.email).join(', ') || customer.slug || ''}</span>
+                        <span>{(customer.users || []).map((user) => user.email).join(', ') || customer.slug || ''}</span>
                       </td>
                       <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                       <td>

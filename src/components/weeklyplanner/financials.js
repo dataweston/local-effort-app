@@ -1,6 +1,19 @@
 // Financial calculation engine — pure functions, no UI dependencies.
 
 /**
+ * Format a dollar amount (already in dollars, not cents) for display.
+ * Every raw revenue/cost/net figure must pass through this before it
+ * reaches JSX — card costPerHour math produces long float tails
+ * (e.g. 487.49999999999994) that read as broken UI otherwise.
+ */
+export function money(amount, { decimals = 0 } = {}) {
+  return (Number(amount) || 0).toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
  * Compute hours between two "HH:MM" strings. Returns 0 if either is null.
  */
 export function hoursFromTimes(start, end) {
@@ -10,10 +23,20 @@ export function hoursFromTimes(start, end) {
   return Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60);
 }
 
+// Card types that are a facility charge (kitchen/space rental) rather than a
+// wage paid to a person. Kept separate from labor everywhere costs are
+// totaled — a $35/hr Food Corridor rate is not the same fact as a $35/hr
+// wage, and blending them overstates payroll and understates rent.
+const FACILITY_OBJECT_TYPES = new Set(['facility_rental']);
+
+export function isFacilityCard(card) {
+  return FACILITY_OBJECT_TYPES.has(card.objectType);
+}
+
 /**
- * Compute the effective cost (labor) of a single card.
- * If the card has costPerHour, cost = costPerHour × duration.
- * Otherwise cost is the flat `cost` field.
+ * Compute the effective cost of a single card (labor OR facility rate —
+ * same rate math, different meaning). If the card has costPerHour, cost =
+ * costPerHour × duration. Otherwise cost is the flat `cost` field.
  * Disabled optional cards contribute 0.
  */
 export function cardCost(card) {
@@ -26,6 +49,16 @@ export function cardCost(card) {
   }
   if (card.costCents != null) return card.costCents / 100;
   return card.cost || 0;
+}
+
+/** Labor-only cost: cardCost() for every card except facility rentals. */
+export function cardLaborCost(card) {
+  return isFacilityCard(card) ? 0 : cardCost(card);
+}
+
+/** Facility-only cost: cardCost() for facility rental cards, 0 otherwise. */
+export function cardFacilityCost(card) {
+  return isFacilityCard(card) ? cardCost(card) : 0;
 }
 
 /**
@@ -60,16 +93,19 @@ export function dayTotals(cards, date) {
   const effects = buildEffectsMap(dayCards);
 
   let revenue = 0;
-  let cost = 0;
+  let labor = 0;
+  let facility = 0;
 
   for (const c of dayCards) {
     const base = cardBaseRevenue(c);
     const mult = effects[c.id] || 1;
     revenue += base * mult;
-    cost += cardCost(c);
+    labor += cardLaborCost(c);
+    facility += cardFacilityCost(c);
   }
 
-  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, net: revenue - cost };
+  const cost = labor + facility;
+  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, labor, facility, net: revenue - cost };
 }
 
 /** Apply an owner-entered actual for a date without blending it into the plan. */
@@ -89,16 +125,19 @@ export function weekTotals(cards) {
   const effects = buildEffectsMap(cards);
 
   let revenue = 0;
-  let cost = 0;
+  let labor = 0;
+  let facility = 0;
 
   for (const c of cards) {
     const base = cardBaseRevenue(c);
     const mult = effects[c.id] || 1;
     revenue += base * mult;
-    cost += cardCost(c);
+    labor += cardLaborCost(c);
+    facility += cardFacilityCost(c);
   }
 
-  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, net: revenue - cost };
+  const cost = labor + facility;
+  return { revenue, plannedRevenue: revenue, actualRevenue: null, hasActual: false, cost, labor, facility, net: revenue - cost };
 }
 
 export function weekTotalsWithActual(cards, actualsByDate = {}) {
@@ -129,12 +168,13 @@ export function weekTotalsWithActual(cards, actualsByDate = {}) {
 export function monthTotals(monthCards, overheads = [], cogsItems = [], _weeksInMonth = 4, actualsByDate = {}) {
   const cardTotals = weekTotalsWithActual(monthCards, actualsByDate);
   const revenue = cardTotals.revenue;
-  const labor = cardTotals.cost;
+  const labor = cardTotals.labor;
+  const facility = cardTotals.facility;
   const overhead = overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
   const cogs = cogsItems.reduce((sum, c) => sum + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0);
-  const net = revenue - labor - overhead - cogs;
+  const net = revenue - labor - facility - overhead - cogs;
 
-  return { ...cardTotals, revenue, labor, overhead, cogs, net };
+  return { ...cardTotals, revenue, labor, facility, overhead, cogs, net };
 }
 
 /**

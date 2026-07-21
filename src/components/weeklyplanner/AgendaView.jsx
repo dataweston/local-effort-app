@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, DollarSign, ExternalLink, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cardCost } from './financials';
+import { cardCost, isFacilityCard, money } from './financials';
 import { formatDateFull, formatDateShort } from './dateUtils';
 
 const FILTERS = [
@@ -19,7 +19,8 @@ function includeCard(card, filter) {
 }
 
 function CardRow({ card, onClick }) {
-  const labor = cardCost(card);
+  const cost = cardCost(card);
+  const costLabel = isFacilityCard(card) ? 'facility' : null;
   return (
     <button
       type="button"
@@ -47,8 +48,8 @@ function CardRow({ card, onClick }) {
         </span>
       </span>
       <span className="flex flex-col items-end gap-1 text-xs font-semibold">
-        {card.revenue > 0 && <span style={{ color: 'var(--color-state-success)' }}>+${card.revenue}</span>}
-        {labor > 0 && <span style={{ color: 'var(--color-state-danger)' }}>−${labor}</span>}
+        {card.revenue > 0 && <span style={{ color: 'var(--color-state-success)' }}>+${money(card.revenue)}</span>}
+        {cost > 0 && <span style={{ color: 'var(--color-state-danger)' }}>−${money(cost)}{costLabel ? ` ${costLabel}` : ''}</span>}
       </span>
     </button>
   );

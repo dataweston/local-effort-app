@@ -72,8 +72,19 @@ export default function WeeklyDemoPage() {
   // Use monthly totals when on monthly view, otherwise weekly
   const isMonthly = view === 'monthly';
   const displayTotals = isMonthly
-    ? { revenue: planner.monthlyTotals.revenue, cost: planner.monthlyTotals.labor, cogs: planner.monthlyTotals.cogs, net: planner.monthlyTotals.net }
-    : { ...planner.totals, cogs: weeklyCogs, net: planner.totals.revenue - planner.totals.cost - weeklyCogs };
+    ? {
+        revenue: planner.monthlyTotals.revenue,
+        cost: planner.monthlyTotals.labor + planner.monthlyTotals.facility,
+        labor: planner.monthlyTotals.labor,
+        facility: planner.monthlyTotals.facility,
+        cogs: planner.monthlyTotals.cogs,
+        net: planner.monthlyTotals.net,
+      }
+    : {
+        ...planner.totals,
+        cogs: weeklyCogs,
+        net: planner.totals.revenue - planner.totals.cost - weeklyCogs,
+      };
 
   const handleDayClick = (date) => {
     selectDayFromWeek(date);
@@ -105,7 +116,8 @@ export default function WeeklyDemoPage() {
             <div className="planner-scoreboard" role="status" aria-label="Money summary">
               <dl className="planner-figures">
                 <div><dt>Revenue</dt><dd>{fmtMoney(displayTotals.revenue)}</dd></div>
-                <div><dt>Labor</dt><dd>{fmtMoney(displayTotals.cost)}</dd></div>
+                <div><dt>Labor</dt><dd>{fmtMoney(displayTotals.labor)}</dd></div>
+                {displayTotals.facility > 0 && <div><dt>Facility</dt><dd>{fmtMoney(displayTotals.facility)}</dd></div>}
                 {displayTotals.cogs > 0 && <div><dt>COGS</dt><dd>{fmtMoney(displayTotals.cogs)}</dd></div>}
                 {isMonthly && overheadTotal > 0 && <div><dt>Overhead</dt><dd>{fmtMoney(overheadTotal)}</dd></div>}
               </dl>

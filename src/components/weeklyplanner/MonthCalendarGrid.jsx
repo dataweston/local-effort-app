@@ -1,6 +1,6 @@
 import React from 'react';
 import { getMonthDates, getWeekStart, isToday, getDayOfWeek, formatDateShort } from './dateUtils';
-import { dayTotalsWithActual } from './financials';
+import { dayTotalsWithActual, money } from './financials';
 
 const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -89,17 +89,17 @@ export function MonthCalendarGrid({ year, month, cards, actualsByDate = {}, onUp
                     <div className="mt-0.5 flex items-center justify-center gap-1">
                       {t.hasActual ? (
                         <>
-                          {t.plannedRevenue > 0 && <span className="text-[8px]" style={{ color: 'var(--color-text-muted)' }}>P {t.plannedRevenue}</span>}
-                          <span className="text-[8px] font-semibold" style={{ color: 'var(--color-state-success)' }}>A {t.actualRevenue}</span>
+                          {t.plannedRevenue > 0 && <span className="text-[8px]" style={{ color: 'var(--color-text-muted)' }}>P {money(t.plannedRevenue)}</span>}
+                          <span className="text-[8px] font-semibold" style={{ color: 'var(--color-state-success)' }}>A {money(t.actualRevenue)}</span>
                         </>
                       ) : t.revenue > 0 && (
                         <span className="text-[8px] font-medium" style={{ color: 'var(--color-state-success)' }}>
-                          +{t.revenue}
+                          +{money(t.revenue)}
                         </span>
                       )}
                       {t.cost > 0 && (
                         <span className="text-[8px] font-medium" style={{ color: 'var(--color-state-danger)' }}>
-                          −{t.cost}
+                          −{money(t.cost)}
                         </span>
                       )}
                     </div>
