@@ -10,7 +10,8 @@ import {
   UsersRound,
   Utensils,
 } from 'lucide-react';
-import { api, formatDate, formatTime, todayIso, Panel, MarkdownPreview } from './hubShared';
+import { age, api, formatDate, formatTime, todayIso, HubAvatar, Panel, MarkdownPreview } from './hubShared';
+import { EmptyState } from './HubIllustrations';
 
 export const HOME_NOTEPAD_TEMPLATE = '#in season#\n- \n\n#events#\n- \n\n#important updates#\n- \n';
 
@@ -428,59 +429,150 @@ export function QuickCapturePanel({ accessToken }) {
 }
 
 
-export function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken, isCustomer }) {
+export function TodayView({ calendar, docs, conversations, shifts, setTab, accessToken, isCustomer, profile, onRefresh }) {
+  const [claimingId, setClaimingId] = useState(null);
   const todaysItems = calendar.filter((item) => String(item.startsAt || '').startsWith(todayIso()));
-  const openShifts = shifts.filter((shift) => shift.open).slice(0, 4);
+  const openShifts = shifts.filter((shift) => shift.open).slice(0, 5);
   const recentDocs = docs.slice(0, 4);
-  const recentChats = conversations.slice(0, 4);
+  const recentChats = conversations.slice(0, 3);
+
+  const firstName = String(profile?.displayName || '').split(/\s+/)[0] || 'there';
+  const hour = new Date().getHours();
+  const daypart = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const viewerName = String(profile?.displayName || '').toLowerCase();
+  const viewerFirst = viewerName.split(/\s+/)[0];
+  const myNextShift = shifts
+    .filter((shift) => !shift.open && shift.date >= todayIso() && (shift.people || []).some((person) => {
+      const normalized = String(person || '').toLowerCase();
+      return normalized === viewerName || normalized === viewerFirst;
+    }))
+    .sort((a, b) => `${a.date}${a.startTime || ''}`.localeCompare(`${b.date}${b.startTime || ''}`))[0];
+
+  const claim = async (shift) => {
+    setClaimingId(shift.id);
+    try {
+      await api('/api/hub/shifts', accessToken, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'claim', plannerCardId: shift.id }),
+      });
+      await onRefresh?.();
+    } catch { /* refresh shows the true state */ }
+    finally { setClaimingId(null); }
+  };
 
   return (
-    <div className="hub-grid">
-      {!isCustomer && accessToken && <HomeNotepad accessToken={accessToken} />}
-      {!isCustomer && accessToken && <QuickCapturePanel accessToken={accessToken} />}
-      <Panel title="Today" icon={Home} action={<button onClick={() => setTab('calendar')}>Open calendar</button>}>
-        <div className="hub-list">
-          {todaysItems.length === 0 && <p className="hub-empty">No scheduled items today.</p>}
-          {todaysItems.map((item) => (
-            <div className="hub-row" key={item.id}>
-              <strong>{item.title}</strong>
-              <span>{formatTime(String(item.startsAt || '').slice(11, 16))} {item.subtitle || ''}</span>
+    <div className="hub-home">
+      <div className="hub-home-feed">
+        <header className="hub-greeting">
+          <h2>Good {daypart}, {firstName}</h2>
+          <p>
+            {todayLabel}
+            {myNextShift && <> · next shift: <strong>{myNextShift.title}</strong>, {formatDate(myNextShift.date)} at {formatTime(myNextShift.startTime)}</>}
+          </p>
+        </header>
+
+        <Panel
+          title="Up for Grabs"
+          icon={ClipboardList}
+          action={openShifts.length > 0
+            ? <span className="hub-pill">{openShifts.length} open</span>
+            : <button onClick={() => setTab('calendar')}>All shifts</button>}
+        >
+          {openShifts.length === 0 ? (
+            <EmptyState
+              art="whisk"
+              title="Nothing up for grabs"
+              hint="Every shift is covered. The calendar has what's ahead."
+            />
+          ) : (
+            <div className="hub-list">
+              {openShifts.map((shift) => (
+                <div className="hub-open-shift" key={shift.id}>
+                  <div className="hub-open-shift-info">
+                    <strong>{shift.title}</strong>
+                    <span>{formatDate(shift.date)} · {formatTime(shift.startTime)}{shift.endTime ? ` to ${formatTime(shift.endTime)}` : ''}</span>
+                  </div>
+                  <button
+                    className="hub-claim-button"
+                    onClick={() => claim(shift)}
+                    disabled={claimingId === shift.id}
+                  >
+                    <CheckCircle2 size={15} /> {claimingId === shift.id ? 'Claiming…' : 'Pick up'}
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Open Shifts" icon={ClipboardList} action={<button onClick={() => setTab('calendar')}>View shifts</button>}>
-        <div className="hub-list">
-          {openShifts.length === 0 && <p className="hub-empty">No open shifts.</p>}
-          {openShifts.map((shift) => (
-            <div className="hub-row" key={shift.id}>
-              <strong>{shift.title}</strong>
-              <span>{formatDate(shift.date)} at {formatTime(shift.startTime)}</span>
+          )}
+        </Panel>
+
+        <Panel title="Today" icon={Home} action={<button onClick={() => setTab('calendar')}>Open calendar</button>}>
+          {todaysItems.length === 0 ? (
+            <EmptyState
+              art="pot"
+              title="A quiet day on the books"
+              hint="Nothing scheduled today — good day for prep."
+            />
+          ) : (
+            <div className="hub-list">
+              {todaysItems.map((item) => (
+                <div className="hub-agenda-row" key={item.id}>
+                  <span className="hub-time-chip">{formatTime(String(item.startsAt || '').slice(11, 16)) || 'Any time'}</span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    {item.subtitle && <span>{item.subtitle}</span>}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Recent Chat" icon={MessageSquare} action={<button onClick={() => setTab('chat')}>Open chat</button>}>
-        <div className="hub-list">
-          {recentChats.map((thread) => (
-            <div className="hub-row" key={thread.id || thread.objectId}>
-              <strong>{thread.title}</strong>
-              <span>{thread.preview || 'No messages yet'}</span>
+          )}
+        </Panel>
+
+        <Panel title="Latest Chatter" icon={MessageSquare} action={<button onClick={() => setTab('chat')}>Open chat</button>}>
+          {recentChats.length === 0 ? (
+            <EmptyState art="plane" title="No chatter yet" hint="Say hi — everyone sees General." />
+          ) : (
+            <div className="hub-list">
+              {recentChats.map((thread) => (
+                <button className="hub-row hub-row-button hub-preview-row" key={thread.id || thread.objectId} onClick={() => setTab('chat')}>
+                  <HubAvatar name={thread.title} size={34} />
+                  <div className="hub-preview-copy">
+                    <strong>{thread.title}</strong>
+                    <span>{thread.preview || 'No messages yet'}</span>
+                  </div>
+                  {thread.lastMessageAt && <small>{age(thread.lastMessageAt)}</small>}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Documents" icon={FileText} action={<button onClick={() => setTab('docs')}>Open docs</button>}>
-        <div className="hub-list">
-          {recentDocs.length === 0 && <p className="hub-empty">No documents published.</p>}
-          {recentDocs.map((doc) => (
-            <div className="hub-row" key={doc.id}>
-              <strong>{doc.title}</strong>
-              <span>{doc.category} / {doc.visibility}</span>
+          )}
+        </Panel>
+
+        <Panel title="Fresh Documents" icon={FileText} action={<button onClick={() => setTab('docs')}>Open docs</button>}>
+          {recentDocs.length === 0 ? (
+            <EmptyState art="basket" title="No documents yet" hint="SOPs, menus, and guides land here." />
+          ) : (
+            <div className="hub-list">
+              {recentDocs.map((doc) => (
+                <button className="hub-row hub-row-button hub-preview-row" key={doc.id} onClick={() => setTab('docs')}>
+                  <div className="hub-preview-copy">
+                    <strong>{doc.title}</strong>
+                    <span>{doc.category}</span>
+                  </div>
+                  <span className="hub-pill hub-pill-muted">{doc.visibility}</span>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </Panel>
+          )}
+        </Panel>
+      </div>
+
+      {!isCustomer && accessToken && (
+        <aside className="hub-home-rail">
+          <HomeNotepad accessToken={accessToken} />
+          <QuickCapturePanel accessToken={accessToken} />
+        </aside>
+      )}
     </div>
   );
 }

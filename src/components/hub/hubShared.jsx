@@ -113,3 +113,43 @@ export function MarkdownPreview({ body }) {
   );
 }
 
+// Identity tones for avatars: soft wash + deep text pairs drawn from the brand
+// family (olive, plum, rose, tan, sage). Deterministic per name so a person
+// keeps their color everywhere in the Hub.
+const AVATAR_TONES = [
+  ['#E4E9D7', '#4E5843'],
+  ['#E6DEEA', '#5A4964'],
+  ['#F3DFE2', '#A94E5D'],
+  ['#EFE0D4', '#7A5B3A'],
+  ['#E1E6E2', '#4F5D55'],
+  ['#E4E0EB', '#5D5470'],
+  ['#F0E2D2', '#8A6119'],
+  ['#DFE8DC', '#445243'],
+];
+
+export function avatarTone(name) {
+  const text = String(name || '?');
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) % 997;
+  return AVATAR_TONES[hash % AVATAR_TONES.length];
+}
+
+export function HubAvatar({ name, size = 32 }) {
+  const [bg, fg] = avatarTone(name);
+  const initials = String(name || '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('') || '?';
+  return (
+    <span
+      className="hub-avatar"
+      style={{ width: size, height: size, background: bg, color: fg, fontSize: Math.round(size * 0.38) }}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  );
+}
+

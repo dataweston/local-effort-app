@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import EconomicsModelView from '../components/hub/EconomicsModelView';
-import { api, addDays, todayIso } from '../components/hub/hubShared';
+import { api, addDays, todayIso, HubAvatar } from '../components/hub/hubShared';
 import { HubAccessRequired, HubAuthScreen, HubPasswordRecovery, ProfileSetup } from '../components/hub/HubAuthScreens';
 import { CustomerHomeView, TodayView } from '../components/hub/HubTodayView';
 import { CalendarView } from '../components/hub/HubCalendarView';
@@ -235,7 +235,7 @@ export default function HubPage() {
     <div className="hub-app">
       <aside className="hub-sidebar">
         <div className="hub-logo">
-          <ShieldCheck size={18} />
+          <HubAvatar name={profile.displayName} size={36} />
           <div>
             <strong>Hub</strong>
             <span>{profile.displayName}</span>
@@ -274,7 +274,7 @@ export default function HubPage() {
         </header>
 
         {activeTab === 'today' && isCustomer && <CustomerHomeView accessToken={auth.accessToken} setTab={setTab} />}
-        {activeTab === 'today' && !isCustomer && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} />}
+        {activeTab === 'today' && !isCustomer && <TodayView calendar={calendar} docs={docs} conversations={conversations} shifts={shifts} setTab={setTab} accessToken={auth.accessToken} isCustomer={isCustomer} profile={profile} onRefresh={loadShellData} />}
         {/* Privileged "view as customer" hides the staff House Notepad via isCustomer above. */}
         {(activeTab === 'calendar' || activeTab === 'shifts') && <CalendarView accessToken={auth.accessToken} profile={profile} isPrivileged={isPrivileged} />}
         {activeTab === 'chat' && <ChatView accessToken={auth.accessToken} people={people} currentUserId={profile.userId} />}
