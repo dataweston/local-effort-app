@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
+import { Brain, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -16,6 +16,7 @@ import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
 import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
 import { ForecastPanel } from '../components/weeklyplanner/ForecastPanel';
 import { StaffScheduleView } from '../components/weeklyplanner/StaffScheduleView';
+import '../styles/planner.css';
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -50,6 +51,18 @@ export default function WeeklyDemoPage() {
 
   const [captureText, setCaptureText] = useState('');
   const [captureActive, setCaptureActive] = useState(false);
+  const [brainOpen, setBrainOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('le:plannerBrainOpen') === '1';
+  });
+  const toggleBrain = () => {
+    setBrainOpen(prev => {
+      const next = !prev;
+      try { window.localStorage.setItem('le:plannerBrainOpen', next ? '1' : '0'); } catch (_err) { /* preference only */ }
+      return next;
+    });
+  };
+  const fmtMoney = (n) => `$${Math.round(Number(n) || 0).toLocaleString('en-US')}`;
   const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
   const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
 
@@ -75,145 +88,64 @@ export default function WeeklyDemoPage() {
   };
 
   return (
-    <div className="fullpage-demo-scope min-h-screen" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+    <div className="fullpage-demo-scope planner-page min-h-screen">
       {/* Sticky top bar */}
-      <div
-        className="sticky top-0 z-30 shadow-sm safe-area-top"
-        style={{
-          backgroundColor: 'var(--color-bg-card)',
-          borderBottom: '1px solid var(--color-border-default)',
-        }}
-      >
+      <div className="sticky top-0 z-30 safe-area-top planner-topbar">
         <div className="max-w-[1800px] mx-auto px-4 py-3">
           {/* Title row */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <h1
-                className="text-lg font-bold font-display truncate"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                Weekly Planner
-              </h1>
-              <p className="text-xs hidden sm:block" style={{ color: 'var(--color-text-muted)' }}>
-                {mode === 'persisted' ? 'Changes saved automatically' : 'Sign in to save your plan'}
+          <div className="planner-topbar-row">
+            <div className="planner-title min-w-0">
+              <h1>Planner</h1>
+              <p className="hidden sm:block">
+                {mode === 'persisted' ? 'Saved automatically' : 'Sign in to save your plan'}
               </p>
             </div>
 
-            {/* Week totals - hidden on very small screens */}
-            <div className="hidden sm:flex items-center gap-3">
-              <div
-                className="flex items-center gap-3 rounded-lg px-3 py-1.5 border"
-                style={{
-                  backgroundColor: 'var(--color-bg-page)',
-                  borderColor: 'var(--color-border-default)',
-                }}
-              >
-                <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                    Rev
-                  </div>
-                  <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-success)' }}>
-                    <DollarSign size={11} />{displayTotals.revenue}
-                  </div>
-                </div>
-                <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
-                <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                    Labor
-                  </div>
-                  <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-                    <DollarSign size={11} />{displayTotals.cost}
-                  </div>
-                </div>
-                {displayTotals.cogs > 0 && (
-                  <>
-                    <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
-                    <div className="text-center">
-                      <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                        COGS
-                      </div>
-                      <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-                        <DollarSign size={11} />{displayTotals.cogs}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {view === 'monthly' && overheadTotal > 0 && (
-                  <>
-                    <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
-                    <div className="text-center">
-                      <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                        Overhead
-                      </div>
-                      <div className="text-sm font-bold flex items-center gap-0.5" style={{ color: 'var(--color-state-danger)' }}>
-                        <DollarSign size={11} />{overheadTotal}
-                      </div>
-                    </div>
-                  </>
-                )}
-                <div className="w-px h-7" style={{ backgroundColor: 'var(--color-border-default)' }} />
-                <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                    Net
-                  </div>
-                  <div
-                    className="text-sm font-bold flex items-center gap-0.5"
-                    style={{ color: displayTotals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
-                  >
-                    <DollarSign size={11} />{displayTotals.net}
-                  </div>
-                </div>
+            {/* Scoreboard — Net is the one large figure */}
+            <div className="planner-scoreboard" role="status" aria-label="Money summary">
+              <dl className="planner-figures">
+                <div><dt>Revenue</dt><dd>{fmtMoney(displayTotals.revenue)}</dd></div>
+                <div><dt>Labor</dt><dd>{fmtMoney(displayTotals.cost)}</dd></div>
+                {displayTotals.cogs > 0 && <div><dt>COGS</dt><dd>{fmtMoney(displayTotals.cogs)}</dd></div>}
+                {isMonthly && overheadTotal > 0 && <div><dt>Overhead</dt><dd>{fmtMoney(overheadTotal)}</dd></div>}
+              </dl>
+              <div className={`planner-net ${displayTotals.net < 0 ? 'is-negative' : 'is-positive'}`}>
+                <span>Net · {isMonthly ? 'month' : 'week'}</span>
+                <strong>{displayTotals.net < 0 ? '−' : ''}{fmtMoney(Math.abs(displayTotals.net))}</strong>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="planner-actions">
+              {auth.isAdmin && (
+                <button
+                  className={`planner-button ${brainOpen ? 'is-active' : ''}`}
+                  onClick={toggleBrain}
+                  title="Brain pulse & forecast"
+                >
+                  <Brain size={15} />
+                  <span className="hidden sm:inline">Brain</span>
+                </button>
+              )}
               {auth.isAdmin && (
                 <button
                   onClick={() => setInboxOpen(v => !v)}
-                  className="relative p-2 rounded-lg transition-colors touch-target-ios"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  className="planner-button touch-target-ios"
                   title="Brain inbox"
                 >
                   <Inbox size={16} />
                   {inbox.total > 0 && (
-                    <span
-                      className="absolute -top-0.5 -right-0.5 text-xs font-bold leading-none flex items-center justify-center rounded-full"
-                      style={{
-                        minWidth: '16px',
-                        height: '16px',
-                        padding: '0 3px',
-                        backgroundColor: 'var(--brand-rose, #e07070)',
-                        color: '#fff',
-                        fontSize: '10px',
-                      }}
-                    >
-                      {inbox.total > 99 ? '99+' : inbox.total}
-                    </span>
+                    <span className="planner-badge">{inbox.total > 99 ? '99+' : inbox.total}</span>
                   )}
                 </button>
               )}
               {auth.user ? (
-                <button
-                  onClick={auth.signOut}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors touch-target-ios"
-                  style={{
-                    color: 'var(--color-text-secondary)',
-                    borderColor: 'var(--color-border-default)',
-                  }}
-                >
+                <button onClick={auth.signOut} className="planner-button touch-target-ios">
                   <LogOut size={14} />
                   <span className="hidden sm:inline">Sign out</span>
                 </button>
               ) : (
-                <button
-                  onClick={handleSignIn}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors touch-target-ios"
-                  style={{
-                    backgroundColor: 'var(--color-action-primary-bg)',
-                    color: 'var(--color-action-primary-text)',
-                  }}
-                >
+                <button onClick={handleSignIn} className="planner-button planner-button-primary touch-target-ios">
                   <LogIn size={14} />
                   <span className="hidden sm:inline">Sign in to save</span>
                 </button>
@@ -221,37 +153,6 @@ export default function WeeklyDemoPage() {
             </div>
           </div>
 
-          {/* Mobile totals bar */}
-          <div
-            className="sm:hidden flex items-center justify-around mt-2 rounded-lg px-2 py-1.5 border"
-            style={{
-              backgroundColor: 'var(--color-bg-page)',
-              borderColor: 'var(--color-border-default)',
-            }}
-          >
-            <span className="text-xs font-bold" style={{ color: 'var(--color-state-success)' }}>
-              +${displayTotals.revenue}
-            </span>
-            <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
-              −${displayTotals.cost} labor
-            </span>
-            {displayTotals.cogs > 0 && (
-              <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
-                −${displayTotals.cogs} cogs
-              </span>
-            )}
-            {view === 'monthly' && overheadTotal > 0 && (
-              <span className="text-xs font-bold" style={{ color: 'var(--color-state-danger)' }}>
-                −${overheadTotal} overhead
-              </span>
-            )}
-            <span
-              className="text-xs font-bold"
-              style={{ color: displayTotals.net >= 0 ? 'var(--color-state-success)' : 'var(--color-state-danger)' }}
-            >
-              Net ${displayTotals.net}
-            </span>
-          </div>
         </div>
 
         {/* Quick-capture bar — admin only */}
@@ -269,51 +170,34 @@ export default function WeeklyDemoPage() {
                 setCaptureActive(false);
               }
             }}
-            className="mx-4 mb-2 mt-1 flex gap-2"
+            className="planner-capture mx-4 mb-2 mt-1"
           >
             <input
               type="text"
               value={captureText}
               onChange={e => setCaptureText(e.target.value)}
               placeholder="Capture a note, task, or vendor to brain inbox…"
-              className="flex-1 text-[16px] sm:text-sm rounded-lg px-3 py-1.5 border outline-none"
-              style={{
-                backgroundColor: 'var(--color-bg-card)',
-                borderColor: 'var(--color-border-default)',
-                color: 'var(--color-text-primary)',
-              }}
+              className="text-[16px] sm:text-sm"
               disabled={captureActive}
             />
-            <button
-              type="submit"
-              disabled={!captureText.trim() || captureActive}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-              style={{
-                backgroundColor: 'var(--color-action-primary-bg)',
-                color: 'var(--color-action-primary-text)',
-                opacity: !captureText.trim() || captureActive ? 0.5 : 1,
-              }}
-            >
+            <button type="submit" disabled={!captureText.trim() || captureActive}>
               {captureActive ? '…' : 'Add'}
             </button>
           </form>
         )}
       </div>
 
-      {/* Brain pulse — what the brain knows today (admin only) */}
-      {auth.isAdmin && (
-        <div className="max-w-[1800px] mx-auto pt-3">
+      {/* Brain pulse + forecast — summoned from the topbar Brain toggle */}
+      {auth.isAdmin && brainOpen && (
+        <div className="max-w-[1800px] mx-auto pt-3 planner-brain-stack">
           <BrainPulsePanel
             accessToken={auth.accessToken}
             enabled={!!auth.isAdmin}
             onOpenInbox={() => setInboxOpen(true)}
           />
+          <ForecastPanel accessToken={auth.accessToken} enabled={!!auth.isAdmin} />
         </div>
       )}
-
-      <div className="max-w-[1800px] mx-auto">
-        <ForecastPanel accessToken={auth.accessToken} enabled={!!auth.isAdmin} />
-      </div>
 
       {/* View tabs + content */}
       <div className="max-w-[1800px] mx-auto px-4 py-4">

@@ -1,0 +1,213 @@
+/* ════════════════════════════════════════════════════════════════════
+   Planner — calm money cockpit (Todoist / Superhuman / Morgen grammar).
+   One climax: Net, set large in tabular numerals. Chrome approaches
+   zero — brain panels are summoned, not resident. Scope-level token
+   overrides retint every planner view: white cards on warm paper, ink
+   primary actions, AA-dark state colors. Rose means losing money and
+   nothing else. Type: General Sans display / Source Sans 3 body.
+   ════════════════════════════════════════════════════════════════════ */
+.planner-page {
+  --planner-ink: var(--brand-ink, #3A2E3F);
+  --planner-muted: rgba(58, 46, 63, 0.64);
+  --planner-line: rgba(58, 46, 63, 0.12);
+  --planner-pos: #5C674F;
+  --planner-neg: #A94E5D;
+  --planner-font-display: 'General Sans', system-ui, sans-serif;
+
+  /* Retint the shared planner views without touching global brand tokens. */
+  --color-bg-page: #FAF6EF;
+  --color-bg-card: #FFFFFF;
+  --color-border-default: rgba(58, 46, 63, 0.14);
+  --color-state-success: #5C674F;
+  --color-state-danger: #A94E5D;
+  --color-action-primary-bg: #3A2E3F;
+  --color-action-primary-hover-bg: #4A3C50;
+  --color-action-primary-active-bg: #2E2432;
+  --color-action-primary-text: #F7F0E8;
+
+  background: var(--color-bg-page);
+  color: var(--planner-ink);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+/* ── Topbar ── */
+.planner-topbar {
+  background: color-mix(in srgb, #ffffff 86%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--planner-line);
+}
+.planner-topbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.planner-title h1 {
+  margin: 0;
+  font-family: var(--planner-font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.planner-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--planner-muted); }
+
+/* ── Scoreboard: Net is the climax ── */
+.planner-scoreboard {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  min-width: 0;
+}
+.planner-net { text-align: right; }
+.planner-net span { display: block; font-size: 11.5px; font-weight: 600; color: var(--planner-muted); }
+.planner-net strong {
+  display: block;
+  font-family: var(--planner-font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.planner-net.is-positive strong { color: var(--planner-pos); }
+.planner-net.is-negative strong { color: var(--planner-neg); }
+.planner-figures {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--planner-line);
+}
+.planner-figures div { min-width: 0; }
+.planner-figures dt { font-size: 11px; font-weight: 600; color: var(--planner-muted); }
+.planner-figures dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--planner-ink);
+}
+
+/* ── Actions ── */
+.planner-actions { display: flex; align-items: center; gap: 8px; }
+.planner-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--planner-line);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--planner-ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.planner-button:hover { background: #f6f1e9; }
+.planner-button.is-active { background: #edf0e5; border-color: #dde3d0; color: var(--planner-pos); }
+.planner-button-primary {
+  background: var(--color-action-primary-bg);
+  border-color: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+}
+.planner-button-primary:hover { background: var(--color-action-primary-hover-bg); }
+.planner-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--planner-neg);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Quick capture ── */
+.planner-capture { display: flex; gap: 8px; }
+.planner-capture input {
+  flex: 1;
+  height: 36px;
+  border: 1px solid var(--planner-line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--planner-ink);
+  padding: 0 12px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.planner-capture input::placeholder { color: var(--planner-muted); }
+.planner-capture input:focus { border-color: var(--planner-pos); box-shadow: 0 0 0 3px rgba(92, 103, 79, 0.16); }
+.planner-capture button {
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--color-action-primary-bg);
+  color: var(--color-action-primary-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.planner-capture button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.planner-brain-stack { display: grid; gap: 12px; }
+
+/* ── Tabs → quiet underline nav ── */
+.planner-page [role='tablist'] {
+  background: transparent !important;
+  border-radius: 0;
+  height: auto;
+  padding: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--planner-line);
+  gap: 2px;
+  width: 100%;
+  justify-content: flex-start;
+}
+.planner-page [role='tab'] {
+  position: relative;
+  border-radius: 8px 8px 0 0;
+  padding: 9px 12px;
+  color: var(--planner-muted);
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: color 160ms ease;
+}
+.planner-page [role='tab']:hover { color: var(--planner-ink); }
+.planner-page [role='tab'][data-state='active'] { color: var(--planner-ink); }
+.planner-page [role='tab'][data-state='active']::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--planner-pos);
+}
+
+@media (max-width: 760px) {
+  .planner-scoreboard { order: 3; width: 100%; justify-content: space-between; margin-left: 0; }
+  .planner-actions { margin-left: auto; }
+  .planner-net strong { font-size: 23px; }
+  .planner-figures { gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planner-page * { transition-duration: 0.01ms !important; }
+}
