@@ -275,8 +275,8 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                   </td>
                   <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                   <td>
-                    <span>{customer.profile.householdSize || 'Household not set'}</span>
-                    <small>{customer.profile.deliveryNotes || customer.profile.address || ''}</small>
+                    <span>{customer.profile?.householdSize || 'Household not set'}</span>
+                    <small>{customer.profile?.deliveryNotes || customer.profile?.address || ''}</small>
                   </td>
                   <td>
                     {customer.latestOrder ? (
