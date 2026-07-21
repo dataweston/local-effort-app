@@ -2,6 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Plus, Share2, ShieldCheck } from 'lucide-react';
 import { api, Panel, Field } from './hubShared';
 
+// Publish-form drafts persist in localStorage so a page refresh mid-writing
+// never loses work (it happened — a July 2026 production draft died this way).
+const DOC_DRAFT_KEY = 'le:hubDocDraft';
+const EMPTY_DOC_DRAFT = { title: '', summary: '', body: '', category: 'sop', visibility: 'staff' };
+
+function loadDocDraft() {
+  try {
+    const saved = window.localStorage.getItem(DOC_DRAFT_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') return { ...EMPTY_DOC_DRAFT, ...parsed };
+    }
+  } catch (_err) { /* unreadable draft falls back to empty */ }
+  return EMPTY_DOC_DRAFT;
+}
+
 export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit, sharedDocId }) {
   const [selectedId, setSelectedId] = useState(sharedDocId || docs[0]?.id || null);
   const [selected, setSelected] = useState(null);
@@ -9,7 +25,18 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
   const [shareStatus, setShareStatus] = useState('');
   const [editing, setEditing] = useState(null);
   const [editStatus, setEditStatus] = useState('');
-  const [draft, setDraft] = useState({ title: '', summary: '', body: '', category: 'sop', visibility: 'staff' });
+  const [draft, setDraft] = useState(loadDocDraft);
+
+  // Autosave the draft on every keystroke; drop the key once it's empty again.
+  useEffect(() => {
+    try {
+      if (draft.title || draft.summary || draft.body) {
+        window.localStorage.setItem(DOC_DRAFT_KEY, JSON.stringify(draft));
+      } else {
+        window.localStorage.removeItem(DOC_DRAFT_KEY);
+      }
+    } catch (_err) { /* storage unavailable — typing continues unpersisted */ }
+  }, [draft]);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -76,7 +103,8 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
       method: 'POST',
       body: JSON.stringify(draft),
     });
-    setDraft({ title: '', summary: '', body: '', category: 'sop', visibility: 'staff' });
+    setDraft(EMPTY_DOC_DRAFT);
+    try { window.localStorage.removeItem(DOC_DRAFT_KEY); } catch (_err) { /* already cleared */ }
     await reloadDocs();
     chooseDoc(data.document.id);
   };
@@ -198,6 +226,7 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
             </Field>
             <Field label="Body"><textarea value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} rows={8} required /></Field>
             <button className="hub-primary-button" type="submit"><Plus size={13} /> Publish</button>
+            <p className="hub-help">Drafts autosave in this browser until you publish.</p>
           </form>
         </Panel>
       )}
