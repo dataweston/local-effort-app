@@ -383,7 +383,67 @@ function classifyPosting(row) {
   return 'unknownOrUnresolved';
 }
 
+async function localBudgetApiActuals(startText, endExclusiveText) {
+  const baseUrl = String(process.env.LOCAL_BUDGET_API_URL || '').trim().replace(/\/+$/, '');
+  const token = String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
+  if (!baseUrl || !token) return null;
+
+  const url = new URL(`${baseUrl}/api/integration/v1/cashflow-actuals`);
+  url.searchParams.set('from', startText);
+  url.searchParams.set('to', endExclusiveText);
+  url.searchParams.set('grain', 'month');
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Local Budget API ${response.status}: ${body.slice(0, 240)}`);
+    }
+    const payload = await response.json();
+    if (payload?.contractVersion !== 1 || !Array.isArray(payload.months)) {
+      throw new Error('Local Budget API returned an unsupported cashflow contract');
+    }
+    const cents = (month, key) => Number(month?.[key] || 0);
+    const totals = {
+      revenue: 0, cogs: 0, paidLabor: 0, operatingExLabor: 0,
+      personalFounderDraws: 0, reimbursementIncome: 0,
+      reimbursableExpense: 0, excludedOrUnresolvedIncome: 0,
+      unknownOrUnresolved: 0, transfer: 0,
+    };
+    let postingCount = 0;
+    for (const month of payload.months) {
+      totals.revenue += cents(month, 'incomeCents');
+      totals.cogs += cents(month, 'inventoryCents');
+      totals.paidLabor += cents(month, 'laborCents');
+      totals.operatingExLabor += cents(month, 'operatingCents');
+      totals.reimbursableExpense += cents(month, 'reimbursableCents');
+      totals.personalFounderDraws += cents(month, 'personalExcludedCents');
+      totals.transfer += cents(month, 'transferExcludedCents');
+      totals.unknownOrUnresolved += cents(month, 'unclassifiedCents');
+      postingCount += Number(month.transactionCount || 0);
+    }
+    for (const key of Object.keys(totals)) totals[key] = roundMoney(totals[key] / 100);
+    return {
+      source: 'local_budget_cashflow_api',
+      lastTransactionDate: payload.sourceMaxDate || null,
+      postingCount,
+      totals,
+      // The monthly cashflow contract intentionally contains no merchant rows.
+      vendorEvidence: [],
+    };
+  } catch (error) {
+    throw sourceError(
+      'LOCAL_BUDGET_SOURCE_UNAVAILABLE',
+      'Local Budget cash actuals are unavailable',
+      error,
+    );
+  }
+}
+
 async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvidenceRules = []) {
+  const apiActuals = await localBudgetApiActuals(startText, endExclusiveText);
+  if (apiActuals) return apiActuals;
   const url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim()
     .replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
   if (!url) throw new Error('LOCAL_BUDGET_DATABASE_URL is required for authoritative cash actuals');

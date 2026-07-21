@@ -30,10 +30,11 @@ function publicDoc(doc, { includeBody = false } = {}) {
 }
 
 module.exports = async (req, res) => {
-  if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST']);
+  if (!['GET', 'POST', 'PUT'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST', 'PUT']);
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
+  // Publishing new docs stays privileged; edits are open to any staff-level viewer.
   const denied = requireHubAccess(auth, { privileged: req.method === 'POST' });
   if (denied) return res.status(denied.status).json({ error: denied.error });
 
@@ -70,13 +71,42 @@ module.exports = async (req, res) => {
     const title = cleanString(req.body?.title, 180);
     const body = cleanString(req.body?.body, 20_000);
     const summary = cleanString(req.body?.summary, 500);
-    const visibility = cleanString(req.body?.visibility, 40) === 'privileged' ? 'privileged' : 'staff';
-    const category = cleanString(req.body?.category, 80) || 'general';
+    const category = cleanString(req.body?.category, 80);
+    const requestedVisibility = cleanString(req.body?.visibility, 40);
     const tags = Array.isArray(req.body?.tags)
       ? req.body.tags.map((tag) => cleanString(tag, 40)).filter(Boolean).slice(0, 20)
-      : [];
+      : null;
 
     if (!title || !body) return res.status(400).json({ error: 'title and body are required' });
+
+    if (req.method === 'PUT') {
+      const id = cleanString(req.body?.id, 120);
+      if (!id) return res.status(400).json({ error: 'id is required' });
+      const existing = await prisma.hubDocument.findFirst({
+        where: {
+          id,
+          status: 'published',
+          visibility: { in: allowedVisibility(auth) },
+        },
+      });
+      if (!existing) return res.status(404).json({ error: 'Document not found' });
+      // Only privileged users may move a doc between audiences.
+      const visibility = auth.isPrivileged && ['staff', 'privileged'].includes(requestedVisibility)
+        ? requestedVisibility
+        : existing.visibility;
+      const document = await prisma.hubDocument.update({
+        where: { id: existing.id },
+        data: {
+          title,
+          body,
+          summary,
+          visibility,
+          category: category || existing.category,
+          tags: tags || existing.tags,
+        },
+      });
+      return res.status(200).json({ ok: true, document: publicDoc(document, { includeBody: true }) });
+    }
 
     const source = cleanString(req.body?.source, 80) || 'manual';
     const sourceId = cleanString(req.body?.sourceId, 160);
@@ -84,9 +114,9 @@ module.exports = async (req, res) => {
         title,
         body,
         summary,
-        visibility,
-        category,
-        tags,
+        visibility: requestedVisibility === 'privileged' ? 'privileged' : 'staff',
+        category: category || 'general',
+        tags: tags || [],
         source,
         sourceId,
         createdByUserId: auth.viewer.userId || null,
