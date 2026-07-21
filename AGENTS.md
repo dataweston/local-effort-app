@@ -33,7 +33,7 @@ docs/                     Current docs. docs/archive/ = historical, do not trust
 - **Retired pages** (about, services, pricing, menu, gallery, pizzafunder, paikka, crowdfunding, partner portals, city landing pages, `/calendar`) redirect to `/`. Don't resurrect them or add them to sitemaps.
 - **Firebase/Firestore is legacy.** Supabase is the auth + new-data store. See `docs/DO-NOT-REVERT-TO-FIREBASE.md`.
 - **Crons are GET requests** (Vercel crons): brain triage/inference/hypothesis, square-orders sync, meal-feedback digest — schedules in `vercel.json`.
-- **Internal surfaces** (`/weeklydemo`, `/hub`, `/admin/*`, `/portal/*`, `/inbox`, `/campaigns`, `/auth`, `/catherine-schedule`, `/weekly-order*`) are noindex via `vercel.json` headers + `robots.txt` + `INTERNAL_ROUTES` in `src/config/routes.js`. Keep all three in sync when adding routes.
+- **Internal surfaces** (`/planner` (formerly `/weeklydemo`, which redirects), `/hub`, `/admin/*`, `/portal/*`, `/inbox`, `/campaigns`, `/auth`, `/catherine-schedule`, `/weekly-order*`) are noindex via `vercel.json` headers + `robots.txt` + `INTERNAL_ROUTES` in `src/config/routes.js`. Keep all three in sync when adding routes.
 - **Public forms must keep their anti-bot guards**: honeypot field named `website` + server-side rate limiting in `backend/api/routes/messages.js`. Any new public form endpoint needs both.
 - **Brand theming**: CSS custom properties in `src/styles/brand-tokens.css`; pages opt into theme via `fullpage-demo-scope` class.
 - **Auth**: `useSupabaseAuth()` from `src/contexts/SupabaseAuthContext.jsx` (Google OAuth; returns `user, session, accessToken, isAdmin, …`).

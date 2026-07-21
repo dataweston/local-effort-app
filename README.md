@@ -14,7 +14,7 @@ Live site: https://www.localeffortfood.com
 | API (production) | `backend/api/` | Express app deployed as one Vercel serverless function. All `/api/*` traffic routes here (see `vercel.json`). |
 | API handlers (shared) | `api-handlers/` | Individual request handlers required by `backend/api/index.js` (checkout, store, hub, weekly-order, etc.). |
 | Company "brain" | `backend/api/brain/`, `brain-sidecar/` | Fact/inference system over business data. Nightly jobs run as Vercel crons (see `vercel.json`). |
-| Weekly planner | `src/features/planner/`, `/weeklydemo` | Internal cockpit. Prisma `PlannerCard` model. |
+| Weekly planner | `src/features/planner/`, `/planner` (redirects from `/weeklydemo`) | Internal cockpit. Prisma `PlannerCard` model. |
 | Hub | `src/pages/HubPage.jsx`, `api-handlers/hub/` | Internal staff hub (`/hub`), noindex. |
 | Sanity CMS studio | `studio/` | Content: blog posts, products, releases, messages, subscribers. |
 | Agent/AI surfaces | `public/ai.txt`, `public/llms.txt`, `public/ai/manifest.json`, `/.well-known/ucp`, `/.well-known/mcp` | Machine-readable site/business info, UCP commerce profile, MCP server. |

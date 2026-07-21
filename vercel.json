@@ -135,6 +135,15 @@
       ]
     },
     {
+      "source": "/planner",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
       "source": "/weekly-order/portal",
       "headers": [
         {

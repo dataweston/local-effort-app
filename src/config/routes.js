@@ -117,6 +117,7 @@ export const INTERNAL_ROUTES = [
   '/campaigns',
   '/admin/',
   '/weeklydemo',
+  '/planner',
   '/weekly-order',
   '/portal/',
   '/catherine-schedule',

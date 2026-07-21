@@ -81,7 +81,7 @@ export default function WeeklyDemoPage() {
 
   const handleSignIn = async () => {
     try {
-      await auth.signInWithGoogle(`${window.location.origin}/weeklydemo`);
+      await auth.signInWithGoogle(`${window.location.origin}/planner`);
     } catch (err) {
       // Auth redirect will happen
     }

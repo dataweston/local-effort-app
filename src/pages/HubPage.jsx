@@ -4,6 +4,7 @@ import {
   ChartNoAxesCombined,
   FileText,
   Home,
+  LayoutGrid,
   LogOut,
   MessageSquare,
   RefreshCw,
@@ -248,6 +249,12 @@ export default function HubPage() {
               {label}
             </button>
           ))}
+          {isPrivileged && (
+            <a className="hub-nav-link" href="/planner">
+              <LayoutGrid size={15} aria-hidden="true" />
+              Planner
+            </a>
+          )}
         </nav>
         <button className="hub-signout" onClick={auth.signOut}><LogOut size={13} /> Sign out</button>
       </aside>

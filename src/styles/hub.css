@@ -113,6 +113,21 @@
   transition: color var(--hub-dur-fast) var(--hub-ease), background var(--hub-dur-fast) var(--hub-ease);
 }
 .hub-signout:hover { color: var(--hub-danger); background: var(--hub-danger-bg); }
+.hub-sidebar nav .hub-nav-link {
+  height: 38px;
+  border-radius: var(--hub-radius-sm);
+  color: var(--hub-ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--hub-dur-fast) var(--hub-ease);
+}
+.hub-sidebar nav .hub-nav-link svg { color: var(--hub-muted); }
+.hub-sidebar nav .hub-nav-link:hover { background: rgba(51, 40, 58, 0.05); }
 
 /* ── Main area ── */
 .hub-main { flex: 1; min-width: 0; padding: 20px 24px 80px; overflow: auto; }

@@ -43,7 +43,6 @@ const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const MealPrepIntakePage = lazy(() => import('./pages/MealPrepIntakePage'));
-const NativeMobileHubPage = lazy(() => import('./pages/NativeMobileHubPage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
 const BookPage = lazy(() => import('./pages/BookPage'));
 const BrainPortalPage = lazy(() => import('./pages/BrainPortalPage'));
@@ -63,7 +62,8 @@ const AppContent = () => {
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
-    location.pathname === '/native-mobile-hub' ||
+    location.pathname === '/planner' ||
+    location.pathname === '/weeklydemo' ||
     location.pathname.startsWith('/hub');
   const hideFooter =
     location.pathname === '/' ||
@@ -74,7 +74,8 @@ const AppContent = () => {
     location.pathname === '/winterpizza' ||
     location.pathname === '/januarymeals' ||
     location.pathname === '/catherine-schedule' ||
-    location.pathname === '/native-mobile-hub' ||
+    location.pathname === '/planner' ||
+    location.pathname === '/weeklydemo' ||
     location.pathname.startsWith('/hub');
 
   useEffect(() => {
@@ -287,13 +288,15 @@ const AppContent = () => {
                 <Route path="/weekly-order/portal" element={<Navigate to="/hub" replace />} />
                 <Route path="/weekly-order/:customerSlug/portal" element={<Navigate to="/hub" replace />} />
                 <Route
-                  path="/weeklydemo"
+                  path="/planner"
                   element={
                     <AnimatedPage>
                       <WeeklyDemoPage />
                     </AnimatedPage>
                   }
                 />
+                {/* Planner moved from /weeklydemo — keep old bookmarks working. */}
+                <Route path="/weeklydemo" element={<Navigate to={{ pathname: '/planner', search: location.search }} replace />} />
                 <Route
                   path="/meal-prep-intake"
                   element={
@@ -302,14 +305,8 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route
-                  path="/native-mobile-hub"
-                  element={
-                    <AnimatedPage>
-                      <NativeMobileHubPage />
-                    </AnimatedPage>
-                  }
-                />
+                {/* Mobile hub fork retired — one responsive Hub. */}
+                <Route path="/native-mobile-hub" element={<Navigate to="/hub" replace />} />
                 <Route
                   path="/portal/:shareToken"
                   element={<BrainPortalPage />}
