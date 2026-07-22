@@ -30,6 +30,26 @@ export function formatCurrency(cents) {
 }
 
 
+// Coerce a free-form value from unstructured Brain `properties` JSON into a
+// string safe to render in JSX. Intake forms sometimes store fields like
+// deliveryPreference as an object (e.g. { day, time, preference }) instead of
+// a string; dropping that straight into JSX throws React error #31 and blanks
+// the whole page. Objects become a "key: value" join; arrays a comma list.
+export function displayText(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map(displayText).filter(Boolean).join(', ');
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, v]) => v != null && v !== '')
+      .map(([k, v]) => `${k}: ${displayText(v)}`)
+      .join(' · ');
+  }
+  return String(value);
+}
+
+
 export function formatTime(value) {
   if (!value) return '';
   const [hours, minutes] = String(value).split(':');

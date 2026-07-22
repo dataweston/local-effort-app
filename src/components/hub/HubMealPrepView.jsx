@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, ClipboardList, FileText, RefreshCw, Soup } from 'lucide-react';
-import { api, formatDate, formatMoneyCents, Panel, MarkdownPreview } from './hubShared';
+import { api, displayText, formatDate, formatMoneyCents, Panel, MarkdownPreview } from './hubShared';
 
 export function CustomerSpendCell({ customer, intakeDate }) {
   const txns = customer.transactions || [];
@@ -275,8 +275,8 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                   </td>
                   <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                   <td>
-                    <span>{customer.profile?.householdSize || 'Household not set'}</span>
-                    <small>{customer.profile?.deliveryNotes || customer.profile?.address || ''}</small>
+                    <span>{displayText(customer.profile?.householdSize) || 'Household not set'}</span>
+                    <small>{displayText(customer.profile?.deliveryNotes) || displayText(customer.profile?.address)}</small>
                   </td>
                   <td>
                     {customer.latestOrder ? (
@@ -294,7 +294,7 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                   {!isCustomer && (
                     <td>
                       <span>{customer.brain?.inferences?.[0]?.summary || customer.brain?.assertions?.[0]?.dst || 'No active brain signal'}</span>
-                      {customer.brain?.properties && <small>{customer.brain.properties.householdSize || customer.brain.properties.slug || ''}</small>}
+                      {customer.brain?.properties && <small>{displayText(customer.brain.properties.householdSize) || displayText(customer.brain.properties.slug)}</small>}
                     </td>
                   )}
                 </tr>
@@ -336,8 +336,8 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                       </td>
                       <td>{customer.planSummary || customer.priceTierDefault || 'No plan rules'}</td>
                       <td>
-                        <span>{customer.profile.householdSize || 'Household not set'}</span>
-                        <small>{customer.profile.deliveryNotes || customer.profile.address || ''}</small>
+                        <span>{displayText(customer.profile?.householdSize) || 'Household not set'}</span>
+                        <small>{displayText(customer.profile?.deliveryNotes) || displayText(customer.profile?.address)}</small>
                       </td>
                       <td><CustomerSpendCell customer={customer} /></td>
                     </tr>
@@ -377,8 +377,8 @@ export function WeeklyMealPrepView({ accessToken, isPrivileged, isCustomer = fal
                       <span>{customer.email || customer.phone || '—'}</span>
                     </td>
                     <td>
-                      <span>{customer.householdSize || 'Household not set'}</span>
-                      <small>{customer.address || ''}</small>
+                      <span>{displayText(customer.householdSize) || 'Household not set'}</span>
+                      <small>{displayText(customer.address)}</small>
                     </td>
                     <td>
                       {customer.estimateWeeklyTotal != null
