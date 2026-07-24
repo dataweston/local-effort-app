@@ -2,7 +2,12 @@
 
 ## Working lines
 
-The default configuration contains Weekly Meal Subscription, Private Dinners & Events, Local Effort Pizza, Partner Wholesale, Farmers Market, and Unallocated. This is a management scaffold, not an owner-approved taxonomy.
+The default configuration contains Weekly Meal Subscription, Private Dinners & Events, Partner Wholesale, Local Effort Pizza, and Unallocated. This is a working management scaffold. As of 2026-07-23 the owner narrowed strategic focus to three lines — **Weekly Meal Subscription (meal prep), Private Dinners & Events, and Partner Wholesale** — whose *balance* is the long-run stability strategy; give those three the most unit-economics, logistics/warehousing, and market scrutiny.
+
+- **Farmers Market was removed as a line** (owner, 2026-07-23) and is no longer in the config.
+- **Pizza is a distributed product, not a standalone Square line.** It flows through wholesale (Happy Monday, whose ledger separates pizzas from sandwiches), events, and meal prep, with **frozen direct-to-consumer** as the growth line as labor is added. Keep the `local_effort_pizza` id only as a cost/attribution anchor, not as a primary revenue line to size on its own.
+
+See `current-facts.md` for owner-stated pizza unit cost, small-event price bands, in-repo meal-prep pricing, per-line labor hours, and the June structural-cost thesis.
 
 Edit `line-model-config.json` only when evidence supports a mapping or assumption. Regular expressions are tested in order. `Custom Amount`, empty labels, and `unnamed` are protected from automatic mapping.
 

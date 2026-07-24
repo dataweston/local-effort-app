@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-07-18",
+  "asOf": "2026-07-23",
   "items": [
     {
       "id": "happy_monday_unit_prices_2026_04_10",
@@ -97,6 +97,38 @@
         "Typical arrival 90 minutes before first course"
       ],
       "note": "This recovers quote and service-load evidence from a Thumbtack lead, but final guest count, payment, ingredient purchases, and labor hours remain unmatched."
+    },
+    {
+      "id": "pizza_unit_cost_owner_stated_2026_07_23",
+      "lineIds": ["local_effort_pizza", "wholesale_bread", "private_dinners_events", "weekly_meal_subscription"],
+      "evidenceType": "owner_stated_cost_with_verification_path",
+      "confidence": "owner_reported_unverified",
+      "title": "12-inch cheese pizza unit cost (owner-stated)",
+      "sourceLabel": "Owner statement 2026-07-23; verify via Local Budget flour costs and the owner's Grande mozzarella emails",
+      "observedAt": "2026-07-23",
+      "facts": [
+        "Dough $0.75",
+        "Sauce $0.17",
+        "Cheese $1.00",
+        "Total ingredients $1.92 for a 12-inch cheese pizza",
+        "Price point $7 to $11",
+        "Make rate about 40 pizzas per hour with 2 people"
+      ],
+      "note": "Owner-stated, not yet joined to invoices. Dough at ~$0.75 is consistent with existing Baker's Field flour evidence (~$1.29-1.50/lb blended). Confirm cheese against Grande mozzarella email pricing before deducting as measured cost. Pizza is a distributed product (wholesale, events, meal prep, frozen DTC), not a standalone Square line."
+    },
+    {
+      "id": "event_price_band_owner_stated_2026_07_23",
+      "lineIds": ["private_dinners_events"],
+      "evidenceType": "owner_stated_price_band",
+      "confidence": "owner_reported_unverified",
+      "title": "Small-event price band (owner-stated)",
+      "sourceLabel": "Owner statement 2026-07-23; corroborate via Gmail quote threads matched to Square event payments",
+      "observedAt": "2026-07-23",
+      "facts": [
+        "$35 per person for a buffet dropped off",
+        "$150 per person for a plated multi-course experience"
+      ],
+      "note": "Owner-stated range spanning service models. Service model drives labor and margin, so the band endpoints are not a single line average. Corroborate specific events by matching Gmail quotes to Square payments (Haus of Well and the Masters dinner are already in this evidence set)."
     }
   ]
 }

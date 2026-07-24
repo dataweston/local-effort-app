@@ -23,14 +23,24 @@ function publicDoc(doc, { includeBody = false } = {}) {
   };
 }
 
+const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+
 module.exports = async (req, res) => {
-  if (!['GET', 'POST', 'PUT'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST', 'PUT']);
+  if (!ALLOWED_METHODS.includes(req.method)) return methodNotAllowed(res, ALLOWED_METHODS);
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  // Publishing new docs stays privileged; edits are open to any staff-level viewer.
-  const denied = requireHubAccess(auth, { privileged: req.method === 'POST' });
+  // Publishing, hiding, and deleting docs stay privileged; edits are open to any
+  // staff-level viewer.
+  const privilegedMethod = ['POST', 'PATCH', 'DELETE'].includes(req.method);
+  const denied = requireHubAccess(auth, { privileged: privilegedMethod });
   if (denied) return res.status(denied.status).json({ error: denied.error });
+
+  // Privileged viewers can opt into seeing hidden docs (to unhide or delete them).
+  // Everyone else only ever sees published docs.
+  const includeHidden = auth.isPrivileged
+    && ['1', 'true', 'yes'].includes(String(req.query?.includeHidden || '').toLowerCase());
+  const visibleStatuses = includeHidden ? ['published', 'hidden'] : ['published'];
 
   try {
     if (req.method === 'GET') {
@@ -39,7 +49,7 @@ module.exports = async (req, res) => {
         const doc = await prisma.hubDocument.findFirst({
           where: {
             id,
-            status: 'published',
+            status: { in: visibleStatuses },
             visibility: { in: allowedVisibility(auth) },
           },
         });
@@ -49,7 +59,7 @@ module.exports = async (req, res) => {
 
       const docs = await prisma.hubDocument.findMany({
         where: {
-          status: 'published',
+          status: { in: visibleStatuses },
           visibility: { in: allowedVisibility(auth) },
         },
         orderBy: [{ category: 'asc' }, { updatedAt: 'desc' }],
@@ -60,6 +70,40 @@ module.exports = async (req, res) => {
         generatedAt: new Date().toISOString(),
         documents: docs.map((doc) => publicDoc(doc)),
       });
+    }
+
+    if (req.method === 'DELETE') {
+      const id = cleanString(req.query?.id, 120) || cleanString(req.body?.id, 120);
+      if (!id) return res.status(400).json({ error: 'id is required' });
+      const existing = await prisma.hubDocument.findFirst({
+        where: { id, visibility: { in: allowedVisibility(auth) } },
+      });
+      if (!existing) return res.status(404).json({ error: 'Document not found' });
+      await prisma.hubDocument.delete({ where: { id: existing.id } });
+      return res.status(200).json({ ok: true, deletedId: existing.id });
+    }
+
+    if (req.method === 'PATCH') {
+      // Lightweight status toggle for hide/unhide — no title/body payload needed.
+      const id = cleanString(req.body?.id, 120);
+      if (!id) return res.status(400).json({ error: 'id is required' });
+      const requestedStatus = cleanString(req.body?.status, 40);
+      if (!['published', 'hidden'].includes(requestedStatus)) {
+        return res.status(400).json({ error: 'status must be "published" or "hidden"' });
+      }
+      const existing = await prisma.hubDocument.findFirst({
+        where: {
+          id,
+          status: { in: ['published', 'hidden'] },
+          visibility: { in: allowedVisibility(auth) },
+        },
+      });
+      if (!existing) return res.status(404).json({ error: 'Document not found' });
+      const document = await prisma.hubDocument.update({
+        where: { id: existing.id },
+        data: { status: requestedStatus },
+      });
+      return res.status(200).json({ ok: true, document: publicDoc(document, { includeBody: true }) });
     }
 
     const title = cleanString(req.body?.title, 180);
@@ -79,7 +123,7 @@ module.exports = async (req, res) => {
       const existing = await prisma.hubDocument.findFirst({
         where: {
           id,
-          status: 'published',
+          status: { in: visibleStatuses },
           visibility: { in: allowedVisibility(auth) },
         },
       });

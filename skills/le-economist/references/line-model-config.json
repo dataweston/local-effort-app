@@ -3,10 +3,12 @@
   "modelStatus": "working_taxonomy_not_canonical",
   "currency": "USD",
   "founderCompensation": {
-    "westonAnnual": 90000,
-    "catherineAnnual": 70000,
+    "westonAnnual": 65000,
+    "catherineAnnual": 65000,
     "policyEffectiveDate": "2026-04-01",
-    "personalTransactionsOffsetAccrual": true
+    "personalTransactionsOffsetAccrual": true,
+    "personalDrawsCountFromDate": "2026-04-01",
+    "note": "Revised to $65k each, deferred, by owner 2026-07-23 (was $90k/$70k). PERSONAL transactions dated 2026-04-01 or later count as owner draws against the deferred salary."
   },
   "kitchen": {
     "firstTierHoursPerMonth": 20,
@@ -98,6 +100,7 @@
       "id": "local_effort_pizza",
       "name": "Local Effort Pizza",
       "squareNamePatterns": ["pizza"],
+      "note": "Distributed product, not a standalone Square line: mostly sold to Happy Monday (wholesale), incorporated into events and meal prep, some direct event sales, and frozen direct-to-consumer when capacity allows (the growth line, to expand to internet/retail as labor is added). 12-inch cheese pizza owner-stated ingredient cost $1.92 (0.75 dough + 0.17 sauce + 1.00 cheese); price point $7-11. Verify vs Local Budget flour costs and the owner's Grande mozzarella emails.",
       "scenarioInputs": {
         "monthlyOrders": null,
         "averageRevenuePerOrder": null,
@@ -122,27 +125,6 @@
         "NJRVRVQFFB0R0P3GTQ3F8FJ0Y8"
       ],
       "squareNamePatterns": ["happy monday", "wholesale", "bread"],
-      "scenarioInputs": {
-        "monthlyOrders": null,
-        "averageRevenuePerOrder": null,
-        "ingredientCostPerOrder": null,
-        "paidLaborHoursPerOrder": null,
-        "paidLaborHourlyRate": 35,
-        "founderLaborHoursPerOrder": null,
-        "founderLaborHourlyRate": null,
-        "kitchenHoursPerOrder": null,
-        "packagingDeliveryPerOrder": null,
-        "otherVariableCostPerOrder": null,
-        "monthlyOrderCapacity": null
-      },
-      "scenarioInputProvenance": {
-        "paidLaborHourlyRate": "owner_confirmed_payroll_rate"
-      }
-    },
-    {
-      "id": "farmers_market",
-      "name": "Farmers Market",
-      "squareNamePatterns": ["farmers? market", "market booth"],
       "scenarioInputs": {
         "monthlyOrders": null,
         "averageRevenuePerOrder": null,

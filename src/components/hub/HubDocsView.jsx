@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FileText, Plus, Share2, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Eye, EyeOff, FileText, Plus, Search, Share2, ShieldCheck, Trash2 } from 'lucide-react';
 import { api, Panel, Field } from './hubShared';
 
 // Publish-form drafts persist in localStorage so a page refresh mid-writing
@@ -26,6 +26,31 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
   const [editing, setEditing] = useState(null);
   const [editStatus, setEditStatus] = useState('');
   const [draft, setDraft] = useState(loadDocDraft);
+  const [filterText, setFilterText] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [showHidden, setShowHidden] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+
+  // Distinct categories drive the filter dropdown; derived from the current list.
+  const categories = useMemo(() => {
+    const set = new Set(docs.map((doc) => doc.category).filter(Boolean));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [docs]);
+
+  // Apply the search/category/hidden filters client-side. Hidden docs only reach
+  // the list for privileged viewers, and even then only when "Show hidden" is on.
+  const visibleDocs = useMemo(() => {
+    const query = filterText.trim().toLowerCase();
+    return docs.filter((doc) => {
+      if (doc.status === 'hidden' && (!isPrivileged || !showHidden)) return false;
+      if (filterCategory !== 'all' && doc.category !== filterCategory) return false;
+      if (query) {
+        const hay = `${doc.title} ${doc.summary || ''} ${doc.category || ''} ${(doc.tags || []).join(' ')}`.toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [docs, filterText, filterCategory, showHidden, isPrivileged]);
 
   // Autosave the draft on every keystroke; drop the key once it's empty again.
   useEffect(() => {
@@ -139,20 +164,108 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
     }
   };
 
+  const toggleHidden = async (doc) => {
+    if (!doc) return;
+    const nextStatus = doc.status === 'hidden' ? 'published' : 'hidden';
+    setBusyId(doc.id);
+    try {
+      const data = await api('/api/hub/docs', accessToken, {
+        method: 'PATCH',
+        body: JSON.stringify({ id: doc.id, status: nextStatus }),
+      });
+      if (selected?.id === doc.id) setSelected(data.document);
+      await reloadDocs();
+    } catch (err) {
+      setShareStatus(err.message || 'Unable to update visibility.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const deleteDoc = async (doc) => {
+    if (!doc) return;
+    if (!window.confirm(`Delete "${doc.title}"? This can't be undone.`)) return;
+    setBusyId(doc.id);
+    try {
+      await api(`/api/hub/docs?id=${encodeURIComponent(doc.id)}`, accessToken, { method: 'DELETE' });
+      if (selectedId === doc.id) {
+        setSelectedId(null);
+        setSelected(null);
+      }
+      await reloadDocs();
+    } catch (err) {
+      setShareStatus(err.message || 'Unable to delete the document.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="hub-doc-layout">
       <Panel title="Documents" icon={FileText}>
+        <div className="hub-doc-filters">
+          <div className="hub-doc-search">
+            <Search size={14} aria-hidden="true" />
+            <input
+              type="search"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              placeholder="Filter documents"
+              aria-label="Filter documents"
+            />
+          </div>
+          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} aria-label="Filter by category">
+            <option value="all">All categories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+          {isPrivileged && (
+            <label className="hub-doc-show-hidden">
+              <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+              Show hidden
+            </label>
+          )}
+        </div>
         <div className="hub-list">
           {docs.length === 0 && <p className="hub-empty">No documents yet.</p>}
-          {docs.map((doc) => (
-            <div className="hub-doc-list-row" key={doc.id}>
+          {docs.length > 0 && visibleDocs.length === 0 && <p className="hub-empty">No documents match this filter.</p>}
+          {visibleDocs.map((doc) => (
+            <div className={`hub-doc-list-row ${doc.status === 'hidden' ? 'is-hidden-doc' : ''}`} key={doc.id}>
               <button className={`hub-row hub-row-button ${selectedId === doc.id ? 'is-active' : ''}`} onClick={() => chooseDoc(doc.id)}>
-                <strong>{doc.title}</strong>
+                <strong>
+                  {doc.title}
+                  {doc.status === 'hidden' && <span className="hub-doc-hidden-badge">Hidden</span>}
+                </strong>
                 <span>{doc.category} / {doc.visibility}</span>
               </button>
+              {isPrivileged && (
+                <button
+                  className="hub-doc-share-button"
+                  type="button"
+                  onClick={() => toggleHidden(doc)}
+                  disabled={busyId === doc.id}
+                  aria-label={doc.status === 'hidden' ? `Unhide ${doc.title}` : `Hide ${doc.title}`}
+                  title={doc.status === 'hidden' ? 'Unhide document' : 'Hide document'}
+                >
+                  {doc.status === 'hidden' ? <Eye size={14} aria-hidden="true" /> : <EyeOff size={14} aria-hidden="true" />}
+                </button>
+              )}
               <button className="hub-doc-share-button" type="button" onClick={() => shareDoc(doc)} aria-label={`Share ${doc.title}`} title={`Share with ${doc.visibility === 'privileged' ? 'privileged Hub members' : 'Hub staff'}`}>
                 <Share2 size={14} aria-hidden="true" />
               </button>
+              {isPrivileged && (
+                <button
+                  className="hub-doc-share-button hub-doc-delete-button"
+                  type="button"
+                  onClick={() => deleteDoc(doc)}
+                  disabled={busyId === doc.id}
+                  aria-label={`Delete ${doc.title}`}
+                  title="Delete document"
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -168,6 +281,18 @@ export function DocsView({ accessToken, docs, reloadDocs, isPrivileged, canEdit,
             <button type="button" onClick={() => shareDoc(selected)}>
               <Share2 size={13} aria-hidden="true" /> Share
             </button>
+            {isPrivileged && (
+              <button type="button" onClick={() => toggleHidden(selected)} disabled={busyId === selected.id}>
+                {selected.status === 'hidden'
+                  ? <><Eye size={13} aria-hidden="true" /> Unhide</>
+                  : <><EyeOff size={13} aria-hidden="true" /> Hide</>}
+              </button>
+            )}
+            {isPrivileged && (
+              <button type="button" className="hub-doc-delete-button" onClick={() => deleteDoc(selected)} disabled={busyId === selected.id}>
+                <Trash2 size={13} aria-hidden="true" /> Delete
+              </button>
+            )}
           </div>
         )}
       >

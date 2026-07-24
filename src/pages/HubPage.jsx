@@ -100,10 +100,15 @@ export default function HubPage() {
     }
   }, [auth.accessToken]);
 
+  // Privileged viewers also pull hidden docs so they can unhide or delete them;
+  // everyone else only ever receives published docs from the API.
+  const docsPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
+  const docsEndpoint = docsPrivileged ? '/api/hub/docs?includeHidden=1' : '/api/hub/docs';
+
   const reloadDocs = useCallback(async () => {
-    const data = await api('/api/hub/docs', auth.accessToken);
+    const data = await api(docsEndpoint, auth.accessToken);
     setDocs(data.documents || []);
-  }, [auth.accessToken]);
+  }, [auth.accessToken, docsEndpoint]);
 
   const loadShellData = useCallback(async () => {
     if (!auth.accessToken || !profile) return;
@@ -111,7 +116,7 @@ export default function HubPage() {
     const start = todayIso();
     const [peopleData, docsData, calendarData, convData, shiftData] = await Promise.all([
       api('/api/hub/people', auth.accessToken),
-      api('/api/hub/docs', auth.accessToken),
+      api(docsEndpoint, auth.accessToken),
       api(`/api/hub/calendar?view=week&date=${start}`, auth.accessToken),
       api('/api/hub/conversations', auth.accessToken),
       api(`/api/hub/shifts?from=${start}&to=${addDays(start, 14)}`, auth.accessToken),
@@ -121,7 +126,7 @@ export default function HubPage() {
     setCalendar(calendarData.objects || []);
     setConversations(convData.conversations || []);
     setShifts(shiftData.shifts || []);
-  }, [auth.accessToken, profile]);
+  }, [auth.accessToken, profile, docsEndpoint]);
 
   useEffect(() => { loadProfile().catch(() => setProfileLoaded(true)); }, [loadProfile]);
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
@@ -161,7 +166,7 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [tabs[0], tabs[1], mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
+    ? [tabs[0], tabs[1], tabs[3], mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
     : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
   // Tabs a customer is allowed to land on; anything else falls back to Today.
   const customerTabIds = new Set(customerTabs.map((t) => t.id));
