@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FULLPAGE_PAGES } from '../../config/fullPageNav';
+import { FULLPAGE_PAGES, HEADER_CTA, HEADER_NAV } from '../../config/fullPageNav';
+import './header-nav.css';
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const navItems = FULLPAGE_PAGES.slice(1);
-  const isUpcomingRoute = location.pathname === '/julydinner';
-  const isShopRoute = location.pathname === '/sale';
-  const isLocalistRoute = location.pathname === '/localist';
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
@@ -19,172 +18,102 @@ export const Header = () => {
     };
   }, [isOpen]);
 
-  const handleNavigate = (index) => {
-    const page = FULLPAGE_PAGES[index];
-    if (!page) return;
-    const hash = page.id === 'home' ? '' : `#${page.id}`;
-    const target = hash ? `/${hash}` : '/';
+  // The home page's scroll-snap container reports the visible panel here. This
+  // replaced a DOM-mutation sync in FullPageDemoPage that queried
+  // `nav button[data-menu-btn]` while this nav rendered anchors — so it never
+  // matched and the active tab was never marked. React state, one source.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onPanel = (event) => {
+      const next = Number(event.detail);
+      if (Number.isFinite(next)) setActivePanel(next);
+    };
+    window.addEventListener('localeffort:panelchange', onPanel);
+    return () => window.removeEventListener('localeffort:panelchange', onPanel);
+  }, []);
 
-    if (location.pathname !== '/') {
-      navigate(target);
-      setIsOpen(false);
+  const isItemActive = (item) => {
+    if (item.pageIndex != null) return isHome && activePanel === item.pageIndex;
+    return location.pathname === item.href;
+  };
+
+  // Home-page panels scroll in place; everything else is a route.
+  const go = (item) => (event) => {
+    if (item.pageIndex == null) return; // let the anchor navigate normally
+    event.preventDefault();
+    setIsOpen(false);
+    if (!isHome) {
+      navigate(item.pageIndex === 0 ? '/' : { pathname: '/', hash: `#${item.id}` });
       return;
     }
-
-    if (typeof window !== 'undefined' && typeof window.scrollToPage === 'function') {
-      window.scrollToPage(index);
-    }
-
+    if (typeof window.scrollToPage === 'function') window.scrollToPage(item.pageIndex);
+    const hash = item.pageIndex === 0 ? '' : `#${item.id}`;
     if (hash) {
-      if (location.hash !== hash) {
-        navigate({ pathname: '/', hash }, { replace: true });
-      }
+      if (location.hash !== hash) navigate({ pathname: '/', hash }, { replace: true });
     } else if (location.hash) {
       navigate({ pathname: '/' }, { replace: true });
     }
+  };
 
+  const goHome = (event) => {
+    event.preventDefault();
     setIsOpen(false);
-  };
-
-  const handleHoverOn = (event) => {
-    if (event.currentTarget.dataset.active === 'true') return;
-    event.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)';
-    event.currentTarget.style.color = 'var(--color-text-primary)';
-  };
-
-  const handleHoverOff = (event) => {
-    if (event.currentTarget.dataset.active === 'true') return;
-    event.currentTarget.style.backgroundColor = 'transparent';
-    event.currentTarget.style.color = 'var(--color-text-primary)';
+    if (!isHome) { navigate('/'); return; }
+    if (typeof window.scrollToPage === 'function') window.scrollToPage(0);
+    if (location.hash) navigate({ pathname: '/' }, { replace: true });
   };
 
   return (
-    <header
-      className="fixed left-0 right-0 z-50 shadow-sm"
-      style={{
-        top: 'var(--announcement-offset, 0px)',
-        backgroundColor: 'var(--color-bg-page)',
-        borderBottom: '1px solid var(--color-border-default)',
-      }}
-    >
-      <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-        <button
-          type="button"
-          onClick={() => handleNavigate(0)}
-          className="flex min-w-0 items-center gap-3"
-        >
+    <header className="le-header">
+      <div className="le-header__bar">
+        <a href="/" className="le-header__brand" onClick={goHome}>
           <motion.span
-            className="text-lg font-bold sm:text-xl lg:text-2xl"
-            style={{
-              color: 'var(--color-text-primary)',
-              fontFamily: "'National Park', 'General Sans', sans-serif",
-              fontWeight: 700,
-              letterSpacing: 0,
-              lineHeight: 1,
-            }}
-            whileHover={{ scale: 1.03 }}
+            className="le-header__wordmark"
+            whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             Local Effort Cooperative
           </motion.span>
-          <span
-            className="hidden text-sm font-medium xl:inline"
-            style={{
-              color: 'var(--color-text-primary)',
-              fontFamily: "'Office Code Pro', monospace",
-            }}
-          >
-            always mostly local
-          </span>
-        </button>
+          <span className="le-header__tagline">always mostly local</span>
+        </a>
 
-        <nav className="hidden lg:flex gap-1">
-          {navItems.map((page, index) => {
-            const pageIndex = index + 1;
-            const href = `/#${page.id}`;
+        <nav className="le-header__nav" aria-label="Main">
+          {HEADER_NAV.map((item) => {
+            const active = isItemActive(item);
             return (
               <a
-                key={page.id}
-                href={href}
-                data-menu-btn
-                data-page-index={pageIndex}
-                data-active="false"
-                onClick={(e) => { e.preventDefault(); handleNavigate(pageIndex); }}
-                className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: "'Office Code Pro', monospace",
-                  textDecoration: 'none',
-                }}
-                onMouseEnter={handleHoverOn}
-                onMouseLeave={handleHoverOff}
+                key={item.id}
+                href={item.href}
+                onClick={go(item)}
+                className="le-nav-item"
+                aria-current={active ? 'page' : undefined}
+                data-active={active ? 'true' : 'false'}
+                style={{ '--nav-accent': item.accent }}
               >
-                {page.label}
+                <span className="le-nav-item__label">{item.label}</span>
+                <span className="le-nav-item__note">{item.note}</span>
               </a>
             );
           })}
-          <Link
-            to="/julydinner"
-            data-active={isUpcomingRoute ? 'true' : 'false'}
-            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
-            style={{
-              backgroundColor: isUpcomingRoute ? 'var(--color-bg-secondary)' : 'transparent',
-              color: 'var(--color-text-primary)',
-              fontFamily: "'Office Code Pro', monospace",
-              textDecoration: 'none',
-            }}
-            onMouseEnter={handleHoverOn}
-            onMouseLeave={handleHoverOff}
+          <a
+            href={HEADER_CTA.href}
+            className="le-nav-cta"
+            aria-current={location.pathname === HEADER_CTA.href ? 'page' : undefined}
+            data-active={location.pathname === HEADER_CTA.href ? 'true' : 'false'}
           >
-            Upcoming
-          </Link>
-          <Link
-            to="/sale"
-            data-active={isShopRoute ? 'true' : 'false'}
-            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
-            style={{
-              backgroundColor: isShopRoute ? 'var(--color-bg-secondary)' : 'transparent',
-              color: 'var(--color-text-primary)',
-              fontFamily: "'Office Code Pro', monospace",
-              textDecoration: 'none',
-            }}
-            onMouseEnter={handleHoverOn}
-            onMouseLeave={handleHoverOff}
-          >
-            Shop
-          </Link>
-          <Link
-            to="/localist"
-            data-active={isLocalistRoute ? 'true' : 'false'}
-            className="px-4 py-2 rounded-md text-sm font-medium transition-all group"
-            style={{
-              backgroundColor: isLocalistRoute ? 'var(--color-bg-secondary)' : 'transparent',
-              color: 'var(--color-text-primary)',
-              fontFamily: "'Office Code Pro', monospace",
-              textDecoration: 'none',
-            }}
-            onMouseEnter={handleHoverOn}
-            onMouseLeave={handleHoverOff}
-          >
-            Become a Localist
-          </Link>
+            {HEADER_CTA.label}
+          </a>
         </nav>
 
         <button
           onClick={() => setIsOpen((v) => !v)}
-          className="z-50 flex h-7 w-9 flex-col justify-between lg:hidden"
+          className="le-header__burger"
           aria-label="Toggle menu"
+          aria-expanded={isOpen}
         >
-          <span
-            className={`block h-0.5 w-full bg-slate-900 transition-transform ${isOpen ? 'rotate-45 translate-y-[10px]' : ''}`}
-          />
-          <span
-            className={`block h-0.5 w-full bg-slate-900 transition-opacity ${isOpen ? 'opacity-0' : 'opacity-100'}`}
-          />
-          <span
-            className={`block h-0.5 w-full bg-slate-900 transition-transform ${isOpen ? '-rotate-45 -translate-y-[10px]' : ''}`}
-          />
+          <span className={isOpen ? 'is-open' : ''} />
+          <span className={isOpen ? 'is-open' : ''} />
+          <span className={isOpen ? 'is-open' : ''} />
         </button>
       </div>
 
@@ -194,7 +123,8 @@ export const Header = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[var(--color-bg-page)] lg:hidden"
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="le-header__sheet"
           >
             <motion.nav
               initial="hidden"
@@ -202,51 +132,40 @@ export const Header = () => {
               exit="hidden"
               variants={{
                 hidden: { opacity: 0 },
-                show: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.08, delayChildren: 0.12 },
-                },
+                show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
               }}
-              className="flex flex-col items-center justify-center h-full space-y-6 px-6"
+              aria-label="Main"
             >
-              {FULLPAGE_PAGES.map((page, index) => (
+              <motion.a
+                href="/"
+                onClick={goHome}
+                className="le-sheet-item"
+                style={{ '--nav-accent': 'var(--brand-bridge)' }}
+                variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+              >
+                <span className="le-sheet-item__label">{FULLPAGE_PAGES[0].label}</span>
+                <span className="le-sheet-item__note">the photo wall</span>
+              </motion.a>
+              {HEADER_NAV.map((item) => (
                 <motion.a
-                  key={page.id}
-                  href={page.id === 'home' ? '/' : `/#${page.id}`}
-                  onClick={(e) => { e.preventDefault(); handleNavigate(index); }}
-                  className="text-3xl uppercase text-center text-slate-900"
-                  style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
-                  variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                  key={item.id}
+                  href={item.href}
+                  onClick={go(item)}
+                  className="le-sheet-item"
+                  data-active={isItemActive(item) ? 'true' : 'false'}
+                  style={{ '--nav-accent': item.accent }}
+                  variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
                 >
-                  {page.label}
+                  <span className="le-sheet-item__label">{item.label}</span>
+                  <span className="le-sheet-item__note">{item.note}</span>
                 </motion.a>
               ))}
               <motion.a
-                href="/julydinner"
-                onClick={(e) => { e.preventDefault(); navigate('/julydinner'); setIsOpen(false); }}
-                className="text-3xl uppercase text-center text-slate-900"
-                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
-                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                href={HEADER_CTA.href}
+                className="le-sheet-cta"
+                variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
-                Upcoming
-              </motion.a>
-              <motion.a
-                href="/sale"
-                onClick={(e) => { e.preventDefault(); navigate('/sale'); setIsOpen(false); }}
-                className="text-3xl uppercase text-center text-slate-900"
-                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
-                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
-              >
-                Shop
-              </motion.a>
-              <motion.a
-                href="/localist"
-                onClick={(e) => { e.preventDefault(); navigate('/localist'); setIsOpen(false); }}
-                className="text-3xl uppercase text-center text-slate-900"
-                style={{ fontFamily: "'Office Code Pro', monospace", textDecoration: 'none' }}
-                variants={{ hidden: { y: 10, opacity: 0 }, show: { y: 0, opacity: 1 } }}
-              >
-                Become a Localist
+                {HEADER_CTA.label}
               </motion.a>
             </motion.nav>
           </motion.div>

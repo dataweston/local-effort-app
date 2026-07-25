@@ -1,0 +1,189 @@
+/* Standalone service pages (/weekly-meals, /small-events)
+   ------------------------------------------------------
+   These two offers used to be panels inside the home page's horizontal
+   scroll-snap container. Broken out into real URLs, they need a normal
+   vertical document rhythm — but they keep the .ht-scope material system
+   (hand-ruled slip, one accent per subject, mono money) so a visitor who
+   arrives from search lands in the same world as the home page.
+
+   Direction: src/components/fullpage/HOME-TABS-DESIGN.md
+   Tokens: src/styles/home-tabs.css (--ht-*), src/styles/brand-tokens.css */
+
+.service-page {
+  background: var(--color-bg-section);
+  min-height: 100vh;
+}
+
+.service-page__body {
+  --service-gutter: clamp(1rem, 4vw, 50px);
+  --service-rhythm: clamp(2.75rem, 6vw, 5rem);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--service-gutter) clamp(3rem, 8vw, 6rem);
+}
+
+/* ── Hero: slip beside one big print ─────────────────────────────────── */
+
+.service-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+@media (min-width: 768px) {
+  .service-hero {
+    flex-direction: row;
+  }
+}
+
+.service-hero .ht-slip {
+  flex: 0 1 560px;
+}
+
+.service-hero__photo {
+  align-self: stretch;
+}
+
+/* ── Section headings shared by steps / pricing / faq ────────────────── */
+
+.service-page__body h2 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.45rem, 2.9vw, 2.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  color: var(--ht-ink);
+}
+
+.service-page__body h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: var(--ht-ink);
+}
+
+.service-page__body section > .ht-kicker {
+  margin-bottom: 0.1rem;
+}
+
+/* ── How it works: a numbered sequence, because it genuinely is one ──── */
+
+.service-steps {
+  margin-top: var(--service-rhythm);
+}
+
+.service-steps__intro {
+  max-width: 40rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-steps__list {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: service-step;
+}
+
+@media (min-width: 720px) {
+  .service-steps__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.service-steps__list > li {
+  position: relative;
+  padding-top: 1.75rem;
+  border-top: 1.5px solid var(--ht-accent);
+  counter-increment: service-step;
+}
+
+/* the step number is set in the ledger's mono, not a display numeral —
+   it is data about sequence, not decoration */
+.service-steps__list > li::before {
+  content: counter(service-step);
+  position: absolute;
+  top: 0.45rem;
+  left: 0;
+  font-family: var(--font-office-code);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--ht-accent-deep);
+}
+
+/* the small-events "three shapes" list is a taxonomy, not a sequence —
+   same rule, no number */
+.service-steps__list--plain > li::before {
+  content: none;
+}
+
+.service-steps__list p {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--ht-ink);
+}
+
+.service-steps__list .ht-facts {
+  margin: 0.35rem 0 0;
+}
+
+/* ── Pricing ledger ──────────────────────────────────────────────────── */
+
+.service-pricing {
+  margin-top: var(--service-rhythm);
+  max-width: 44rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--ht-paper);
+  border-radius: var(--ht-wobble-sm);
+}
+
+.service-pricing .ht-footnote {
+  margin-top: 0.9rem;
+}
+
+/* ── FAQ: same details/summary material as the recent-menu list ──────── */
+
+.service-faq {
+  margin-top: var(--service-rhythm);
+  max-width: 52rem;
+}
+
+.service-faq__list {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.service-faq__list .ht-recent-menu__body {
+  padding-bottom: 1rem;
+}
+
+/* ── Quote, gallery, close ───────────────────────────────────────────── */
+
+.service-quote {
+  margin-top: var(--service-rhythm);
+}
+
+.service-gallery {
+  margin-top: var(--service-rhythm);
+}
+
+.service-close {
+  margin-top: var(--service-rhythm);
+}
+
+.service-close .ht-slip {
+  max-width: 620px;
+}
+
+/* Reduced motion is inherited from home-tabs.css: the rules are pre-drawn
+   (these pages set .is-drawn on mount, so nothing waits on a scroll event)
+   and the only transitions left are 240ms hover/focus states. */

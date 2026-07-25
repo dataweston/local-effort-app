@@ -444,3 +444,59 @@
     transition: none !important;
   }
 }
+
+/* ── The argument for the model ────────────────────────────────────────
+   Set as a two-column read at desktop width so a four-paragraph case does
+   not become a wall. Same type scale as .lm-faq-answer.                */
+
+.lm-argument {
+  margin-top: 1.25rem;
+  max-width: 62rem;
+  columns: 1;
+  column-gap: 2.5rem;
+}
+
+@media (min-width: 860px) {
+  .lm-argument {
+    columns: 2;
+  }
+}
+
+.lm-argument p {
+  margin: 0 0 1rem;
+  break-inside: avoid;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.lm-argument p:last-child { margin-bottom: 0; }
+
+/* ── Post-signup: the membership page handoff ──────────────────────────
+   The single most useful thing we can give a brand-new member is the URL
+   of their own page, so it gets its own block inside the success state
+   rather than a sentence buried in the copy.                            */
+
+.lm-success-next {
+  margin-top: 1.5rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.lm-success-next-title {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.lm-success-next-copy {
+  margin: 0.6rem 0 1.1rem;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.lm-success-next .lm-waiver-fineprint {
+  margin-top: 0.8rem;
+}

@@ -20,14 +20,28 @@ export const useFullPageScroll = (sectionRefs, enableKeyboard = true, scrollDire
     if (index < 0 || index >= sectionRefs.length) return;
 
     const section = sectionRefs[index]?.current;
-    if (section) {
-      section.scrollIntoView({
-        behavior: 'smooth',
-        block: scrollDirection === 'horizontal' ? 'nearest' : 'start',
-        inline: scrollDirection === 'horizontal' ? 'start' : 'nearest'
-      });
-      setMoveDirection(index > activeSection ? 1 : -1);
+    if (!section) return;
+
+    // Horizontal mode drives the scroll container's own axis directly rather
+    // than using scrollIntoView. scrollIntoView with block:'nearest' is still
+    // free to move the *vertical* axis, and the container carries ~60px of
+    // phantom vertical overflow (100vh sections inside a 100vh flex row that
+    // reserves a horizontal scrollbar gutter). The result was that the first
+    // tab click set container.scrollTop to 60, shoving every panel up and
+    // exposing a 60px band of the page background under the fold.
+    if (scrollDirection === 'horizontal') {
+      const container = section.parentElement;
+      if (container) {
+        container.scrollTo({ left: section.offsetLeft, behavior: 'smooth' });
+        // Belt and braces: a focus inside a panel can still nudge the axis.
+        if (container.scrollTop !== 0) container.scrollTop = 0;
+      } else {
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      }
+    } else {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
+    setMoveDirection(index > activeSection ? 1 : -1);
   }, [sectionRefs, activeSection, scrollDirection]);
 
   // IntersectionObserver to track active section

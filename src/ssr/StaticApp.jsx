@@ -16,6 +16,10 @@ import FebruaryPage from '../pages/FebruaryPage';
 import JulyDinnerPage from '../pages/JulyDinnerPage';
 import ReturnPolicyPage from '../pages/ReturnPolicyPage';
 import OfficeCateringPage from '../pages/OfficeCateringPage';
+import WeeklyMealsPage from '../pages/WeeklyMealsPage';
+import SmallEventsPage from '../pages/SmallEventsPage';
+import LocalistPage from '../pages/LocalistPage';
+import MemberFundraisePage from '../pages/MemberFundraisePage';
 
 export default function StaticApp({ helmetContext }) {
   const location = useLocation();
@@ -40,6 +44,10 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/february" element={<FebruaryPage />} />
               <Route path="/julydinner" element={<JulyDinnerPage />} />
               <Route path="/office-catering" element={<OfficeCateringPage />} />
+              <Route path="/weekly-meals" element={<WeeklyMealsPage />} />
+              <Route path="/small-events" element={<SmallEventsPage />} />
+              <Route path="/localist" element={<LocalistPage />} />
+              <Route path="/308b-member" element={<MemberFundraisePage />} />
             </Routes>
           </main>
         </div>

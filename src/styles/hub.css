@@ -1631,3 +1631,228 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ── Membership: a Localist's own page ──────────────────────────────────
+   Perks, spending + the credit it earned, notes from us, and the 308B way
+   in. Uses the Hub's own tokens throughout — no new colours, no new radii.
+   Component: src/components/hub/HubMembershipView.jsx                   */
+
+.hub-membership {
+  display: grid;
+  gap: 16px;
+}
+
+.hub-membership__banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--hub-accent-bg);
+  border: 1px solid var(--hub-accent-soft);
+  border-radius: var(--hub-radius-lg);
+}
+.hub-membership__eyebrow {
+  margin: 0;
+  color: var(--hub-accent-strong);
+  font-size: 12.5px;
+}
+.hub-membership__banner h2 {
+  margin: 2px 0 0;
+  font-family: var(--hub-font-display);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--hub-ink);
+}
+.hub-membership__meta {
+  margin: 4px 0 0;
+  color: var(--hub-muted);
+  font-size: 13px;
+}
+
+.hub-membership__grid {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 1100px) {
+  .hub-membership__grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* ── Spending ── */
+
+.hub-membership__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 4px 16px 14px;
+}
+.hub-membership__stat-value {
+  display: block;
+  font-family: var(--hub-font-display);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--hub-ink);
+  font-variant-numeric: tabular-nums;
+}
+.hub-membership__stat-label {
+  display: block;
+  margin-top: 2px;
+  color: var(--hub-muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.hub-membership__credit {
+  margin: 0 16px 14px;
+  padding: 11px 13px;
+  background: var(--hub-accent-bg);
+  border-radius: var(--hub-radius-sm);
+  color: var(--hub-ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.hub-membership__credit strong { font-variant-numeric: tabular-nums; }
+.hub-membership__credit-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--hub-muted);
+  font-size: 12.5px;
+}
+
+.hub-membership__orders {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 14px;
+  display: grid;
+  gap: 2px;
+}
+.hub-membership__orders li {
+  display: grid;
+  grid-template-columns: 84px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--hub-border-light);
+  font-size: 13px;
+}
+.hub-membership__orders li:last-child { border-bottom: none; }
+.hub-membership__order-date { color: var(--hub-muted); font-variant-numeric: tabular-nums; }
+.hub-membership__order-meta { color: var(--hub-muted); }
+.hub-membership__order-total {
+  color: var(--hub-ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.hub-membership__orders a { color: var(--hub-muted); display: inline-flex; }
+.hub-membership__orders a:hover { color: var(--hub-accent-strong); }
+
+.hub-membership__hint {
+  margin: 0;
+  padding: 0 16px 14px;
+  color: var(--hub-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Perks ── */
+
+.hub-membership__perks {
+  list-style: none;
+  margin: 0;
+  padding: 4px 16px 14px;
+  display: grid;
+  gap: 13px;
+}
+.hub-membership__perks li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.hub-membership__perks svg { color: var(--hub-accent); margin-top: 2px; }
+.hub-membership__perks strong {
+  font-family: var(--hub-font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hub-ink);
+}
+.hub-membership__perks p {
+  margin: 2px 0 0;
+  color: var(--hub-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Messages from us ── */
+
+.hub-membership__messages {
+  list-style: none;
+  margin: 0;
+  padding: 4px 16px 14px;
+  display: grid;
+  gap: 14px;
+}
+.hub-membership__messages li {
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--hub-border-light);
+}
+.hub-membership__messages li:last-child { border-bottom: none; padding-bottom: 0; }
+.hub-membership__message-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hub-membership__message-head strong {
+  font-family: var(--hub-font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--hub-ink);
+}
+.hub-membership__message-head span {
+  color: var(--hub-muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.hub-membership__message-summary {
+  margin: 4px 0 0;
+  color: var(--hub-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── 308B ── */
+
+.hub-membership__308b-copy {
+  margin: 4px 16px 12px;
+  color: var(--hub-ink);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.hub-membership__308b-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 16px;
+  padding: 9px 15px;
+  min-height: 40px;
+  background: var(--hub-accent);
+  color: var(--hub-accent-text);
+  border-radius: var(--hub-radius-sm);
+  font-family: var(--hub-font-display);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--hub-dur-fast) var(--hub-ease);
+}
+.hub-membership__308b-cta:hover { background: var(--hub-accent-strong); }
+.hub-membership__308b-cta + .hub-membership__hint { padding-top: 10px; }
+
+@media (max-width: 700px) {
+  .hub-membership__stats { grid-template-columns: 1fr 1fr; }
+  .hub-membership__orders li { grid-template-columns: 1fr auto auto; }
+  .hub-membership__order-meta { display: none; }
+}

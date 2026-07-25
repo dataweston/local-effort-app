@@ -1,8 +1,37 @@
-# Home tabs (weekly meals / small events / for businesses / local pizza) — design direction
+# Service surfaces (weekly meals / small events / for businesses / local pizza) — design direction
 
-Four tabs, one job each: start a meal-prep signup, request an event date,
+Four offers, one job each: start a meal-prep signup, request an event date,
 unlock the wholesale menu, book a pizza party. The booking form is the
-destination on every tab — everything else walks the visitor toward it.
+destination on every one — everything else walks the visitor toward it.
+
+## Where they live (changed 2026-07-24)
+
+Weekly Meals and Small Events are no longer panels on `/`. They are standalone
+indexable pages so each offer has its own URL, canonical, and JSON-LD:
+
+| offer | surface | accent |
+|---|---|---|
+| weekly meals | `/weekly-meals` (`src/pages/WeeklyMealsPage.jsx`) | olive |
+| small events | `/small-events` (`src/pages/SmallEventsPage.jsx`) | rose |
+| for businesses | `/` panel 3 | ink |
+| local pizza | `/` panel 2 | hearth |
+| membership | `/localist` | — |
+| member capital | `/308b-member` (`src/pages/MemberFundraisePage.jsx`) | ink (receipt) |
+
+`/` is now four panels — Home, Local Pizza, For Business, About
+(`src/config/fullPageNav.js`). Its home panel carries a funnel band
+(`.ho-*`, `src/styles/home-offers.css`) that names the three consumer offers and
+links out; it does **not** duplicate their content, so nothing competes for the
+same query. The photo wall below the band is deliberately unchanged.
+
+The slip forms are shared, not copied: `src/components/services/slipForms.jsx`
+exports `QuickEventBookForm` and `MealPrepQuickStart`, used by both the
+standalone pages and the Local Pizza panel. The standalone pages add a vertical
+document rhythm on top of `.ht-scope` via `src/styles/service-page.css`.
+
+Adding a public page needs three files in step or it 404s in production:
+`src/config/routes.js`, `src/ssr/StaticApp.jsx`, and a committed `vercel.json`
+rewrite. The build-time route sync does not run on Vercel.
 
 ## Thesis
 
@@ -43,24 +72,45 @@ The business tab is the exception that proves the wobble: its slip is a
 **receipt** — straight 2px edges, one heavy ink top rule, mono kicker and
 labels, prices in dashed-underline ledger rows. No wobble inside it.
 
-## Composition per tab
+## Composition per surface
 
-1. **Weekly meals** — slip left on the bridge background, the first gallery
-   photo promoted to a hero print beside it (`.ht-hero-photo`), masonry
-   photo columns below (`.ht-polaroid` leans each card ±0.4°, echoing the
-   home tab's loose snapshots). Submitting the quick form auto-sends the
-   intake-form email (Brevo template 27, same as the waitlist).
-2. **Small events** — a horizontal slip (`.ht-slip--wide` + `.ht-slip-cols`)
-   banded across the top third of the full-bleed photo so the image stays
-   in view: copy left, date-first form right. Testimonial reset as a
-   General Sans margin quote with a Yomogi attribution.
-3. **For businesses** — the receipt. Wholesale only (consulting/collabs
-   removed per client, 2026-07). Three starting prices as ledger rows; the
-   email gate is one written line; the unlocked menu renders as more
-   ledger rows.
-4. **Local pizza** — slip left over the pizza photo; the Yomogi ingredient
-   note (grande / bakers field / dei fratelli) sits at the head of the
+1. **Weekly meals** (`/weekly-meals`) — slip left with a hero print beside it
+   (`.ht-hero-photo`, with a hardcoded Cloudinary fallback so the fold is never
+   half-empty when the gallery API is slow), then a three-step "how it works",
+   the real recent menus as proof, a pricing ledger, an FAQ, photos, and the
+   form again at the close. Submitting the quick form auto-sends the intake-form
+   email (Brevo template 27, same as the waitlist).
+2. **Small events** (`/small-events`) — slip left over the full-bleed event
+   photo, then the three shapes an event takes (dinner party / celebration /
+   office), the testimonial as a General Sans margin quote with a Yomogi
+   attribution, how-it-works, FAQ, photos, and the form again at the close.
+3. **For businesses** (`/` panel 3) — the receipt. Wholesale only
+   (consulting/collabs removed per client, 2026-07). Three starting prices as
+   ledger rows; the email gate is one written line; the unlocked menu renders as
+   more ledger rows. The hero is a `cover` background — it was a `no-repeat`
+   floating rectangle that left ~45% of the panel empty.
+4. **Local pizza** (`/` panel 2) — slip left over the pizza photo; the Yomogi
+   ingredient note (grande / bakers field / dei fratelli) sits at the head of the
    photo grid below.
+5. **About** (`/` panel 4) — brought onto this system in 2026-07. It had been
+   missed: a centred rounded card with an 18/32 shadow, 0.24em uppercase
+   eyebrows, and `.about-tab { font-family: var(--font-office-code) }` putting
+   every paragraph of prose in monospace. Now paper slips, a hand kicker with a
+   drawn olive rule, prose in Source Sans, and the newsletter as a slip instead
+   of a slate Tailwind card.
+
+## Header
+
+Menu titles are differentiated rather than interchangeable: each carries a
+one-word descriptor (Yomogi) and the accent of its destination as a hairline
+that draws on hover and holds when active. Membership is the only item styled as
+an action. Config in `src/config/fullPageNav.js` (`HEADER_NAV`, `HEADER_CTA`),
+styles in `src/components/layout/header-nav.css`.
+
+The active panel reaches the header through a `localeffort:panelchange` window
+event. The previous mechanism inline-styled `nav button[data-menu-btn]` from
+FullPageDemoPage, but the header renders anchors — so it never matched and the
+active tab was never marked at all.
 
 One Yomogi margin note per tab, maximum. Secondary paths are dashed
 underlines, never buttons.
@@ -102,5 +152,24 @@ underlines, never buttons.
 Slips go full-width under 640px, form rows collapse to one column, inputs
 keep the 44px touch floor and 16px font (no iOS zoom). The gallery photos'
 ±0.4° lean is transform-only and static — it reads as texture, not motion.
+Header descriptors drop between 1024px and 1280px where the row gets tight; the
+accents stay. Below 1024px the sheet carries each accent as a left tick.
+
 Known dev quirk (pre-existing): Vite serves root `api/*.js` files as text
-instead of proxying, so gallery photos only populate in production.
+instead of proxying, so gallery photos only populate in production — the home
+panel reads "No images found" locally.
+
+## Structural fixes made alongside (2026-07-24)
+
+- `.fullpage-container` is `overflow-y: clip`, not `hidden`. `hidden` still
+  permits *programmatic* vertical scrolling, and `scrollIntoView` was driving
+  `scrollTop` to ~60px, shoving every panel up and exposing a 60px band of page
+  background under the fold on every tab. `useFullPageScroll` now drives
+  `container.scrollTo({ left })` directly in horizontal mode.
+- `.fullpage-section` is `height: 100%`, not `100vh` — a viewport-unit height
+  inside a viewport-height flex row overflows by whatever the container's borders
+  and scrollbar gutter consume.
+- `.announcement-bar` is `display: block`, not `flex`. As flex items the
+  whitespace-only text nodes around its highlighted `<span>` collapsed, so it
+  rendered "TRY**LOCAL PIZZA**AND MORE". Its `min-height` is 56px to match
+  `ANNOUNCEMENT_HEIGHT` in the JSX, which was disagreeing with a 40px CSS height.

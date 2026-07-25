@@ -5,6 +5,16 @@ const { getSquareClient } = require('../_lib/squareClient');
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
 const TIER_PRICING_CENTS = { monthly: 4500, annual: 37500 };
+
+// Where a new member goes to see their perks, spending, notes from us, and the
+// 308B offerings. Returned to the client so the signup success state can link
+// straight through. Component: src/components/hub/HubMembershipView.jsx
+//
+// Read per-call, not at module scope: this file is required at the top of
+// backend/api/index.js, and a caller that configures dotenv after that require
+// would otherwise bake in the fallback for the life of the process.
+const membershipUrl = () =>
+  `${process.env.PUBLIC_SITE_URL || 'https://www.localeffortfood.com'}/hub/membership`;
 const TIER_LABELS = {
   monthly: 'Localist membership — monthly',
   annual: 'Localist membership — annual',
@@ -132,6 +142,10 @@ async function notifyTeam({ apiKey, name, email, phone, tier, squareInvoiceId })
       : tier === 'waived'
         ? '<p>Cost-waived membership — no invoice needed, just the welcome.</p>'
         : '<p>No Square invoice could be staged — create one manually.</p>',
+    // NOTE: there is deliberately no member-facing welcome email from here yet.
+    // Member-facing sends must be dry-run to the owner before shipping (see
+    // AGENTS.md). Until that happens, send this link by hand with the invoice.
+    `<p>Their membership page: <a href="${membershipUrl()}">${membershipUrl()}</a></p>`,
   ];
   await fetch(`${BREVO_API_BASE}/smtp/email`, {
     method: 'POST',
@@ -320,7 +334,7 @@ module.exports = async (req, res) => {
     }
 
     console.log(`[localist/subscribe] subscribed: ${mobilePhone}${tier ? ` (tier: ${tier})` : ''}${isDuplicate ? ' (existing contact)' : ''}`);
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, membershipUrl: membershipUrl() });
   } catch (error) {
     console.error('[localist/subscribe] error:', error.message);
     return res.status(500).json({ error: 'internal-error' });

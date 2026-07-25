@@ -296,7 +296,12 @@ h2 {
   width: 100vw;
   height: 100vh;
   overflow-x: scroll;
-  overflow-y: hidden;
+  /* clip, not hidden: `hidden` still permits *programmatic* vertical scrolling,
+     and scrollIntoView/focus were driving scrollTop to ~60px — which shoved
+     every panel up and exposed a band of page background under the fold.
+     `clip` creates no scroll container on this axis, so nothing can move it.
+     Each panel keeps its own overflow-y:auto for its content. */
+  overflow-y: clip;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   display: flex;
@@ -306,19 +311,14 @@ h2 {
 .fullpage-section {
   min-width: 100vw;
   width: 100vw;
-  height: 100vh;
+  /* 100% of the container's content box, not 100vh — a viewport-unit height
+     inside a viewport-height flex row overflows by whatever the container's
+     borders and scrollbar gutter consume, which is where that band came from. */
+  height: 100%;
   flex-shrink: 0;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow-y: auto;
-}
-
-/* Mobile: Dynamic viewport height for browser UI */
-@media (max-width: 768px) {
-  .fullpage-section {
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height fallback */
-  }
 }
 
 /* Hide scrollbar but keep functionality */

@@ -8,6 +8,7 @@ import {
   LogOut,
   MessageSquare,
   RefreshCw,
+  BadgeCheck,
   ShieldCheck,
   ShoppingCart,
   Soup,
@@ -27,6 +28,7 @@ import { WeeklyMealPrepView } from '../components/hub/HubMealPrepView';
 import { FoodInputsView } from '../components/hub/HubFoodInputsView';
 import { PrivilegedTools } from '../components/hub/HubPrivilegedTools';
 import { LocalistClosedScreen, LocalistGuestShell, LocalistView } from '../components/hub/HubLocalistView';
+import { MembershipView } from '../components/hub/HubMembershipView';
 import { SecurityGuestShell, SecurityView } from '../components/hub/HubSecurityView';
 import '../styles/hub.css';
 
@@ -56,10 +58,12 @@ export default function HubPage() {
   const isSecurityRoute = hubPath === '/hub/security';
   const isInputsRoute = hubPath === '/hub/inputs';
   const isEconomicsRoute = hubPath === '/hub/economics';
+  // /hub/membership is the link a new Localist gets in their signup email.
+  const isMembershipRoute = hubPath === '/hub/membership' || hubPath === '/hub/member';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : sharedDocId ? 'docs' : 'today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : isMembershipRoute ? 'membership' : sharedDocId ? 'docs' : 'today');
   // Privileged-only "view as" override: see the whole Hub as a staff or customer
   // would. null = view with your real (privileged) access. Production-safe: only
   // a genuinely privileged profile can set this; it never elevates access.
@@ -145,24 +149,27 @@ export default function HubPage() {
   const isCustomer = actualIsCustomer || effectiveViewAs === 'customer';
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
+  const membershipTab = { id: 'membership', label: 'Membership', icon: BadgeCheck };
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
   // Customer-visible tabs are intentionally limited to their own household data.
   // Chat and People remain staff-only so customers cannot enumerate member names.
+  // Membership is self-scoped (GET /api/hub/membership resolves the viewer's own
+  // email), so both customers and localists get it.
   const todayTab = tabs[0];
-  const customerTabs = [todayTab, mealPrepTab, foodInputsTab];
+  const customerTabs = [todayTab, mealPrepTab, foodInputsTab, membershipTab];
   const navTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
-    ? [localistTab]
+    ? [localistTab, membershipTab]
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [...tabs, mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
-    : [...tabs, mealPrepTab, foodInputsTab, localistTab, securityTab];
+    ? [...tabs, mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, membershipTab, securityTab]
+    : [...tabs, mealPrepTab, foodInputsTab, localistTab, membershipTab, securityTab];
   const mobileNavTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
-    ? [localistTab]
+    ? [localistTab, membershipTab]
     : isCustomer
     ? customerTabs
     : isPrivileged
@@ -170,10 +177,11 @@ export default function HubPage() {
     : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
   // Tabs a customer is allowed to land on; anything else falls back to Today.
   const customerTabIds = new Set(customerTabs.map((t) => t.id));
+  const localistTabIds = new Set(['localist', 'membership']);
   const activeTab = isInputsRoute
     ? 'foodInputs'
     : isLocalist
-    ? 'localist'
+    ? (localistTabIds.has(tab) ? tab : 'localist')
     : isCustomer
     ? (sharedDocId ? 'docs' : customerTabIds.has(tab) ? tab : 'today')
     : !isPrivileged && tab === 'economics'
@@ -297,6 +305,7 @@ export default function HubPage() {
         {activeTab === 'economics' && isPrivileged && <EconomicsModelView accessToken={auth.accessToken} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
+        {activeTab === 'membership' && <MembershipView accessToken={auth.accessToken} />}
         {activeTab === 'security' && <SecurityView />}
       </main>
 

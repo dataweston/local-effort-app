@@ -1428,6 +1428,15 @@ app.all('/api/hub/invites', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/membership', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/membership')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub membership handler failed');
+    next(err);
+  }
+});
+
 app.all('/api/hub/localist-window', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/localist-window')(req, res);

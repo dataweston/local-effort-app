@@ -51,6 +51,9 @@ const HubPage = lazy(() => import('./pages/HubPage'));
 const LocalistPage = lazy(() => import('./pages/LocalistPage'));
 const ReturnPolicyPage = lazy(() => import('./pages/ReturnPolicyPage'));
 const OfficeCateringPage = lazy(() => import('./pages/OfficeCateringPage'));
+const WeeklyMealsPage = lazy(() => import('./pages/WeeklyMealsPage'));
+const SmallEventsPage = lazy(() => import('./pages/SmallEventsPage'));
+const MemberFundraisePage = lazy(() => import('./pages/MemberFundraisePage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -107,6 +110,35 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                {/* Services broken out of the home page's tab format so each
+                    offer has its own indexable URL. */}
+                <Route
+                  path="/weekly-meals"
+                  element={
+                    <AnimatedPage>
+                      <WeeklyMealsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/small-events"
+                  element={
+                    <AnimatedPage>
+                      <SmallEventsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/308b-member"
+                  element={
+                    <AnimatedPage>
+                      <MemberFundraisePage />
+                    </AnimatedPage>
+                  }
+                />
+                {/* Old homepage hashes for the two broken-out services */}
+                <Route path="/weeklymeals" element={<Navigate to="/weekly-meals" replace />} />
+                <Route path="/smallevents" element={<Navigate to="/small-events" replace />} />
                 {/* Retired pages — redirect to home */}
                 <Route path="/about" element={<Navigate to="/" replace />} />
                 <Route path="/services" element={<Navigate to="/" replace />} />
@@ -114,7 +146,7 @@ const AppContent = () => {
                 <Route path="/crowdfunding" element={<Navigate to="/" replace />} />
                 <Route path="/pizzafunder" element={<Navigate to="/" replace />} />
                 <Route path="/menu" element={<Navigate to="/" replace />} />
-                <Route path="/meal-prep" element={<Navigate to="/" replace />} />
+                <Route path="/meal-prep" element={<Navigate to="/weekly-meals" replace />} />
                 <Route path="/gallery" element={<Navigate to="/" replace />} />
                 <Route path="/tiny-diner" element={<Navigate to="/" replace />} />
                 <Route path="/personal-chef-minneapolis" element={<Navigate to="/" replace />} />

@@ -92,8 +92,26 @@ export const PUBLIC_ROUTES = [
   {
     path: '/localist',
     title: 'Become a Localist — Membership | Local Effort Cooperative',
-    description: 'Become a Localist: membership in a Minneapolis workers cooperative. $45/month or $375/year — waived for anyone who needs it. Members get pickup menus, perks, and 4% back as credit every quarter.',
-    prerender: false,
+    description: 'Become a Localist: membership in a worker-owned Minneapolis food cooperative. Every staff member is offered equity. $45/month or $375/year — waived for anyone who needs it. Members get pickup menus, perks, and 4% back as credit every quarter.',
+    prerender: true,
+  },
+  {
+    path: '/weekly-meals',
+    title: 'Weekly Meal Prep Delivery in Minneapolis–St. Paul | Local Effort Cooperative',
+    description: 'Weekly personal-chef meal prep delivered across Minneapolis–St. Paul. Home-cooked dinners from $18 a person, breakfasts from $13.50, from Minnesota-grown ingredients. Sign up in under a minute.',
+    prerender: true,
+  },
+  {
+    path: '/small-events',
+    title: 'Private Event Catering in Minneapolis–St. Paul | Local Effort Cooperative',
+    description: 'Private chef catering for dinner parties, showers, weddings, and office parties across Minneapolis–St. Paul. Seasonal menus from 100% Midwest ingredients, 4–75 guests. Dinner parties from $850.',
+    prerender: true,
+  },
+  {
+    path: '/308b-member',
+    title: '308B Member Offerings — Invest in the Cooperative | Local Effort Cooperative',
+    description: 'Local Effort Cooperative is raising from its members under Minnesota Chapter 308B. Three member offerings: a kitchen equipment note, a local-farm purchasing fund, and patronage-linked member capital.',
+    prerender: true,
   },
   {
     path: '/office-catering',

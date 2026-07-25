@@ -1,0 +1,164 @@
+/* /308b-member — member capital offerings
+   ---------------------------------------
+   Runs on .ht-scope--business (the receipt: straight 2px edges, one heavy ink
+   top rule, mono ledger rows, no wobble) because a capital offering is a
+   financial document. Layout only lives here; every colour, rule, and duration
+   comes from home-tabs.css tokens.
+
+   Direction: src/components/fullpage/HOME-TABS-DESIGN.md */
+
+.mf-page {
+  background: var(--color-bg-page);
+}
+
+.mf-hero .ht-slip {
+  flex: 0 1 720px;
+}
+
+/* ── The three offerings ─────────────────────────────────────────────── */
+
+.mf-offerings {
+  margin-top: var(--service-rhythm);
+}
+
+.mf-grid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 860px) {
+  .mf-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* Same receipt material as .ht-scope--business .ht-slip: straight edge, one
+   heavy ink rule at the top, no shadow, no wobble. */
+.mf-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.35rem 1.5rem 1.5rem;
+  background: rgba(252, 251, 248, 0.95);
+  border-radius: 2px;
+  border-top: 3px solid var(--ht-ink);
+}
+
+.mf-card__head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1.2rem;
+  line-height: 1.15;
+  color: var(--ht-ink);
+}
+
+.mf-card__range {
+  margin: 0.3rem 0 0;
+  font-family: var(--font-office-code);
+  font-size: 0.84rem;
+  color: var(--ht-ink-soft);
+}
+
+.mf-card__terms {
+  margin-top: 1rem;
+}
+
+.mf-card__what,
+.mf-card__why {
+  margin: 0.9rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ht-ink);
+}
+
+.mf-card__why {
+  color: var(--ht-ink-soft);
+}
+
+/* auto pushes the CTA to the card floor so all three line up regardless of
+   how much copy each offering carries */
+.mf-card__cta {
+  margin-top: auto;
+  width: 100%;
+  font-size: 0.92rem;
+}
+
+.mf-card__why + .mf-card__cta {
+  margin-top: 1.25rem;
+}
+
+/* ── Why member money ────────────────────────────────────────────────── */
+
+.mf-why {
+  margin-top: var(--service-rhythm);
+  max-width: 56rem;
+}
+
+.mf-why__cols {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 760px) {
+  .mf-why__cols {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+.mf-why__cols p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--ht-ink);
+}
+
+/* ── Interest form ───────────────────────────────────────────────────── */
+
+.mf-interest {
+  margin-top: var(--service-rhythm);
+  scroll-margin-top: 6rem;
+}
+
+.mf-interest .ht-slip {
+  max-width: 660px;
+}
+
+.mf-interest textarea.ht-input {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+/* ── Disclosure: set small and plain, but not hidden ─────────────────── */
+
+.mf-disclosure {
+  margin-top: var(--service-rhythm);
+  max-width: 52rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ht-rule);
+}
+
+.mf-disclosure__title {
+  font-family: var(--font-office-code) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ht-ink-soft);
+}
+
+.mf-disclosure p {
+  margin: 0.8rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ht-ink-soft);
+}
+
+.mf-disclosure strong {
+  color: var(--ht-ink);
+}

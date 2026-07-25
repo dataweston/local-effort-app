@@ -323,6 +323,37 @@
       "dest": "/prerender/office-catering/index.html"
     },
     {
+      "src": "^/weekly-meals$",
+      "dest": "/prerender/weekly-meals/index.html"
+    },
+    {
+      "src": "^/small-events$",
+      "dest": "/prerender/small-events/index.html"
+    },
+    {
+      "src": "^/localist$",
+      "dest": "/prerender/localist/index.html"
+    },
+    {
+      "src": "^/308b-member$",
+      "dest": "/prerender/308b-member/index.html"
+    },
+    {
+      "src": "^/weeklymeals$",
+      "dest": "/weekly-meals",
+      "status": 308
+    },
+    {
+      "src": "^/smallevents$",
+      "dest": "/small-events",
+      "status": 308
+    },
+    {
+      "src": "^/meal-prep$",
+      "dest": "/weekly-meals",
+      "status": 308
+    },
+    {
       "src": "^/weekly$",
       "dest": "/blog",
       "status": 308

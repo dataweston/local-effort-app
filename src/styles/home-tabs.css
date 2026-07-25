@@ -54,6 +54,14 @@
   --ht-accent-wash: rgba(243, 92, 43, 0.12);
 }
 
+/* about — olive, the same accent as the vegetable week: this panel is about
+   where the food comes from and who owns the kitchen, not a fifth product */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--about {
+  --ht-accent: #7a846e;
+  --ht-accent-deep: #5a6350;
+  --ht-accent-wash: rgba(122, 132, 110, 0.14);
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope ::selection {
   background: var(--ht-accent);
   color: #fff;

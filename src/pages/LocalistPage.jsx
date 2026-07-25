@@ -22,6 +22,27 @@ const TIERS = {
 
 const FAQ_ITEMS = [
   {
+    q: 'What does my membership actually pay for?',
+    a: [
+      'Two things, and they are the same thing. It pays cooks a fair wage on a predictable schedule, and it lets us commit money to Minnesota farms early enough to matter — before a season, not after it.',
+      'A delivery app moves food that already exists. A cooperative decides how food gets grown and who gets paid to cook it. Your dues are a vote on both.',
+    ],
+  },
+  {
+    q: 'What makes this a cooperative and not just a small business?',
+    a: [
+      'Every person who works at Local Effort is offered equity ownership in the business. Not a bonus scheme, not a someday-maybe — an ownership stake in the thing they build with their hands.',
+      'We are organized under Minnesota Chapter 308B, the state cooperative statute. That is what makes worker ownership structural rather than a promise a founder can withdraw. Members can also put capital in directly through our 308B member offerings.',
+    ],
+  },
+  {
+    q: 'Why does that matter to me as a member?',
+    a: [
+      'Because who owns a kitchen determines what comes out of it. A kitchen owned by its cooks does not cut corners on labor to protect a margin, and it does not switch to cheaper industrial ingredients when someone upstairs wants a better quarter.',
+      'We think this model is going to spread, and we would rather be one of the businesses that proved it works than one that waited to see.',
+    ],
+  },
+  {
     q: 'Who should claim the waived membership?',
     a: [
       "Anyone for whom $45 a month is a real question. Fixed income, SNAP or EBT, a student budget, between jobs, caring for family, or any reason at all — if the fee is a barrier, it's waived. You don't owe us an explanation and we will never ask for proof.",
@@ -63,6 +84,13 @@ const FAQ_ITEMS = [
     q: 'Why is membership required for meal prep?',
     a: [
       'We’re a workers cooperative, not a delivery app. Cooking weekly for a household is a relationship, and membership is how we keep that circle steady — it lets the co-op plan, buy from local farms with confidence, and pay our worker-owners fairly. Every meal prep customer is a Localist first.',
+    ],
+  },
+  {
+    q: 'Can I put money into the co-op beyond dues?',
+    a: [
+      'Yes. Members can invest directly through our 308B member offerings — a kitchen equipment note, a fund that pays Minnesota farms at the front of the season, or a patronage-linked capital account that makes you a part-owner of the balance sheet.',
+      'You will find them on your membership page after you join. Nothing is charged from that page, and every offering states plainly what it can and cannot return.',
     ],
   },
 ];
@@ -128,6 +156,7 @@ const LocalistPage = () => {
   const [website, setWebsite] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [membershipUrl, setMembershipUrl] = useState('/hub/membership');
   const [images, setImages] = useState([]);
   const formRef = useRef(null);
   const pricingRef = useRef(null);
@@ -183,6 +212,9 @@ const LocalistPage = () => {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data?.error || 'Signup failed.');
+      // The API returns the member's own membership page; fall back to the
+      // relative path so the link is never missing.
+      setMembershipUrl(data?.membershipUrl || '/hub/membership');
       setStatus('success');
     } catch (err) {
       setStatus('error');
@@ -214,12 +246,18 @@ const LocalistPage = () => {
           <p className="lm-eyebrow">Local Effort Cooperative — Minneapolis</p>
           <h1 className="lm-hero-title">Become a Localist.</h1>
           <p className="lm-hero-copy">
-            Localists are the members of our workers cooperative. Your membership
-            keeps a small team of cooks employed at fair wages, keeps our buying
-            local, and puts you at the front of the line — subscriber pickup
-            menus, treats along the way, and money back every quarter. It&apos;s
-            also the front door to everything else we do: membership is required
-            to become a meal prep customer.
+            Localists are the members of a worker-owned food cooperative. Every
+            person who cooks here is offered equity ownership in the business —
+            that is the structure, not a perk. Your membership is what makes it
+            hold: it pays cooks fairly on a predictable schedule, and it lets us
+            commit money to Minnesota farms early enough to change what they
+            plant.
+          </p>
+          <p className="lm-hero-copy">
+            You get the front of the line for it — member pickup menus, perks
+            along the way, and 4% of your spending back every quarter. It is also
+            the front door to everything else we do: membership is required to
+            become a meal prep customer.
           </p>
           <div className="lm-hero-actions">
             <button type="button" className="lm-btn" onClick={() => scrollTo(pricingRef)}>
@@ -309,11 +347,56 @@ const LocalistPage = () => {
             <li className="lm-benefit">
               <span className="lm-benefit-marker">05</span>
               <span className="lm-benefit-body">
-                <strong>A cooperative that holds up.</strong> Your dues pay
-                worker-owners fairly and keep our purchasing with local farms.
+                <strong>Every cook here is offered ownership.</strong> Equity in
+                the business is open to every staff member, under Minnesota&apos;s
+                308B cooperative statute. Your dues fund a payroll that treats
+                that ownership as real.
+              </span>
+            </li>
+            <li className="lm-benefit">
+              <span className="lm-benefit-marker">06</span>
+              <span className="lm-benefit-body">
+                <strong>A say in the balance sheet, if you want one.</strong>{' '}
+                Members can invest directly through our 308B offerings — including
+                a fund that pays Minnesota farms at the front of the season.
               </span>
             </li>
           </ul>
+        </div>
+      </section>
+
+      {/* Why the model — the argument, made once, in the middle */}
+      <section className="lm-section">
+        <div className="lm-container">
+          <p className="lm-eyebrow">Why a cooperative</p>
+          <h2 className="lm-section-title">
+            Who owns a kitchen decides what comes out of it.
+          </h2>
+          <div className="lm-argument">
+            <p>
+              Most food businesses solve a cash problem by paying kitchen labor
+              less or by quietly swapping in cheaper industrial ingredients. Those
+              are the two levers, and they get pulled because the people who own
+              the business are not the people standing at the stove.
+            </p>
+            <p>
+              We took those levers off the table by changing who owns the place.
+              Local Effort is organized under Minnesota Chapter 308B, and equity
+              ownership is offered to every person who works here. Decisions about
+              wages and sourcing are made by people who live with both.
+            </p>
+            <p>
+              That is also why we buy the way we do. Committing to a Minnesota
+              farm before a season starts is more expensive and more risky than
+              buying on the spot market in August — and it is the only version of
+              &ldquo;local&rdquo; that actually changes what gets grown here.
+            </p>
+            <p>
+              We are not the first cooperative and we do not intend to be the
+              last. This is a model other food businesses can copy, and we would
+              rather be one of the ones that proved it pays than one that waited.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -362,6 +445,20 @@ const LocalistPage = () => {
                   A real human from the co-op will text or email you within a day
                   to confirm and get you set up.
                 </p>
+                <div className="lm-success-next">
+                  <p className="lm-success-next-title">Your membership page</p>
+                  <p className="lm-success-next-copy">
+                    Everything about your membership lives here: your perks, what
+                    you&apos;ve spent and the credit it earned, notes from us, and
+                    the 308B member offerings if you ever want to put capital in.
+                  </p>
+                  <a className="lm-btn" href={membershipUrl}>
+                    Open my membership page
+                  </a>
+                  <p className="lm-waiver-fineprint">
+                    Bookmark it. You&apos;ll sign in with the email you used above.
+                  </p>
+                </div>
               </div>
             ) : (
               <form className="le-checkout-form" onSubmit={handleSubmit} noValidate>
