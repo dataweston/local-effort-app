@@ -6,6 +6,17 @@ const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
 const TIER_PRICING_CENTS = { monthly: 4500, annual: 37500 };
 
+// Square subscription plan VARIATION ids — the object Checkout enrolls a buyer
+// into. Read per-call for the same dotenv-ordering reason as membershipUrl().
+// Absent (not yet created in the Square catalog), paid signups degrade to the
+// old behaviour: recorded, team notified, a human follows up. The page stays
+// functional; it upgrades to instant checkout the moment these are set.
+const planVariationId = (tier) =>
+  ({
+    monthly: process.env.SQUARE_LOCALIST_MONTHLY_PLAN_VARIATION_ID,
+    annual: process.env.SQUARE_LOCALIST_ANNUAL_PLAN_VARIATION_ID,
+  })[tier] || '';
+
 // Where a new member goes to see their perks, spending, notes from us, and the
 // 308B offerings. Returned to the client so the signup success state can link
 // straight through. Component: src/components/hub/HubMembershipView.jsx
@@ -13,8 +24,8 @@ const TIER_PRICING_CENTS = { monthly: 4500, annual: 37500 };
 // Read per-call, not at module scope: this file is required at the top of
 // backend/api/index.js, and a caller that configures dotenv after that require
 // would otherwise bake in the fallback for the life of the process.
-const membershipUrl = () =>
-  `${process.env.PUBLIC_SITE_URL || 'https://www.localeffortfood.com'}/hub/membership`;
+const siteUrl = () => process.env.PUBLIC_SITE_URL || 'https://www.localeffortfood.com';
+const membershipUrl = () => `${siteUrl()}/hub/membership`;
 const TIER_LABELS = {
   monthly: 'Localist membership — monthly',
   annual: 'Localist membership — annual',
@@ -23,16 +34,17 @@ const TIER_LABELS = {
 
 // Membership roster row in Supabase. Non-fatal: Brevo is the signup floor,
 // so a Supabase hiccup is logged and the signup still succeeds.
-async function recordMembership({ name, email, phone, tier, squareCustomerId, squareInvoiceId }) {
+async function recordMembership({ name, email, phone, tier, status, squareCustomerId, squareOrderId }) {
   const supabase = getSupabase();
   if (!supabase) return;
   const row = {
     name,
     phone,
     tier,
+    status: status || 'pending',
     email: email || null,
     square_customer_id: squareCustomerId || null,
-    square_invoice_id: squareInvoiceId || null,
+    square_order_id: squareOrderId || null,
     updated_at: new Date().toISOString(),
   };
   const { error } = await supabase
@@ -46,16 +58,25 @@ async function recordMembership({ name, email, phone, tier, squareCustomerId, sq
   }
 }
 
-// For paid tiers: find-or-create the Square customer and stage a DRAFT
-// invoice with ACH (bank transfer) and card enabled. The draft is NOT sent
-// from here — the co-op reviews and sends it from the Square dashboard,
-// which keeps the page's "no payment taken here" promise honest.
-async function prepareSquareBilling({ name, email, phone, tier }) {
+// For paid tiers: find-or-create the Square customer, then mint a Square-hosted
+// checkout link that both TAKES the first payment and ENROLLS the buyer in the
+// recurring subscription plan, in one page.
+//
+// This replaces an earlier flow that staged a DRAFT invoice for a human to send
+// from the Square dashboard. Signing up and paying were two disjoint events and
+// nothing happened until someone noticed the ops email; the co-op asked for them
+// merged (2026-07-26).
+//
+// Note the tradeoff that came with it: Checkout-hosted payment links do not
+// support ACH bank transfer (invoices do). The page's ACH copy was removed in
+// the same change rather than left making a promise checkout cannot keep.
+async function createSubscriptionCheckout({ name, email, phone, tier }) {
   const priceCents = TIER_PRICING_CENTS[tier];
   if (!priceCents) return {};
+  const variationId = planVariationId(tier);
   const { client, locationId } = getSquareClient();
   if (!client || !locationId) {
-    console.warn('[localist/subscribe] square unavailable; skipping billing prep');
+    console.warn('[localist/subscribe] square unavailable; skipping checkout');
     return {};
   }
 
@@ -87,64 +108,71 @@ async function prepareSquareBilling({ name, email, phone, tier }) {
   }
   if (!customerId) return {};
 
-  const orderRes = await client.ordersApi.createOrder({
+  // No plan configured yet => no checkout link. Deliberately not an error: the
+  // caller still records the member and pings the team, so the co-op keeps the
+  // signup and follows up by hand, exactly as before.
+  if (!variationId) {
+    console.warn(
+      `[localist/subscribe] no subscription plan variation for "${tier}"; ` +
+        'set SQUARE_LOCALIST_MONTHLY_PLAN_VARIATION_ID / SQUARE_LOCALIST_ANNUAL_PLAN_VARIATION_ID'
+    );
+    return { squareCustomerId: customerId };
+  }
+
+  const linkRes = await client.checkoutApi.createPaymentLink({
     idempotencyKey: crypto.randomUUID(),
+    description: TIER_LABELS[tier],
     order: {
       locationId,
       customerId,
-      lineItems: [
-        {
-          name: TIER_LABELS[tier],
-          quantity: '1',
-          basePriceMoney: { amount: priceCents, currency: 'USD' },
-        },
-      ],
+      lineItems: [{ quantity: '1', catalogObjectId: variationId }],
     },
-  });
-  const orderId = orderRes?.result?.order?.id;
-  if (!orderId) return { squareCustomerId: customerId };
-
-  const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const invoiceRes = await client.invoicesApi.createInvoice({
-    idempotencyKey: crypto.randomUUID(),
-    invoice: {
-      locationId,
-      orderId,
-      primaryRecipient: { customerId },
-      deliveryMethod: 'EMAIL',
-      title: TIER_LABELS[tier],
-      description:
-        'Welcome to the co-op. Bank transfer (ACH) is the fee-free way to pay — every processing dollar saved stays in the food. Card works too.',
-      paymentRequests: [{ requestType: 'BALANCE', dueDate }],
+    checkoutOptions: {
+      // Enrols the buyer in the recurring plan rather than charging once.
+      subscriptionPlanId: variationId,
+      allowTipping: false,
+      askForShippingAddress: false,
+      redirectUrl: `${siteUrl()}/localist?joined=${encodeURIComponent(tier)}`,
+      merchantSupportEmail:
+        process.env.SUPPORT_INBOX_EMAIL || process.env.SENDER_EMAIL || undefined,
       acceptedPaymentMethods: {
-        card: true,
-        bankAccount: true,
-        squareGiftCard: false,
-        buyNowPayLater: false,
-        cashAppPay: false,
+        applePay: true,
+        googlePay: true,
+        cashAppPay: true,
+        afterpayClearpay: false,
       },
     },
+    prePopulatedData: {
+      buyerEmail: email || undefined,
+      buyerPhoneNumber: phone || undefined,
+    },
+    paymentNote: `Localist membership (${tier})`,
   });
-  const squareInvoiceId = invoiceRes?.result?.invoice?.id || null;
-  return { squareCustomerId: customerId, squareInvoiceId };
+
+  const link = linkRes?.result?.paymentLink;
+  return {
+    squareCustomerId: customerId,
+    squareCheckoutUrl: link?.url || null,
+    squareOrderId: link?.orderId || null,
+  };
 }
 
 // Internal ops ping so a human follows up within the promised day.
-async function notifyTeam({ apiKey, name, email, phone, tier, squareInvoiceId }) {
+async function notifyTeam({ apiKey, name, email, phone, tier, squareCheckoutUrl }) {
   const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
   const senderEmail = process.env.SENDER_EMAIL || teamEmail;
   if (!teamEmail) return;
   const lines = [
     `<p>New Localist signup — <strong>${tier}</strong></p>`,
     `<p>Name: ${name}<br/>Phone: ${phone}${email ? `<br/>Email: ${email}` : ''}</p>`,
-    squareInvoiceId
-      ? '<p>A draft Square invoice (ACH + card) is staged — review and send it from the Square dashboard.</p>'
+    squareCheckoutUrl
+      ? '<p>They were sent straight to Square checkout to pay and start the subscription. Square confirms the payment — no action needed unless they drop off.</p>'
       : tier === 'waived'
-        ? '<p>Cost-waived membership — no invoice needed, just the welcome.</p>'
-        : '<p>No Square invoice could be staged — create one manually.</p>',
+        ? '<p>Cost-waived membership — nothing to bill, just the welcome.</p>'
+        : '<p><strong>No checkout link could be created</strong>, so they were NOT charged. Follow up by hand, and check that the Square subscription plan variation ids are configured.</p>',
     // NOTE: there is deliberately no member-facing welcome email from here yet.
     // Member-facing sends must be dry-run to the owner before shipping (see
-    // AGENTS.md). Until that happens, send this link by hand with the invoice.
+    // AGENTS.md). Until that happens, send this link by hand.
     `<p>Their membership page: <a href="${membershipUrl()}">${membershipUrl()}</a></p>`,
   ];
   await fetch(`${BREVO_API_BASE}/smtp/email`, {
@@ -290,21 +318,21 @@ module.exports = async (req, res) => {
     }
 
     // Membership program (tiered signups from /localist): roster row in
-    // Supabase, draft Square invoice for paid tiers, and an ops ping so a
+    // Supabase, a Square subscription checkout for paid tiers, and an ops ping so a
     // human follows up within the promised day. Each step is non-fatal —
     // the Brevo contact above is the signup floor.
+    let billing = {};
     if (tier && safeName) {
-      let billing = {};
       if (tier === 'monthly' || tier === 'annual') {
         try {
-          billing = await prepareSquareBilling({
+          billing = await createSubscriptionCheckout({
             name: safeName,
             email: safeEmail,
             phone: mobilePhone,
             tier,
           });
         } catch (error) {
-          console.error('[localist/subscribe] square billing prep failed:', error.message);
+          console.error('[localist/subscribe] square checkout creation failed:', error.message);
         }
       }
       try {
@@ -313,8 +341,9 @@ module.exports = async (req, res) => {
           email: safeEmail,
           phone: mobilePhone,
           tier,
+          status: billing.squareCheckoutUrl ? 'checkout_started' : 'pending',
           squareCustomerId: billing.squareCustomerId,
-          squareInvoiceId: billing.squareInvoiceId,
+          squareOrderId: billing.squareOrderId,
         });
       } catch (error) {
         console.error('[localist/subscribe] membership record failed:', error.message);
@@ -326,15 +355,22 @@ module.exports = async (req, res) => {
           email: safeEmail,
           phone: mobilePhone,
           tier,
-          squareInvoiceId: billing.squareInvoiceId,
+          squareCheckoutUrl: billing.squareCheckoutUrl,
         });
       } catch (error) {
         console.error('[localist/subscribe] team notification failed:', error.message);
       }
     }
 
-    console.log(`[localist/subscribe] subscribed: ${mobilePhone}${tier ? ` (tier: ${tier})` : ''}${isDuplicate ? ' (existing contact)' : ''}`);
-    return res.status(200).json({ ok: true, membershipUrl: membershipUrl() });
+    console.log(`[localist/subscribe] subscribed: ${mobilePhone}${tier ? ` (tier: ${tier})` : ''}${isDuplicate ? ' (existing contact)' : ''}${billing.squareCheckoutUrl ? ' → checkout' : ''}`);
+    // checkoutUrl present => the client sends them straight to Square to pay and
+    // subscribe. Absent (waived tier, or plans not configured) => the client
+    // shows the confirmation state and a human follows up.
+    return res.status(200).json({
+      ok: true,
+      membershipUrl: membershipUrl(),
+      checkoutUrl: billing.squareCheckoutUrl || null,
+    });
   } catch (error) {
     console.error('[localist/subscribe] error:', error.message);
     return res.status(500).json({ error: 'internal-error' });

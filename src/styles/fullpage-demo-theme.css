@@ -997,6 +997,103 @@ div:has(> .fullpage-demo-scope) > .bg-black\/60 {
   margin-top: 0.9rem;
 }
 
+/* ── Day one leadership ────────────────────────────────────────────────────
+   A masthead, not a card row. The portraits sit straight on the paper with no
+   border, radius or shadow, which is what keeps three-across from reading as
+   the generic feature-card grid this system removed everywhere else. Fixed
+   aspect ratio + width/height so faces crop consistently and nothing reflows
+   when the photos land.                                                     */
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leaders {
+  margin-top: 2.25rem;
+  max-width: 46rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leaders-kicker {
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+  color: var(--about-accent-deep);
+  margin: 0;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leaders-kicker::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 0.7rem;
+  background: var(--about-accent);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leaders-grid {
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leader-portrait {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center 28%;
+  border-radius: 0;
+  background: var(--color-bg-section);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leader-name {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leader-role {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-yomogi);
+  font-size: 0.9rem;
+  color: var(--about-accent-deep);
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .about-leader-bio {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 720px) {
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leaders-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  /* One column: the portrait no longer needs to carry a column, so it stops
+     being a tall block and sits beside the name like a byline photo. */
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leader {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    grid-template-areas:
+      'photo name'
+      'photo role'
+      'bio   bio';
+    column-gap: 0.9rem;
+    align-items: start;
+  }
+
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leader-portrait { grid-area: photo; }
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leader-name { grid-area: name; margin-top: 0; }
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leader-role { grid-area: role; }
+  :where(.fullpage-demo, .fullpage-demo-scope) .about-leader-bio { grid-area: bio; margin-top: 0.7rem; }
+}
+
 /* prose is prose everywhere on this panel; only true data keeps the mono */
 :where(.fullpage-demo, .fullpage-demo-scope) .about-tab {
   font-family: var(--font-body);

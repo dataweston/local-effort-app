@@ -3063,16 +3063,9 @@ const normalizeMealStyle = (value) =>
           style={{ backgroundColor: BRAND_TOKENS.bgSection }}
         >
           <div className={`about-tab ht-scope ht-scope--about relative w-full h-full pt-20 overflow-y-auto${visitedPages.has(3) ? ' is-drawn' : ''}`}>
-            {/* was object-contain, which letterboxed the photo with bands of
-                --color-bg-section down both sides. cover, and shorter. */}
-            <div className="relative w-full h-[52vh] min-h-[320px] overflow-hidden">
-              <img
-                src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/jo9pxtjng8zpt4yo4rcz?_a=BAMAK+eA0"
-                alt="The Local Effort Cooperative team"
-                className="w-full h-full object-cover"
-                style={{ objectPosition: 'center 35%' }}
-              />
-            </div>
+            {/* The Weston + Catherine hero photo was removed on client direction
+                (2026-07-26). The people now arrive further down, named, in
+                .about-leaders — a masthead rather than an anonymous group shot. */}
             <div className="about-body">
               <div className="about-bio">
                 <div className="about-bio-eyebrow">who we are —</div>
@@ -3101,6 +3094,72 @@ const normalizeMealStyle = (value) =>
                     in equal measure. We&apos;re the realest people make the localest food.
                   </p>
                 </div>
+
+                {/* Day one leadership, carried over from the Walker deck.
+                    Three portraits, but not the three-across card tell: these
+                    are named people, and a masthead is content rather than an
+                    invented set of features. No card chrome for the same
+                    reason — photo and type sit straight on the paper. */}
+                <section className="about-leaders" aria-label="Local Effort leadership">
+                  <p className="about-leaders-kicker">day one —</p>
+                  <ul className="about-leaders-grid">
+                    <li className="about-leader">
+                      <img
+                        className="about-leader-portrait"
+                        src="/images/team/weston-smith.jpg"
+                        alt="Weston Smith, co-founder and chef, outdoors holding a child and a hen"
+                        width={660}
+                        height={880}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <p className="about-leader-name">Weston Smith</p>
+                      <p className="about-leader-role">Co-founder · Chef</p>
+                      <p className="about-leader-bio">
+                        California born, New York trained. 308B organizer, ingredient
+                        specialist. Weston makes bread and chocolate, oversees the
+                        Effort, and guarantees quality.
+                      </p>
+                    </li>
+                    <li className="about-leader">
+                      <img
+                        className="about-leader-portrait"
+                        src="/images/team/catherine-olsen.jpg"
+                        alt="Catherine Olsen, co-founder, trimming produce over mixing bowls in a kitchen"
+                        width={660}
+                        height={880}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <p className="about-leader-name">Catherine Olsen</p>
+                      <p className="about-leader-role">Co-founder · Kitchen Manager · Pastry</p>
+                      <p className="about-leader-bio">
+                        Minneapolis born and raised. Many recognize her from Lucia&apos;s
+                        and Wuollet Bakery, or the Eastside Co-op. Vibe setter, cake and
+                        pastry provider.
+                      </p>
+                    </li>
+                    <li className="about-leader">
+                      <img
+                        className="about-leader-portrait"
+                        src="/images/team/maria-beck.jpg"
+                        alt="Maria Beck, chef and pastry cook, holding two squeeze bottles of herb oil in the kitchen"
+                        width={660}
+                        height={880}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <p className="about-leader-name">Maria Beck</p>
+                      <p className="about-leader-role">Chef · Pastry</p>
+                      <p className="about-leader-bio">
+                        Maria ran pastry at Lynette, many know her from Hyacinth, and she
+                        comes fresh off the Cardamom project. She brings effortless
+                        professionalism and good taste, besides being a bakery crusher.
+                      </p>
+                    </li>
+                  </ul>
+                </section>
+
                 <div className="ht-side-links about-bio-links">
                   <a className="ht-side-link" href="/localist">
                     Membership is how the co-op holds — become a Localist

@@ -224,36 +224,40 @@
   flex-direction: column;
 }
 
+/* Ruled rows, deliberately unnumbered. These were 01–06 markers; six benefits
+   are a set, not a sequence, and numbering a set is the AI-design tell the
+   art-page-design skill names outright. The rule between rows does the
+   separating that the numerals were pretending to do. */
+
 .lm-benefit {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-  padding: 1rem 0;
+  padding: 1.05rem 0;
   border-bottom: 1px solid #e8e8e8;
+}
+
+.lm-benefit:first-child {
+  padding-top: 0;
 }
 
 .lm-benefit:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
-.lm-benefit-marker {
-  flex-shrink: 0;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.7rem;
+.lm-benefit-title {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  color: #756c61;
-}
-
-.lm-benefit-body {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #27211a;
-}
-
-.lm-benefit-body strong {
-  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
   color: #111;
+}
+
+.lm-benefit-copy {
+  margin: 0;
+  max-width: 44rem;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: #4a453f;
 }
 
 /* --------------------------------------------------------------------------
@@ -427,11 +431,125 @@
 }
 
 /* --------------------------------------------------------------------------
+   Photography
+   Real kitchen photographs from the Cloudinary `localist` folder, placed at
+   three fixed positions rather than sprinkled. Each one earns its spot by
+   depicting the thing its section is arguing about.
+
+   Square corners and hairline rules, matching the rest of the page — the
+   gallery below is the only rounded thing here and that was an inconsistency,
+   not a decision. Every image carries width/height so the page never reflows
+   when photos land (the CLS floor).
+   -------------------------------------------------------------------------- */
+
+.lm-band {
+  position: relative;
+  border-bottom: 1px solid #e8e8e8;
+  background: #f5f1eb;
+}
+
+.lm-band img {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 34vw, 420px);
+  object-fit: cover;
+}
+
+.lm-band-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.5rem;
+  margin: 0;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+  /* A gradient scrim, not a flat overlay: the type stays legible over a light
+     or dark crop without dimming the whole photograph. */
+  background: linear-gradient(to top, rgba(17, 17, 17, 0.72), rgba(17, 17, 17, 0));
+}
+
+/* Text beside a photo — used by "What you get", where the list is long enough
+   that a full-width band would push the photo off-screen. */
+.lm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.lm-split-photo {
+  position: sticky;
+  top: 2rem;
+  border: 1px solid #e8e8e8;
+  background: #f5f1eb;
+}
+
+.lm-split-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.lm-split-photo figcaption {
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid #e8e8e8;
+  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #756c61;
+}
+
+@media (max-width: 800px) {
+  .lm-split {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .lm-split-photo {
+    position: static;
+    order: -1;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Gallery strip
    -------------------------------------------------------------------------- */
 
 .lm-gallery {
   padding: 3rem 0 4rem;
+}
+
+.lm-gallery-grid {
+  columns: 2;
+  column-gap: 1rem;
+}
+
+@media (min-width: 700px) {
+  .lm-gallery-grid { columns: 3; }
+}
+
+@media (min-width: 1000px) {
+  .lm-gallery-grid { columns: 4; }
+}
+
+.lm-gallery-item {
+  break-inside: avoid;
+  margin: 0 0 1rem;
+  border: 1px solid #e8e8e8;
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.lm-gallery-item img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* --------------------------------------------------------------------------
