@@ -17,29 +17,6 @@ import '../styles/fullpage-demo-theme.css';
 import '../styles/home-tabs.css';
 import '../styles/service-page.css';
 
-// What each kind of event actually is, and what it starts at. Naming the three
-// shapes up front stops the "is this for me?" bounce.
-const EVENT_SHAPES = [
-  {
-    name: 'Dinner party at your home',
-    guests: '4–16 guests',
-    from: 'from $850',
-    body: 'A chef cooks a multi-course seasonal menu in your kitchen and serves it at your table. The most common thing we do.',
-  },
-  {
-    name: 'Showers, birthdays, celebrations',
-    guests: 'up to 40 guests',
-    from: 'from $1,200',
-    body: 'Baby and wedding showers, milestone birthdays, graduations. Passed plates or a served table, built around the season.',
-  },
-  {
-    name: 'Office & holiday parties',
-    guests: 'up to 75 guests',
-    from: 'from $1,200',
-    body: 'Corporate-friendly, invoice-friendly. Holiday parties, team dinners, client events, open houses.',
-  },
-];
-
 const FAQ_ITEMS = [
   {
     q: 'What happens after I request a date?',
@@ -204,25 +181,6 @@ const SmallEventsPage = () => {
           </div>
         </section>
 
-        {/* ── Which of the three shapes is yours ── */}
-        <section className="service-steps" aria-labelledby="small-events-shapes">
-          <div className="service-steps__intro">
-            <p className="ht-kicker">what we cook —</p>
-            <h2 id="small-events-shapes">Three shapes an event takes</h2>
-          </div>
-          <ol className="service-steps__list service-steps__list--plain">
-            {EVENT_SHAPES.map((shape) => (
-              <li key={shape.name}>
-                <h3>{shape.name}</h3>
-                <p className="ht-facts" style={{ marginTop: '0.35rem' }}>
-                  {shape.guests} · {shape.from}
-                </p>
-                <p>{shape.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
         {/* ── Proof ── */}
         <section className="service-quote">
           <figure className="ht-quote m-0">
@@ -234,37 +192,6 @@ const SmallEventsPage = () => {
               </a>
             </figcaption>
           </figure>
-        </section>
-
-        {/* ── How it works ── */}
-        <section className="service-steps" aria-labelledby="small-events-how">
-          <div className="service-steps__intro">
-            <p className="ht-kicker">how it works —</p>
-            <h2 id="small-events-how">From a date to a dinner</h2>
-          </div>
-          <ol className="service-steps__list">
-            <li>
-              <h3>Request your date</h3>
-              <p>
-                One form, above. We reply within one business day to say whether
-                the date is open.
-              </p>
-            </li>
-            <li>
-              <h3>We write the menu together</h3>
-              <p>
-                A chef talks through guests, the space, allergies, and what is in
-                season, then sends a written estimate.
-              </p>
-            </li>
-            <li>
-              <h3>A deposit holds it</h3>
-              <p>
-                Your date is reserved once a deposit is in place. We cook, serve,
-                and clean the kitchen on the day.
-              </p>
-            </li>
-          </ol>
         </section>
 
         {/* ── FAQ ── */}

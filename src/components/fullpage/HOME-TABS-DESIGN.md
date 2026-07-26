@@ -19,10 +19,11 @@ indexable pages so each offer has its own URL, canonical, and JSON-LD:
 | member capital | `/308b-member` (`src/pages/MemberFundraisePage.jsx`) | ink (receipt) |
 
 `/` is now four panels — Home, Local Pizza, For Business, About
-(`src/config/fullPageNav.js`). Its home panel carries a funnel band
-(`.ho-*`, `src/styles/home-offers.css`) that names the three consumer offers and
-links out; it does **not** duplicate their content, so nothing competes for the
-same query. The photo wall below the band is deliberately unchanged.
+(`src/config/fullPageNav.js`). The home panel is **the photo wall and nothing
+else**: no headline, no offer cards, nothing above the photographs (client
+direction, 2026-07-26). A funnel band was tried there and removed. The header nav
+is what carries a visitor to each offer, which is why its titles are
+differentiated rather than interchangeable (see Header below).
 
 The slip forms are shared, not copied: `src/components/services/slipForms.jsx`
 exports `QuickEventBookForm` and `MealPrepQuickStart`, used by both the
@@ -76,14 +77,20 @@ labels, prices in dashed-underline ledger rows. No wobble inside it.
 
 1. **Weekly meals** (`/weekly-meals`) — slip left with a hero print beside it
    (`.ht-hero-photo`, with a hardcoded Cloudinary fallback so the fold is never
-   half-empty when the gallery API is slow), then a three-step "how it works",
-   the real recent menus as proof, a pricing ledger, an FAQ, photos, and the
-   form again at the close. Submitting the quick form auto-sends the intake-form
-   email (Brevo template 27, same as the waitlist).
+   half-empty when the gallery API is slow), then the real recent menus as proof,
+   a pricing ledger, an FAQ, photos, and the form again at the close. Submitting
+   the quick form auto-sends the intake-form email (Brevo template 27, same as
+   the waitlist).
 2. **Small events** (`/small-events`) — slip left over the full-bleed event
-   photo, then the three shapes an event takes (dinner party / celebration /
-   office), the testimonial as a General Sans margin quote with a Yomogi
-   attribution, how-it-works, FAQ, photos, and the form again at the close.
+   photo, then the testimonial as a General Sans margin quote with a Yomogi
+   attribution, FAQ, photos, and the form again at the close.
+
+   Both pages carried a three-across "how it works" step row, and small events
+   also had a "what we cook" taxonomy row. Removed on client direction
+   (2026-07-26). Worth noting they were also the layout tell the art-direction
+   skill's blacklist names — three cards in a row, made three times across three
+   pages. The only three-across grid left in this system is the 308B offerings,
+   where three is a real closed set.
 3. **For businesses** (`/` panel 3) — the receipt. Wholesale only
    (consulting/collabs removed per client, 2026-07). Three starting prices as
    ledger rows; the email gate is one written line; the unlocked menu renders as

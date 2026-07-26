@@ -83,32 +83,6 @@ export const HEADER_CTA = {
   href: '/localist',
 };
 
-// The three offers the home page's intro band sends people to, in the order we
-// want them chosen. Shared with the home panel so the copy cannot drift.
-export const HOME_OFFERS = [
-  {
-    id: 'weekly-meals',
-    href: '/weekly-meals',
-    kicker: 'weekly meals',
-    title: 'A week of real food, cooked for you',
-    fact: 'dinners from $18 a person',
-    accent: 'var(--brand-olive)',
-  },
-  {
-    id: 'small-events',
-    href: '/small-events',
-    kicker: 'small events',
-    title: 'Dinner parties, showers, office parties',
-    fact: 'from $850 · 4–75 guests',
-    accent: 'var(--brand-rose)',
-  },
-  {
-    id: 'local-pizza',
-    href: '/#local-pizza',
-    pageIndex: 1,
-    kicker: 'local pizza',
-    title: '100% Midwest pizza, cooked at your place',
-    fact: 'from $55 a guest',
-    accent: '#F35C2B',
-  },
-];
+// The home panel is the photo wall and nothing else — no headline, no offer
+// cards, nothing above the photographs (client direction, 2026-07-26). The
+// header nav carries the routes to each offer.

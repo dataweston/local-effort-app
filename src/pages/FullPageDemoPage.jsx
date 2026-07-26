@@ -19,14 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { FULLPAGE_PAGES, HOME_OFFERS } from '../config/fullPageNav';
+import { FULLPAGE_PAGES } from '../config/fullPageNav';
 import { trackEvent } from '../lib/trackEvent';
 import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
 // The slip forms are shared with the standalone /weekly-meals and /small-events
 // pages so the home funnel and the indexable pages cannot drift apart.
 import { QuickEventBookForm } from '../components/services/slipForms';
 import '../styles/home-tabs.css';
-import '../styles/home-offers.css';
 
 const SMALL_EVENT_CONFIG = {
   dinner: {
@@ -2765,50 +2764,6 @@ const normalizeMealStyle = (value) =>
                 : '5rem',
             }}
           >
-            {/* The funnel band. The photo wall below is the thing people came
-                for and is deliberately untouched — this band sits above it so a
-                first-time visitor gets a proposition and three named ways in
-                before an infinite grid of photographs. */}
-            <section className="ho-band" aria-labelledby="ho-band-title">
-              <div className="ho-band__lede">
-                <p className="ho-band__kicker">Local Effort Cooperative — Minneapolis &amp; St. Paul</p>
-                <h1 id="ho-band-title" className="ho-band__title">
-                  A worker-owned kitchen that cooks for your week, your table, and your business.
-                </h1>
-                <p className="ho-band__copy">
-                  Everything below is food we actually made, from Minnesota farms we
-                  actually buy from. Pick the one you need — every path starts with a
-                  chef reading your reply, not a form disappearing into a queue.
-                </p>
-              </div>
-              <ul className="ho-offers">
-                {HOME_OFFERS.map((offer) => (
-                  <li key={offer.id} style={{ '--ho-accent': offer.accent }}>
-                    <a
-                      className="ho-offer"
-                      href={offer.href}
-                      onClick={(event) => {
-                        // Local Pizza is still a panel on this page; the other two
-                        // are their own routes and navigate normally.
-                        if (offer.pageIndex == null) return;
-                        event.preventDefault();
-                        if (typeof window.scrollToPage === 'function') window.scrollToPage(offer.pageIndex);
-                      }}
-                    >
-                      <span className="ho-offer__kicker">{offer.kicker} —</span>
-                      <span className="ho-offer__title">{offer.title}</span>
-                      <span className="ho-offer__fact">{offer.fact}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <p className="ho-band__member">
-                Meal prep customers are members first.{' '}
-                <a href="/localist">See what a Localist membership means</a> — every cook
-                here is offered equity ownership, and your dues are what makes that real.
-              </p>
-            </section>
-
             {loading ? (
               <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
                 Loading images...

@@ -259,37 +259,6 @@ const WeeklyMealsPage = () => {
           </div>
         </section>
 
-        {/* ── How it works: the three steps between here and dinner ── */}
-        <section className="service-steps" aria-labelledby="weekly-meals-how">
-          <div className="service-steps__intro">
-            <p className="ht-kicker">how it works —</p>
-            <h2 id="weekly-meals-how">Three steps to your first week</h2>
-          </div>
-          <ol className="service-steps__list">
-            <li>
-              <h3>Tell us who we&apos;re cooking for</h3>
-              <p>
-                Name and email above is enough to start. The intake form follows by
-                email — household size, what you love, what you can&apos;t eat.
-              </p>
-            </li>
-            <li>
-              <h3>We build your menu</h3>
-              <p>
-                A chef writes your week around your household and what Minnesota
-                farms are actually producing. You see it before we cook it.
-              </p>
-            </li>
-            <li>
-              <h3>It arrives, every week</h3>
-              <p>
-                Cooked, portioned, labelled, and delivered on your day. Change the
-                number of meals any week you like.
-              </p>
-            </li>
-          </ol>
-        </section>
-
         {/* ── Proof: real menus, not a promise ── */}
         <section className="ht-recent-menus" aria-labelledby="recent-meal-prep-menus">
           <div className="ht-recent-menus__intro">
