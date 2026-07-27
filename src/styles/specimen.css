@@ -71,14 +71,21 @@
   background-repeat: repeat;
 }
 
+/* The tile is centred near white (mean ~244) so multiplying it over the sheet
+   darkens by about 4% — paper — rather than halving the field. An earlier cut
+   sat at mid-grey and rendered the linen as taupe. */
 .specimen-sheet::before {
   mix-blend-mode: multiply;
-  opacity: 0.5;
+  opacity: 0.9;
 }
 
+/* Same asset on the dark field, inverted: screening a near-white tile over the
+   void would wash it out, so the tile is flipped to near-black first and the
+   foxing specks read as faint light instead. */
 .specimen-void::before {
+  filter: invert(1);
   mix-blend-mode: screen;
-  opacity: 0.16;
+  opacity: 0.45;
 }
 
 /* ── The ruled sheet ─────────────────────────────────────────────────────

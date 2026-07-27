@@ -9,9 +9,33 @@
    Direction: src/components/fullpage/HOME-TABS-DESIGN.md
    Tokens: src/styles/home-tabs.css (--ht-*), src/styles/brand-tokens.css */
 
+/* The field is the sheet now, not the bridge tint it used to be. Thirteen of
+   the twenty-one reference works are paper, and in them 75–98% of the canvas
+   is bare sheet with the subject floating on it — so the ground these pages
+   present should be sheet too. See docs/design/SPECIMEN.md.
+
+   The paper overlay repeats the treatment .specimen-sheet defines rather than
+   borrowing the class: .ht-scope already owns :focus-visible and ::selection
+   on every one of these pages (home-tabs.css:75-80), and adding .specimen here
+   would only start a specificity argument with it. */
 .service-page {
-  background: var(--color-bg-section);
+  position: relative;
+  isolation: isolate;
+  background-color: var(--brand-sheet);
   min-height: 100vh;
+}
+
+.service-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url('/brand/specimen-paper.webp');
+  background-size: 512px 512px;
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
 }
 
 .service-page__body {

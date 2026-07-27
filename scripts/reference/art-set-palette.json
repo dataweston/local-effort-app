@@ -1,0 +1,933 @@
+[
+ {
+  "objectNumber": "BK-1955-287",
+  "title": "Tegel met fruitmand",
+  "maker": "anonymous, c. 1640 - c. 1660",
+  "lodId": "https://id.rijksmuseum.nl/20038833",
+  "micrioId": "maCBx",
+  "w": 5390,
+  "h": 5390,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#C7C6BF",
+    24.9
+   ],
+   [
+    "#A2A5A2",
+    21.7
+   ],
+   [
+    "#D0D0CC",
+    17.6
+   ],
+   [
+    "#62667C",
+    15.9
+   ],
+   [
+    "#CDCCC6",
+    12.8
+   ],
+   [
+    "#BBB399",
+    7.2
+   ]
+  ],
+  "mean_sat": 0.126,
+  "mean_val": 0.702,
+  "dark_pct": 1.6,
+  "light_pct": 43.1,
+  "chroma_pct": 10.9
+ },
+ {
+  "objectNumber": "RP-T-2006-135",
+  "title": "Twee vergieten",
+  "maker": "Paul Damst\u00e9 (signed by artist), 1996",
+  "lodId": "https://id.rijksmuseum.nl/200543740",
+  "micrioId": "LIYef",
+  "w": 5894,
+  "h": 4458,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#F4F6F3",
+    31.5
+   ],
+   [
+    "#F5F7F4",
+    24.6
+   ],
+   [
+    "#958D83",
+    17.0
+   ],
+   [
+    "#EEF0E6",
+    12.2
+   ],
+   [
+    "#F7F9F5",
+    12.1
+   ],
+   [
+    "#F6F6F2",
+    2.5
+   ]
+  ],
+  "mean_sat": 0.068,
+  "mean_val": 0.89,
+  "dark_pct": 0.9,
+  "light_pct": 82.6,
+  "chroma_pct": 4.1
+ },
+ {
+  "objectNumber": "RP-P-2001-433",
+  "title": "Geabstraheerde voorstelling met piramiden, palm en vrucht",
+  "maker": "Simon Koene (signed by artist), 1988",
+  "lodId": "https://id.rijksmuseum.nl/200476093",
+  "micrioId": "OWAtl",
+  "w": 4842,
+  "h": 6246,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#F5F0EC",
+    26.5
+   ],
+   [
+    "#F2EDE9",
+    22.7
+   ],
+   [
+    "#F1ECE8",
+    20.2
+   ],
+   [
+    "#F2EAE4",
+    14.5
+   ],
+   [
+    "#B9A08A",
+    11.5
+   ],
+   [
+    "#F8EDE4",
+    4.5
+   ]
+  ],
+  "mean_sat": 0.091,
+  "mean_val": 0.913,
+  "dark_pct": 0.3,
+  "light_pct": 91.1,
+  "chroma_pct": 4.6
+ },
+ {
+  "objectNumber": "RP-P-2010-221-2747",
+  "title": "Eiland II",
+  "maker": "Hans Landsaat (signed by artist), 1977",
+  "lodId": "https://id.rijksmuseum.nl/200585803",
+  "micrioId": "GiuJS",
+  "w": 5256,
+  "h": 5438,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#A2AB90",
+    30.3
+   ],
+   [
+    "#FDF4EA",
+    25.8
+   ],
+   [
+    "#FAF3E7",
+    21.7
+   ],
+   [
+    "#FCF3EA",
+    15.7
+   ],
+   [
+    "#FDF5E9",
+    5.7
+   ],
+   [
+    "#D1E3C2",
+    0.8
+   ]
+  ],
+  "mean_sat": 0.13,
+  "mean_val": 0.902,
+  "dark_pct": 0.0,
+  "light_pct": 73.6,
+  "chroma_pct": 4.3
+ },
+ {
+  "objectNumber": "BK-NM-8593-4-1",
+  "title": "Fragment veelkleurig gestreept zijdeweefsel.",
+  "maker": "Zijdeweverij Heshuyzen, 1750 - 1800",
+  "lodId": "https://id.rijksmuseum.nl/20038370",
+  "micrioId": "qdsLv",
+  "w": 5033,
+  "h": 7349,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#F7EADA",
+    28.4
+   ],
+   [
+    "#DDCCAA",
+    22.5
+   ],
+   [
+    "#AFA18C",
+    15.2
+   ],
+   [
+    "#C9C6BA",
+    14.7
+   ],
+   [
+    "#FBEFE0",
+    12.5
+   ],
+   [
+    "#EFDFC9",
+    6.7
+   ]
+  ],
+  "mean_sat": 0.159,
+  "mean_val": 0.867,
+  "dark_pct": 0.0,
+  "light_pct": 75.8,
+  "chroma_pct": 2.0
+ },
+ {
+  "objectNumber": "RP-P-2010-222-1461",
+  "title": "Tram gezien vanuit interieur",
+  "maker": "Marinus Fuit (signed by artist), 1992",
+  "lodId": "https://id.rijksmuseum.nl/200541562",
+  "micrioId": "YltCU",
+  "w": 6412,
+  "h": 4986,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#F3EAE8",
+    22.2
+   ],
+   [
+    "#F2E8E5",
+    21.6
+   ],
+   [
+    "#F6ECEA",
+    18.5
+   ],
+   [
+    "#F5EBE8",
+    16.1
+   ],
+   [
+    "#F7EDEA",
+    11.9
+   ],
+   [
+    "#CFCBC7",
+    9.8
+   ]
+  ],
+  "mean_sat": 0.072,
+  "mean_val": 0.945,
+  "dark_pct": 0.0,
+  "light_pct": 97.4,
+  "chroma_pct": 0.2
+ },
+ {
+  "objectNumber": "RP-P-2010-222-1036",
+  "title": "Bericht van de regenmoeder",
+  "maker": "Harrie A. Gerritz (signed by artist), 1950 - 2009",
+  "lodId": "https://id.rijksmuseum.nl/200537930",
+  "micrioId": "vFGxo",
+  "w": 5090,
+  "h": 6590,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#F5EAE5",
+    29.6
+   ],
+   [
+    "#F6EDE9",
+    22.6
+   ],
+   [
+    "#F8EEEC",
+    21.3
+   ],
+   [
+    "#E4CF9D",
+    9.6
+   ],
+   [
+    "#FAEEE6",
+    9.2
+   ],
+   [
+    "#F4EEE7",
+    7.8
+   ]
+  ],
+  "mean_sat": 0.105,
+  "mean_val": 0.954,
+  "dark_pct": 0.0,
+  "light_pct": 98.1,
+  "chroma_pct": 4.5
+ },
+ {
+  "objectNumber": "RP-T-1969-185(R)",
+  "title": "Studieblad met vruchten, planten en bloemen",
+  "maker": "Theo Nieuwenhuis, 1876 - 1951",
+  "lodId": "https://id.rijksmuseum.nl/200372134",
+  "micrioId": "XcYvw",
+  "w": 6187,
+  "h": 4836,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#D9C9B6",
+    26.5
+   ],
+   [
+    "#E1D3C1",
+    18.6
+   ],
+   [
+    "#DFD0BE",
+    16.7
+   ],
+   [
+    "#918272",
+    15.4
+   ],
+   [
+    "#DCCFBE",
+    12.8
+   ],
+   [
+    "#F2E9D7",
+    10.0
+   ]
+  ],
+  "mean_sat": 0.16,
+  "mean_val": 0.81,
+  "dark_pct": 4.1,
+  "light_pct": 81.2,
+  "chroma_pct": 2.4
+ },
+ {
+  "objectNumber": "RP-T-1960-568",
+  "title": "Stilleven met appel en een kruik",
+  "maker": "Leo Gestel, 1891 - 1941",
+  "lodId": "https://id.rijksmuseum.nl/200373521",
+  "micrioId": "SBoxO",
+  "w": 4314,
+  "h": 2779,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#EBDABF",
+    27.4
+   ],
+   [
+    "#EFDEC2",
+    18.7
+   ],
+   [
+    "#EDDCC0",
+    16.8
+   ],
+   [
+    "#EEDDC1",
+    15.3
+   ],
+   [
+    "#B0A695",
+    12.4
+   ],
+   [
+    "#F3E5CF",
+    9.4
+   ]
+  ],
+  "mean_sat": 0.174,
+  "mean_val": 0.887,
+  "dark_pct": 0.0,
+  "light_pct": 88.0,
+  "chroma_pct": 0.0
+ },
+ {
+  "objectNumber": "RP-T-BR-2017-1-9-58",
+  "title": "Appel (Malus domestica)",
+  "maker": "Anselmus Bo\u00ebtius de Boodt, 1596 - 1610",
+  "lodId": "https://id.rijksmuseum.nl/200692202",
+  "micrioId": "jaTqd",
+  "w": 3372,
+  "h": 4494,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#BE8F76",
+    20.2
+   ],
+   [
+    "#F0E0CF",
+    19.4
+   ],
+   [
+    "#F0E4D3",
+    18.1
+   ],
+   [
+    "#F2E6D5",
+    17.0
+   ],
+   [
+    "#F4EAD7",
+    14.5
+   ],
+   [
+    "#E9D9C4",
+    10.8
+   ]
+  ],
+  "mean_sat": 0.188,
+  "mean_val": 0.895,
+  "dark_pct": 0.1,
+  "light_pct": 88.0,
+  "chroma_pct": 11.8
+ },
+ {
+  "objectNumber": "RP-P-2010-222-771",
+  "title": "Still Life with Apple / Stilleven met appel",
+  "maker": "Lucassen (signed by artist), 1971",
+  "lodId": "https://id.rijksmuseum.nl/200533643",
+  "micrioId": "uosPp",
+  "w": 5068,
+  "h": 6548,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#F4EDE6",
+    19.4
+   ],
+   [
+    "#E9E2DC",
+    18.7
+   ],
+   [
+    "#F9F1E9",
+    16.4
+   ],
+   [
+    "#DFC5B8",
+    15.5
+   ],
+   [
+    "#FCF4ED",
+    15.1
+   ],
+   [
+    "#EFE7E0",
+    14.9
+   ]
+  ],
+  "mean_sat": 0.087,
+  "mean_val": 0.938,
+  "dark_pct": 0.0,
+  "light_pct": 96.2,
+  "chroma_pct": 1.7
+ },
+ {
+  "objectNumber": "RP-P-2019-1",
+  "title": "Zonder titel (Untitled)",
+  "maker": "Erik Andriesse, 1979",
+  "lodId": "https://id.rijksmuseum.nl/200739783",
+  "micrioId": "kgBAG",
+  "w": 7844,
+  "h": 6360,
+  "downloadable": false,
+  "onView": null,
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#E9D6B7",
+    23.9
+   ],
+   [
+    "#D34255",
+    23.8
+   ],
+   [
+    "#E8D4B4",
+    23.8
+   ],
+   [
+    "#B77B7E",
+    12.6
+   ],
+   [
+    "#E4CCAF",
+    9.7
+   ],
+   [
+    "#F0E2C8",
+    6.2
+   ]
+  ],
+  "mean_sat": 0.335,
+  "mean_val": 0.874,
+  "dark_pct": 0.0,
+  "light_pct": 92.7,
+  "chroma_pct": 29.0
+ },
+ {
+  "objectNumber": "RP-T-1899-A-4272",
+  "title": "Sketch for a Still Life of Fruit and Flowers",
+  "maker": "Jan van Huysum, c. 1725 - c. 1735",
+  "lodId": "https://id.rijksmuseum.nl/200314830",
+  "micrioId": "XrOGB",
+  "w": 4608,
+  "h": 5878,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#675E49",
+    19.9
+   ],
+   [
+    "#9D9578",
+    18.5
+   ],
+   [
+    "#B5AF97",
+    16.8
+   ],
+   [
+    "#7B765B",
+    16.8
+   ],
+   [
+    "#8E7C5F",
+    16.4
+   ],
+   [
+    "#D0C9B4",
+    11.7
+   ]
+  ],
+  "mean_sat": 0.245,
+  "mean_val": 0.58,
+  "dark_pct": 1.7,
+  "light_pct": 10.0,
+  "chroma_pct": 0.5
+ },
+ {
+  "objectNumber": "SK-A-2226",
+  "title": "Farm in Provence",
+  "maker": "Vincent van Gogh, c. 1888-06",
+  "lodId": "https://id.rijksmuseum.nl/200108927",
+  "micrioId": "XVgSo",
+  "w": 7129,
+  "h": 5221,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#D3B692",
+    20.5
+   ],
+   [
+    "#7F6954",
+    19.0
+   ],
+   [
+    "#AA8F72",
+    17.2
+   ],
+   [
+    "#CFB08E",
+    17.0
+   ],
+   [
+    "#D6BA99",
+    13.6
+   ],
+   [
+    "#BDA081",
+    12.8
+   ]
+  ],
+  "mean_sat": 0.316,
+  "mean_val": 0.716,
+  "dark_pct": 1.0,
+  "light_pct": 50.4,
+  "chroma_pct": 0.1
+ },
+ {
+  "objectNumber": "RP-T-1977-16",
+  "title": "Scarlet Ibis with an Egg",
+  "maker": "attributed to Dorothea Maria Gsell, 1699 - 1701",
+  "lodId": "https://id.rijksmuseum.nl/200142686",
+  "micrioId": "sJofp",
+  "w": 2892,
+  "h": 3902,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#90473C",
+    22.2
+   ],
+   [
+    "#ABA7A0",
+    21.0
+   ],
+   [
+    "#CAC9C9",
+    18.1
+   ],
+   [
+    "#B8B8B6",
+    17.5
+   ],
+   [
+    "#C2C0BF",
+    11.0
+   ],
+   [
+    "#D5D4D5",
+    10.2
+   ]
+  ],
+  "mean_sat": 0.167,
+  "mean_val": 0.706,
+  "dark_pct": 0.8,
+  "light_pct": 30.1,
+  "chroma_pct": 19.5
+ },
+ {
+  "objectNumber": "RP-T-1948-43",
+  "title": "Five Studies of Anemones",
+  "maker": "anonymous, c. 1760 - c. 1770",
+  "lodId": "https://id.rijksmuseum.nl/200314475",
+  "micrioId": "SfbIN",
+  "w": 6006,
+  "h": 4526,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#FCF8EB",
+    25.3
+   ],
+   [
+    "#F8F5E6",
+    21.3
+   ],
+   [
+    "#FCF7E9",
+    17.5
+   ],
+   [
+    "#FBF5E7",
+    13.7
+   ],
+   [
+    "#FDFAED",
+    11.4
+   ],
+   [
+    "#D7C9B5",
+    10.8
+   ]
+  ],
+  "mean_sat": 0.093,
+  "mean_val": 0.957,
+  "dark_pct": 0.0,
+  "light_pct": 93.7,
+  "chroma_pct": 1.0
+ },
+ {
+  "objectNumber": "RP-T-1898-A-3500",
+  "title": "Flowers in a Glass Vase with a Butterfly",
+  "maker": "Herman Henstenburgh, c. 1700",
+  "lodId": "https://id.rijksmuseum.nl/200139676",
+  "micrioId": "GMEXG",
+  "w": 5232,
+  "h": 7048,
+  "downloadable": true,
+  "onView": null,
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#E5DABE",
+    25.8
+   ],
+   [
+    "#917864",
+    20.4
+   ],
+   [
+    "#EEDFC6",
+    16.6
+   ],
+   [
+    "#EBDCC2",
+    14.8
+   ],
+   [
+    "#F6E8D5",
+    12.7
+   ],
+   [
+    "#DDCFB2",
+    9.7
+   ]
+  ],
+  "mean_sat": 0.206,
+  "mean_val": 0.839,
+  "dark_pct": 1.0,
+  "light_pct": 77.1,
+  "chroma_pct": 4.5
+ },
+ {
+  "objectNumber": "SK-A-5002",
+  "title": "Square Man",
+  "maker": "Karel Appel, 1951",
+  "lodId": "https://id.rijksmuseum.nl/200498861",
+  "micrioId": "YMarE",
+  "w": 4903,
+  "h": 4990,
+  "downloadable": false,
+  "onView": {
+   "id": "903406832097d7384b9058e7ac53bbb2",
+   "nodeRelationType": "HasMuseumLocation",
+   "value": "3.3",
+   "nodeRelationValue": "On display in",
+   "nodeType": "MuseumLocation",
+   "nodeTypeValue": "Museum hall"
+  },
+  "rights": "Copyright",
+  "swatches": [
+   [
+    "#113746",
+    29.0
+   ],
+   [
+    "#4F4038",
+    17.2
+   ],
+   [
+    "#497575",
+    14.5
+   ],
+   [
+    "#D9D2B7",
+    13.6
+   ],
+   [
+    "#99947A",
+    13.4
+   ],
+   [
+    "#B6BA9E",
+    12.3
+   ]
+  ],
+  "mean_sat": 0.355,
+  "mean_val": 0.495,
+  "dark_pct": 26.7,
+  "light_pct": 16.0,
+  "chroma_pct": 25.5
+ },
+ {
+  "objectNumber": "SK-A-1718",
+  "title": "Winter Landscape with Ice Skaters",
+  "maker": "Hendrick Avercamp (signed by artist), c. 1608",
+  "lodId": "https://id.rijksmuseum.nl/200108163",
+  "micrioId": "aXnzA",
+  "w": 6337,
+  "h": 3674,
+  "downloadable": true,
+  "onView": {
+   "id": "e0db44d4a02b530c05ec05c7fe350d86",
+   "nodeRelationType": "HasMuseumLocation",
+   "value": "2.6",
+   "nodeRelationValue": "On display in",
+   "nodeType": "MuseumLocation",
+   "nodeTypeValue": "Museum hall"
+  },
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#594D38",
+    21.1
+   ],
+   [
+    "#BAB090",
+    21.0
+   ],
+   [
+    "#CDC4A7",
+    17.7
+   ],
+   [
+    "#898467",
+    15.1
+   ],
+   [
+    "#A69470",
+    14.6
+   ],
+   [
+    "#DFD7BD",
+    10.5
+   ]
+  ],
+  "mean_sat": 0.267,
+  "mean_val": 0.634,
+  "dark_pct": 9.4,
+  "light_pct": 26.4,
+  "chroma_pct": 9.6
+ },
+ {
+  "objectNumber": "SK-A-175",
+  "title": "A Pelican and other Birds near a Pool, Known as \u2018The Floating Feather\u2019",
+  "maker": "Melchior d' Hondecoeter, c. 1680",
+  "lodId": "https://id.rijksmuseum.nl/200109383",
+  "micrioId": "BaFQb",
+  "w": 4739,
+  "h": 5186,
+  "downloadable": true,
+  "onView": {
+   "id": "f89a00f540a0866e1d3f57002b39e268",
+   "nodeRelationType": "HasMuseumLocation",
+   "value": "2.22",
+   "nodeRelationValue": "On display in",
+   "nodeType": "MuseumLocation",
+   "nodeTypeValue": "Museum hall"
+  },
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#5F584A",
+    21.6
+   ],
+   [
+    "#1A160F",
+    19.5
+   ],
+   [
+    "#312114",
+    19.3
+   ],
+   [
+    "#241D13",
+    17.5
+   ],
+   [
+    "#433728",
+    13.2
+   ],
+   [
+    "#9D917C",
+    8.9
+   ]
+  ],
+  "mean_sat": 0.386,
+  "mean_val": 0.264,
+  "dark_pct": 71.3,
+  "light_pct": 2.1,
+  "chroma_pct": 42.0
+ },
+ {
+  "objectNumber": "SK-A-2099",
+  "title": "Still Life with Asparagus",
+  "maker": "Adriaen Coorte (mentioned on object), 1697",
+  "lodId": "https://id.rijksmuseum.nl/200109193",
+  "micrioId": "OHDPD",
+  "w": 4747,
+  "h": 5908,
+  "downloadable": true,
+  "onView": {
+   "id": "5512b186c1a70c85b0d7d86dbdf352ea",
+   "nodeRelationType": "HasMuseumLocation",
+   "value": "2.24",
+   "nodeRelationValue": "On display in",
+   "nodeType": "MuseumLocation",
+   "nodeTypeValue": "Museum hall"
+  },
+  "rights": "Public Domain",
+  "swatches": [
+   [
+    "#18130C",
+    29.7
+   ],
+   [
+    "#100F0A",
+    20.5
+   ],
+   [
+    "#2C2014",
+    16.1
+   ],
+   [
+    "#534031",
+    12.2
+   ],
+   [
+    "#A99A80",
+    11.9
+   ],
+   [
+    "#221A10",
+    9.6
+   ]
+  ],
+  "mean_sat": 0.446,
+  "mean_val": 0.206,
+  "dark_pct": 81.4,
+  "light_pct": 2.0,
+  "chroma_pct": 52.3
+ }
+]

@@ -1,11 +1,66 @@
 {
-  "generatedAt": "2026-07-20T02:39:05.131Z",
+  "generatedAt": "2026-07-27T02:27:14.064Z",
   "page": {
     "title": "local effort sales",
     "subheading": "sale",
     "introText": "one-off or small run items, usually go quickly.\n\npickup at\n\nNeon Collective Kitchens\n\n2103 W Broadway in Minneapolis\n\ncoordinate with Weston for time and day, most days are fine."
   },
   "products": [
+    {
+      "id": "08df1e0c-94f7-42b9-84fd-b6f1d930da18",
+      "title": "BREAD - loaf - Red fife",
+      "slug": "bread-loaf-red-fife",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": [
+        {
+          "_key": "af9ea1e53260",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "a5481017a81d",
+              "_type": "span",
+              "marks": [],
+              "text": "high hydration sourdough boulle, approx. 2 lbs"
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "7f670dbdcbe7",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "c59113496318",
+              "_type": "span",
+              "marks": [],
+              "text": "fresh grain, the last of the red fife? "
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0e9c2715e1d2bf18b0b7b9d0f9474fa0a12cdf6a-3024x4032.jpg"
+      ],
+      "price": 1400,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "sale"
+      ],
+      "allowsDelivery": false
+    },
     {
       "id": "a33aab49-4e73-40b8-ad72-5637bb45273c",
       "title": "Goat Milk Yogurt",

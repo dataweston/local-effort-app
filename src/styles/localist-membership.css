@@ -15,9 +15,9 @@
 
    Direction: src/components/fullpage/HOME-TABS-DESIGN.md */
 
-.localist-page {
-  background: var(--color-bg-section);
-}
+/* The field comes from .service-page (service-page.css), which is the sheet
+   plus real paper now. This file used to restate the old bridge tint here,
+   which only had the effect of shadowing it. */
 
 /* ── Photography ───────────────────────────────────────────────────────
    Real kitchen photographs from the Cloudinary `localist` folder, placed at

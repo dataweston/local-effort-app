@@ -1,5 +1,6 @@
 @import url('/fonts/fonts.css');
 @import './styles/brand-tokens.css';
+@import './styles/specimen.css';
 @import './styles/fullpage-demo-theme.css';
 @import './styles/blog-page.css';
 

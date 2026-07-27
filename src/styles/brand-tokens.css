@@ -7,6 +7,14 @@
   --brand-olive: #7A846E;
   --brand-ink: #3A2E3F;
 
+  /* Pressed/hover partners, and the hearth orange /julydinner introduced.
+     These were literals repeated across home-tabs.css (olive-deep three times)
+     and fullPageNav.js, which is how a palette drifts. One home. */
+  --brand-rose-deep: #A24E5B;
+  --brand-olive-deep: #5A6350;
+  --brand-hearth: #F35C2B;
+  --brand-hearth-deep: #C4441C;
+
   --color-bg-page: var(--brand-linen);
   --color-bg-section: var(--brand-bridge);
   --color-bg-card: #E2C7BE;

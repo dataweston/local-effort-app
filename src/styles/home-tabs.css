@@ -29,36 +29,38 @@
   color: var(--ht-ink);
 }
 
-/* one accent per tab — the only thing that changes between them */
+/* one accent per tab — the only thing that changes between them.
+   Values live in brand-tokens.css; these were literal copies of the same
+   colours, and a copy is a colour waiting to drift. */
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--meals {
-  --ht-accent: #7a846e;
-  --ht-accent-deep: #5a6350;
+  --ht-accent: var(--brand-olive);
+  --ht-accent-deep: var(--brand-olive-deep);
   --ht-accent-wash: rgba(122, 132, 110, 0.14);
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--events {
-  --ht-accent: #c66c78;
-  --ht-accent-deep: #a24e5b;
+  --ht-accent: var(--brand-rose);
+  --ht-accent-deep: var(--brand-rose-deep);
   --ht-accent-wash: rgba(198, 108, 120, 0.14);
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--business {
-  --ht-accent: #3a2e3f;
-  --ht-accent-deep: #3a2e3f;
+  --ht-accent: var(--brand-ink);
+  --ht-accent-deep: var(--brand-ink);
   --ht-accent-wash: rgba(58, 46, 63, 0.08);
 }
 
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--pizza {
-  --ht-accent: #f35c2b;
-  --ht-accent-deep: #c4441c;
+  --ht-accent: var(--brand-hearth);
+  --ht-accent-deep: var(--brand-hearth-deep);
   --ht-accent-wash: rgba(243, 92, 43, 0.12);
 }
 
 /* about — olive, the same accent as the vegetable week: this panel is about
    where the food comes from and who owns the kitchen, not a fifth product */
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--about {
-  --ht-accent: #7a846e;
-  --ht-accent-deep: #5a6350;
+  --ht-accent: var(--brand-olive);
+  --ht-accent-deep: var(--brand-olive-deep);
   --ht-accent-wash: rgba(122, 132, 110, 0.14);
 }
 
@@ -67,8 +69,8 @@
    replaced, whose waiver panel was already a green (#4a6640); olive is this
    system's green. */
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--localist {
-  --ht-accent: #7a846e;
-  --ht-accent-deep: #5a6350;
+  --ht-accent: var(--brand-olive);
+  --ht-accent-deep: var(--brand-olive-deep);
   --ht-accent-wash: rgba(122, 132, 110, 0.14);
 }
 

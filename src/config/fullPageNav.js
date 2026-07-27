@@ -47,7 +47,7 @@ export const HEADER_NAV = [
     note: 'parties',
     href: '/#local-pizza',
     pageIndex: 1,
-    accent: '#F35C2B',
+    accent: 'var(--brand-hearth)',
   },
   {
     id: 'for-businesses',
