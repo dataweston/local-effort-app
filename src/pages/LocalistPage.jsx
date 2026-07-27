@@ -1,8 +1,23 @@
+// src/pages/LocalistPage.jsx
+//
+// /localist — membership in the cooperative. One job: become a Localist, and
+// pay for it in the same pass.
+//
+// Material system: .ht-scope--localist in src/styles/home-tabs.css (olive
+// accent, hand-ruled slip), vertical rhythm from src/styles/service-page.css,
+// same as /small-events and /weekly-meals. Direction:
+// src/components/fullpage/HOME-TABS-DESIGN.md
+//
+// This page was previously off-system: mono all-caps eyebrows over every
+// heading, SaaS pricing cards with a "Save $165" badge, boxed le-checkout
+// inputs, and 01–06 markers on the benefits list. All of those are the exact
+// patterns HOME-TABS-DESIGN.md records as removed everywhere else.
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
-import '../styles/le-checkout.css';
+import '../styles/home-tabs.css';
+import '../styles/service-page.css';
 import '../styles/localist-membership.css';
 
 const normalizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
@@ -20,45 +35,64 @@ const TIERS = {
 };
 
 // Fixed art positions come from hardcoded Cloudinary ids, not the gallery API.
-// Same pattern the About panel and .ht-hero-photo already use: the API is for
-// the shuffling grid at the foot of the page, where a slow response costs
-// nothing, while anything above the fold has to be there on first paint.
-// Assets live in the Cloudinary `localist` folder.
+// Same pattern as .ht-hero-photo elsewhere: the API is for the shuffling grid at
+// the foot of the page, where a slow response costs nothing, while anything
+// above the fold has to be there on first paint. Assets: Cloudinary `localist`.
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/dokyhfvyd/image/upload';
 
 const bandSrc = (id, width) =>
   `${CLOUDINARY_BASE}/c_fill,g_auto,ar_16:6,w_${width},q_auto,f_auto/${id}`;
 
 const PHOTOS = {
-  // White asparagus and spring onions on the grill. Craft, heat, no faces —
-  // the hero should look like the kitchen working, not like a product shot.
   hero: {
     id: 'yjrifvbjbwxeyo0wbxvx',
     alt: 'White asparagus and spring onions charring on a kitchen grill',
-    caption: 'Spring alliums, Local Effort kitchen',
   },
-  // Packed pickup bowls stacked beside a slab of focaccia. This is literally
-  // what arrives when you are a member, which is why it sits with the benefits.
   pickup: {
     id: 'pijucgfeegmbms89sa0l',
     alt: 'Stacked lidded pickup bowls of salad next to a tray of dimpled focaccia',
     caption: 'One week of member pickups, waiting to go out',
   },
-  // Parsley, asparagus, chives in flower, tarragon. The February-farm argument
-  // in a single frame — it belongs to the cooperative section, not the menu.
   produce: {
     id: 'eziwhpekv6rqjubsxhwf',
     alt: 'Bunches of parsley, asparagus, flowering chives and tarragon laid out together',
-    caption: 'A Minnesota spring, bought before it was planted',
+    caption: 'Parsley, asparagus, chives in flower, tarragon',
   },
 };
+
+const BENEFITS = [
+  {
+    title: 'First look at every pickup menu',
+    copy: 'Members see the week’s menu and order from it before it goes anywhere else. The good weeks are usually spoken for by the time it does.',
+  },
+  {
+    title: 'The door to meal prep',
+    copy: 'Weekly cooking for your household is members-only. It is the one thing membership unlocks outright rather than improves.',
+  },
+  {
+    title: '4% back, every quarter',
+    copy: 'Paying members earn 4% of everything they spend with the co-op as credit. It posts quarterly, it does not expire, and it spends like money on anything we make.',
+  },
+  {
+    title: 'The things that never make the menu',
+    copy: 'Something extra in the bag, the first taste of a dish we are still arguing about in the kitchen, the occasional unannounced surprise at pickup.',
+  },
+  {
+    title: 'A payroll where every cook is offered ownership',
+    copy: 'Under Minnesota Chapter 308B, equity is open to every person who works here. Your dues fund the wages that make that ownership worth holding rather than a line in a handbook.',
+  },
+  {
+    title: 'A place on the balance sheet, if you want one',
+    copy: 'Separate from dues, members can put capital in directly through our 308B offerings — a kitchen equipment note, a growers fund, a patronage-linked capital account. Entirely optional.',
+  },
+];
 
 const FAQ_ITEMS = [
   {
     q: 'What does my membership actually pay for?',
     a: [
-      'Wages and seeds. It pays cooks on a predictable schedule instead of whatever this week’s sales allow, and it lets us put money down with Minnesota farms in late winter — while they are deciding what to plant, which is the only moment that decision can be influenced.',
-      'Buying local in August is shopping. Paying a farm in February is agriculture. Dues are what let us do the second one.',
+      'Wages, mostly. Dues are revenue we can count on, which is what lets us pay cooks on a set schedule instead of whatever a given week of sales allows, and staff the kitchen for the work ahead rather than the work already booked.',
+      'The rest is planning. Knowing roughly how many people we are cooking for lets us order further out and waste less, which is unglamorous and is most of what running a kitchen well actually is.',
     ],
   },
   {
@@ -111,14 +145,14 @@ const FAQ_ITEMS = [
   {
     q: 'Why do I have to be a member to get meal prep?',
     a: [
-      'Because cooking for a household every week is a standing relationship, not a transaction, and we plan the buying months ahead. Knowing who we cook for is what lets us commit to a farm in advance and staff a kitchen honestly.',
-      'So every meal prep customer is a Localist first. It is also the reason we will never have a surge price or a busy-season markup.',
+      'Because cooking for a household every week is a standing arrangement rather than a one-off order. Knowing who we are cooking for, and roughly how many, is what lets us order ingredients and schedule cooks with any accuracy.',
+      'So every meal prep customer is a Localist first. It is also why we will never run a surge price or a busy-season markup.',
     ],
   },
   {
     q: 'Can I put money into the co-op beyond dues?',
     a: [
-      'Yes — members can invest directly through our 308B offerings: a kitchen equipment note, a fund that pays Minnesota farms at the front of the season, or a patronage-linked capital account that makes you part-owner of the balance sheet.',
+      'Yes, and this is the part that is actually an investment — dues are not. Members can put capital in directly through our 308B offerings: a kitchen equipment note, a fund that pays Minnesota growers earlier in the year than we otherwise could, or a patronage-linked capital account.',
       'They live on your membership page once you join. Nothing is ever charged from that page, and each offering states plainly what it can and cannot return.',
     ],
   },
@@ -267,8 +301,6 @@ const LocalistPage = () => {
       }
 
       // No checkout: waived membership, or the plans aren't configured yet.
-      // The API returns the member's own membership page; fall back to the
-      // relative path so the link is never missing.
       setMembershipUrl(data?.membershipUrl || '/hub/membership');
       setStatus('success');
     } catch (err) {
@@ -277,8 +309,16 @@ const LocalistPage = () => {
     }
   };
 
+  const submitLabel = () => {
+    if (status === 'submitting') return tier === 'waived' ? 'Claiming…' : 'Taking you to checkout…';
+    if (tier === 'waived') return 'Claim free membership';
+    if (tier === 'annual') return 'Continue to payment — $375/year';
+    if (tier === 'monthly') return 'Continue to payment — $45/month';
+    return 'Choose an option above';
+  };
+
   return (
-    <div className="le-checkout-page lm-page localist-page">
+    <div className="fullpage-demo-scope service-page localist-page">
       <Helmet>
         <title>Become a Localist — Membership | {SITE_NAME}</title>
         <meta
@@ -291,150 +331,87 @@ const LocalistPage = () => {
         </script>
       </Helmet>
 
-      <nav className="le-checkout-nav">
-        <a className="le-checkout-back" href="/">← Home</a>
-      </nav>
-
-      {/* Hero — mission first */}
-      <section className="lm-hero">
-        <div className="lm-container">
-          <p className="lm-eyebrow">Local Effort Cooperative — Minneapolis</p>
-          <h1 className="lm-hero-title">Become a Localist.</h1>
-          <p className="lm-hero-copy">
-            Localists are the members of a worker-owned food cooperative. Every
-            person who cooks here is offered equity ownership in the business —
-            that is the structure, not a perk. Your membership is what makes it
-            hold: it pays cooks fairly on a predictable schedule, and it lets us
-            commit money to Minnesota farms early enough to change what they
-            plant.
-          </p>
-          <p className="lm-hero-copy">
-            You get the front of the line for it — member pickup menus, perks
-            along the way, and 4% of your spending back every quarter. It is also
-            the front door to everything else we do: membership is required to
-            become a meal prep customer.
-          </p>
-          <div className="lm-hero-actions">
-            <button type="button" className="lm-btn" onClick={() => scrollTo(pricingRef)}>
-              See membership options
-            </button>
-            <button type="button" className="lm-btn lm-btn--ghost" onClick={() => scrollTo(waiverRef)}>
-              Cost is a barrier? Join free
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* The kitchen, before any of the asking starts */}
-      <figure className="lm-band">
-        <img
-          src={bandSrc(PHOTOS.hero.id, 1600)}
-          srcSet={`${bandSrc(PHOTOS.hero.id, 800)} 800w, ${bandSrc(PHOTOS.hero.id, 1600)} 1600w, ${bandSrc(PHOTOS.hero.id, 2200)} 2200w`}
-          sizes="100vw"
-          alt={PHOTOS.hero.alt}
-          width={1600}
-          height={600}
-          fetchPriority="high"
-        />
-        <figcaption className="lm-band-caption">{PHOTOS.hero.caption}</figcaption>
-      </figure>
-
-      {/* Pricing */}
-      <section className="lm-section" ref={pricingRef}>
-        <div className="lm-container">
-          <p className="lm-eyebrow">Membership</p>
-          <h2 className="lm-section-title">One membership, two ways to pay.</h2>
-          <p className="lm-section-sub">
-            Same access either way. Pick the rhythm that fits.
-          </p>
-          <div className="lm-tiers">
-            <div className="lm-tier">
-              <p className="lm-tier-name">Monthly</p>
-              <div className="lm-tier-price">
-                <span className="lm-tier-amount">$45</span>
-                <span className="lm-tier-per">/ month</span>
-              </div>
-              <p className="lm-tier-note">
-                Full membership, month to month. Cancel anytime.
-              </p>
-              <button type="button" className="lm-btn" onClick={() => chooseTier('monthly')}>
-                Join monthly
+      <div className="ht-scope ht-scope--localist is-drawn service-page__body">
+        {/* ── The offer, beside one big print ── */}
+        <section className="service-hero">
+          <div className="ht-slip">
+            <p className="ht-kicker">membership —</p>
+            <h1 className="ht-heading">Become a Localist</h1>
+            <span className="ht-rule-line" aria-hidden="true" />
+            <p className="ht-copy">
+              Localists are the members of a worker-owned food cooperative. Every
+              person who cooks here is offered equity ownership in the business —
+              that is the structure, not a perk. Membership is what makes it hold:
+              steady revenue is what lets us pay cooks fairly, on a schedule they
+              can plan a life around.
+            </p>
+            <p className="ht-copy">
+              You get the front of the line for it — member pickup menus, perks
+              along the way, and 4% of your spending back every quarter. It is also
+              the front door to everything else we do: membership is required to
+              become a meal prep customer.
+            </p>
+            <p className="ht-facts">$45 / month · $375 / year · waived if you need it</p>
+            <div className="ht-side-links">
+              <button type="button" className="ht-side-link" onClick={() => scrollTo(pricingRef)}>
+                See membership options
               </button>
-            </div>
-            <div className="lm-tier lm-tier--featured">
-              <span className="lm-tier-badge">Save $165</span>
-              <p className="lm-tier-name">Annual</p>
-              <div className="lm-tier-price">
-                <span className="lm-tier-amount">$375</span>
-                <span className="lm-tier-per">/ year</span>
-              </div>
-              <p className="lm-tier-note">
-                Twelve months for less than nine — $375 once instead of $540.
-              </p>
-              <button type="button" className="lm-btn" onClick={() => chooseTier('annual')}>
-                Join annual
+              <button type="button" className="ht-side-link" onClick={() => scrollTo(waiverRef)}>
+                Cost is a barrier? Join free
               </button>
             </div>
           </div>
-        </div>
-      </section>
+          <div className="ht-hero-photo service-hero__photo">
+            <img src={bandSrc(PHOTOS.hero.id, 1400)} alt={PHOTOS.hero.alt} loading="eager" />
+          </div>
+        </section>
 
-      {/* Benefits */}
-      <section className="lm-section">
-        <div className="lm-container">
-          <p className="lm-eyebrow">What you get</p>
-          <h2 className="lm-section-title">Being a Localist</h2>
-          <div className="lm-split">
-            <ul className="lm-benefits">
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">First look at every pickup menu</p>
-              <p className="lm-benefit-copy">
-                Members see the week&apos;s menu and order from it before it goes
-                anywhere else. The good weeks are usually spoken for by the time
-                it does.
-              </p>
-            </li>
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">The door to meal prep</p>
-              <p className="lm-benefit-copy">
-                Weekly cooking for your household is members-only. It is the one
-                thing membership unlocks outright rather than improves.
-              </p>
-            </li>
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">4% back, every quarter</p>
-              <p className="lm-benefit-copy">
-                Paying members earn 4% of everything they spend with the co-op as
-                credit. It posts quarterly, it does not expire, and it spends like
-                money on anything we make.
-              </p>
-            </li>
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">The things that never make the menu</p>
-              <p className="lm-benefit-copy">
-                Something extra in the bag, the first taste of a dish we are still
-                arguing about in the kitchen, the occasional unannounced surprise
-                at pickup.
-              </p>
-            </li>
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">A payroll where every cook is offered ownership</p>
-              <p className="lm-benefit-copy">
-                Under Minnesota Chapter 308B, equity is open to every person who
-                works here. Your dues fund the wages that make that ownership
-                worth holding rather than a line in a handbook.
-              </p>
-            </li>
-            <li className="lm-benefit">
-              <p className="lm-benefit-title">A place on the balance sheet, if you want one</p>
-              <p className="lm-benefit-copy">
-                Members can invest directly through our 308B offerings — including
-                the fund that pays Minnesota farms at the front of the season,
-                before anything is in the ground.
-              </p>
-            </li>
+        {/* ── Pricing: a ledger, not a pair of pricing cards ── */}
+        <section className="service-pricing" ref={pricingRef}>
+          <p className="ht-kicker">what it costs —</p>
+          <h2>One membership, three ways to hold it</h2>
+          <div className="ht-ledger localist-ledger">
+            <div className="ht-ledger-row">
+              <span>Monthly — full membership, renews until you stop it</span>
+              <span className="ht-ledger-price">$45 / mo</span>
+            </div>
+            <div className="ht-ledger-row">
+              <span>Annual — twelve months for the price of about nine</span>
+              <span className="ht-ledger-price">$375 / yr</span>
+            </div>
+            <div className="ht-ledger-row">
+              <span>Cost waived — same membership, no questions asked</span>
+              <span className="ht-ledger-price">$0</span>
+            </div>
+          </div>
+          <p className="ht-footnote">
+            Same access on every line. The only difference is the 4% quarterly
+            credit, which paying members earn and waived members do not.
+          </p>
+          <div className="ht-side-links">
+            <button type="button" className="ht-side-link" onClick={() => chooseTier('monthly')}>
+              Join monthly
+            </button>
+            <button type="button" className="ht-side-link" onClick={() => chooseTier('annual')}>
+              Join annual
+            </button>
+          </div>
+        </section>
+
+        {/* ── What membership actually gets you ── */}
+        <section className="service-benefits">
+          <p className="ht-kicker">what you get —</p>
+          <h2>Being a Localist</h2>
+          <div className="localist-split">
+            <ul className="localist-benefits">
+              {BENEFITS.map((benefit) => (
+                <li className="localist-benefit" key={benefit.title}>
+                  <h3>{benefit.title}</h3>
+                  <p className="ht-copy">{benefit.copy}</p>
+                </li>
+              ))}
             </ul>
-            <figure className="lm-split-photo">
+            <figure className="ht-polaroid localist-split__photo">
               <img
                 src={`${CLOUDINARY_BASE}/c_fill,g_auto,ar_3:4,w_700,q_auto,f_auto/${PHOTOS.pickup.id}`}
                 alt={PHOTOS.pickup.alt}
@@ -446,32 +423,26 @@ const LocalistPage = () => {
               <figcaption>{PHOTOS.pickup.caption}</figcaption>
             </figure>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* The produce the argument below is actually about, ahead of the argument */}
-      <figure className="lm-band">
-        <img
-          src={bandSrc(PHOTOS.produce.id, 1600)}
-          srcSet={`${bandSrc(PHOTOS.produce.id, 800)} 800w, ${bandSrc(PHOTOS.produce.id, 1600)} 1600w`}
-          sizes="100vw"
-          alt={PHOTOS.produce.alt}
-          width={1600}
-          height={600}
-          loading="lazy"
-          decoding="async"
-        />
-        <figcaption className="lm-band-caption">{PHOTOS.produce.caption}</figcaption>
-      </figure>
-
-      {/* Why the model — the argument, made once, in the middle */}
-      <section className="lm-section">
-        <div className="lm-container">
-          <p className="lm-eyebrow">Why a cooperative</p>
-          <h2 className="lm-section-title">
-            Who owns a kitchen decides what comes out of it.
-          </h2>
-          <div className="lm-argument">
+        {/* ── The argument, made once ── */}
+        <section className="service-argument">
+          <figure className="localist-band">
+            <img
+              src={bandSrc(PHOTOS.produce.id, 1600)}
+              srcSet={`${bandSrc(PHOTOS.produce.id, 800)} 800w, ${bandSrc(PHOTOS.produce.id, 1600)} 1600w`}
+              sizes="100vw"
+              alt={PHOTOS.produce.alt}
+              width={1600}
+              height={600}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>{PHOTOS.produce.caption}</figcaption>
+          </figure>
+          <p className="ht-kicker">why a cooperative —</p>
+          <h2>Who owns a kitchen decides what comes out of it</h2>
+          <div className="localist-argument">
             <p>
               Every kitchen meets the same month eventually: costs up, revenue
               flat. There are only two fast levers. Pay the people cooking less,
@@ -488,11 +459,10 @@ const LocalistPage = () => {
               butter to protect a margin they share in.
             </p>
             <p>
-              It changes what we buy, too. Telling a farmer in February that we
-              will take the crop is more expensive and far riskier than buying the
-              same vegetable on the spot market in August. It is also the only
-              version of &ldquo;local&rdquo; that changes what gets planted. The
-              August version just relabels food that already exists.
+              We buy from Minnesota growers we know by name, and it costs more
+              than the alternative. That is a preference we pay for because we
+              think the food is better and we would rather the money stay here.
+              It is not a moral claim about anyone else&apos;s supply chain.
             </p>
             <p>
               None of this is our invention. Cooperatives have run for a century,
@@ -501,229 +471,186 @@ const LocalistPage = () => {
               proof than the audience.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Waiver — equal dignity */}
-      <section className="lm-section" ref={waiverRef}>
-        <div className="lm-container">
-          <div className="lm-waiver">
-            <p className="lm-eyebrow" style={{ marginBottom: 0 }}>Cost is a barrier?</p>
-            <h2 className="lm-waiver-title">Then membership is free.</h2>
-            <p className="lm-waiver-copy">
+        {/* ── The waiver, given the same weight as the price ── */}
+        <section className="service-waiver" ref={waiverRef}>
+          <div className="ht-slip localist-waiver">
+            <p className="ht-kicker">cost is a barrier? —</p>
+            <h2>Then membership is free</h2>
+            <span className="ht-rule-line" aria-hidden="true" />
+            <p className="ht-copy">
               Waived Localists get the same menus, the same pickups, and the same
-              perks as everyone else, plus an exclusive low-cost menu. The only
-              thing that differs is the 4% quarterly credit, which is reserved
-              for paying members.
+              perks as everyone else, plus a low-cost menu only they see. The one
+              thing that differs is the 4% quarterly credit, which is reserved for
+              paying members.
             </p>
-            <button type="button" className="lm-btn" onClick={() => chooseTier('waived')}>
-              Claim free membership
-            </button>
-            <p className="lm-waiver-fineprint">
+            <div className="ht-side-links">
+              <button type="button" className="ht-side-link" onClick={() => chooseTier('waived')}>
+                Claim free membership
+              </button>
+            </div>
+            <p className="ht-footnote ht-footnote--tight">
               If you&apos;re wondering whether this is meant for you, it is.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Signup form */}
-      <section className="lm-section" ref={formRef}>
-        <div className="lm-container">
-          <p className="lm-eyebrow">Sign up</p>
-          <h2 className="lm-section-title">Become a Localist</h2>
-          <p className="lm-section-sub">
-            Details, then payment, then you&apos;re a member — one pass, about a
-            minute. Paid memberships finish on Square&apos;s checkout (card, Apple
-            Pay, Google Pay, or Cash App Pay) and renew on their own until you
-            stop them. Claiming the waived membership skips payment entirely.
-          </p>
+        {/* ── Sign up and pay, one pass ── */}
+        <section className="service-close" ref={formRef}>
+          <div className="ht-slip">
+            <p className="ht-kicker">join —</p>
+            <h2>Become a Localist</h2>
+            <span className="ht-rule-line" aria-hidden="true" />
 
-          <div className="lm-form-wrap">
             {status === 'success' ? (
-              <div className="le-checkout-success">
-                <div className="le-checkout-success-title">
-                  {paidTier ? 'You’re in. Welcome, Localist.' : 'Welcome, Localist'}
-                </div>
-                <p className="le-checkout-success-copy">
+              <div className="ht-success">
+                <p className="ht-success-lead">
+                  {paidTier ? 'you’re in —' : tier === 'waived' ? 'welcome —' : 'received —'}
+                </p>
+                <p className="ht-copy" style={{ marginTop: 0 }}>
                   {paidTier
-                    ? `Payment went through and your ${paidTier === 'annual' ? 'annual' : 'monthly'} membership is live — Square has emailed the receipt, and it renews ${paidTier === 'annual' ? 'once a year' : 'on this date each month'} until you tell us to stop.`
+                    ? `Payment went through and your ${paidTier === 'annual' ? 'annual' : 'monthly'} membership is live. Square has emailed the receipt, and it renews ${paidTier === 'annual' ? 'once a year' : 'on this date each month'} until you tell us to stop.`
                     : tier === 'waived'
                       ? 'Your waived membership is claimed — nothing to pay, and no follow-up questions about it. You’re a Localist on the same terms as everyone else.'
                       : 'We have your details. Someone from the co-op will reach out within a day to finish setting up your membership.'}
                 </p>
-                <div className="lm-success-next">
-                  <p className="lm-success-next-title">Your membership page</p>
-                  <p className="lm-success-next-copy">
-                    Everything about your membership lives here: your perks, what
-                    you&apos;ve spent and the credit it earned, notes from us, and
-                    the 308B member offerings if you ever want to put capital in.
-                  </p>
-                  <a className="lm-btn" href={membershipUrl}>
+                <div className="ht-side-links">
+                  <a className="ht-side-link" href={membershipUrl}>
                     Open my membership page
                   </a>
-                  <p className="lm-waiver-fineprint">
-                    Bookmark it. You&apos;ll sign in with the email you used above.
-                  </p>
                 </div>
+                <p className="ht-footnote ht-footnote--tight">
+                  Bookmark it — your perks, your credit, and the 308B offerings all
+                  live there. You&apos;ll sign in with the email you used above.
+                </p>
               </div>
             ) : (
-              <form className="le-checkout-form" onSubmit={handleSubmit} noValidate>
-                <div className="le-checkout-section">
-                  <p className="le-checkout-section-title">Membership</p>
-                  <div className="lm-tier-pills" role="group" aria-label="Choose membership option">
-                    {Object.entries(TIERS).map(([key, meta]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        className={`lm-tier-pill ${tier === key ? 'is-selected' : ''}`}
-                        aria-pressed={tier === key}
-                        onClick={() => setTier(key)}
-                        disabled={status === 'submitting'}
-                      >
-                        {meta.label}
-                        <span className="lm-tier-pill-sub">{meta.sub}</span>
-                      </button>
-                    ))}
-                  </div>
+              <form className="ht-form" onSubmit={handleSubmit} noValidate>
+                <p className="ht-copy" style={{ marginTop: 0 }}>
+                  Details, then payment, then you&apos;re a member — one pass, about
+                  a minute. Paid memberships finish on Square&apos;s checkout and
+                  renew on their own until you stop them.
+                </p>
+
+                <div className="ht-chips" role="group" aria-label="Choose membership option">
+                  {Object.entries(TIERS).map(([key, meta]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className="ht-chip"
+                      aria-pressed={tier === key}
+                      onClick={() => setTier(key)}
+                      disabled={status === 'submitting'}
+                    >
+                      {meta.label} · {meta.sub}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="le-checkout-section">
-                  <p className="le-checkout-section-title">Your details</p>
-
-                  <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="localist-name">Name</label>
+                <div className="ht-row">
+                  <div>
+                    <label className="ht-label" htmlFor="localist-name">your name</label>
                     <input
                       id="localist-name"
                       type="text"
                       autoComplete="name"
-                      className="le-checkout-input"
+                      className="ht-input"
                       placeholder="Your name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       disabled={status === 'submitting'}
                     />
                   </div>
-
-                  <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="localist-email">Email</label>
+                  <div>
+                    <label className="ht-label" htmlFor="localist-email">email</label>
                     <input
                       id="localist-email"
                       type="email"
                       autoComplete="email"
-                      className="le-checkout-input"
+                      className="ht-input"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={status === 'submitting'}
                     />
                   </div>
-
-                  <div className="le-checkout-field">
-                    <label className="le-checkout-label" htmlFor="localist-phone">Phone number</label>
-                    <input
-                      id="localist-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="tel"
-                      className="le-checkout-input"
-                      placeholder="(612) 555-0100"
-                      value={formatPhone(phone)}
-                      onChange={(e) => setPhone(e.target.value)}
-                      disabled={status === 'submitting'}
-                    />
-                  </div>
-
-                  <input
-                    type="text"
-                    name="website"
-                    value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
-                    autoComplete="off"
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    className="hidden"
-                    style={{ display: 'none' }}
-                  />
-
-                  {error && <div className="le-checkout-error">{error}</div>}
-
-                  <button type="submit" className="le-checkout-submit" disabled={!canSubmit}>
-                    {status === 'submitting'
-                      ? tier === 'waived'
-                        ? 'Claiming…'
-                        : 'Taking you to checkout…'
-                      : tier === 'waived'
-                        ? 'Claim free membership'
-                        : tier === 'annual'
-                          ? 'Continue to payment — $375/year'
-                          : tier === 'monthly'
-                            ? 'Continue to payment — $45/month'
-                            : 'Choose an option above'}
-                  </button>
-
-                  <p className="le-checkout-footnote">
-                    US numbers only. We&apos;ll only use this to run your
-                    membership — no spam, and you can reply STOP to any text.
-                  </p>
                 </div>
+
+                <div>
+                  <label className="ht-label" htmlFor="localist-phone">phone</label>
+                  <input
+                    id="localist-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    className="ht-input"
+                    placeholder="(612) 555-0100"
+                    value={formatPhone(phone)}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={status === 'submitting'}
+                  />
+                </div>
+
+                <input
+                  type="text"
+                  name="website"
+                  className="ht-hp"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  autoComplete="off"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                />
+
+                {error && <p className="ht-error">{error}</p>}
+
+                <button type="submit" className="ht-submit" disabled={!canSubmit}>
+                  {submitLabel()}
+                </button>
+
+                <p className="ht-footnote">
+                  US numbers only. We&apos;ll only use this to run your membership —
+                  no spam, and you can reply STOP to any text.
+                </p>
               </form>
             )}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ */}
-      <section className="lm-section">
-        <div className="lm-container">
-          <p className="lm-eyebrow">Questions</p>
-          <h2 className="lm-section-title">FAQ</h2>
-          <div>
+        {/* ── FAQ: same details/summary material as the service pages ── */}
+        <section className="service-faq" aria-labelledby="localist-faq">
+          <p className="ht-kicker">questions —</p>
+          <h2 id="localist-faq">Before you join</h2>
+          <div className="service-faq__list">
             {FAQ_ITEMS.map((item) => (
-              <details className="lm-faq-item" key={item.q}>
-                <summary>{item.q}</summary>
-                <div className="lm-faq-answer">
+              <details className="ht-recent-menu" key={item.q}>
+                <summary>
+                  <span>{item.q}</span>
+                  <span className="ht-recent-menu__hint">answer</span>
+                </summary>
+                <div className="ht-recent-menu__body">
                   {item.a.map((paragraph) => (
-                    <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+                    <p className="ht-copy" style={{ marginTop: 0 }} key={paragraph.slice(0, 40)}>
+                      {paragraph}
+                    </p>
                   ))}
                 </div>
               </details>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Final CTA */}
-      <section className="lm-final">
-        <div className="lm-container">
-          <h2 className="lm-final-title">Eat from your cooperative.</h2>
-          <p className="lm-final-copy">
-            Join as a Localist and the co-op cooks for you every week — and if
-            money is tight, join anyway.
-          </p>
-          <div className="lm-hero-actions">
-            <button type="button" className="lm-btn" onClick={() => scrollTo(pricingRef)}>
-              See membership options
-            </button>
-            <button type="button" className="lm-btn lm-btn--ghost" onClick={() => chooseTier('waived')}>
-              Claim free membership
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery — from recent pickup menus */}
-      {images.length > 0 && (
-        <section className="lm-gallery" style={{ borderTop: '1px solid #e8e8e8' }}>
-          <div className="lm-container">
-            <p className="lm-eyebrow">From recent pickup menus</p>
-          </div>
-          <div className="lm-container">
+        {/* ── Photos ── */}
+        {images.length > 0 && (
+          <section className="service-gallery">
+            <p className="ht-kicker">from recent pickup menus —</p>
             {/* No hover-scale on these. Every card lifting 2% on hover is a
                 pattern, not a response — and the API already hands back real
                 dimensions, so they are used to reserve space instead. */}
-            <div className="lm-gallery-grid">
+            <div className="localist-gallery">
               {images.map((img, idx) => (
-                <figure className="lm-gallery-item" key={img.asset_id || img.public_id}>
+                <figure className="ht-polaroid" key={img.asset_id || img.public_id}>
                   <img
                     src={img.thumbnail_url}
                     alt={img.context?.alt || `Food from a recent Local Effort pickup menu (${idx + 1})`}
@@ -735,9 +662,9 @@ const LocalistPage = () => {
                 </figure>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   );
 };

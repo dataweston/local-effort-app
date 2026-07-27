@@ -1,0 +1,139 @@
+/* pizza-party — /pizza-party
+   -------------------------
+   A thin layer over .ht-scope--pizza (src/styles/home-tabs.css) and the
+   vertical rhythm in service-page.css, same arrangement as /localist and the
+   service pages. Only the date grid, the gallery, and the booking dialog live
+   here; everything else is the shared material system.
+
+   Rebuilt 2026-07-26. This page had been running on raw Tailwind with its own
+   look: an amber→orange→rose gradient offer card with a radial blob overlay, a
+   gradient-fill price, backdrop-blur glass date cards, 10px all-caps eyebrows,
+   hover gradient washes, and a scale-on-hover gallery. It was the one page that
+   never joined the system the Local Pizza panel it continues already used.
+
+   Direction: src/components/fullpage/HOME-TABS-DESIGN.md */
+
+.pizza-party-page {
+  background: var(--color-bg-section);
+  min-height: 100vh;
+}
+
+/* A booking confirmed in this session gets a solid accent edge; one restored
+   from a previous visit keeps the plain dashed .ht-success border. */
+.pizza-party-page .ht-success.is-fresh {
+  border-style: solid;
+}
+
+/* ── Dates ─────────────────────────────────────────────────────────────
+   The dates are .ht-chip, the same pressed-state control the event-type
+   picker uses, rather than a grid of glass cards. Sold-out and in-flight
+   dates use the chip's own :disabled state instead of a red pill. */
+
+.pizza-dates {
+  margin-top: 1rem;
+}
+
+.pizza-dates .ht-chip {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-width: 8.5rem;
+  text-align: left;
+}
+
+.pizza-dates__state {
+  display: block;
+  font-family: var(--font-yomogi);
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+/* ── Gallery ───────────────────────────────────────────────────────────── */
+
+.pizza-gallery {
+  margin-top: 1rem;
+  columns: 2;
+  column-gap: 1rem;
+}
+
+@media (min-width: 700px) {
+  .pizza-gallery { columns: 3; }
+}
+
+@media (min-width: 1000px) {
+  .pizza-gallery { columns: 4; }
+}
+
+.pizza-party-page .ht-polaroid {
+  break-inside: avoid;
+  margin: 0 0 1rem;
+  padding: 0.5rem;
+  background: var(--ht-paper);
+  border-radius: var(--ht-wobble-sm);
+}
+
+.pizza-party-page .ht-polaroid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: calc(var(--ht-wobble-sm) / 2);
+}
+
+/* ── Booking dialog ────────────────────────────────────────────────────
+   The deposit form is a slip on a plain scrim. The scrim was a blurred
+   black overlay and the panel a rounded-xl drop-shadow card; neither belongs
+   to a system built out of paper and hand-ruled edges. */
+
+.pizza-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.pizza-modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 24, 32, 0.55);
+}
+
+.pizza-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  margin: 2.5rem 0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.pizza-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pizza-modal__close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--ht-ink-soft);
+  transition: color var(--ht-dur-1) var(--ht-ease);
+}
+
+.pizza-modal__close:hover {
+  color: var(--ht-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pizza-modal__close {
+    transition: none;
+  }
+}

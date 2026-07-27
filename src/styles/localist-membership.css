@@ -1,620 +1,193 @@
-/* ==========================================================================
-   localist-membership — "Become a Localist" membership page
-   Additive layer over le-checkout.css. Same palette:
-     #fff / #fffaf1     backgrounds
-     #d9d0c6 / #e8e8e8  borders
-     #111               primary text
-     #6b655d / #756c61  muted / labels
-     'Office Code Pro' / ui-monospace  labels, prices
-   ========================================================================== */
+/* localist-membership — "Become a Localist"
+   -----------------------------------------
+   A thin layer over .ht-scope--localist (src/styles/home-tabs.css) and the
+   vertical rhythm in service-page.css. Everything structural — slip, kicker,
+   drawn rule, ledger, chips, underline inputs, submit — comes from those two.
+   This file only holds what is genuinely specific to this page: the photo
+   placements, the benefits list, and the waiver panel.
 
-.lm-page {
-  min-height: 100vh;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  color: #111;
+   Rebuilt 2026-07-26. What this file used to be is worth recording, because it
+   was the whole reason for the rebuild: an independent palette (#111 on #fff),
+   letter-spaced all-caps mono eyebrows over every heading, two SaaS pricing
+   cards with a "Save $165" badge, 01–06 markers on the benefits, and boxed
+   le-checkout inputs. HOME-TABS-DESIGN.md records every one of those as removed
+   from the rest of the site; /localist simply never got the pass.
+
+   Direction: src/components/fullpage/HOME-TABS-DESIGN.md */
+
+.localist-page {
+  background: var(--color-bg-section);
 }
 
-.lm-container {
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  box-sizing: border-box;
-}
-
-.lm-mono {
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-}
-
-.lm-eyebrow {
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #756c61;
-  margin: 0 0 1rem;
-}
-
-/* --------------------------------------------------------------------------
-   Hero
-   -------------------------------------------------------------------------- */
-
-.lm-hero {
-  padding: 4rem 0 3rem;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.lm-hero-title {
-  margin: 0 0 1.25rem;
-  font-size: clamp(2rem, 6vw, 3.25rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: #111;
-}
-
-.lm-hero-copy {
-  margin: 0 0 2rem;
-  max-width: 38rem;
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: #4a453f;
-}
-
-.lm-hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.lm-btn {
-  display: inline-block;
-  padding: 0.85rem 1.5rem;
-  border: 1px solid #111;
-  background: #111;
-  color: #fff;
-  cursor: pointer;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: background 0.15s ease, color 0.15s ease;
-  min-height: 48px;
-}
-
-.lm-btn:hover {
-  background: #2a2a2a;
-}
-
-.lm-btn--ghost {
-  background: transparent;
-  color: #111;
-}
-
-.lm-btn--ghost:hover {
-  background: #f5f1eb;
-}
-
-/* --------------------------------------------------------------------------
-   Section scaffold
-   -------------------------------------------------------------------------- */
-
-.lm-section {
-  padding: 3rem 0;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.lm-section-title {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #111;
-}
-
-.lm-section-sub {
-  margin: 0 0 2rem;
-  max-width: 36rem;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: #6b655d;
-}
-
-/* --------------------------------------------------------------------------
-   Pricing tiers — SaaS-style side by side
-   -------------------------------------------------------------------------- */
-
-.lm-tiers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  align-items: stretch;
-}
-
-@media (max-width: 640px) {
-  .lm-tiers {
-    grid-template-columns: 1fr;
-  }
-}
-
-.lm-tier {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.75rem 1.5rem;
-  border: 1px solid #d9d0c6;
-  background: #fff;
-}
-
-.lm-tier--featured {
-  background: #fffaf1;
-  border-color: #111;
-}
-
-.lm-tier-badge {
-  position: absolute;
-  top: -0.65rem;
-  left: 1.25rem;
-  padding: 0.2rem 0.6rem;
-  background: #111;
-  color: #fff;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.lm-tier-name {
-  margin: 0;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #756c61;
-}
-
-.lm-tier-price {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-}
-
-.lm-tier-amount {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #111;
-  letter-spacing: -0.02em;
-}
-
-.lm-tier-per {
-  font-size: 0.8rem;
-  color: #6b655d;
-}
-
-.lm-tier-note {
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: #6b655d;
-  margin: 0;
-}
-
-.lm-tier .lm-btn {
-  margin-top: auto;
-  width: 100%;
-  text-align: center;
-}
-
-/* --------------------------------------------------------------------------
-   Benefits list
-   -------------------------------------------------------------------------- */
-
-.lm-benefits {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Ruled rows, deliberately unnumbered. These were 01–06 markers; six benefits
-   are a set, not a sequence, and numbering a set is the AI-design tell the
-   art-page-design skill names outright. The rule between rows does the
-   separating that the numerals were pretending to do. */
-
-.lm-benefit {
-  padding: 1.05rem 0;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.lm-benefit:first-child {
-  padding-top: 0;
-}
-
-.lm-benefit:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.lm-benefit-title {
-  margin: 0 0 0.3rem;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  color: #111;
-}
-
-.lm-benefit-copy {
-  margin: 0;
-  max-width: 44rem;
-  font-size: 0.93rem;
-  line-height: 1.65;
-  color: #4a453f;
-}
-
-/* --------------------------------------------------------------------------
-   Waiver panel — equal dignity to pricing
-   -------------------------------------------------------------------------- */
-
-.lm-waiver {
-  padding: 1.75rem 1.5rem;
-  border: 1px solid #d9d0c6;
-  border-left: 3px solid #4a6640;
-  background: #f7faf4;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.lm-waiver-title {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
-  color: #111;
-}
-
-.lm-waiver-copy {
-  margin: 0;
-  max-width: 40rem;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: #27211a;
-}
-
-.lm-waiver .lm-btn {
-  align-self: flex-start;
-}
-
-.lm-waiver-fineprint {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: #4a6640;
-}
-
-/* --------------------------------------------------------------------------
-   Signup form
-   -------------------------------------------------------------------------- */
-
-.lm-form-wrap {
-  max-width: 34rem;
-}
-
-.lm-tier-pills {
-  display: flex;
-  gap: 1px;
-  background: #d9d0c6;
-}
-
-.lm-tier-pill {
-  flex: 1;
-  padding: 0.7rem 0.5rem;
-  background: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #4a453f;
-  text-align: center;
-  line-height: 1.3;
-  transition: background 0.12s ease, color 0.12s ease;
-}
-
-.lm-tier-pill:hover {
-  background: #f5f1eb;
-}
-
-.lm-tier-pill.is-selected {
-  background: #111;
-  color: #fff;
-}
-
-.lm-tier-pill-sub {
-  display: block;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.68rem;
-  margin-top: 0.2rem;
-  opacity: 0.75;
-}
-
-/* --------------------------------------------------------------------------
-   FAQ
-   -------------------------------------------------------------------------- */
-
-.lm-faq-item {
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.lm-faq-item summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 1.1rem 2rem 1.1rem 0;
-  position: relative;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #111;
-  line-height: 1.4;
-}
-
-.lm-faq-item summary::-webkit-details-marker {
-  display: none;
-}
-
-.lm-faq-item summary::after {
-  content: '+';
-  position: absolute;
-  right: 0.25rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 1.1rem;
-  color: #756c61;
-}
-
-.lm-faq-item[open] summary::after {
-  content: '−';
-}
-
-.lm-faq-item summary:hover {
-  color: #4a453f;
-}
-
-.lm-faq-answer {
-  padding: 0 0 1.25rem;
-  max-width: 40rem;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  color: #4a453f;
-}
-
-.lm-faq-answer p {
-  margin: 0 0 0.75rem;
-}
-
-.lm-faq-answer p:last-child {
-  margin-bottom: 0;
-}
-
-/* --------------------------------------------------------------------------
-   Final CTA band
-   -------------------------------------------------------------------------- */
-
-.lm-final {
-  padding: 3.5rem 0;
-  text-align: center;
-}
-
-.lm-final .lm-hero-actions {
-  justify-content: center;
-}
-
-.lm-final-title {
-  margin: 0 0 0.75rem;
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
-  letter-spacing: -0.02em;
-}
-
-.lm-final-copy {
-  margin: 0 auto 1.75rem;
-  max-width: 34rem;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: #6b655d;
-}
-
-/* --------------------------------------------------------------------------
-   Photography
+/* ── Photography ───────────────────────────────────────────────────────
    Real kitchen photographs from the Cloudinary `localist` folder, placed at
-   three fixed positions rather than sprinkled. Each one earns its spot by
-   depicting the thing its section is arguing about.
+   three fixed positions rather than sprinkled. Each earns its spot by showing
+   the thing its section is about. Every image carries width/height so nothing
+   reflows when the photos land.                                            */
 
-   Square corners and hairline rules, matching the rest of the page — the
-   gallery below is the only rounded thing here and that was an inconsistency,
-   not a decision. Every image carries width/height so the page never reflows
-   when photos land (the CLS floor).
-   -------------------------------------------------------------------------- */
-
-.lm-band {
+.localist-band {
   position: relative;
-  border-bottom: 1px solid #e8e8e8;
-  background: #f5f1eb;
+  margin: 0 0 1.75rem;
+  border-radius: var(--ht-wobble-sm);
+  overflow: hidden;
 }
 
-.lm-band img {
+.localist-band img {
   display: block;
   width: 100%;
-  height: clamp(220px, 34vw, 420px);
+  height: clamp(200px, 30vw, 380px);
   object-fit: cover;
 }
 
-.lm-band-caption {
+.localist-band figcaption {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 1.5rem;
-  margin: 0;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  padding: 1.4rem 1.5rem 1rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.95rem;
   color: #fff;
-  /* A gradient scrim, not a flat overlay: the type stays legible over a light
-     or dark crop without dimming the whole photograph. */
-  background: linear-gradient(to top, rgba(17, 17, 17, 0.72), rgba(17, 17, 17, 0));
+  /* A gradient scrim rather than a flat overlay: the hand stays legible over a
+     light or dark crop without dimming the whole photograph. */
+  background: linear-gradient(to top, rgba(30, 24, 32, 0.72), rgba(30, 24, 32, 0));
 }
 
-/* Text beside a photo — used by "What you get", where the list is long enough
-   that a full-width band would push the photo off-screen. */
-.lm-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  gap: 2.5rem;
-  align-items: start;
+/* .ht-polaroid only supplies the ±0.4° lean; the paper is here. */
+.localist-page .ht-polaroid {
+  margin: 0;
+  padding: 0.5rem 0.5rem 0;
+  background: var(--ht-paper);
+  border-radius: var(--ht-wobble-sm);
 }
 
-.lm-split-photo {
-  position: sticky;
-  top: 2rem;
-  border: 1px solid #e8e8e8;
-  background: #f5f1eb;
-}
-
-.lm-split-photo img {
+.localist-page .ht-polaroid img {
   display: block;
   width: 100%;
   height: auto;
+  border-radius: calc(var(--ht-wobble-sm) / 2);
 }
 
-.lm-split-photo figcaption {
-  padding: 0.7rem 0.85rem;
-  border-top: 1px solid #e8e8e8;
-  font-family: 'Office Code Pro', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.66rem;
-  line-height: 1.5;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #756c61;
+.localist-page .ht-polaroid figcaption {
+  padding: 0.6rem 0.15rem 0.7rem;
+  font-family: var(--font-yomogi);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ht-ink-soft);
 }
 
-@media (max-width: 800px) {
-  .lm-split {
+/* ── What you get: ruled rows beside one print ─────────────────────────
+   Deliberately unnumbered. These were 01–06 markers; six benefits are a set,
+   not a sequence, and numbering a set is the AI-design tell the
+   art-page-design skill names outright. The dashed rule between rows does the
+   separating the numerals were pretending to do.                          */
+
+.localist-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+  margin-top: 1.25rem;
+}
+
+.localist-split__photo {
+  position: sticky;
+  top: 2rem;
+}
+
+.localist-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.localist-benefit {
+  padding: 1rem 0;
+  border-bottom: 1px dashed var(--ht-rule);
+}
+
+.localist-benefit:first-child {
+  padding-top: 0;
+}
+
+.localist-benefit:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.localist-benefit .ht-copy {
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 820px) {
+  .localist-split {
     grid-template-columns: 1fr;
     gap: 1.75rem;
   }
 
-  .lm-split-photo {
+  .localist-split__photo {
     position: static;
     order: -1;
+    max-width: 420px;
   }
 }
 
-/* --------------------------------------------------------------------------
-   Gallery strip
-   -------------------------------------------------------------------------- */
+/* ── The argument ──────────────────────────────────────────────────────
+   Two columns at desktop so a four-paragraph case does not read as a wall. */
 
-.lm-gallery {
-  padding: 3rem 0 4rem;
+.localist-argument {
+  margin-top: 1.1rem;
+  columns: 1;
+  column-gap: 2.5rem;
 }
 
-.lm-gallery-grid {
+@media (min-width: 880px) {
+  .localist-argument {
+    columns: 2;
+  }
+}
+
+.localist-argument p {
+  margin: 0 0 1rem;
+  break-inside: avoid;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ht-ink);
+}
+
+.localist-argument p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Waiver ────────────────────────────────────────────────────────────
+   Given the same visual weight as the price so claiming it never reads as the
+   lesser door: same slip, one accent edge, accent wash.                    */
+
+.localist-waiver {
+  max-width: 46rem;
+  border-left: 3px solid var(--ht-accent-deep);
+  background: var(--ht-accent-wash);
+}
+
+/* ── Gallery ───────────────────────────────────────────────────────────── */
+
+.localist-gallery {
+  margin-top: 1.25rem;
   columns: 2;
   column-gap: 1rem;
 }
 
 @media (min-width: 700px) {
-  .lm-gallery-grid { columns: 3; }
+  .localist-gallery { columns: 3; }
 }
 
 @media (min-width: 1000px) {
-  .lm-gallery-grid { columns: 4; }
+  .localist-gallery { columns: 4; }
 }
 
-.lm-gallery-item {
+.localist-gallery .ht-polaroid {
   break-inside: avoid;
-  margin: 0 0 1rem;
-  border: 1px solid #e8e8e8;
-  background: #fff;
-  padding: 0.5rem;
-}
-
-.lm-gallery-item img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* --------------------------------------------------------------------------
-   Reduced motion
-   -------------------------------------------------------------------------- */
-
-@media (prefers-reduced-motion: reduce) {
-  .lm-btn,
-  .lm-tier-pill {
-    transition: none !important;
-  }
-}
-
-/* ── The argument for the model ────────────────────────────────────────
-   Set as a two-column read at desktop width so a four-paragraph case does
-   not become a wall. Same type scale as .lm-faq-answer.                */
-
-.lm-argument {
-  margin-top: 1.25rem;
-  max-width: 62rem;
-  columns: 1;
-  column-gap: 2.5rem;
-}
-
-@media (min-width: 860px) {
-  .lm-argument {
-    columns: 2;
-  }
-}
-
-.lm-argument p {
-  margin: 0 0 1rem;
-  break-inside: avoid;
-  font-size: 1rem;
-  line-height: 1.65;
-}
-
-.lm-argument p:last-child { margin-bottom: 0; }
-
-/* ── Post-signup: the membership page handoff ──────────────────────────
-   The single most useful thing we can give a brand-new member is the URL
-   of their own page, so it gets its own block inside the success state
-   rather than a sentence buried in the copy.                            */
-
-.lm-success-next {
-  margin-top: 1.5rem;
-  padding-top: 1.35rem;
-  border-top: 1px solid #e8e8e8;
-}
-
-.lm-success-next-title {
-  margin: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  opacity: 0.65;
-}
-
-.lm-success-next-copy {
-  margin: 0.6rem 0 1.1rem;
-  max-width: 34rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.lm-success-next .lm-waiver-fineprint {
-  margin-top: 0.8rem;
+  margin-bottom: 1rem;
 }

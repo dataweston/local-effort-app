@@ -17,32 +17,10 @@ import '../styles/fullpage-demo-theme.css';
 import '../styles/home-tabs.css';
 import '../styles/service-page.css';
 
-const FAQ_ITEMS = [
-  {
-    q: 'What happens after I request a date?',
-    a: 'A chef replies within one business day to confirm the date is open and ask about your guests, the space, and what you are hoping for. Nothing is charged until the date and details are settled together.',
-  },
-  {
-    q: 'What does it cost?',
-    a: 'Dinner and pizza parties start at $850; larger events start at $1,200. Per-guest rates run roughly $35–$150 depending on the menu and service. You get a written estimate before anything is booked.',
-  },
-  {
-    q: 'How far ahead should I book?',
-    a: 'Two to four weeks is comfortable for a dinner party; six or more for a wedding, shower, or holiday party. Ask about short notice anyway — we sometimes have a week open.',
-  },
-  {
-    q: 'Do you cook in my kitchen or bring a setup?',
-    a: 'Usually your kitchen — that is the point of a private chef. For larger events and pizza parties we bring what the space needs. We walk through it with you before the day.',
-  },
-  {
-    q: 'Can you handle allergies and dietary needs?',
-    a: 'Yes, and we would rather over-plan than improvise. Tell us about every guest restriction when we confirm the menu.',
-  },
-  {
-    q: 'What does a deposit hold?',
-    a: 'A deposit holds your date on our calendar. Until you have one in place the date is not reserved, even after we have talked.',
-  },
-];
+// The "Before you book" FAQ and the closing second booking form were removed on
+// client direction (2026-07-26). The page is now hero+form → testimonial →
+// photos, with exactly one ask on it. FAQ_ITEMS went with the section rather
+// than being left orphaned; git history has the six answers if they come back.
 
 const SmallEventsPage = () => {
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -126,14 +104,9 @@ const SmallEventsPage = () => {
           isPartOf: { '@id': `${SITE_URL}#website` },
           about: { '@id': `${SITE_URL}/small-events#service` },
         },
-        {
-          '@type': 'FAQPage',
-          mainEntity: FAQ_ITEMS.map((item) => ({
-            '@type': 'Question',
-            name: item.q,
-            acceptedAnswer: { '@type': 'Answer', text: item.a },
-          })),
-        },
+        // The FAQPage entry was removed with the on-page FAQ (2026-07-26):
+        // Google requires the answers to be visible on the page that claims
+        // them, so schema outliving the section would be a violation.
       ],
     }),
     [],
@@ -194,25 +167,6 @@ const SmallEventsPage = () => {
           </figure>
         </section>
 
-        {/* ── FAQ ── */}
-        <section className="service-faq" aria-labelledby="small-events-faq">
-          <p className="ht-kicker">questions —</p>
-          <h2 id="small-events-faq">Before you book</h2>
-          <div className="service-faq__list">
-            {FAQ_ITEMS.map((item) => (
-              <details className="ht-recent-menu" key={item.q}>
-                <summary>
-                  <span>{item.q}</span>
-                  <span className="ht-recent-menu__hint">answer</span>
-                </summary>
-                <div className="ht-recent-menu__body">
-                  <p className="ht-copy" style={{ marginTop: 0 }}>{item.a}</p>
-                </div>
-              </details>
-            ))}
-          </div>
-        </section>
-
         {/* ── Photos ── */}
         <section className="service-gallery">
           <PhotoGrid
@@ -221,20 +175,6 @@ const SmallEventsPage = () => {
             layout="masonry"
             className="small-events-gallery"
           />
-        </section>
-
-        {/* ── The ask, again, at the end ── */}
-        <section className="service-close">
-          <div className="ht-slip">
-            <p className="ht-kicker">book —</p>
-            <h2 className="ht-heading">Tell us the date you&apos;re hoping for</h2>
-            <span className="ht-rule-line" aria-hidden="true" />
-            <p className="ht-copy">
-              We confirm within one business day. No payment until the details are
-              settled together.
-            </p>
-            <QuickEventBookForm source="small-events-page-close" ctaLabel="Request this date" />
-          </div>
         </section>
       </div>
 

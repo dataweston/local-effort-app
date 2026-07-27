@@ -4,6 +4,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSquareCard } from '../hooks/useSquareCard';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../lib/checkoutAttemptId';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
+import '../styles/fullpage-demo-theme.css';
+import '../styles/home-tabs.css';
+import '../styles/service-page.css';
+import '../styles/pizza-party.css';
+
+const PIZZA_FAQ = [
+  {
+    q: 'What pizzas does this include?',
+    a: 'We have signature favourites we make every time, and we are happy to take requests. Tell us what your people like when we confirm the date.',
+  },
+  {
+    q: 'Does it include anything besides pizza?',
+    a: 'This offer is pizza only, but it is easy to build out — salads, sides, and dessert can all be added. Ask and we will price it.',
+  },
+  {
+    q: 'What kind of pizza do you make?',
+    a: 'Minnesotan-style. Sort of Neapolitan, sort of New York. Puffy, crispy, chewy crusts. It is our own thing.',
+  },
+];
 
 // Fetch up to 8 images tagged 'pizza' using existing API (uses tag expansion logic)
 async function fetchPizzaImages(setter, setError, setLoading) {
@@ -466,163 +485,166 @@ const PizzaPartyPage = () => {
         {/* <meta property="og:image" content="https://localeffort.app/og/pizza-party.jpg" /> */}
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
-      <div className="space-y-16">
-        {bookedDate && (
-          <div className={`p-4 rounded-lg border bg-green-50 text-green-800 text-sm shadow-sm flex items-start gap-3 transition-all ${justBooked ? 'border-green-400 ring-2 ring-green-300' : 'border-green-300'}`}>
-            <span className="font-semibold">Booked!</span>
-            <span>Your reservation for <strong>{bookedDate}</strong> was received. We\'ll follow up to confirm details.</span>
-          </div>
-        )}
-        {/* Removed original h2 and paragraph per request */}
-      </div>
-
-      <div className="mx-auto max-w-6xl px-4 py-10 space-y-14">
-        {/* Intro */}
-        <div className="text-center space-y-4">
-          <h1 className="heading-display heading-balance">Pizza party special</h1>
-          <p className="mt-2 text-xl md:text-2xl text-neutral-800 max-w-3xl mx-auto leading-relaxed">Host an unforgettable pizza experience right in your home. We bring the oven, the dough, and the vibes. We call it <strong>Local Pizza</strong>.</p>
-        </div>
-
-        {/* Offer Card */}
-        <section>
-          <div className="relative rounded-2xl border bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-6 md:p-10 overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none opacity-[0.15]" style={{backgroundImage:'radial-gradient(circle at 30% 30%, #fb923c, transparent 60%)'}} />
-            <div className="relative grid md:grid-cols-3 gap-8 items-center">
-              <div className="md:col-span-2 space-y-4">
-                <h2 className="heading-lg heading-balance">Pizza party in your home</h2>
-                <ul className="list-disc list-inside text-neutral-700 text-sm md:text-base space-y-1">
-                  <li>Up to 15 guests</li>
-                  <li>100% local midwest ingredients, slow-fermented sourdough crust</li>
-                  <li>We handle setup, firing & service</li>
-                  <li>Includes 2 hours of active pizza making/eating time</li>
-                </ul>
-              </div>
-              <div className="flex flex-col items-center justify-center gap-4">
-                <div className="text-center space-y-2">
-                  <div className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">${basePrice}</div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">Deposit to Reserve</div>
-                  <div className="text-sm text-neutral-600">Est. ${estimatedTotal} for {guestCount} guests</div>
-                </div>
-                <button type="button" onClick={() => openModal(null)} className="inline-flex items-center rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 shadow-sm transition-colors">Book / Pay Deposit</button>
-              </div>
+      {/* Rebuilt onto .ht-scope--pizza (2026-07-26). What was here: an
+          amber→orange→rose gradient card with a radial blob overlay, a
+          gradient-fill price, backdrop-blur date cards, 10px all-caps eyebrows,
+          and hover gradient washes. Every one of those is on the
+          art-page-design blacklist, and none of it matched the Local Pizza
+          panel this page is supposed to continue. Payment logic below is
+          untouched — this was a reskin, not a rewrite. */}
+      <div className="fullpage-demo-scope service-page pizza-party-page">
+        <div className="ht-scope ht-scope--pizza is-drawn service-page__body">
+          {bookedDate && (
+            <div
+              className={`ht-success${justBooked ? ' is-fresh' : ''}`}
+              role="status"
+            >
+              <p className="ht-success-lead">booked —</p>
+              <p className="ht-copy" style={{ marginTop: 0 }}>
+                Your reservation for <strong>{bookedDate}</strong> was received.
+                We&apos;ll follow up to confirm the details.
+              </p>
             </div>
-          </div>
-        </section>
+          )}
 
-        {/* Available Dates */}
-        <section id="dates">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            Available {availabilityMonthLabel} Dates
-            <span className="text-[10px] font-mono bg-neutral-200 rounded px-1.5 py-0.5">{availabilityYearLabel}</span>
-          </h3>
-          <div className="mx-auto max-w-4xl">
-            {upcomingDates.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600">
-                More pizza party dates are coming soon. Reach out if you need a custom date.
+          {/* ── The offer ── */}
+          <section className="service-hero">
+            <div className="ht-slip">
+              <p className="ht-kicker">local pizza —</p>
+              <h1 className="ht-heading">A pizza party in your house</h1>
+              <span className="ht-rule-line" aria-hidden="true" />
+              <p className="ht-copy">
+                We bring the oven, the dough, and the fire. You invite people and
+                stand around the oven with them for two hours while pizzas come
+                out one at a time.
+              </p>
+              <div className="ht-ledger">
+                <div className="ht-ledger-row">
+                  <span>Up to 15 guests</span>
+                </div>
+                <div className="ht-ledger-row">
+                  <span>100% local Midwest ingredients, slow-fermented sourdough crust</span>
+                </div>
+                <div className="ht-ledger-row">
+                  <span>Setup, firing and service handled</span>
+                </div>
+                <div className="ht-ledger-row">
+                  <span>Two hours of active pizza making and eating</span>
+                </div>
+                <div className="ht-ledger-row">
+                  <span>Deposit to reserve your date</span>
+                  <span className="ht-ledger-price">${basePrice}</span>
+                </div>
+                <div className="ht-ledger-row">
+                  <span>Estimated total for {guestCount} guests</span>
+                  <span className="ht-ledger-price">${estimatedTotal}</span>
+                </div>
               </div>
+              <button type="button" onClick={() => openModal(null)} className="ht-submit">
+                Book a date
+              </button>
+            </div>
+          </section>
+
+          {/* ── Dates: chips, the same pressed-state control the event type uses ── */}
+          <section id="dates" className="service-pricing">
+            <p className="ht-kicker">open dates —</p>
+            <h2>
+              {availabilityMonthLabel} {availabilityYearLabel}
+            </h2>
+            {upcomingDates.length === 0 ? (
+              <p className="ht-copy">
+                More pizza party dates are coming soon. Get in touch if you need a
+                date we haven&apos;t listed.
+              </p>
             ) : (
-              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="ht-chips pizza-dates">
                 {upcomingDates.map(({ label, weekday }) => {
                   const st = bookingState[label] || {};
                   const isSoldOut = soldOutDates.has(label);
                   return (
-                    <li key={label} className={`relative group rounded-xl border bg-white/80 backdrop-blur-sm shadow-sm px-3 py-3 flex flex-col items-start justify-between h-28 overflow-hidden ${isSoldOut ? 'opacity-80' : ''}`}>
-                      <div className="w-full flex items-start justify-between gap-2">
-                        <div>
-                          {weekday && <span className="block text-[10px] uppercase tracking-wide text-neutral-500">{weekday}</span>}
-                          <span className="font-semibold text-neutral-800 text-sm tracking-tight">{label}</span>
-                        </div>
-                        {st.loading && <span className="text-[10px] text-orange-600 animate-pulse">...</span>}
-                      </div>
-                      <button
-                        type="button"
-                        disabled={st.loading || isSoldOut}
-                        onClick={() => openModal(label)}
-                        className={`mt-auto inline-flex justify-center items-center rounded-md px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors border ${st.loading || isSoldOut ? 'bg-neutral-200 text-neutral-500 border-neutral-200 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600'}`}
-                        aria-label={`Book pizza party on ${label}`}
-                      >
-                        {isSoldOut ? 'Sold out' : st.loading ? 'Processing' : 'Book'}
-                      </button>
-                      {isSoldOut && (
-                        <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wide bg-rose-100 text-rose-700 rounded px-2 py-0.5">Sold Out</span>
-                      )}
-                      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-orange-50/40 to-rose-50/40" />
-                    </li>
+                    <button
+                      key={label}
+                      type="button"
+                      className="ht-chip"
+                      disabled={st.loading || isSoldOut}
+                      onClick={() => openModal(label)}
+                      aria-label={`Book pizza party on ${label}`}
+                    >
+                      {weekday ? `${weekday} ` : ''}{label}
+                      <span className="pizza-dates__state">
+                        {isSoldOut ? 'sold out' : st.loading ? 'one moment' : 'book'}
+                      </span>
+                    </button>
                   );
                 })}
-              </ul>
+              </div>
             )}
-          </div>
-        </section>
+          </section>
 
-        {/* Image Grid */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-xl font-semibold">Pizza Inspiration</h3>
-            {loading && <span className="text-sm text-neutral-500 animate-pulse">Loading...</span>}
-          </div>
-          {error && (
-            <div className="p-4 mb-6 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm">
-              Could not load images: {error}
+          {/* ── Photos ── */}
+          <section className="service-gallery">
+            <p className="ht-kicker">from the oven —</p>
+            {error && <p className="ht-error">Could not load images: {error}</p>}
+            <div className="pizza-gallery">
+              {images.map((img, idx) => (
+                <figure className="ht-polaroid" key={img.asset_id || img.public_id}>
+                  <img
+                    src={img.thumbnail_url}
+                    alt={`Wood-fired pizza from a Local Effort pizza party (${idx + 1})`}
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority={idx < 2 ? 'high' : 'auto'}
+                  />
+                </figure>
+              ))}
             </div>
-          )}
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
-            {/* Masonry using CSS multi-columns */}
-            {images.map((img, idx) => (
-              <motion.figure key={img.asset_id || img.public_id} className="mb-3 break-inside-avoid rounded-lg overflow-hidden shadow-sm bg-neutral-100" whileHover={{ scale: 1.02 }}>
-                <img
-                  src={img.thumbnail_url}
-                  alt={`Wood-fired pizza ${idx + 1}`}
-                  loading="lazy"
-                  className="w-full h-auto block"
-                  decoding="async"
-                  fetchPriority={idx < 2 ? 'high' : 'auto'}
-                />
-              </motion.figure>
-            ))}
             {!loading && images.length === 0 && !error && (
-              <p className="text-sm text-neutral-500">No images found yet. Tag some photos in Cloudinary with 'pizza'.</p>
+              <p className="ht-footnote">
+                No photos yet — tag some Cloudinary images with &lsquo;pizza&rsquo;.
+              </p>
             )}
-          </div>
-        </section>
+          </section>
 
-        {/* FAQ Section */}
-        <section>
-          <h3 className="text-xl font-semibold mt-24 mb-6">FAQ</h3>
-          <div className="space-y-6">
-            <div>
-              <h4 className="font-medium text-neutral-900">What pizzas does this include?</h4>
-              <p className="text-sm text-neutral-700 mt-1">We have some signature favorites, or we're happy to take requests.</p>
+          {/* ── FAQ ── */}
+          <section className="service-faq" aria-labelledby="pizza-faq">
+            <p className="ht-kicker">questions —</p>
+            <h2 id="pizza-faq">Before you book</h2>
+            <div className="service-faq__list">
+              {PIZZA_FAQ.map((item) => (
+                <details className="ht-recent-menu" key={item.q}>
+                  <summary>
+                    <span>{item.q}</span>
+                    <span className="ht-recent-menu__hint">answer</span>
+                  </summary>
+                  <div className="ht-recent-menu__body">
+                    <p className="ht-copy" style={{ marginTop: 0 }}>{item.a}</p>
+                  </div>
+                </details>
+              ))}
             </div>
-            <div>
-              <h4 className="font-medium text-neutral-900">Does it include anything besides pizza?</h4>
-              <p className="text-sm text-neutral-700 mt-1">This offer is just for pizza, but we can build a bigger package if you like. It's easy to add additional sides like salads and dessert.</p>
-            </div>
-            <div>
-              <h4 className="font-medium text-neutral-900">What kind of pizza do you make?</h4>
-              <p className="text-sm text-neutral-700 mt-1">Minnesotan-style. It's sort of neapolitan, sort of New York. Puffy, crispy, chewy crusts. It's our own thing.</p>
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
       <AnimatePresence>
         {showModal && (
-          <motion.div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
+          <motion.div className="fullpage-demo-scope pizza-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="pizza-modal__scrim" onClick={closeModal} />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-              className="relative w-full max-w-md rounded-xl bg-white shadow-lg border p-6 space-y-5 mt-10 mb-10 max-h-[90vh] overflow-y-auto"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="ht-scope ht-scope--pizza is-drawn ht-slip pizza-modal__panel"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="pizza-modal__head">
                 <div>
-                  <h3 className="text-lg font-semibold">{selectedDate ? `Book ${selectedDate}` : 'Select a Date'}</h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">{selectedDate ? 'Confirm your details below.' : 'Choose a date to continue.'}</p>
+                  <p className="ht-kicker">{selectedDate ? 'book —' : 'pick a date —'}</p>
+                  <h3 className="ht-heading">{selectedDate ? selectedDate : 'Select a date'}</h3>
+                  <span className="ht-rule-line" aria-hidden="true" />
                 </div>
-                <button onClick={closeModal} className="text-neutral-400 hover:text-neutral-600" aria-label="Close">✕</button>
+                <button onClick={closeModal} className="pizza-modal__close" aria-label="Close">✕</button>
               </div>
               {!selectedDate && (
                 <div className="space-y-2">

@@ -62,6 +62,16 @@
   --ht-accent-wash: rgba(122, 132, 110, 0.14);
 }
 
+/* localist — olive too, on the same reasoning as about: membership is the
+   co-op itself rather than a fifth thing to buy. It also traces to the page it
+   replaced, whose waiver panel was already a green (#4a6640); olive is this
+   system's green. */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-scope--localist {
+  --ht-accent: #7a846e;
+  --ht-accent-deep: #5a6350;
+  --ht-accent-wash: rgba(122, 132, 110, 0.14);
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-scope ::selection {
   background: var(--ht-accent);
   color: #fff;

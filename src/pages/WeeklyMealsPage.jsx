@@ -363,17 +363,9 @@ const WeeklyMealsPage = () => {
         </section>
 
         {/* ── The ask, again, at the end ── */}
-        <section className="service-close">
-          <div className="ht-slip">
-            <p className="ht-kicker">start —</p>
-            <h2 className="ht-heading">Let&apos;s plan your first week</h2>
-            <span className="ht-rule-line" aria-hidden="true" />
-            <p className="ht-copy">
-              Name and email is all we need. A chef replies within one business day.
-            </p>
-            <MealPrepQuickStart source="weekly-meals-page-close" />
-          </div>
-        </section>
+        {/* The closing second signup form was removed on client direction
+            (2026-07-26). One ask per page: the form in the hero is above the
+            fold and is the page's job. */}
       </div>
     </div>
   );

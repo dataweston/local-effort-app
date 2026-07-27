@@ -44,4 +44,63 @@
   --color-overlay-strong: rgba(58, 46, 63, 0.72);
   --color-surface-muted: rgba(58, 46, 63, 0.12);
   --color-focus-ring: rgba(122, 132, 110, 0.35);
+
+  /* ── Specimen tier ──────────────────────────────────────────────────────
+     Measured, not chosen. Every value below is the median of pixels sampled
+     from the 21 works in the Rijksmuseum set the owner assembled
+     (docs/design/REFERENCE-SET.md lists them; the sampler is
+     scripts/reference/palette.py).
+
+     The set splits in two and so does this tier. Thirteen works are paper —
+     specimen sheets and drawings where 75–98% of the canvas is bare sheet and
+     the subject floats on it with a cast shadow. Eight are panel, where the
+     ground is a near-black void: Coorte's asparagus is 81% dark, Hondecoeter's
+     pelican 71%.
+
+     --brand-linen (above) already sits within a hair of the measured sheet, so
+     it stays the page field and nothing here replaces it. What the brand did
+     not have was the other half: a dark surface. That is --brand-void, and it
+     is the only genuinely new field colour on the site. */
+  --brand-sheet: #F3EBE5;   /* median ground across the 13 paper works */
+  --brand-void: #18130C;    /* Coorte, SK-A-2099 — the ground under the bundle */
+  --brand-oxide: #A26354;   /* median accent; it covers 4.2% of a sheet, no more */
+  --brand-mount: #E4E4D8;   /* Henstenburgh's mount board, RP-T-1898-A-3500 */
+
+  /* Accents the pictures actually offer, for surfaces that carry a work.
+     Sampled from the top saturation percentile of each named object — the
+     poppy, the apple skin, the ice field — because a k-means over a whole
+     Golden Age canvas only ever returns its earth-tone mass. Coorte and
+     Hondecoeter are absent on purpose: their most saturated pixels ARE dark
+     browns, so those two lend the void above and no accent at all. */
+  --accent-poppy: #8F3031;  /* Henstenburgh, RP-T-1898-A-3500 */
+  --accent-apple: #AC4C4B;  /* de Boodt, RP-T-BR-2017-1-9-58 */
+  --accent-ochre: #794F2B;  /* Avercamp, SK-A-1718 */
+
+  /* ── Material ───────────────────────────────────────────────────────────
+     The references are objects, not images: ruled borders, cast shadows, mount
+     board, a caption strip divided into three languages. These are the parts
+     of that grammar the CSS can hold.
+
+     The shadow is directional because the sources are. Coorte lights the
+     bundle from the upper left and every drawing in the set was photographed
+     with a raking light from the same side, so nothing on this site casts a
+     shadow straight down. */
+  --specimen-rule: rgba(58, 46, 63, 0.42);
+  --specimen-rule-hair: rgba(58, 46, 63, 0.18);
+  --specimen-shadow: 14px 10px 22px -12px rgba(58, 46, 63, 0.42);
+  --specimen-shadow-lifted: 26px 20px 42px -18px rgba(58, 46, 63, 0.46);
+  --specimen-light: -32deg; /* the raking angle, shared by shadow and ambient */
+
+  /* ── Motion ─────────────────────────────────────────────────────────────
+     Canonical copies of the scale /julydinner set (july-dinner.css:19-21) and
+     the home tabs then duplicated (home-tabs.css:24-26). Same numbers, one
+     home. Page scopes should alias these rather than restate them.
+
+     Three durations and one curve, deliberately. A page reads as gentle
+     because its motion is consistent, not because each piece of it is slow. */
+  --le-dur-1: 240ms;   /* hover, focus, small state */
+  --le-dur-2: 600ms;   /* entrances, section transitions */
+  --le-dur-3: 2400ms;  /* things that draw themselves */
+  --le-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --le-ambient: 48s;   /* one continuous loop, long enough not to be counted */
 }

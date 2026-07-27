@@ -1,0 +1,295 @@
+/* Specimen — the shared material system for the public site.
+   Direction and provenance: docs/design/SPECIMEN.md
+
+   Read off 21 works the owner collected at the Rijksmuseum (the set is listed
+   in docs/design/REFERENCE-SET.md). Thirteen of them are paper — specimen
+   sheets, study sheets, mounted drawings — and they share one grammar that
+   this file turns into CSS:
+
+     a subject sits alone on a sheet, lit from the upper left, casting a shadow
+     sideways; a ruled border holds the sheet; a divided strip along the bottom
+     names the thing, in more than one language; the apparatus of documentation
+     (folio numbers, accession numbers, pencil marks) is left visible rather
+     than tidied away.
+
+   de Boodt's apple sheet (RP-T-BR-2017-1-9-58) is the clearest single case:
+   double rule, four apples floating with cast shadows, "153" in the corner, and
+   a three-cell caption strip reading Boheemsche Appel · Poma Bohemica · Pomme
+   de Bohème. That drawing is a header, a grid and a footer from 1600.
+
+   Everything here is scoped under .specimen so it cannot leak into the hub,
+   planner or brain surfaces, which are tools and not sheets. */
+
+.specimen {
+  /* alias the canonical scale rather than restating it (brand-tokens.css) */
+  --sp-dur-1: var(--le-dur-1);
+  --sp-dur-2: var(--le-dur-2);
+  --sp-dur-3: var(--le-dur-3);
+  --sp-ease: var(--le-ease);
+
+  --sp-sheet: var(--brand-sheet);
+  --sp-ink: var(--brand-ink);
+  --sp-rule: var(--specimen-rule);
+  --sp-rule-hair: var(--specimen-rule-hair);
+
+  color: var(--sp-ink);
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────
+   Two, because the sources have two. The sheet is the default; the void is
+   for the one moment a page needs weight, and it is the only surface on this
+   site that is dark. Use it once per page or it stops meaning anything. */
+
+.specimen-sheet {
+  position: relative;
+  background-color: var(--sp-sheet);
+  isolation: isolate;
+}
+
+.specimen-void {
+  position: relative;
+  background-color: var(--brand-void);
+  color: var(--brand-linen);
+  isolation: isolate;
+}
+
+/* Real paper, not generated noise. This is a 512px tile cut from the empty
+   margin of the Anemones sheet (RP-T-1948-43) at native resolution via the
+   IIIF region endpoint, mirror-tiled and colour-neutralised so it can sit over
+   either field. It carries actual foxing specks and fibre. Kept faint on
+   purpose: it should be felt at reading distance and invisible in a
+   screenshot. */
+.specimen-sheet::before,
+.specimen-void::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url('/brand/specimen-paper.webp');
+  background-size: 512px 512px;
+  background-repeat: repeat;
+}
+
+.specimen-sheet::before {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+.specimen-void::before {
+  mix-blend-mode: screen;
+  opacity: 0.16;
+}
+
+/* ── The ruled sheet ─────────────────────────────────────────────────────
+   de Boodt's double border: a hairline outside, a firmer rule inside, with the
+   gap between them doing the work. Square corners — every ruled border in the
+   set was drawn with a straight edge, so nothing here is rounded. */
+
+.specimen-frame {
+  position: relative;
+  border: 1px solid var(--sp-rule);
+  padding: clamp(0.9rem, 2.2vw, 1.6rem);
+}
+
+.specimen-frame::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--sp-rule-hair);
+  pointer-events: none;
+}
+
+/* The folio number, top right, the way a cataloguer wrote it on the sheet. */
+.specimen-frame__folio {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.75rem;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--sp-ink) 45%, transparent);
+}
+
+/* ── The figure ──────────────────────────────────────────────────────────
+   An object on a sheet, lit from the upper left. The shadow is offset
+   sideways, never straight down, because that is where the light is in every
+   photograph in the set and in Coorte's painting besides. */
+
+.specimen-figure {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(var(--specimen-shadow));
+  transition: filter var(--sp-dur-2) var(--sp-ease);
+}
+
+.specimen-figure--lifted {
+  filter: drop-shadow(var(--specimen-shadow-lifted));
+}
+
+/* ── The caption strip ───────────────────────────────────────────────────
+   Three cells divided by rules, from the bottom of the de Boodt sheet. It
+   replaces the letter-spaced all-caps eyebrow this page would otherwise have
+   grown: same job — name the thing before you explain it — done the way the
+   source does it. Data is mono, the hand note is Yomogi. */
+
+.specimen-caption {
+  display: grid;
+  grid-template-columns: repeat(var(--sp-caption-cells, 3), minmax(0, 1fr));
+  border-top: 1px solid var(--sp-rule);
+  margin-top: 0.9rem;
+}
+
+.specimen-caption > * {
+  padding: 0.45rem 0.7rem;
+  border-right: 1px solid var(--sp-rule-hair);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.specimen-caption > *:last-child {
+  border-right: 0;
+}
+
+.specimen-caption__data {
+  font-family: var(--font-office-code, monospace);
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--sp-ink) 62%, transparent);
+}
+
+.specimen-caption__hand {
+  font-family: var(--font-yomogi, cursive);
+  color: color-mix(in srgb, var(--sp-ink) 78%, transparent);
+}
+
+@media (max-width: 40rem) {
+  .specimen-caption {
+    grid-template-columns: 1fr;
+  }
+  .specimen-caption > * {
+    border-right: 0;
+    border-bottom: 1px solid var(--sp-rule-hair);
+  }
+  .specimen-caption > *:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* ── Reveal by degree of finish ──────────────────────────────────────────
+   The single most useful thing in the whole set is Nieuwenhuis's study sheet
+   (RP-T-1969-185): hawthorn berries fully painted, anemones in bare outline, a
+   root system in pencil — one sheet, four states of completion, at once.
+
+   So things on this site do not fade upward twenty pixels. They finish:
+   the rule draws itself, then the subject arrives unsaturated like a wash,
+   then the colour settles. Three stages inside one 900ms window, which is the
+   budget for a section entrance.
+
+   Driven by the same observer the lake menu uses (LakeMenu.jsx:47-66):
+   data-finish flips to "done" once, on first intersection. */
+
+.specimen-reveal {
+  --sp-finish-delay: 0ms;
+}
+
+.specimen-reveal [data-draw] {
+  stroke-dasharray: var(--sp-draw-length, 1200);
+  stroke-dashoffset: var(--sp-draw-length, 1200);
+  transition: stroke-dashoffset var(--sp-dur-3) var(--sp-ease) var(--sp-finish-delay);
+}
+
+.specimen-reveal .specimen-figure,
+.specimen-reveal [data-wash] {
+  opacity: 0;
+  filter: saturate(0) contrast(0.88);
+  transition:
+    opacity var(--sp-dur-2) var(--sp-ease) var(--sp-finish-delay),
+    filter var(--sp-dur-2) var(--sp-ease) calc(var(--sp-finish-delay) + 300ms);
+}
+
+.specimen-reveal[data-finish='done'] [data-draw] {
+  stroke-dashoffset: 0;
+}
+
+.specimen-reveal[data-finish='done'] .specimen-figure,
+.specimen-reveal[data-finish='done'] [data-wash] {
+  opacity: 1;
+  filter: saturate(1) contrast(1);
+}
+
+/* Stagger without a parade: four steps of 90ms, then everything shares the
+   last one. A visitor should never wait on the page to finish arriving. */
+.specimen-reveal > *:nth-child(2) { --sp-finish-delay: 90ms; }
+.specimen-reveal > *:nth-child(3) { --sp-finish-delay: 180ms; }
+.specimen-reveal > *:nth-child(4) { --sp-finish-delay: 270ms; }
+.specimen-reveal > *:nth-child(n + 5) { --sp-finish-delay: 360ms; }
+
+/* ── Ambient ─────────────────────────────────────────────────────────────
+   One continuous element for the whole site: the raking light drifts across
+   the void field on a 48s cycle, matching the drift already on /julydinner
+   (july-dinner.css:432). Long enough that the eye cannot count it, transform
+   and opacity only, and it pauses when the section is off-screen. */
+
+.specimen-void__light {
+  position: absolute;
+  inset: -20% -10%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 50% at 32% 28%,
+    rgba(241, 227, 216, 0.16),
+    transparent 70%
+  );
+  animation: specimen-rake var(--le-ambient) var(--sp-ease) infinite alternate;
+}
+
+@keyframes specimen-rake {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.06); }
+}
+
+/* ── Focus and selection, in the page's own language ─────────────────────
+   A dashed rule, because every border in the reference set is drawn rather
+   than rendered. Matches the treatment on /julydinner. */
+
+.specimen :focus-visible {
+  outline: 2px dashed var(--brand-oxide);
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+.specimen ::selection {
+  background: var(--brand-oxide);
+  color: var(--brand-linen);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────
+   Not a kill switch. The aesthetic here is the finished sheet, so the reduced
+   variant simply presents everything already finished — drawn, saturated,
+   settled — and the raking light holds at one position instead of drifting.
+   Nothing is hidden and nothing waits. */
+
+@media (prefers-reduced-motion: reduce) {
+  .specimen-reveal [data-draw],
+  .specimen-reveal[data-finish='done'] [data-draw] {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+
+  .specimen-reveal .specimen-figure,
+  .specimen-reveal [data-wash] {
+    opacity: 1;
+    filter: saturate(1) contrast(1);
+    transition: none;
+  }
+
+  .specimen-figure {
+    transition: none;
+  }
+
+  .specimen-void__light {
+    animation: none;
+    transform: translate3d(0, 0, 0) scale(1.03);
+  }
+}

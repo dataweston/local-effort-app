@@ -102,6 +102,19 @@
   padding-bottom: 1rem;
 }
 
+/* ── Additional section rhythm (used by /localist) ───────────────────── */
+
+.service-benefits,
+.service-argument,
+.service-waiver {
+  margin-top: var(--service-rhythm);
+}
+
+.service-argument,
+.service-benefits {
+  max-width: 62rem;
+}
+
 /* ── Quote, gallery, close ───────────────────────────────────────────── */
 
 .service-quote {
