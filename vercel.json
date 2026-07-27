@@ -319,8 +319,8 @@
       "dest": "/prerender/book/index.html"
     },
     {
-      "src": "^/office-catering$",
-      "dest": "/prerender/office-catering/index.html"
+      "src": "^/localist$",
+      "dest": "/prerender/localist/index.html"
     },
     {
       "src": "^/weekly-meals$",
@@ -331,12 +331,12 @@
       "dest": "/prerender/small-events/index.html"
     },
     {
-      "src": "^/localist$",
-      "dest": "/prerender/localist/index.html"
-    },
-    {
       "src": "^/308b-member$",
       "dest": "/prerender/308b-member/index.html"
+    },
+    {
+      "src": "^/office-catering$",
+      "dest": "/prerender/office-catering/index.html"
     },
     {
       "src": "^/weeklymeals$",

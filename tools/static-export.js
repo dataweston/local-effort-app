@@ -46,6 +46,13 @@ function buildSSRApp() {
       '.gif': 'dataurl',
     },
     external: [
+      // Assets served straight out of public/ at runtime. Vite leaves
+      // root-absolute url() alone, but esbuild tries to resolve it off disk and
+      // fails the whole prerender — see src/styles/specimen.css, which is the
+      // first CSS in this repo to reference a public asset that way.
+      '/brand/*',
+      '/images/*',
+      '/gallery/*',
       // Avoid bundling React/runtime to ensure singletons match react-dom/server
       'react',
       'react/jsx-runtime',
