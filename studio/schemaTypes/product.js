@@ -153,9 +153,16 @@ export default {
     { name: 'active', title: 'Active', type: 'boolean', initialValue: true },
     {
       name: 'allowsDelivery',
-      title: 'Allow local delivery',
+      title: 'Eligible for local delivery',
       type: 'boolean',
-      description: 'If enabled, customers may choose local delivery at checkout. Leave unchecked to make this item pickup only.',
+      description: 'Enabled by default. Turn this off to mark the product pickup only; guests will see a red pickup-only notice.',
+      initialValue: true,
+    },
+    {
+      name: 'requiresDateSelection',
+      title: 'Calendar selection',
+      type: 'boolean',
+      description: 'Enable this for event products. Customers must choose a future date before adding the product to their bag.',
       initialValue: false,
     },
   ],

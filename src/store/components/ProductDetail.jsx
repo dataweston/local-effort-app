@@ -24,6 +24,7 @@ export default function ProductDetail({ product, sku, onClose }) {
   const [variantIdx, setVariantIdx] = useState(0);
   const [selectedAddOns, setSelectedAddOns] = useState({});
   const [isDairyFree, setIsDairyFree] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
   const overlayRef = useRef(null);
   const closeBtnRef = useRef(null);
   const prevFocusRef = useRef(null);
@@ -75,7 +76,7 @@ export default function ProductDetail({ product, sku, onClose }) {
     if (isDairyFree && product.offerDairyFree) labels.push('Dairy-free');
     return labels.join(', ');
   }, [chosen, selectedAddOnIndices, product.addOns, isDairyFree, product.offerDairyFree]);
-  const cartKey = buildCartKey(product.id, variationId, selectedAddOnIndices, isDairyFree);
+  const cartKey = buildCartKey(product.id, variationId, selectedAddOnIndices, isDairyFree, selectedDate);
   const inCartQty = map?.[cartKey]?.qty || 0;
   const isOutOfStock = product.inventoryManaged && (product.inventory ?? 0) <= inCartQty;
   const leadText = useMemo(() => {
@@ -86,7 +87,7 @@ export default function ProductDetail({ product, sku, onClose }) {
     return text.length > 220 ? `${text.slice(0, 217).trim()}...` : text;
   }, [product]);
   const handleAdd = useCallback(() => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || (product.requiresDateSelection && !selectedDate)) return;
     add({
       productId: product.id,
       variationId,
@@ -97,13 +98,14 @@ export default function ProductDetail({ product, sku, onClose }) {
       addOnIndices: selectedAddOnIndices,
       dairyFree: isDairyFree,
       optionSummary,
-      allowsDelivery: !!product.allowsDelivery,
+      allowsDelivery: product.allowsDelivery !== false,
+      selectedDate,
     });
     notify(`${product.title} added`, {
       actionLabel: 'View bag',
       onAction: () => { onClose(); openCart(); },
     });
-  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOnIndices, isDairyFree, optionSummary, notify, onClose, openCart]);
+  }, [isOutOfStock, add, product, variationId, unitPrice, images, selectedAddOnIndices, isDairyFree, optionSummary, selectedDate, notify, onClose, openCart]);
 
   // Focus trap + Escape
   useEffect(() => {
@@ -205,6 +207,22 @@ export default function ProductDetail({ product, sku, onClose }) {
             </div>
 
             {leadText && <p className="le-detail-lead">{leadText}</p>}
+            {product.allowsDelivery === false && (
+              <p className="le-pickup-only">Pickup only — this item is not eligible for delivery.</p>
+            )}
+            {product.requiresDateSelection && (
+              <label className="le-detail-date">
+                <span className="le-detail-section-label">Select a date</span>
+                <input
+                  type="date"
+                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
+                  value={selectedDate}
+                  onChange={(event) => setSelectedDate(event.target.value)}
+                  required
+                />
+                <small>Choose any date from today onward.</small>
+              </label>
+            )}
 
             {/* "Availability" and "Fulfillment" fact boxes removed — fulfillment
                 is chosen at checkout and stock is conveyed by the add-to-bag
@@ -299,14 +317,16 @@ export default function ProductDetail({ product, sku, onClose }) {
               type="button"
               className="le-detail-add-btn"
               onClick={handleAdd}
-              disabled={isOutOfStock}
-              aria-disabled={isOutOfStock}
+              disabled={isOutOfStock || (product.requiresDateSelection && !selectedDate)}
+              aria-disabled={isOutOfStock || (product.requiresDateSelection && !selectedDate)}
             >
               {isOutOfStock
                 ? 'Out of stock'
-                : inCartQty > 0
-                  ? 'Add one more'
-                  : 'Add to bag'}
+                : product.requiresDateSelection && !selectedDate
+                  ? 'Select a date'
+                  : inCartQty > 0
+                    ? 'Add one more'
+                    : 'Add to bag'}
             </button>
 
             {/* Description — below the fold intentionally */}

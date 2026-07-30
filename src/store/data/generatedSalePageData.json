@@ -61,7 +61,8 @@
         "sale",
         "chez-garage"
       ],
-      "allowsDelivery": false
+      "allowsDelivery": false,
+      "requiresDateSelection": false
     },
     {
       "id": "a33aab49-4e73-40b8-ad72-5637bb45273c",
@@ -100,7 +101,8 @@
       "stores": [
         "sale"
       ],
-      "allowsDelivery": true
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "f857fde2-8250-4816-9982-b4f8ea245ba8",
@@ -171,7 +173,8 @@
       "stores": [
         "sale"
       ],
-      "allowsDelivery": true
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "43289a7a-4ab1-40ed-82b6-acd8727164eb",
@@ -256,7 +259,8 @@
       "stores": [
         "sale"
       ],
-      "allowsDelivery": true
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "6c5a8dce-43bd-4dac-aff4-f981b20fec3d",
@@ -319,7 +323,8 @@
         "sale",
         "chez-garage"
       ],
-      "allowsDelivery": true
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "0091442a-902e-4879-970c-9aba4bb6937e",
@@ -363,7 +368,8 @@
       "stores": [
         "sale"
       ],
-      "allowsDelivery": true
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     }
   ]
 }

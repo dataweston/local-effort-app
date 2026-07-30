@@ -78,6 +78,9 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
       </span>
       <span className="le-tile-copy">
         <span className="le-tile-title">{product.title}</span>
+        {product.allowsDelivery === false && (
+          <span className="le-pickup-only">Pickup only — not eligible for delivery</span>
+        )}
         {summary && <span className="le-tile-description">{summary}</span>}
         {showDetailRow ? (
           <span className="le-tile-detail-row">

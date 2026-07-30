@@ -11,11 +11,12 @@ const normalizeAddOnIndices = (value) => {
   )].sort((a, b) => a - b);
 };
 
-export const buildCartKey = (productId, variationId = null, addOnIndices = [], dairyFree = false) => {
+export const buildCartKey = (productId, variationId = null, addOnIndices = [], dairyFree = false, selectedDate = '') => {
   const addOns = normalizeAddOnIndices(addOnIndices);
   const optionKey = [
     addOns.length ? `addons=${addOns.join('.')}` : '',
     dairyFree ? 'df=1' : '',
+    selectedDate ? `date=${selectedDate}` : '',
   ].filter(Boolean).join('&');
   return `${productId}:${variationId || ''}${optionKey ? `:${optionKey}` : ''}`;
 };
@@ -30,15 +31,18 @@ const normalizeStoredState = (rawState) => {
     const qty = Math.max(1, Number(item.qty) || 1);
     const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
     const dairyFree = !!item.dairyFree;
-    const key = buildCartKey(item.productId, item.variationId || null, addOnIndices, dairyFree);
+    const selectedDate = typeof item.selectedDate === 'string' ? item.selectedDate : '';
+    const key = buildCartKey(item.productId, item.variationId || null, addOnIndices, dairyFree, selectedDate);
     const normalized = {
       ...item,
       key,
       variationId: item.variationId || null,
       addOnIndices,
       dairyFree,
+      selectedDate,
       qty,
       unitPrice: Number(item.unitPrice) || 0,
+      allowsDelivery: item.allowsDelivery !== false,
     };
 
     if (items[key]) {
@@ -72,10 +76,12 @@ function reducer(state, action) {
         dairyFree: rawDairyFree,
         optionSummary,
         allowsDelivery,
+        selectedDate: rawSelectedDate,
       } = action.payload;
       const addOnIndices = normalizeAddOnIndices(rawAddOnIndices);
       const dairyFree = !!rawDairyFree;
-      const key = buildCartKey(productId, variationId || null, addOnIndices, dairyFree);
+      const selectedDate = typeof rawSelectedDate === 'string' ? rawSelectedDate : '';
+      const key = buildCartKey(productId, variationId || null, addOnIndices, dairyFree, selectedDate);
       const qty = Math.max(1, action.payload.qty || 1);
       const next = { ...state, items: { ...(state.items || {}) } };
       const existing = next.items[key];
@@ -91,8 +97,9 @@ function reducer(state, action) {
             image,
             addOnIndices,
             dairyFree,
+            selectedDate,
             optionSummary: optionSummary || '',
-            allowsDelivery: !!allowsDelivery,
+            allowsDelivery: allowsDelivery !== false,
           };
       next.updatedAt = Date.now();
       return next;

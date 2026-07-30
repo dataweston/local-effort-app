@@ -64,7 +64,7 @@ export default function ProductCard({ product }) {
       const left = (typeof product.inventory === 'number' ? product.inventory : Infinity) - inCart;
       if (left <= 0) return; // out of stock
     }
-    add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary, allowsDelivery: !!product.allowsDelivery });
+    add({ productId: product.id, variationId, unitPrice: price, qty: 1, title: product.title, image: primary, allowsDelivery: product.allowsDelivery !== false });
     notify('Added to cart', { actionLabel: open ? undefined : 'View cart', onAction: open ? undefined : openCart });
   };
 
@@ -188,6 +188,9 @@ export default function ProductCard({ product }) {
         </div>
         {product.shortDescription && (
           <p className="text-sm text-neutral-600 mt-1 line-clamp-2">{product.shortDescription}</p>
+        )}
+        {product.allowsDelivery === false && (
+          <p className="text-sm text-red-700 font-bold mt-1">Pickup only — not eligible for delivery</p>
         )}
         <div className="mt-3 flex gap-2 items-center">
           {hasVariants && (

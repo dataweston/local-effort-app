@@ -6,6 +6,7 @@ const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
+const { isSelectableDate } = require('./_dateSelection');
 const {
   getManualInventoryRequirements,
   releaseManualInventory,
@@ -13,6 +14,7 @@ const {
 } = require('./_manualInventory');
 const {
   pickupByStore,
+  resolveDeliveryMinimum,
   resolveFulfillmentFee,
   normalizePickupWindow,
   storeUsesUnifiedFulfillment,
@@ -79,7 +81,9 @@ const fetchProducts = async (ids) => {
     variants[]{name, squareVariationId, price},
     addOns[]{name, additionalCost},
     offerDairyFree, dairyFreeCost,
-    inventoryMode, manualQty
+    inventoryMode, manualQty,
+    allowsDelivery,
+    requiresDateSelection
   }`;
 
   try {
@@ -176,6 +180,15 @@ module.exports = async (req, res) => {
       const variationId = item.variationId || null;
       const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
       const dairyFree = !!item.dairyFree;
+      const selectedDate = String(item.selectedDate || '').trim();
+      if (
+        doc.requiresDateSelection === true &&
+        !isSelectableDate(selectedDate)
+      ) {
+        return res.status(422).json({
+          error: `Choose a future date for ${doc.title || 'this event'}. No payment was taken.`,
+        });
+      }
       const unitPrice = resolveUnitPrice(doc, variationId, addOnIndices, dairyFree);
       const lineTotal = unitPrice * qty;
       amount += lineTotal;
@@ -188,6 +201,7 @@ module.exports = async (req, res) => {
         lineTotal,
         addOnIndices,
         dairyFree,
+        selectedDate,
         optionSummary: buildOptionSummary(doc, variationId, addOnIndices, dairyFree),
       });
     }
@@ -197,6 +211,38 @@ module.exports = async (req, res) => {
     }
 
     const subtotal = amount;
+
+    if (!pickup) {
+      const pickupOnlyLine = pricedLines.find(
+        (line) => productMap[line.productId]?.allowsDelivery === false,
+      );
+      if (pickupOnlyLine) {
+        throw Object.assign(
+          new Error(`${pickupOnlyLine.title} is pickup only. Choose pickup or remove it from your bag. No payment was taken.`),
+          {statusCode: 409, code: 'pickup-only-product'},
+        );
+      }
+      const deliveryMinimum = resolveDeliveryMinimum(store);
+      if (deliveryMinimum && subtotal < deliveryMinimum) {
+        throw Object.assign(
+          new Error(`Chez Garage delivery requires a $${(deliveryMinimum / 100).toFixed(0)} merchandise minimum. Add $${((deliveryMinimum - subtotal) / 100).toFixed(2)} more or choose pickup. No payment was taken.`),
+          {statusCode: 409, code: 'delivery-minimum'},
+        );
+      }
+      const deliveryAddress = normalizeAddress(address);
+      if (
+        !deliveryAddress?.line1 ||
+        !deliveryAddress?.city ||
+        !deliveryAddress?.state ||
+        deliveryAddress.postal.replace(/\D/g, '').length < 5
+      ) {
+        throw Object.assign(
+          new Error('A complete local-delivery address is required. No payment was taken.'),
+          {statusCode: 400, code: 'delivery-address-required'},
+        );
+      }
+    }
+
     // Local delivery adds a flat fee, recomputed server-side from the same
     // helper the pricing endpoint uses so the charge matches what was shown.
     const deliveryFee = resolveFulfillmentFee(store, pickup);
@@ -297,7 +343,8 @@ module.exports = async (req, res) => {
     if (BREVO_API_KEY && TEAM_EMAIL && SENDER_EMAIL) {
       const summary = pricedLines.map((line) => {
         const options = line.optionSummary ? ` (${line.optionSummary})` : '';
-        return `- ${line.title}${options} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
+        const selectedDate = line.selectedDate ? ` — Date: ${line.selectedDate}` : '';
+        return `- ${line.title}${options}${selectedDate} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
       }).join('\n');
       const subtotalUsd = (subtotal / 100).toFixed(2);
       const totalUsd = (amount / 100).toFixed(2);
@@ -313,9 +360,11 @@ module.exports = async (req, res) => {
           ].filter(Boolean).join('\n')
         : '';
       // Pickup "When" prefers the customer's chosen Wednesday window.
-      const pickupWhen = resolvedPickupWindow
-        ? `${pickupDetails.date} ${resolvedPickupWindow}`
-        : `${pickupDetails.date} at ${pickupDetails.time}`;
+      const pickupWhen = store === 'chez-garage'
+        ? pickupDetails.date
+        : resolvedPickupWindow
+          ? `${pickupDetails.date} ${resolvedPickupWindow}`
+          : `${pickupDetails.date} at ${pickupDetails.time}`;
       const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
       const fulfillmentInfo = pickup
         ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`

@@ -13,6 +13,10 @@ const PROFILE_STORAGE_KEY = 'le:storeCheckoutProfile';
 const UNIFIED_FULFILLMENT_STORES = new Set(['sale']);
 const PICKUP_TIME_WINDOWS = ['2pm-4pm', '4pm-6pm'];
 const DEFAULT_PICKUP_WINDOW = PICKUP_TIME_WINDOWS[0];
+const CHEZ_GARAGE_STORE = 'chez-garage';
+const CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS = 7500;
+const CHEZ_GARAGE_DELIVERY_FEE_CENTS = 1000;
+const CHEZ_GARAGE_PICKUP_ADDRESS = '4379 Mackey Ave, Minneapolis MN 55424';
 
 const blankAddress = { line1: '', line2: '', city: '', state: 'MN', postal: '' };
 const blankProfile = {
@@ -65,6 +69,7 @@ const buildCartPayload = (items) => items.map((item) => ({
   qty: item.qty,
   addOnIndices: item.addOnIndices || [],
   dairyFree: !!item.dairyFree,
+  selectedDate: item.selectedDate || '',
   title: item.title,
 }));
 
@@ -139,7 +144,9 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const { items, subtotal, open, closeCart, clear } = useCart();
   const loadedProfile = useMemo(loadProfile, []);
   const [customer, setCustomer] = useState(loadedProfile.customer);
-  const [pickup, setPickup] = useState(loadedProfile.pickup);
+  const [pickup, setPickup] = useState(
+    store === CHEZ_GARAGE_STORE ? false : loadedProfile.pickup,
+  );
   const [address, setAddress] = useState(loadedProfile.address);
   const [deliveryInstructions, setDeliveryInstructions] = useState(loadedProfile.deliveryInstructions);
   const [pickupWindow, setPickupWindow] = useState(loadedProfile.pickupWindow);
@@ -191,6 +198,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
 
   const canSubmit = useCallback((requireCard = true) => {
     if (!items.length) return false;
+    if (pricing.loading || pricing.error || !pricing.confirmed) return false;
     if (!customer.name.trim()) return false;
     if (!isValidEmail(customer.email)) return false;
     if (customer.phone && normalizePhone(customer.phone).length < 10) return false;
@@ -200,7 +208,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     }
     if (requireCard && !cardLoaded) return false;
     return true;
-  }, [address, cardLoaded, customer, items.length, pickup]);
+  }, [address, cardLoaded, customer, items.length, pickup, pricing]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -393,7 +401,9 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
             </p>
             <p className="le-checkout-success-copy">
               {orderResult.pickup
-                ? `Pickup is at Neon Kitchens, 2103 W Broadway, Minneapolis${orderResult.pickupWindow ? ` on Wednesday ${orderResult.pickupWindow}` : ''}.`
+                ? store === CHEZ_GARAGE_STORE
+                  ? `Pickup is at ${CHEZ_GARAGE_PICKUP_ADDRESS}.`
+                  : `Pickup is at Neon Kitchens, 2103 W Broadway, Minneapolis${orderResult.pickupWindow ? ` on Wednesday ${orderResult.pickupWindow}` : ''}.`
                 : 'Local delivery details will be sent separately.'}
             </p>
             <div className="le-checkout-success-meta">
@@ -433,6 +443,9 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                   <span className="le-checkout-line-title">{item.title}</span>
                   {item.optionSummary && (
                     <span className="le-checkout-line-options">{item.optionSummary}</span>
+                  )}
+                  {item.selectedDate && (
+                    <span className="le-checkout-line-options">Date: {item.selectedDate}</span>
                   )}
                 </div>
                 <span className="le-checkout-line-meta">
@@ -530,11 +543,21 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                     onClick={() => setPickup(false)}
                     aria-pressed={!pickup}
                   >
-                    Local delivery{usesUnifiedFulfillment ? ' (+$6)' : ''}
+                    {store === CHEZ_GARAGE_STORE
+                      ? `Local delivery (+${fmt(CHEZ_GARAGE_DELIVERY_FEE_CENTS)})`
+                      : `Local delivery${usesUnifiedFulfillment ? ' (+$6)' : ''}`}
                   </button>
                 </div>
               ) : (
                 <p className="le-checkout-footnote" style={{ margin: 0 }}>Pickup only</p>
+              )}
+
+              {store === CHEZ_GARAGE_STORE && (
+                <p className="le-checkout-footnote" style={{ margin: '0.75rem 0 0', textAlign: 'left' }}>
+                  {pickup
+                    ? 'The pickup address will be included in your confirmation email after purchase.'
+                    : `${fmt(CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS)} merchandise minimum plus ${fmt(CHEZ_GARAGE_DELIVERY_FEE_CENTS)} local delivery. Delivery only; shipping is not available.`}
+                </p>
               )}
 
               {pickup && usesUnifiedFulfillment && (

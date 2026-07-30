@@ -42,6 +42,7 @@ const pizzaPartyStatusHandler = require('../../api-handlers/store/pizza-party-st
 const pizzaPartyReceiptHandler = require('../../api-handlers/store/pizza-party-receipt');
 const pizzaPartyLinkHandler = require('../../api-handlers/store/pizza-party-link');
 const pizzaPartyBookingsHandler = require('../../api-handlers/store/pizza-party-bookings');
+const chezGarageAtHomeCheckoutHandler = require('../../api-handlers/store/chez-garage-at-home-checkout');
 const storeProductsHandler = require('../../api-handlers/store/products');
 const storePriceHandler = require('../../api-handlers/store/price');
 const storeEventsHandler = require('../../api-handlers/store/events');
@@ -1165,6 +1166,15 @@ app.all('/api/store/pizza-party-bookings', async (req, res, next) => {
     await pizzaPartyBookingsHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'pizza-party bookings handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/store/chez-garage-at-home-checkout', async (req, res, next) => {
+  try {
+    await chezGarageAtHomeCheckoutHandler(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'chez-garage-at-home checkout handler failed');
     next(err);
   }
 });

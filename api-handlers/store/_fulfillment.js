@@ -2,8 +2,10 @@
 // Single source of truth so /api/store/price and /api/store/checkout never
 // disagree on the local-delivery fee or pickup windows.
 
-// $6.00 flat local delivery fee, in cents.
+// Main-store local delivery fee, in cents.
 const LOCAL_DELIVERY_FEE_CENTS = 600;
+const CHEZ_GARAGE_DELIVERY_FEE_CENTS = 1000;
+const CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS = 7500;
 
 // Valid pickup time windows for the /sale store (Wednesdays).
 const PICKUP_TIME_WINDOWS = ['2pm-4pm', '4pm-6pm'];
@@ -36,9 +38,9 @@ const pickupByStore = {
   },
   'chez-garage': {
     name: 'Chez Garage',
-    date: 'TBD',
-    time: 'TBD',
-    address: 'Details will be sent separately',
+    date: 'Thursday July 30 - Sunday August 2',
+    time: 'See your confirmation email',
+    address: '4379 Mackey Ave, Minneapolis MN 55424',
   },
 };
 
@@ -54,16 +56,23 @@ const normalizePickupWindow = (value) => {
 // Local delivery costs a flat fee; pickup is always free.
 const resolveFulfillmentFee = (store, pickup) => {
   if (pickup) return 0;
+  if (store === 'chez-garage') return CHEZ_GARAGE_DELIVERY_FEE_CENTS;
   if (!storeUsesUnifiedFulfillment(store)) return 0;
   return LOCAL_DELIVERY_FEE_CENTS;
 };
 
+const resolveDeliveryMinimum = (store) =>
+  store === 'chez-garage' ? CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS : 0;
+
 module.exports = {
+  CHEZ_GARAGE_DELIVERY_FEE_CENTS,
+  CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS,
   LOCAL_DELIVERY_FEE_CENTS,
   PICKUP_TIME_WINDOWS,
   DEFAULT_PICKUP_TIME_WINDOW,
   pickupByStore,
   storeUsesUnifiedFulfillment,
   normalizePickupWindow,
+  resolveDeliveryMinimum,
   resolveFulfillmentFee,
 };

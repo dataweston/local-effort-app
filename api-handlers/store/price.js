@@ -14,7 +14,12 @@
 
 const sanity = require('@sanity/client');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
-const { LOCAL_DELIVERY_FEE_CENTS, resolveFulfillmentFee } = require('./_fulfillment');
+const { isSelectableDate } = require('./_dateSelection');
+const {
+  LOCAL_DELIVERY_FEE_CENTS,
+  resolveDeliveryMinimum,
+  resolveFulfillmentFee,
+} = require('./_fulfillment');
 
 const projectId =
   process.env.VITE_APP_SANITY_PROJECT_ID ||
@@ -44,7 +49,9 @@ const fetchProducts = async (ids) => {
     offerDairyFree,
     dairyFreeCost,
     inventoryMode,
-    manualQty
+    manualQty,
+    allowsDelivery,
+    requiresDateSelection
   }`;
   const docs = await client.fetch(query, { ids });
   return {
@@ -119,6 +126,13 @@ module.exports = async (req, res) => {
       if (!doc) {
         return res.status(422).json({ error: `Product not found: ${item.productId}` });
       }
+      const selectedDate = String(item.selectedDate || '').trim();
+      if (
+        doc.requiresDateSelection === true &&
+        !isSelectableDate(selectedDate)
+      ) {
+        return res.status(422).json({ error: `Choose a future date for ${doc.title || 'this event'}.` });
+      }
 
       const qty = Math.max(1, Number(item.qty) || 1);
       const { unitPrice, addOns, dairyFree, dairyFreeCost } = resolveUnitPrice(
@@ -141,6 +155,7 @@ module.exports = async (req, res) => {
         addOns,
         dairyFree,
         dairyFreeCost,
+        selectedDate,
       });
     }
 
@@ -162,6 +177,28 @@ module.exports = async (req, res) => {
       }
     }
 
+    if (pickup === false) {
+      const pickupOnlyProduct = lines.find(
+        (line) => productMap[line.productId]?.allowsDelivery === false,
+      );
+      if (pickupOnlyProduct) {
+        return res.status(409).json({
+          error: `${pickupOnlyProduct.title} is pickup only. Choose pickup or remove it from your bag.`,
+          code: 'pickup-only-product',
+          productId: pickupOnlyProduct.productId,
+        });
+      }
+      const deliveryMinimum = resolveDeliveryMinimum(store);
+      if (deliveryMinimum && subtotal < deliveryMinimum) {
+        return res.status(409).json({
+          error: `Chez Garage delivery requires a $${(deliveryMinimum / 100).toFixed(0)} merchandise minimum. Add $${((deliveryMinimum - subtotal) / 100).toFixed(2)} more or choose pickup.`,
+          code: 'delivery-minimum',
+          minimumCents: deliveryMinimum,
+          subtotal,
+        });
+      }
+    }
+
     // Local delivery adds a flat fee; pickup is always free. The same helper
     // is used by /api/store/checkout so the displayed total matches the charge.
     const fulfillmentFee = resolveFulfillmentFee(store, pickup !== false);
@@ -172,6 +209,7 @@ module.exports = async (req, res) => {
       fulfillmentFee,
       total: subtotal + fulfillmentFee,
       localDeliveryFee: LOCAL_DELIVERY_FEE_CENTS,
+      deliveryMinimum: resolveDeliveryMinimum(store),
       currency: 'USD',
       pricedAt: new Date().toISOString(),
     });

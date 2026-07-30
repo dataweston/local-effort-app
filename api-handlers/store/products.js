@@ -58,7 +58,8 @@ module.exports = async (req, res) => {
       offerDairyFree,
       dairyFreeCost,
       stores,
-      allowsDelivery
+      allowsDelivery,
+      requiresDateSelection
     }`;
     const productsQuery = `*[_type == "product" && active == true && $store in stores]${productProjection} | order(title asc)`;
     const combinedQuery = `{
@@ -100,7 +101,8 @@ module.exports = async (req, res) => {
       offerDairyFree: d.offerDairyFree ?? false,
       dairyFreeCost: d.dairyFreeCost ?? 0,
       stores: Array.isArray(d.stores) ? d.stores : [],
-      allowsDelivery: d.allowsDelivery ?? false,
+      allowsDelivery: d.allowsDelivery !== false,
+      requiresDateSelection: d.requiresDateSelection === true,
       };
     });
     res.status(200).json({

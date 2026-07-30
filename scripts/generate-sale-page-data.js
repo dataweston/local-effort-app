@@ -87,7 +87,8 @@ async function fetchSalePageData() {
       offerDairyFree,
       dairyFreeCost,
       stores,
-      allowsDelivery
+      allowsDelivery,
+      requiresDateSelection
     }
   }`;
 
@@ -125,7 +126,8 @@ async function fetchSalePageData() {
       offerDairyFree: Boolean(product.offerDairyFree),
       dairyFreeCost: typeof product.dairyFreeCost === 'number' ? product.dairyFreeCost : 0,
       stores: Array.isArray(product.stores) ? product.stores : [],
-      allowsDelivery: Boolean(product.allowsDelivery),
+      allowsDelivery: product.allowsDelivery !== false,
+      requiresDateSelection: product.requiresDateSelection === true,
     })),
   };
 }

@@ -15,7 +15,9 @@ const productQuery = `*[_type == "product"]{
   active,
   stores,
   inventoryMode,
-  manualQty
+  manualQty,
+  allowsDelivery,
+  requiresDateSelection
 } | order(lower(title) asc)`
 
 const baseId = (id) => id.replace(/^drafts\./, '')
@@ -39,6 +41,8 @@ function normalizeProducts(documents) {
     stores: Array.isArray(document.stores) ? document.stores : [],
     inventoryMode: document.inventoryMode || 'unmanaged',
     manualQty: typeof document.manualQty === 'number' ? document.manualQty : null,
+    allowsDelivery: document.allowsDelivery !== false,
+    requiresDateSelection: document.requiresDateSelection === true,
   }))
 }
 
@@ -252,6 +256,8 @@ export default function ProductManager() {
               <th style={{...styles.cell, textAlign: 'left'}}>Product</th>
               <th style={{...styles.cell, textAlign: 'left'}}>Status</th>
               {STORE_PAGES.map((page) => <th key={page.value} style={styles.cell} title={page.path}>{page.title}</th>)}
+              <th style={styles.cell}>Pickup only</th>
+              <th style={styles.cell}>Calendar</th>
               <th style={{...styles.cell, textAlign: 'left'}}>Manual inventory</th>
             </tr>
           </thead>
@@ -299,6 +305,38 @@ export default function ProductManager() {
                     />
                   </td>
                 ))}
+                <td style={{...styles.cell, textAlign: 'center'}}>
+                  <input
+                    type="checkbox"
+                    aria-label={`${product.title} is pickup only`}
+                    checked={!product.allowsDelivery}
+                    disabled={busy}
+                    onChange={(event) => {
+                      const pickupOnly = event.currentTarget.checked
+                      patchProducts(
+                        [product],
+                        () => ({allowsDelivery: !pickupOnly}),
+                        `${product.title} is now ${pickupOnly ? 'pickup only' : 'eligible for delivery'}.`,
+                      )
+                    }}
+                  />
+                </td>
+                <td style={{...styles.cell, textAlign: 'center'}}>
+                  <input
+                    type="checkbox"
+                    aria-label={`${product.title} requires calendar selection`}
+                    checked={product.requiresDateSelection}
+                    disabled={busy}
+                    onChange={(event) => {
+                      const requiresDateSelection = event.currentTarget.checked
+                      patchProducts(
+                        [product],
+                        () => ({requiresDateSelection}),
+                        `${product.title} ${requiresDateSelection ? 'now requires' : 'no longer requires'} a customer date selection.`,
+                      )
+                    }}
+                  />
+                </td>
                 <td style={styles.cell}>
                   {product.inventoryMode === 'manual' ? (
                     <span style={{display: 'inline-flex', gap: 5}}>

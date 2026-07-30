@@ -5,6 +5,7 @@ import { SITE_URL } from '../config/siteMetadata';
 import { useCart } from '../store/cart/CartContext';
 import ProductGrid from '../store/components/ProductGrid';
 import CartDrawer from '../store/components/CartDrawer';
+import ChezGarageDialogs from '../store/components/ChezGarageDialogs';
 import { ptToHtml } from '../store/data/ptToHtml';
 
 const STORE_SLUG = 'chez-garage';
@@ -174,7 +175,14 @@ const ChezGaragePage = () => {
             fetchPriority="high"
             decoding="async"
           />
+          <div className="le-sale-hero-copy">
+            <strong>Chez Garage: Edina</strong>
+            <span>Thursday July 30 - Sunday August 2</span>
+            <span>Delivery minimum $75</span>
+          </div>
         </section>
+
+        <ChezGarageDialogs />
 
         <section className="le-sale-products" aria-labelledby="chez-garage-products-title">
           <h2 id="chez-garage-products-title" className="sr-only">Current catalog</h2>
