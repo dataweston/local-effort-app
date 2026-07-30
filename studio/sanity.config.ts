@@ -4,13 +4,12 @@ import {defineConfig} from 'sanity'
 import type {Template} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
-import {iconPicker} from 'sanity-plugin-icon-picker'
 import {colorInput} from '@sanity/color-input'
 import {media} from 'sanity-plugin-media'
-import {assist} from '@sanity/assist'
 import {schemaTypes} from './schemaTypes/index.js'
 import {blogPostBadges, releaseBadges, productBadges} from './components/documentBadges.js'
 import {releasePressKitClipboardActions} from './components/ReleasePressKitClipboardActions.jsx'
+import ProductManager from './components/ProductManager.jsx'
 
 // Document types that appear in each sidebar group (used to exclude from fallback)
 const GROUPED_TYPES = [
@@ -63,6 +62,10 @@ export default defineConfig({
               .title('🛒 Store')
               .child(
                 S.list().title('Store').items([
+                  S.listItem()
+                    .id('product-manager')
+                    .title('Manage Products')
+                    .child(S.component(ProductManager).id('product-manager-pane').title('Manage Products')),
                   S.documentTypeListItem('product').title('Products'),
                 ]),
               ),
@@ -151,9 +154,7 @@ export default defineConfig({
     }),
     colorInput(),
     media(),
-    assist(),
     visionTool(),
-    iconPicker(),
   ],
 
   schema: {

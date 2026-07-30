@@ -15,9 +15,9 @@ export default {
     },
     {
       name: 'titleIcon',
-      title: 'Title Icon',
-      type: 'iconPicker',
-      description: 'Optional icon to display next to the title.',
+      title: 'Title Symbol',
+      type: 'string',
+      description: 'Optional emoji or short symbol displayed next to the title.',
     },
     {
       name: 'subheading',
@@ -34,12 +34,11 @@ export default {
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'subheading', icon: 'titleIcon' },
-    prepare({ title, subtitle, icon }) { 
+    select: { title: 'title', subtitle: 'subheading' },
+    prepare({ title, subtitle }) {
       return { 
         title: title || 'Sale Page', 
         subtitle,
-        media: icon
       }; 
     },
   },

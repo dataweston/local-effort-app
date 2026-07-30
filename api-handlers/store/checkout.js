@@ -7,6 +7,11 @@ const sanity = require('@sanity/client');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
 const {
+  getManualInventoryRequirements,
+  releaseManualInventory,
+  reserveManualInventory,
+} = require('./_manualInventory');
+const {
   pickupByStore,
   resolveFulfillmentFee,
   normalizePickupWindow,
@@ -25,10 +30,18 @@ const dataset =
   process.env.VITE_APP_SANITY_DATASET ||
   process.env.VITE_SANITY_DATASET ||
   process.env.SANITY_DATASET;
+const sanityWriteToken = process.env.SANITY_WRITE_TOKEN;
 
 const sanityClient =
   projectId && dataset
-    ? sanity.createClient({ projectId, dataset, useCdn: false, apiVersion: '2023-05-03' })
+    ? sanity.createClient({
+        projectId,
+        dataset,
+        token: sanityWriteToken,
+        useCdn: false,
+        perspective: 'published',
+        apiVersion: '2025-02-19',
+      })
     : null;
 
 const sanitizeIdempotencyKey = (value) => {
@@ -65,7 +78,8 @@ const fetchProducts = async (ids) => {
     _id, title, price, salePrice,
     variants[]{name, squareVariationId, price},
     addOns[]{name, additionalCost},
-    offerDairyFree, dairyFreeCost
+    offerDairyFree, dairyFreeCost,
+    inventoryMode, manualQty
   }`;
 
   try {
@@ -213,7 +227,35 @@ module.exports = async (req, res) => {
     };
     if (verificationToken) paymentBody.verificationToken = verificationToken;
 
-    const resp = await sq.paymentsApi.createPayment(paymentBody);
+    const inventoryRequirements = getManualInventoryRequirements(pricedLines, productMap);
+    if (inventoryRequirements.length && !sanityWriteToken) {
+      throw Object.assign(
+        new Error('Inventory is temporarily unavailable. No payment was taken; please try again shortly.'),
+        {statusCode: 503, code: 'inventory-unavailable'},
+      );
+    }
+
+    // Reserve manual inventory before charging. Revision guards make concurrent
+    // checkouts retry against the newest quantity instead of overselling.
+    const inventoryReservation = await reserveManualInventory(
+      inventoryRequirements.length ? sanityClient : null,
+      inventoryRequirements,
+    );
+
+    let resp;
+    try {
+      resp = await sq.paymentsApi.createPayment(paymentBody);
+    } catch (paymentError) {
+      try {
+        await releaseManualInventory(sanityClient, inventoryReservation);
+      } catch (releaseError) {
+        console.error('[store.checkout] failed to release inventory after payment failure', {
+          releaseError: releaseError?.message || releaseError,
+          inventoryReservation,
+        });
+      }
+      throw paymentError;
+    }
     const paymentId = resp.result.payment?.id;
 
     const { firestore } = getFirebaseAdmin();
@@ -325,6 +367,9 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     const msg = (error?.errors && JSON.stringify(error.errors)) || error?.message || 'Checkout failed';
-    return res.status(500).json({ error: msg });
+    return res.status(error?.statusCode || 500).json({
+      error: msg,
+      ...(error?.code ? {code: error.code} : {}),
+    });
   }
 };

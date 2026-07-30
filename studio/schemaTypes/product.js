@@ -32,7 +32,6 @@ export default {
         ],
         layout: 'checkbox'
       },
-      validation: (Rule) => Rule.required().min(1).error('Select at least one store page for this product.')
     },
     {
       name: 'addOns',
@@ -161,6 +160,22 @@ export default {
     },
   ],
   preview: {
-    select: { title: 'title', media: 'images.0' },
+    select: {
+      title: 'title',
+      active: 'active',
+      stores: 'stores',
+      inventoryMode: 'inventoryMode',
+      manualQty: 'manualQty',
+    },
+    prepare({title, active, stores, inventoryMode, manualQty}) {
+      const pageCount = Array.isArray(stores) ? stores.length : 0
+      const status = active === false ? 'Inactive' : 'Active'
+      const inventory =
+        inventoryMode === 'manual' ? ` · ${manualQty ?? 0} left` : ''
+      return {
+        title: title || 'Untitled product',
+        subtitle: `${status} · ${pageCount ? `${pageCount} page${pageCount === 1 ? '' : 's'}` : 'no pages'}${inventory}`,
+      }
+    },
   },
 }

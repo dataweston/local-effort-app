@@ -144,6 +144,24 @@ module.exports = async (req, res) => {
       });
     }
 
+    const requestedByProduct = lines.reduce((totals, line) => {
+      totals[line.productId] = (totals[line.productId] || 0) + line.qty;
+      return totals;
+    }, {});
+    for (const [productId, requested] of Object.entries(requestedByProduct)) {
+      const doc = productMap[productId];
+      if (doc?.inventoryMode !== 'manual') continue;
+      const available = Number.isFinite(doc.manualQty) ? Math.max(0, doc.manualQty) : 0;
+      if (requested > available) {
+        return res.status(409).json({
+          error: `${doc.title || 'A product'} only has ${available} remaining. Please update your cart.`,
+          code: 'insufficient-inventory',
+          productId,
+          available,
+        });
+      }
+    }
+
     // Local delivery adds a flat fee; pickup is always free. The same helper
     // is used by /api/store/checkout so the displayed total matches the charge.
     const fulfillmentFee = resolveFulfillmentFee(store, pickup !== false);
