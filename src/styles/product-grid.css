@@ -28,6 +28,22 @@
   background: linear-gradient(180deg, #fff 0%, #faf7f2 100%);
 }
 
+.le-sale-hero--chez-garage {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  background: #d6c4a7;
+}
+
+.le-sale-hero--chez-garage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(74vh, 820px);
+  object-fit: cover;
+  object-position: center;
+}
+
 .le-sale-eyebrow,
 .le-sale-summary-label,
 .le-sale-section-title,
@@ -808,6 +824,15 @@
 
   .le-sale-summary {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .le-sale-hero--chez-garage {
+    padding: 0;
+  }
+
+  .le-sale-hero--chez-garage img {
+    height: min(66vh, 620px);
+    object-position: 52% center;
   }
 
   .le-grid {

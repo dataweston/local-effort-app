@@ -9,6 +9,7 @@ import { ptToHtml } from '../store/data/ptToHtml';
 
 const STORE_SLUG = 'chez-garage';
 const PAGE_TITLE = 'chez garage';
+const HERO_IMAGE_PATH = '/images/chez-garage-hero.jpg';
 
 const getProductSummary = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
@@ -47,7 +48,7 @@ const ChezGaragePage = () => {
   }, []);
 
   const canonical = `${SITE_URL}/${STORE_SLUG}`;
-  const heroImage = products.find((product) => Array.isArray(product.images) && product.images[0])?.images?.[0] || null;
+  const heroImage = `${SITE_URL}${HERO_IMAGE_PATH}`;
 
   const metaDescription = useMemo(() => {
     const names = products.slice(0, 4).map((product) => product.title).filter(Boolean);
@@ -137,8 +138,8 @@ const ChezGaragePage = () => {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonical} />
-        {heroImage && <meta property="og:image" content={heroImage} />}
-        {heroImage && <meta name="twitter:image" content={heroImage} />}
+        <meta property="og:image" content={heroImage} />
+        <meta name="twitter:image" content={heroImage} />
         <meta name="twitter:title" content={`${PAGE_TITLE} | Local Effort Cooperative`} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
@@ -159,8 +160,20 @@ const ChezGaragePage = () => {
 
       <main id="products" className="le-sale-main">
         <h1 className="sr-only">{PAGE_TITLE}</h1>
-        <section className="le-sale-hero" aria-labelledby="chez-garage-title">
+        <section
+          className="le-sale-hero le-sale-hero--chez-garage"
+          aria-labelledby="chez-garage-title"
+        >
           <h2 id="chez-garage-title" className="sr-only">Products</h2>
+          <img
+            src={HERO_IMAGE_PATH}
+            alt="Weathered garage doors beneath large red GARAGE letters"
+            width="1920"
+            height="1280"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
         </section>
 
         <section className="le-sale-products" aria-labelledby="chez-garage-products-title">

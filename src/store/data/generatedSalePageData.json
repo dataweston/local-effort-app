@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T02:55:13.469Z",
+  "generatedAt": "2026-07-30T03:36:40.730Z",
   "page": {
     "title": "local effort sales",
     "subheading": "sale",
@@ -43,6 +43,7 @@
         }
       ],
       "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/8271288017b78f436e8f9f93bec40a1e67b2fa00-1440x1800.jpg",
         "https://cdn.sanity.io/images/d6l9d0ea/localeffort/0e9c2715e1d2bf18b0b7b9d0f9474fa0a12cdf6a-3024x4032.jpg"
       ],
       "price": 1400,
@@ -57,7 +58,8 @@
       "offerDairyFree": false,
       "dairyFreeCost": 0,
       "stores": [
-        "sale"
+        "sale",
+        "chez-garage"
       ],
       "allowsDelivery": false
     },
@@ -314,7 +316,8 @@
       "offerDairyFree": false,
       "dairyFreeCost": 0,
       "stores": [
-        "sale"
+        "sale",
+        "chez-garage"
       ],
       "allowsDelivery": true
     },
