@@ -14,6 +14,7 @@ const fallbackPaths = [
   '/blog',
   '/releases',
   '/sale',
+  '/chez-garage',
   '/happymonday',
   '/pizza-party',
   '/february',

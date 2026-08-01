@@ -9,18 +9,35 @@ dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), '.env.production.local'), override: false });
 dotenv.config({ path: path.resolve(process.cwd(), '.env.vercel.production'), override: false });
 
-const OUTPUT_FILE = path.resolve(process.cwd(), 'src/store/data/generatedSalePageData.json');
-
-const FALLBACK_DATA = {
-  generatedAt: new Date().toISOString(),
-  page: {
-    title: 'Local Effort Sale',
-    subheading: 'Seasonal prepared foods, pantry goods, and limited preorders.',
-    introText:
-      'Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.',
+// Every storefront that is prerendered needs its catalogue on disk at build
+// time — the pages fetch /api/store/products at runtime, and a crawler that
+// never runs the fetch would otherwise see an empty grid and no Product
+// JSON-LD. `salePage` is a Sanity singleton that only describes /sale, so the
+// other stores carry their copy here.
+const STORES = [
+  {
+    slug: 'sale',
+    outputFile: 'src/store/data/generatedSalePageData.json',
+    usesSalePageDoc: true,
+    fallbackPage: {
+      title: 'Local Effort Sale',
+      subheading: 'Seasonal prepared foods, pantry goods, and limited preorders.',
+      introText:
+        'Browse the current Local Effort sale for seasonal drops, limited runs, and pantry staples. Open any product for larger photos, full details, and checkout options.',
+    },
   },
-  products: [],
-};
+  {
+    slug: 'chez-garage',
+    outputFile: 'src/store/data/generatedChezGaragePageData.json',
+    usesSalePageDoc: false,
+    fallbackPage: {
+      title: 'Chez Garage',
+      subheading: 'Hyper-casual dining from Local Effort Cooperative.',
+      introText:
+        'Chez Garage is a hyper-casual dining pop-up from Local Effort Cooperative: pub pizza, smoked and braised meats, and pantry goods to take home, served out of a garage.',
+    },
+  },
+];
 
 function extractPortableText(blocks) {
   if (!Array.isArray(blocks) || blocks.length === 0) return '';
@@ -40,7 +57,16 @@ function ensureDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
 }
 
-async function fetchSalePageData() {
+function fallbackData(store) {
+  return {
+    generatedAt: new Date().toISOString(),
+    store: store.slug,
+    page: store.fallbackPage,
+    products: [],
+  };
+}
+
+function getSanityClient() {
   const projectId =
     process.env.VITE_APP_SANITY_PROJECT_ID ||
     process.env.VITE_SANITY_PROJECT_ID ||
@@ -50,25 +76,28 @@ async function fetchSalePageData() {
     process.env.VITE_SANITY_DATASET ||
     process.env.SANITY_DATASET;
 
-  if (!projectId || !dataset) {
-    process.stderr.write('[sale-data] Missing Sanity environment variables. Writing fallback data.\n');
-    return FALLBACK_DATA;
-  }
+  if (!projectId || !dataset) return null;
 
-  const client = sanity.createClient({
+  return sanity.createClient({
     projectId,
     dataset,
     useCdn: true,
     apiVersion: '2023-05-03',
   });
+}
 
-  const query = `{
-    "page": *[_type == "salePage"][0]{
+async function fetchStoreData(client, store) {
+  const pageProjection = store.usesSalePageDoc
+    ? `"page": *[_type == "salePage"][0]{
       title,
       subheading,
       intro
-    },
-    "products": *[_type == "product" && active == true && "sale" in stores] | order(title asc){
+    },`
+    : '"page": null,';
+
+  const query = `{
+    ${pageProjection}
+    "products": *[_type == "product" && active == true && $store in stores] | order(title asc){
       _id,
       title,
       "slug": slug.current,
@@ -92,16 +121,17 @@ async function fetchSalePageData() {
     }
   }`;
 
-  const result = await client.fetch(query);
+  const result = await client.fetch(query, { store: store.slug });
   const page = result?.page || {};
   const products = Array.isArray(result?.products) ? result.products : [];
 
   return {
     generatedAt: new Date().toISOString(),
+    store: store.slug,
     page: {
-      title: page.title || FALLBACK_DATA.page.title,
-      subheading: page.subheading || FALLBACK_DATA.page.subheading,
-      introText: extractPortableText(page.intro) || FALLBACK_DATA.page.introText,
+      title: page.title || store.fallbackPage.title,
+      subheading: page.subheading || store.fallbackPage.subheading,
+      introText: extractPortableText(page.intro) || store.fallbackPage.introText,
     },
     products: products.map((product) => ({
       id: product._id,
@@ -133,14 +163,24 @@ async function fetchSalePageData() {
 }
 
 async function main() {
-  const data = await fetchSalePageData().catch((error) => {
-    process.stderr.write(`[sale-data] Failed to fetch Sanity data. Writing fallback data. ${error?.message || error}\n`);
-    return FALLBACK_DATA;
-  });
+  const client = getSanityClient();
+  if (!client) {
+    process.stderr.write('[sale-data] Missing Sanity environment variables. Writing fallback data.\n');
+  }
 
-  ensureDirectory(OUTPUT_FILE);
-  fs.writeFileSync(OUTPUT_FILE, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
-  process.stdout.write(`[sale-data] Wrote ${data.products.length} products to ${OUTPUT_FILE}\n`);
+  for (const store of STORES) {
+    const data = client
+      ? await fetchStoreData(client, store).catch((error) => {
+        process.stderr.write(`[sale-data] ${store.slug}: Sanity fetch failed, writing fallback. ${error?.message || error}\n`);
+        return fallbackData(store);
+      })
+      : fallbackData(store);
+
+    const outputFile = path.resolve(process.cwd(), store.outputFile);
+    ensureDirectory(outputFile);
+    fs.writeFileSync(outputFile, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+    process.stdout.write(`[sale-data] ${store.slug}: wrote ${data.products.length} products to ${store.outputFile}\n`);
+  }
 }
 
 main().catch((error) => {

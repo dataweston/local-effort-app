@@ -99,6 +99,7 @@ const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
 const { createPlannerRouter } = require('./routes/planner');
 const { createPublicContextRouter } = require('./routes/publicContext');
+const { createProductFeedsRouter } = require('./routes/productFeeds');
 const { createSupportRouter } = require('./routes/support');
 const { createDecisionRouter } = require('./routes/decision');
 const {
@@ -2252,6 +2253,7 @@ app.use('/api', createPublicContextRouter({
 }));
 app.use('/api', createSupportRouter({ logger }));
 app.use('/api', createDecisionRouter({ logger }));
+app.use('/api', createProductFeedsRouter({ logger, siteUrl: publicSiteUrl }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
 // and attempts a lightweight Cloudinary ping if configured. Do NOT expose

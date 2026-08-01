@@ -9,6 +9,7 @@ import BlogList from '../pages/BlogList';
 import BlogPost from '../pages/BlogPost';
 import ReleasesPage from '../pages/ReleasesPage';
 import SalePage from '../pages/SalePage';
+import ChezGaragePage from '../pages/ChezGaragePage';
 import HappyMondayPage from '../pages/happymondaypage';
 import PizzaPartyPage from '../pages/PizzaPartyPage';
 import PsychePage from '../pages/PsychePage';
@@ -37,6 +38,7 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/sale" element={<SalePage />} />
+              <Route path="/chez-garage" element={<ChezGaragePage />} />
               <Route path="/return-policy" element={<ReturnPolicyPage />} />
               <Route path="/happymonday" element={<HappyMondayPage />} />
               <Route path="/pizza-party" element={<PizzaPartyPage />} />

@@ -1,11 +1,14 @@
 /* Header navigation
    -----------------
    The old row was eight identical mono words, with an active-state sync that
-   never fired. Two changes: every item now states what it *is* (a one-word
-   descriptor under the title) and carries the accent of the place it leads to —
-   the same accents the panels and service pages use (.ht-scope--* in
+   never fired. Each item now carries the accent of the place it leads to — the
+   same accents the panels and service pages use (.ht-scope--* in
    home-tabs.css). Membership is the only item styled as an action, because it
    is the one funnel we push.
+
+   The one-word descriptors under each label came out on 2026-07-31 (client
+   direction). They survive as the anchor `title` in fullPageNav.js, which is
+   markup rather than furniture.
 
    Tokens: src/styles/brand-tokens.css. Durations/easing match home-tabs.css
    (240ms, cubic-bezier(0.22, 1, 0.36, 1)) so the whole site moves as one. */
@@ -28,7 +31,12 @@
   --le-nav-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* The sheet is a child of .le-header, which is its own stacking context, so
+   the sheet's z-index 40 was painting over the bar and taking the burger — and
+   the only way to close the menu — with it. The bar outranks it now. */
 .le-header__bar {
+  position: relative;
+  z-index: 41;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -85,10 +93,15 @@
 
 .le-nav-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.4rem 0.7rem 0.45rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
   border-radius: 4px;
+  font-family: 'Office Code Pro', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  white-space: nowrap;
   text-decoration: none;
   /* the accent hairline lives on the bottom edge, drawn from 0 on hover and
      held at full width when the item is the current destination */
@@ -109,31 +122,14 @@
   background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
 }
 
-.le-nav-item__label {
-  font-family: 'Office Code Pro', monospace;
-  font-size: 0.82rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-}
-
-/* the descriptor: Yomogi, the site's hand — it reads as an aside, not a second
-   line of navigation */
-.le-nav-item__note {
-  font-family: var(--font-yomogi), 'Yomogi', cursive;
-  font-size: 0.7rem;
-  line-height: 1.1;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-.le-nav-item[data-active='true'] .le-nav-item__note { color: var(--color-text-secondary); }
-
-/* below 1280px the row gets tight — drop the descriptors, keep the accents */
+/* Seven destinations plus the membership action is a lot of row. Below 1280px
+   it closes up rather than wrapping — the tagline is already hidden there
+   (line 74), so the space it frees goes to the nav. */
 @media (min-width: 1024px) and (max-width: 1279px) {
-  .le-nav-item__note { display: none; }
-  .le-nav-item { padding-top: 0.55rem; padding-bottom: 0.55rem; }
+  .le-header__bar { gap: 0.75rem; }
+  .le-header__nav { gap: 0; }
+  .le-nav-item { padding-inline: 0.5rem; font-size: 0.78rem; }
+  .le-nav-cta { margin-left: 0.35rem; padding-inline: 0.75rem; font-size: 0.8rem; }
 }
 
 /* ── Membership: the one action in the row ───────────────────────────── */
@@ -195,57 +191,65 @@
 
 /* ── Mobile sheet ────────────────────────────────────────────────────── */
 
+/* The sheet takes the bar's own colour, not the page's. It drops out of the
+   header, so reading as a different surface from the thing it drops from was
+   the loudest of the problems here — chrome frames the sheet, and the sheet
+   IS chrome (see the note at the top of this file). */
 .le-header__sheet {
   position: fixed;
   inset: 0;
   z-index: 40;
-  padding: 5.5rem 1.25rem 2rem;
-  background: var(--color-bg-page);
+  padding: calc(4.5rem + var(--announcement-offset, 0px)) 1.25rem max(2rem, env(safe-area-inset-bottom));
+  background: var(--brand-mount);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 @media (min-width: 1024px) { .le-header__sheet { display: none; } }
 
+/* One ruled list, closed at both ends. The old grid put a 0.15rem gap between
+   bordered rows, which read as a stack of loose cards; the rules are supposed
+   to be the list, the same way the store grid uses 1px gaps as its rules. */
 .le-header__sheet nav {
   display: grid;
-  gap: 0.15rem;
   max-width: 30rem;
   margin: 0 auto;
+  border-top: 1px solid var(--color-border-default);
 }
 
 .le-sheet-item {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.95rem 0.25rem;
+  align-items: center;
+  min-height: 3.5rem;
+  padding: 0.9rem 0.75rem;
   border-bottom: 1px solid var(--color-border-default);
-  text-decoration: none;
-  /* the destination's accent as a left tick — the mobile equivalent of the
-     desktop hairline */
-  box-shadow: inset 3px 0 0 -1px transparent;
-  transition: box-shadow var(--le-nav-dur) var(--le-nav-ease);
-}
-
-.le-sheet-item[data-active='true'] { box-shadow: inset 3px 0 0 0 var(--nav-accent); }
-
-.le-sheet-item__label {
   font-family: 'General Sans', sans-serif;
   font-weight: 650;
   font-size: 1.35rem;
   line-height: 1.15;
   color: var(--color-text-primary);
+  text-decoration: none;
+  /* the destination's accent as a left tick — the mobile equivalent of the
+     desktop hairline, and the tint is the desktop active state (line 109) */
+  box-shadow: inset 3px 0 0 -3px var(--nav-accent, var(--brand-ink));
+  transition:
+    box-shadow var(--le-nav-dur) var(--le-nav-ease),
+    background-color var(--le-nav-dur) var(--le-nav-ease);
 }
 
-.le-sheet-item__note {
-  font-family: var(--font-yomogi), 'Yomogi', cursive;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  white-space: nowrap;
+.le-sheet-item:active { background-color: color-mix(in srgb, var(--nav-accent) 8%, transparent); }
+
+.le-sheet-item[data-active='true'] {
+  box-shadow: inset 3px 0 0 0 var(--nav-accent);
+  background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
 }
 
 .le-sheet-cta {
-  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  margin-top: 1.5rem;
   padding: 0.95rem 1.25rem;
   border: 1.5px solid var(--brand-ink);
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;

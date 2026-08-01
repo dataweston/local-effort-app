@@ -223,7 +223,10 @@ const ReleasesPage = () => {
             <div className="space-y-3">
               <h2 className="heading-xl heading-balance">Press Kit</h2>
               <p className="max-w-3xl text-neutral-600">
-                Download-ready facts, leadership bios, and campaign details to support coverage of Local Effort's 1,000 pizza crowdfunding initiative.
+                {/* Was hardcoded to the 1,000-pizza campaign, which stopped
+                    being the featured release the moment a newer one shipped. */}
+                Download-ready facts, leadership bios, and campaign details to support coverage of
+                {primaryRelease.title ? ` “${primaryRelease.title}.”` : ' Local Effort Cooperative.'}
               </p>
             </div>
 

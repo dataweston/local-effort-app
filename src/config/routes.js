@@ -27,6 +27,15 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
+    path: '/chez-garage',
+    title: 'Chez Garage - Hyper-Casual Dining Pop-Up in Edina | Local Effort Cooperative',
+    description: 'Chez Garage is hyper-casual dining from Local Effort Cooperative: a pop-up in Edina, Minnesota serving pub pizza, smoked and braised meats, and pantry goods. Order online for pickup or local delivery, or book Chez Garage at your own house for up to 40 guests.',
+    prerender: true,
+    // The catalogue and the Product/FoodEvent/FAQ JSON-LD come from the page's
+    // Helmet, which only reaches the prerendered HTML because the route is
+    // SSR-rendered in src/ssr/StaticApp.jsx — keep both entries in sync.
+  },
+  {
     path: '/return-policy',
     title: 'Return & Exchange Policy - Local Effort Cooperative',
     description: 'Return and exchange policy for Local Effort Cooperative products: five-day window, free return shipping by mail, and no restocking fees.',

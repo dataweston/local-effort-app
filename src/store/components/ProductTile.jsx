@@ -20,7 +20,17 @@ export default function ProductTile({ product, sku, onSelect, showSku = true, sh
 
   const primary = Array.isArray(product.images) ? product.images[0] : null;
   const displayPrice = product.salePrice ?? product.price;
-  const displayPriceLabel = product.priceDisplay || fmt(displayPrice);
+  // A product priced entirely through its variants carries 0 on the parent, so
+  // the tile was advertising $0.00 (Chez Garage's Frozen Pizzas). Fall back to
+  // the cheapest variant. An explicit Sanity priceDisplay still wins.
+  const variantFloor = useMemo(() => {
+    const prices = (product.variants || [])
+      .map((variant) => variant?.price)
+      .filter((price) => typeof price === 'number' && price > 0);
+    return prices.length ? Math.min(...prices) : null;
+  }, [product]);
+  const displayPriceLabel = product.priceDisplay
+    || (!displayPrice && variantFloor ? `From ${fmt(variantFloor)}` : fmt(displayPrice));
   // Previews use the short description only; the long description is reserved
   // for the detail overlay so it never appears twice.
   const summary = useMemo(() => {

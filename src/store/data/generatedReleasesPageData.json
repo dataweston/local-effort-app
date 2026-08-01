@@ -1,6 +1,185 @@
 {
-  "generatedAt": "2026-07-27T02:55:14.036Z",
+  "generatedAt": "2026-08-01T02:38:57.066Z",
   "releases": [
+    {
+      "_id": "release-chez-garage-2026-07-31",
+      "body": [
+        {
+          "_key": "b0",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s0",
+              "_type": "span",
+              "marks": [],
+              "text": "Chez Garage is Local Effort’s answer to a question the co-op keeps getting: can you get chef cooking without the occasion that usually comes with it. The format is a garage, a pizza oven, a smoker, and a menu that changes with what Minnesota farms have that week. Guests order online, pull up, and leave with dinner and with food for the rest of the week."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b1",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s1",
+              "_type": "span",
+              "marks": [],
+              "text": "The cooperative calls the format hyper-casual dining — the food is the only formal thing about it. The same Minnesota-grown ingredients and technique the team puts into private dinners and weekly meal prep are handed over in a driveway, on a paper plate, at pop-up prices."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b2",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s2",
+              "_type": "span",
+              "marks": [],
+              "text": "The Edina run opens Thursday, July 30 and closes Sunday, August 2, 2026. The menu includes twelve-inch pub pizzas made to order — a classic cheese with mozzarella and brick at $13, a green leeks pizza on tomatillo sauce at $15 — alongside cherry-rubbed pork belly at $32 and pantry goods such as ramp oil at $24. Frozen pizzas built on puffy sourdough crusts, topped and vacuum sealed to bake at home, run $24 for a two-pack to $74 for a six-pack. Delivery orders have a $75 minimum; some items are pickup only."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b3",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s3",
+              "_type": "span",
+              "marks": [],
+              "text": "Chez Garage also travels. The cooperative will bring a chef, an oven, and the rest of the equipment to a host’s own driveway for up to 40 guests, at an estimated $25 to $45 per person with a $200 deposit holding the date."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        },
+        {
+          "_key": "b4",
+          "_type": "block",
+          "children": [
+            {
+              "_key": "s4",
+              "_type": "span",
+              "marks": [],
+              "text": "Local Effort Cooperative has cooked from Minnesota and Midwest farms, mills, creameries, and co-ops since 2022. It is worker-owned: every staff member is offered equity in the business."
+            }
+          ],
+          "markDefs": [],
+          "style": "normal"
+        }
+      ],
+      "campaignHighlights": [
+        "Format: hyper-casual dining — chef cooking, no occasion required, served out of a garage.",
+        "Run: Thursday, July 30 through Sunday, August 2, 2026 in Edina, Minnesota.",
+        "Menu: twelve-inch pub pizzas made to order, cherry-rubbed pork belly, ramp oil, and frozen pizzas to bake at home.",
+        "Ordering: online for pickup or local delivery, $75 delivery minimum.",
+        "At home: Local Effort brings the chef and the oven to a host’s driveway for up to 40 guests, $25–$45 per person."
+      ],
+      "canonicalUrl": "https://www.localeffortfood.com/releases",
+      "heroImage": null,
+      "isArchived": false,
+      "leadership": [
+        {
+          "bio": "Trained in fine dining in New York after beginnings in Portland coffee. Leads culinary direction with a focus on Minnesota-grown ingredients.",
+          "name": "Weston Smith",
+          "title": "Chef & Co-Founder"
+        },
+        {
+          "bio": "Minneapolis native and veteran baker who brings warmth, hospitality, and deep local sourcing relationships to the kitchen.",
+          "name": "Catherine Olsen",
+          "title": "Chef & Co-Founder"
+        }
+      ],
+      "mediaContact": {
+        "email": "yum@localeffortfood.com",
+        "instagram": "https://www.instagram.com/localeffortfood",
+        "location": "Minneapolis, MN",
+        "name": "Weston Smith",
+        "organization": "Local Effort Cooperative",
+        "tiktok": "https://www.tiktok.com/@localeffort",
+        "website": "https://localeffortfood.com"
+      },
+      "metaDescription": "Press release: Local Effort Cooperative opens Chez Garage, a hyper-casual dining pop-up in Edina, Minnesota, July 30 – August 2, 2026.",
+      "pressAssets": [
+        {
+          "href": "https://www.localeffortfood.com/chez-garage",
+          "label": "Chez Garage",
+          "value": "Menu, dates, and ordering"
+        },
+        {
+          "href": "https://localeffortfood.com",
+          "label": "Website",
+          "value": "https://localeffortfood.com"
+        },
+        {
+          "href": "https://www.localeffortfood.com/chez-garage",
+          "label": "Private Bookings",
+          "value": "Chez Garage at your own house"
+        },
+        {
+          "href": "/gallery",
+          "label": "Media Gallery",
+          "value": "High-resolution kitchen & event photography"
+        }
+      ],
+      "pressFacts": [
+        {
+          "label": "Founded",
+          "value": "2022"
+        },
+        {
+          "label": "Structure",
+          "value": "Worker-owned cooperative; every staff member is offered equity"
+        },
+        {
+          "label": "Headquarters",
+          "value": "Minneapolis–St. Paul, Minnesota"
+        },
+        {
+          "label": "Pop-Up Dates",
+          "value": "Thursday, July 30 – Sunday, August 2, 2026"
+        },
+        {
+          "label": "Location",
+          "value": "Edina, Minnesota"
+        },
+        {
+          "label": "Price Range",
+          "value": "Pizzas $13–$15; frozen pizza packs $24–$74; pork belly $32; ramp oil $24"
+        },
+        {
+          "label": "Delivery",
+          "value": "Local delivery with a $75 minimum; some items pickup only"
+        },
+        {
+          "label": "Private Bookings",
+          "value": "Up to 40 guests, $25–$45 per person, $200 deposit holds the date"
+        },
+        {
+          "label": "Sourcing",
+          "value": "100% Midwest ingredients from Minnesota farms, mills, creameries, and co-ops"
+        }
+      ],
+      "pressKitUrl": null,
+      "publishedAt": "2026-07-31T09:00:00.000Z",
+      "slug": "chez-garage-edina-2026",
+      "storyAngles": [
+        "Hyper-casual dining: what happens when chef technique is decoupled from the occasion, the table setting, and the price.",
+        "A worker-owned kitchen that offers every staff member equity, operating pop-ups instead of a fixed dining room.",
+        "100% Midwest sourcing in a format — pub pizza and takeaway — usually built on commodity supply chains.",
+        "The suburban pop-up: why a garage in Edina rather than a storefront in Minneapolis.",
+        "Take-home economics: frozen pizzas and prepared meals as the part of a pop-up that outlasts the weekend."
+      ],
+      "summary": "Local Effort Cooperative brings Chez Garage — hyper-casual dining built around pub pizza, smoked and braised meats, and pantry goods — to Edina, Minnesota from Thursday, July 30 through Sunday, August 2, 2026. Orders are placed online for pickup or local delivery, and the format travels to private driveways for up to 40 guests.",
+      "title": "Local Effort Cooperative Opens Chez Garage, a Hyper-Casual Dining Pop-Up in Edina"
+    },
     {
       "_id": "release-local-pizza-1000-2025-09-30",
       "body": [

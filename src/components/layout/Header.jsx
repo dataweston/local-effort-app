@@ -86,18 +86,19 @@ export const Header = () => {
                 href={item.href}
                 onClick={go(item)}
                 className="le-nav-item"
+                title={item.description}
                 aria-current={active ? 'page' : undefined}
                 data-active={active ? 'true' : 'false'}
                 style={{ '--nav-accent': item.accent }}
               >
-                <span className="le-nav-item__label">{item.label}</span>
-                <span className="le-nav-item__note">{item.note}</span>
+                {item.label}
               </a>
             );
           })}
           <a
             href={HEADER_CTA.href}
             className="le-nav-cta"
+            title={HEADER_CTA.description}
             aria-current={location.pathname === HEADER_CTA.href ? 'page' : undefined}
             data-active={location.pathname === HEADER_CTA.href ? 'true' : 'false'}
           >
@@ -140,11 +141,11 @@ export const Header = () => {
                 href="/"
                 onClick={goHome}
                 className="le-sheet-item"
+                data-active={isHome && activePanel === 0 ? 'true' : 'false'}
                 style={{ '--nav-accent': 'var(--brand-bridge)' }}
                 variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
               >
-                <span className="le-sheet-item__label">{FULLPAGE_PAGES[0].label}</span>
-                <span className="le-sheet-item__note">the photo wall</span>
+                {FULLPAGE_PAGES[0].label}
               </motion.a>
               {HEADER_NAV.map((item) => (
                 <motion.a
@@ -152,12 +153,12 @@ export const Header = () => {
                   href={item.href}
                   onClick={go(item)}
                   className="le-sheet-item"
+                  title={item.description}
                   data-active={isItemActive(item) ? 'true' : 'false'}
                   style={{ '--nav-accent': item.accent }}
                   variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
                 >
-                  <span className="le-sheet-item__label">{item.label}</span>
-                  <span className="le-sheet-item__note">{item.note}</span>
+                  {item.label}
                 </motion.a>
               ))}
               <motion.a

@@ -291,6 +291,10 @@
       "dest": "/prerender/sale/index.html"
     },
     {
+      "src": "^/chez-garage$",
+      "dest": "/prerender/chez-garage/index.html"
+    },
+    {
       "src": "^/return-policy$",
       "dest": "/prerender/return-policy/index.html"
     },

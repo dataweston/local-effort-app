@@ -17,12 +17,17 @@ export const FULLPAGE_PAGES = [
 
 // Header navigation.
 //
-// Every item carries two things the old row lacked: a one-word descriptor of
-// what it is, and the accent colour of the destination it leads to (the same
+// Each item carries the accent colour of the destination it leads to (the same
 // accents as .ht-scope--* in home-tabs.css — olive for the vegetable week, rose
 // for the celebration, hearth for the pizza oven, ink for the price sheet).
-// That is what differentiates the titles: six destinations, six identities,
-// instead of six interchangeable words in one mono row.
+// That is what differentiates the titles: seven destinations, seven identities,
+// instead of seven interchangeable words in one mono row.
+//
+// The one-word descriptors that used to sit under each label were removed
+// (client direction, 2026-07-31) — the row reads as navigation now, not as a
+// glossary. `description` survives them but is not a second line of nav: it is
+// rendered as the anchor's `title`, so it lands in the markup for crawlers and
+// language models without adding anything to look at.
 //
 // `pageIndex` means "this is a panel on the home page" and is the index into
 // FULLPAGE_PAGES above. Items without it are ordinary routes.
@@ -30,21 +35,28 @@ export const HEADER_NAV = [
   {
     id: 'weekly-meals',
     label: 'Weekly Meals',
-    note: 'meal prep',
+    description: 'Weekly personal-chef meal prep delivered across Minneapolis–St. Paul',
     href: '/weekly-meals',
     accent: 'var(--brand-olive)',
   },
   {
     id: 'small-events',
     label: 'Small Events',
-    note: 'catering',
+    description: 'Private chef catering for dinner parties, showers, and weddings',
     href: '/small-events',
     accent: 'var(--brand-rose)',
   },
   {
+    id: 'chez-garage',
+    label: 'Chez Garage',
+    description: 'Hyper-casual dining: a Local Effort pop-up in an Edina garage',
+    href: '/chez-garage',
+    accent: 'var(--accent-poppy)',
+  },
+  {
     id: 'local-pizza',
     label: 'Local Pizza',
-    note: 'parties',
+    description: 'Wood-fired pizza parties across the Twin Cities',
     href: '/#local-pizza',
     pageIndex: 1,
     accent: 'var(--brand-hearth)',
@@ -52,7 +64,7 @@ export const HEADER_NAV = [
   {
     id: 'for-businesses',
     label: 'For Business',
-    note: 'wholesale',
+    description: 'Wholesale and office catering from a worker-owned kitchen',
     href: '/#for-businesses',
     pageIndex: 2,
     accent: 'var(--brand-ink)',
@@ -60,14 +72,14 @@ export const HEADER_NAV = [
   {
     id: 'sale',
     label: 'Shop',
-    note: 'food drops',
+    description: 'Seasonal food drops, pantry goods, and limited preorders',
     href: '/sale',
     accent: 'var(--brand-neutral-1)',
   },
   {
     id: 'about',
     label: 'About',
-    note: 'the co-op',
+    description: 'A worker-owned Minneapolis food cooperative',
     href: '/#about',
     pageIndex: 3,
     accent: 'var(--brand-bridge)',
@@ -79,7 +91,7 @@ export const HEADER_NAV = [
 export const HEADER_CTA = {
   id: 'localist',
   label: 'Become a Localist',
-  note: 'membership',
+  description: 'Membership in a worker-owned Minneapolis food cooperative',
   href: '/localist',
 };
 

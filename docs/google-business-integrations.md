@@ -132,6 +132,37 @@ Use `/api/brain/google-merchant/sync` after authorization to establish why the
 account is not working. Do not automate corrective mutations until the returned
 policy/account issues have been reviewed.
 
+### Getting products in without the Merchant API
+
+The sync above is read-only and the write path needs account-side work that is
+still outstanding, so products reach Google two other ways — neither of which
+needs OAuth or Merchant API registration.
+
+**1. Product structured data.** `/sale` and `/chez-garage` are prerendered with
+complete `Product` JSON-LD (offer, price, `priceValidUntil`, availability,
+condition, `hasMerchantReturnPolicy`, `shippingDetails`). Merchant Center's
+automatic feeds and free listings read it straight off the page.
+
+**2. A scheduled-fetch feed.** `backend/api/routes/productFeeds.js` serves an
+RSS 2.0 feed in Google's `g:` namespace:
+
+```text
+https://www.localeffortfood.com/api/feeds/google-merchant.xml
+https://www.localeffortfood.com/api/feeds/google-merchant.xml?store=chez-garage
+```
+
+Add it once under **Merchant Center → Data sources → Add product source →
+Scheduled fetch**; Google then pulls it on its own schedule. It reads through
+the same `/api/store/products` handler the storefronts use, so the feed and the
+shop cannot describe different catalogues. Variant-priced products (Chez
+Garage's Frozen Pizzas) become one item per pack sharing an `item_group_id`, and
+a product appearing in two storefronts is emitted once.
+
+Products with **no image are withheld** rather than padded with a storefront
+photo, which Google treats as a policy violation. The feed states which ones in
+an XML comment on the channel and logs them at `warn`. Fixing those means adding
+a photo in Sanity — nothing in the code can substitute for it.
+
 ## Google Ads
 
 Required:
