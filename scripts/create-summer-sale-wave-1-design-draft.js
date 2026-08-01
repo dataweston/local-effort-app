@@ -94,18 +94,29 @@ const html = `<!doctype html>
           </table>
         </td></tr>
 
-        <tr><td style="background:#18130c;padding:34px 26px;">
-          <table role="presentation" class="stack" width="100%" cellpadding="0" cellspacing="0">
+        <!-- Gift-card module: email-safe translation of the About-tab specimen sheet. -->
+        <tr><td data-module="gift-card" style="background:#18130c;padding:34px 26px;">
+          <table role="presentation" class="stack" width="100%" cellpadding="0" cellspacing="0" style="border:3px double #f3ebe5;">
             <tr>
-              <td class="stack-cell" width="54%" valign="middle" style="width:54%;padding-right:13px;">
+              <td class="stack-cell" width="49%" valign="middle" style="width:49%;padding:12px;border-right:1px solid #f3ebe5;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fffaf2;border:1px solid #f3ebe5;">
-                  <tr><td style="padding:6px;"><img src="${RIJKS_APPLES}" width="286" alt="Appel (Malus domestica), Anselmus Boetius de Boodt, Rijksmuseum" style="width:100%;max-width:286px;"></td></tr>
+                  <tr><td style="padding:6px;"><img src="${RIJKS_APPLES}" width="250" alt="Appel (Malus domestica), Anselmus Boetius de Boodt, Rijksmuseum" style="width:100%;max-width:250px;"></td></tr>
                 </table>
               </td>
-              <td class="stack-cell" width="46%" valign="middle" style="width:46%;padding-left:13px;">
-                <p style="margin:0 0 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.4;color:#f35c2b;">Lorem ipsum / 01</p>
-                <h2 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.05;font-weight:400;color:#f3ebe5;">Sed ut perspiciatis unde omnis.</h2>
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#f1e3d8;">Nemo enim ipsam voluptatem quia voluptas sit aspernatur.</p>
+              <td class="stack-cell" width="51%" valign="middle" style="width:51%;padding:20px;">
+                <p style="margin:0 0 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.4;color:#f35c2b;">Lorem ipsum / no. 01</p>
+                <h2 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.05;font-weight:400;color:#f3ebe5;">Lorem ipsum dolor sit amet.</h2>
+                <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#f1e3d8;">Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #f3ebe5;border-bottom:1px solid #f3ebe5;">
+                  <tr>
+                    <td width="33.33%" align="center" style="padding:8px 3px;border-right:1px solid #f3ebe5;font-family:'Courier New',monospace;font-size:10px;color:#f3ebe5;">$100</td>
+                    <td width="33.33%" align="center" style="padding:8px 3px;border-right:1px solid #f3ebe5;font-family:'Courier New',monospace;font-size:10px;color:#f3ebe5;">$250</td>
+                    <td width="33.33%" align="center" style="padding:8px 3px;font-family:'Courier New',monospace;font-size:10px;color:#f3ebe5;">$500</td>
+                  </tr>
+                </table>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:17px;"><tr><td bgcolor="#f3ebe5" style="border:1px solid #f3ebe5;">
+                  <a href="https://www.localeffortfood.com/#about" style="display:inline-block;padding:12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#18130c;text-decoration:none;">Lorem ipsum&nbsp;&nbsp;&rarr;</a>
+                </td></tr></table>
               </td>
             </tr>
           </table>
@@ -197,6 +208,9 @@ async function main() {
   ));
   if (!listIds.includes(WAVE_1_LIST_ID)) {
     throw new Error(`Campaign ${campaignId} is not assigned to Wave 1 list ${WAVE_1_LIST_ID}; received ${JSON.stringify(verified.recipients)}`);
+  }
+  if (!verified.htmlContent?.includes('data-module="gift-card"')) {
+    throw new Error(`Campaign ${campaignId} did not retain the gift-card module`);
   }
 
   process.stdout.write(JSON.stringify({

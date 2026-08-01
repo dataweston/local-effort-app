@@ -42,37 +42,6 @@ const RUN = {
 // missing priceValidUntil.
 const PRICE_VALID_UNTIL = RUN.endDate;
 
-const FAQ = [
-  {
-    question: 'What is Chez Garage?',
-    answer:
-      'Chez Garage is a hyper-casual dining pop-up from Local Effort Cooperative. It is a super-casual popup concept: have your friends over for pizza or barbeque or other kinds of casual summer good-times food, and send them home with chef-inspired treats and prepared meals for the week.',
-  },
-  {
-    question: 'Where and when is Chez Garage: Edina?',
-    answer: `Chez Garage: Edina runs ${RUN.humanDates}, 2026 in Edina, Minnesota. Order online for the dates the pop-up is open.`,
-  },
-  {
-    question: 'Is there a delivery minimum?',
-    answer: `Yes. Delivery orders have a $${RUN.deliveryMinimum} minimum. Some items are pickup only.`,
-  },
-  {
-    question: 'Can I book Chez Garage at my own house?',
-    answer:
-      'Yes. We send a chef, an oven, and whatever other tools and equipment are necessary so you can throw your own block party. Chez Garage is intended to serve a maximum of 40 guests — reach out directly before booking a larger group. A $200 deposit holds the date, and final cost depends on your menu, typically $25–$45 per person.',
-  },
-  {
-    question: 'What is on the menu?',
-    answer:
-      'Twelve-inch pub pizzas made to order, frozen pizzas by the two-pack or six-pack to bake at home, smoked and braised meats like cherry-rubbed pork belly, and pantry goods such as ramp oil. The menu changes with what Minnesota farms have that week.',
-  },
-  {
-    question: 'Who runs Chez Garage?',
-    answer:
-      'Local Effort Cooperative, a worker-owned personal chef and catering team in the Minneapolis–St. Paul area cooking from Minnesota-grown ingredients since 2022.',
-  },
-];
-
 const getProductSummary = (product) => {
   const portableText = ptToHtml(product?.longDescriptionBlocks);
   const summary = (portableText || product?.longDescription || product?.shortDescription || '')
@@ -271,15 +240,6 @@ const ChezGaragePage = () => {
           numberOfItems: productList.length,
           itemListElement: productList,
         },
-        {
-          '@type': 'FAQPage',
-          '@id': `${canonical}#faq`,
-          mainEntity: FAQ.map(({ question, answer }) => ({
-            '@type': 'Question',
-            name: question,
-            acceptedAnswer: { '@type': 'Answer', text: answer },
-          })),
-        },
       ],
     };
   }, [canonical, heroImage, metaDescription, products]);
@@ -330,6 +290,7 @@ const ChezGaragePage = () => {
       </header>
 
       <main id="products" className="le-sale-main">
+        <h1 className="sr-only">Chez Garage</h1>
         <section
           className="le-sale-hero le-sale-hero--chez-garage"
           aria-labelledby="chez-garage-title"
@@ -351,56 +312,6 @@ const ChezGaragePage = () => {
           </div>
         </section>
 
-        {/* The page used to say nothing a crawler or a language model could
-            read: an sr-only h1, a photograph, and a grid loaded by fetch. What
-            Chez Garage actually is lived inside a JS-only modal. This states it
-            in the markup, in the store's own type (.le-sale-* in
-            product-grid.css, written for exactly this and previously unused). */}
-        <section className="le-sale-hero le-sale-hero--intro" aria-labelledby="chez-garage-heading">
-          <div>
-            <p className="le-sale-eyebrow">Local Effort Cooperative pop-up</p>
-            <h1 id="chez-garage-heading" className="le-sale-title">
-              Chez Garage: hyper-casual dining in Edina
-            </h1>
-            <p className="le-sale-subheading">
-              Pub pizza, smoked and braised meats, and pantry goods, served out of a garage
-              and ordered online for pickup or local delivery.
-            </p>
-            <div className="le-sale-intro">
-              <p>
-                Chez Garage is a super-casual popup concept by Local Effort. Have your friends
-                over for pizza or barbeque or other kinds of casual summer good-times food, and
-                send them home with awesome chef-inspired treats and prepared meals for the week.
-              </p>
-              <p>
-                Hyper-casual dining means the food is the only formal thing about it — the same
-                Minnesota-grown ingredients and chef technique we put into private dinners,
-                handed to you in a driveway on a paper plate. Order for {RUN.humanDates}, or
-                book Chez Garage at your own house and we will bring the chef and the oven.
-              </p>
-            </div>
-          </div>
-
-          <dl className="le-sale-summary">
-            <div className="le-sale-summary-card">
-              <dt className="le-sale-summary-label">Dates</dt>
-              <dd className="le-sale-summary-value">{RUN.humanDates}, 2026</dd>
-            </div>
-            <div className="le-sale-summary-card">
-              <dt className="le-sale-summary-label">Where</dt>
-              <dd className="le-sale-summary-value">{RUN.neighborhood}, Minnesota</dd>
-            </div>
-            <div className="le-sale-summary-card">
-              <dt className="le-sale-summary-label">Delivery</dt>
-              <dd className="le-sale-summary-value">${RUN.deliveryMinimum} minimum, local</dd>
-            </div>
-            <div className="le-sale-summary-card">
-              <dt className="le-sale-summary-label">At your house</dt>
-              <dd className="le-sale-summary-value">Up to 40 guests, $25–$45 per person</dd>
-            </div>
-          </dl>
-        </section>
-
         <ChezGarageDialogs />
 
         <section className="le-sale-products" aria-labelledby="chez-garage-products-title">
@@ -415,20 +326,6 @@ const ChezGaragePage = () => {
             showSku={false}
             showDetailRow={false}
           />
-        </section>
-
-        {/* Answers the FAQPage schema above points at. Rich results are only
-            granted when the answer is visible on the page. */}
-        <section className="le-sale-links" aria-labelledby="chez-garage-faq-title">
-          <h2 id="chez-garage-faq-title" className="le-sale-section-title">Common questions</h2>
-          <div className="le-sale-link-grid le-sale-faq-grid">
-            {FAQ.map(({ question, answer }) => (
-              <div key={question} className="le-sale-link-card">
-                <h3 className="le-sale-link-title">{question}</h3>
-                <p className="le-sale-link-copy">{answer}</p>
-              </div>
-            ))}
-          </div>
         </section>
       </main>
 

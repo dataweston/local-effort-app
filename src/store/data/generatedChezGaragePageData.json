@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-01T03:59:46.768Z",
+  "generatedAt": "2026-08-01T15:13:52.324Z",
   "store": "chez-garage",
   "page": {
     "title": "Chez Garage",
@@ -72,6 +72,9 @@
         }
       ],
       "images": [
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/68e82aa61c648b9dcca0320f9bc6285e36913070-4284x5712.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/61ff040353c2bc768cf094b0e5545092b1f00669-3024x4032.jpg",
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/ba5e8b8e7eb1568d8d71833d3261f248df7e072d-3024x4032.jpg",
         "https://cdn.sanity.io/images/d6l9d0ea/localeffort/9ff55e43873757be3e5174dc38f27f089bc77ac1-2471x3000.jpg"
       ],
       "price": 0,
