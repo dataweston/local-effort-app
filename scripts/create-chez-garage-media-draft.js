@@ -21,10 +21,14 @@ dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), '.env.production.local'), override: false });
 
 const CAMPAIGN_NAME = 'Chez Garage — media pitch (Edina, Jul 30–Aug 2 2026)';
-const SUBJECT = 'Hyper-casual dining in a garage: Local Effort opens Chez Garage in Edina, Jul 30–Aug 2';
 const MEDIA_LIST_ID = 8; // "media"
 const PAGE_URL = 'https://www.localeffortfood.com/chez-garage';
 const RELEASE_URL = 'https://www.localeffortfood.com/releases';
+
+// Only used if the campaign has to be created from scratch. Once it exists, the
+// subject and preview text are the owner's — set in the Brevo UI — and the
+// update path below leaves both alone.
+const SUBJECT = 'Chez Garage, a hyper-casual concept';
 
 const ANGLES = [
   'Hyper-casual dining: what happens when chef technique is decoupled from the occasion, the table setting, and the price.',
@@ -123,20 +127,25 @@ async function main() {
   const sender = (senders.senders || []).find((s) => s.active) || (senders.senders || [])[0];
   if (!sender) throw new Error('No verified Brevo sender available');
 
-  const payload = {
-    name: CAMPAIGN_NAME,
-    subject: SUBJECT,
-    type: 'classic',
-    sender: { name: 'Local Effort Cooperative', email: sender.email },
-    replyTo: 'yum@localeffortfood.com',
-    htmlContent: html,
-    recipients: { listIds: [MEDIA_LIST_ID] },
-    // No scheduledAt: Brevo keeps this in draft until a human sends it.
-  };
-
   const existingRes = await fetch('https://api.brevo.com/v3/emailCampaigns?limit=100&status=draft', { headers });
   const existing = await existingRes.json();
   const match = (existing.campaigns || []).find((c) => c.name === CAMPAIGN_NAME);
+
+  // Updating sends the body and nothing else. Subject and preview text belong
+  // to whoever last edited them in Brevo — re-running this must not overwrite
+  // an owner's subject line with the placeholder below.
+  const payload = match
+    ? { htmlContent: html }
+    : {
+      name: CAMPAIGN_NAME,
+      subject: SUBJECT,
+      type: 'classic',
+      sender: { name: 'Local Effort Cooperative', email: sender.email },
+      replyTo: 'yum@localeffortfood.com',
+      htmlContent: html,
+      recipients: { listIds: [MEDIA_LIST_ID] },
+      // No scheduledAt: Brevo keeps this in draft until a human sends it.
+    };
 
   const res = await fetch(
     match ? `https://api.brevo.com/v3/emailCampaigns/${match.id}` : 'https://api.brevo.com/v3/emailCampaigns',
@@ -149,8 +158,10 @@ async function main() {
 
   const body = res.status === 204 ? { id: match.id } : await res.json();
   process.stdout.write(
-    `[chez-garage-pitch] ${match ? 'updated' : 'created'} draft campaign ${body.id}\n`
-    + `[chez-garage-pitch] sender ${sender.email}, list ${MEDIA_LIST_ID}, status DRAFT (not sent)\n`,
+    match
+      ? `[chez-garage-pitch] updated body of draft campaign ${body.id} (subject left untouched)\n`
+      : `[chez-garage-pitch] created draft campaign ${body.id}\n`
+        + `[chez-garage-pitch] sender ${sender.email}, list ${MEDIA_LIST_ID}, status DRAFT (not sent)\n`,
   );
 }
 

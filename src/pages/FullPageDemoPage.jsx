@@ -22,6 +22,7 @@ import {
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
 import { trackEvent } from '../lib/trackEvent';
 import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
+import GiftCardDialog from '../components/home/GiftCardDialog';
 // The slip forms are shared with the standalone /weekly-meals and /small-events
 // pages so the home funnel and the indexable pages cannot drift apart.
 import { QuickEventBookForm } from '../components/services/slipForms';
@@ -3166,6 +3167,39 @@ const normalizeMealStyle = (value) =>
                   </a>
                 </div>
               </div>
+
+              <section className="about-gift-card" aria-labelledby="about-gift-card-title">
+                <figure className="about-gift-card__plate">
+                  <img
+                    src="https://iiif.micr.io/jaTqd/full/900,/0/default.jpg"
+                    alt="Botanical study of four apples by Anselmus Boëtius de Boodt"
+                    width={900}
+                    height={1152}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </figure>
+                <div className="about-gift-card__copy">
+                  <p className="about-gift-card__folio">gift certificate / field no. 01</p>
+                  <h3 className="about-gift-card__title" id="about-gift-card-title">
+                    Give them dinner, not more stuff.
+                  </h3>
+                  <p className="about-gift-card__text">
+                    A Local Effort gift card can become a quiet dinner at home, a pizza party, weekly meals,
+                    or something we plan together. Send the digital card now or choose a hand-lettered leather
+                    keepsake at $250 and above.
+                  </p>
+                  <div className="about-gift-card__ledger" aria-label="Common gift card amounts">
+                    <span>$100</span>
+                    <span>$250</span>
+                    <span>$500</span>
+                  </div>
+                  <div>
+                    <GiftCardDialog />
+                  </div>
+                  <p className="about-gift-card__note">redeemable across Local Effort experiences —</p>
+                </div>
+              </section>
 
               {/* the newsletter was a slate Tailwind card with an uppercase
                   0.2em eyebrow and generic .input/.btn-primary — nothing else on

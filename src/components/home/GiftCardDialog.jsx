@@ -6,6 +6,7 @@ import { useSquareCard } from "../../hooks/useSquareCard";
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from "../../lib/checkoutAttemptId";
 import { cn } from "../../lib/utils";
 import { heroFallbackSrc } from "../../data/cloudinaryContent";
+import "./GiftCardDialog.css";
 
 const presetAmounts = [100, 150, 200, 250, 350, 500];
 
@@ -79,8 +80,6 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
   const { cardLoaded, error: squareError, tokenize, verifyBuyer, reset: resetSquare } = useSquareCard("#gift-card-card-container", open, [amountValue]);
   const checkoutAttemptRef = useRef("");
   const attemptStorageKey = "le:checkoutAttempt:gift-card";
-  const [fallbackUrl, setFallbackUrl] = useState("");
-  const [fallbackStatus, setFallbackStatus] = useState({ loading: false, error: "" });
 
   const resolveCheckoutAttemptId = useCallback(() => {
     if (checkoutAttemptRef.current) return checkoutAttemptRef.current;
@@ -93,53 +92,6 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
     checkoutAttemptRef.current = "";
     clearCheckoutAttemptId(attemptStorageKey);
   }, []);
-
-  const buildFallbackLink = useCallback(async () => {
-    if (fallbackStatus.loading) return;
-    setFallbackStatus({ loading: true, error: "" });
-    try {
-      const resolvedAmount = amountValue;
-      const response = await fetch("/api/store/gift-card-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: resolvedAmount,
-          cardType: form.cardType,
-          deliveryTarget: form.deliveryTarget,
-          note: form.note,
-          buyer: {
-            name: form.buyerName,
-            email: form.buyerEmail,
-            phone: form.buyerPhone,
-          },
-          recipient: {
-            name: form.recipientName,
-            email: form.recipientEmail,
-            phone: form.recipientPhone,
-          },
-          sendOn: form.sendOn,
-          shipping: form.cardType === "physical"
-            ? {
-                shipTo: form.shipTo,
-                address: {
-                  line1: form.shippingLine1,
-                  line2: form.shippingLine2,
-                  city: form.shippingCity,
-                  state: form.shippingState,
-                  postal: form.shippingPostal,
-                },
-              }
-            : null,
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data?.error || "Unable to create hosted checkout.");
-      setFallbackUrl(data?.url || "");
-      setFallbackStatus({ loading: false, error: "" });
-    } catch (err) {
-      setFallbackStatus({ loading: false, error: err?.message || "Unable to create hosted checkout." });
-    }
-  }, [fallbackStatus.loading, amountValue, form]);
 
   const handleDialogOpenChange = useCallback((nextOpen) => {
     if (!nextOpen) {
@@ -395,16 +347,17 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       {showTrigger && (
         <DialogTrigger asChild>
-          <button className={cn("btn btn-primary flex items-center gap-2 shadow-sm", className)}>
+          <button className={cn("gift-card-trigger", className)}>
             <Gift className="h-4 w-4" />
             Buy Gift Card
           </button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Gift a Local Effort experience</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="gift-card-dialog max-h-[90vh] max-w-4xl overflow-y-auto">
+        <DialogHeader className="gift-card-dialog__header">
+          <p className="gift-card-dialog__folio">gift certificate / no. 01</p>
+          <DialogTitle className="gift-card-dialog__title">Gift a Local Effort experience</DialogTitle>
+          <DialogDescription className="gift-card-dialog__description">
             Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions.
           </DialogDescription>
         </DialogHeader>
@@ -412,7 +365,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
         {status === "success" && success ? (
           renderSuccess()
         ) : (
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="gift-card-form space-y-6" onSubmit={handleSubmit}>
             <section className="space-y-3">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-500">Amount</p>
               <div className="flex flex-wrap gap-2">
@@ -642,27 +595,11 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
                 <div id="gift-card-card-container" className="min-h-[64px]" />
                 {!cardLoaded && !squareError && <p className="mt-2 text-sm text-slate-500">Loading secure card entry...</p>}
                 {squareError && <p className="mt-2 text-sm text-red-600">{squareError}</p>}
-                {(squareError || status === "error") && (
-                  <div className="mt-2 text-xs text-slate-600 space-y-1">
-                    <button
-                      type="button"
-                      className="underline"
-                      onClick={buildFallbackLink}
-                      disabled={fallbackStatus.loading}
-                    >
-                      {fallbackStatus.loading ? "Building hosted checkout..." : "Use hosted Square checkout"}
-                    </button>
-                    {fallbackStatus.error && (
-                      <p className="text-sm text-red-600">{fallbackStatus.error}</p>
-                    )}
-                    {fallbackUrl && (
-                      <p>
-                        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
-                          Open hosted checkout
-                        </a>
-                      </p>
-                    )}
-                  </div>
+                {squareError && (
+                  <p className="mt-2 text-xs text-slate-600">
+                    Secure payment did not load. Refresh this page or email{' '}
+                    <a href="mailto:hello@localeffortfood.com">hello@localeffortfood.com</a>.
+                  </p>
                 )}
               </div>
               <p className="text-xs text-slate-400">We use Square to process payments securely. The card is charged immediately and refunds are available on request within 14 days (if unused).</p>

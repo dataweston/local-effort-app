@@ -47,7 +47,6 @@ const storeProductsHandler = require('../../api-handlers/store/products');
 const storePriceHandler = require('../../api-handlers/store/price');
 const storeEventsHandler = require('../../api-handlers/store/events');
 const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
-const giftCardLinkHandler = require('../../api-handlers/store/gift-card-link');
 const localistImagesHandler = require('../../api-handlers/localist/images');
 const localistSubscribeHandler = require('../../api-handlers/localist/subscribe');
 const salesProxyHandler = require('../../api-handlers/sales-proxy');
@@ -1113,15 +1112,6 @@ app.all('/api/store/gift-card-checkout', async (req, res, next) => {
     await giftCardCheckoutHandler(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'gift-card checkout handler failed');
-    next(err);
-  }
-});
-
-app.all('/api/store/gift-card-link', async (req, res, next) => {
-  try {
-    await giftCardLinkHandler(req, res);
-  } catch (err) {
-    logger.error({ err, method: req.method }, 'gift-card link handler failed');
     next(err);
   }
 });

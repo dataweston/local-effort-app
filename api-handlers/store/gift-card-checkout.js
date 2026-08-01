@@ -1,15 +1,6 @@
 const { Client, Environment } = require('square');
 const crypto = require('crypto');
 
-let db = null;
-try {
-  const admin = require('firebase-admin');
-  if (!admin.apps.length) admin.initializeApp();
-  db = admin.firestore();
-} catch (_) {
-  db = null;
-}
-
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 const ENV_NAME = ((process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase() === 'sandbox') ? 'Sandbox' : 'Production';
@@ -36,6 +27,7 @@ const sanitizeIdempotencyKey = (value) => {
   if (!trimmed) return null;
   return trimmed.slice(0, 45);
 };
+const stepIdempotencyKey = (base, step) => `${base.slice(0, 36)}-${step}`.slice(0, 45);
 const toCents = (value) => {
   const num = typeof value === 'string' ? Number(value.replace(/[^0-9.]/g, '')) : Number(value);
   if (!Number.isFinite(num)) return 0;
@@ -139,12 +131,36 @@ const giftCardCheckout = async (req, res) => {
 
     const amountLabel = formatUsd(amountCents);
 
-    // Capture payment first
+    // Square's supported gift-card sale flow is:
+    // GIFT_CARD order -> payment -> digital card -> ACTIVATE activity.
+    // All four calls derive stable keys from the browser checkout attempt, so
+    // retrying after a partial failure resumes the same sale instead of
+    // charging twice or minting a second card.
+    const attemptKey = sanitizeIdempotencyKey(checkoutAttemptId) || createKey();
+    const orderResp = await sq.ordersApi.createOrder({
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'order'),
+      order: {
+        locationId: LOCATION_ID,
+        referenceId: `gift-card-${attemptKey}`.slice(0, 40),
+        lineItems: [{
+          uid: 'gift-card',
+          name: 'Local Effort gift card',
+          quantity: '1',
+          itemType: 'GIFT_CARD',
+          basePriceMoney: { amount: amountCents, currency: 'USD' },
+        }],
+      },
+    });
+    const order = orderResp?.result?.order;
+    const giftCardLineItemUid = order?.lineItems?.[0]?.uid;
+    if (!order?.id || !giftCardLineItemUid) throw new Error('Failed to create the Square gift card order');
+
     const paymentResp = await sq.paymentsApi.createPayment({
       sourceId: token,
-      idempotencyKey: sanitizeIdempotencyKey(checkoutAttemptId) || createKey(),
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'payment'),
       amountMoney: { amount: amountCents, currency: 'USD' },
       locationId: LOCATION_ID,
+      orderId: order.id,
       buyerEmailAddress: buyerEmail,
       note: `Gift card for ${recipientName || 'recipient'} (${amountLabel})`.slice(0, 60),
       metadata: {
@@ -159,22 +175,30 @@ const giftCardCheckout = async (req, res) => {
     const paymentId = paymentResp?.result?.payment?.id;
     if (!paymentId) throw new Error('Payment processing failed');
 
-    // Create digital gift card (always digital; physical option triggers fulfillment later)
+    // Square generates the redeemable GAN. The optional leather version is a
+    // Local Effort fulfillment layer around the same digital Square card.
     const giftCardResp = await sq.giftCardsApi.createGiftCard({
-      idempotencyKey: createKey(),
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'card'),
       locationId: LOCATION_ID,
       giftCard: { type: 'DIGITAL' },
     });
     const giftCard = giftCardResp?.result?.giftCard;
     if (!giftCard?.id) throw new Error('Failed to create gift card');
 
-    await sq.giftCardActivitiesApi.createGiftCardActivity({
-      idempotencyKey: createKey(),
-      locationId: LOCATION_ID,
-      giftCardId: giftCard.id,
-      type: 'LOAD',
-      loadActivityDetails: { amountMoney: { amount: amountCents, currency: 'USD' } },
+    const activityResp = await sq.giftCardActivitiesApi.createGiftCardActivity({
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'activate'),
+      giftCardActivity: {
+        locationId: LOCATION_ID,
+        giftCardId: giftCard.id,
+        type: 'ACTIVATE',
+        activateActivityDetails: {
+          orderId: order.id,
+          lineItemUid: giftCardLineItemUid,
+        },
+      },
     });
+    const activity = activityResp?.result?.giftCardActivity;
+    if (!activity?.id) throw new Error('Failed to activate the Square gift card');
 
     const code = giftCard.gan || 'Generated';
 
@@ -203,23 +227,12 @@ const giftCardCheckout = async (req, res) => {
       shipping: wantsPhysical ? { shipTo, address: shippingAddress } : null,
       note,
       paymentId,
+      orderId: order.id,
       giftCardId: giftCard.id,
+      giftCardActivityId: activity.id,
       code,
       sendOn: sendOnDate ? sendOnDate.toISOString() : null,
     };
-
-    if (db) {
-      try {
-        await db.collection('giftCardPurchases').doc(paymentId).set({
-          ...payload,
-          createdAt: new Date().toISOString(),
-        }, { merge: true });
-      } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[gift-card] Firestore save failed', err?.message);
-        }
-      }
-    }
 
     if (BREVO_API_KEY && SENDER_EMAIL && TEAM_EMAIL) {
       const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
@@ -325,7 +338,17 @@ const giftCardCheckout = async (req, res) => {
       }
     }
 
-    return res.status(200).json({ ok: true, code, amount: amountCents, paymentId, giftCardId: giftCard.id, cardType: wantsPhysical ? 'physical' : 'digital', sendOn: sendOnDate ? sendOnDate.toISOString() : null });
+    return res.status(200).json({
+      ok: true,
+      code,
+      amount: amountCents,
+      paymentId,
+      orderId: order.id,
+      giftCardId: giftCard.id,
+      giftCardActivityId: activity.id,
+      cardType: wantsPhysical ? 'physical' : 'digital',
+      sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+    });
   } catch (err) {
     const details = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Gift card checkout failed';
     if (process.env.NODE_ENV !== 'production') {
