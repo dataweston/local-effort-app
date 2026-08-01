@@ -291,6 +291,10 @@
       "dest": "/prerender/sale/index.html"
     },
     {
+      "src": "^/gift-cards$",
+      "dest": "/prerender/gift-cards/index.html"
+    },
+    {
       "src": "^/chez-garage$",
       "dest": "/prerender/chez-garage/index.html"
     },

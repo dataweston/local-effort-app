@@ -1,0 +1,24 @@
+.gift-card-page {
+  min-height: calc(100vh - 5rem);
+  background: var(--brand-linen, #f1e3d8);
+  color: var(--brand-ink, #3a2e3f);
+}
+
+.gift-card-page__main {
+  display: grid;
+  min-height: calc(100vh - 5rem);
+  place-items: center;
+  padding: clamp(1rem, 4vw, 4rem);
+}
+
+.gift-card-page .about-gift-card {
+  width: min(100%, 58rem);
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .gift-card-page__main {
+    display: block;
+    padding: 0.75rem;
+  }
+}

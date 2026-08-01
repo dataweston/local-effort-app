@@ -60,7 +60,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
         lowPrice: "50",
         highPrice: "500",
         availability: "https://schema.org/InStock",
-        url: `${siteUrl}/#gift-cards`,
+        url: `${siteUrl}/gift-cards`,
       },
     };
     if (giftCardImage) {

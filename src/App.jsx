@@ -54,6 +54,7 @@ const OfficeCateringPage = lazy(() => import('./pages/OfficeCateringPage'));
 const WeeklyMealsPage = lazy(() => import('./pages/WeeklyMealsPage'));
 const SmallEventsPage = lazy(() => import('./pages/SmallEventsPage'));
 const MemberFundraisePage = lazy(() => import('./pages/MemberFundraisePage'));
+const GiftCardsPage = lazy(() => import('./pages/GiftCardsPage'));
 
 const AppContent = () => {
   const location = useLocation();
@@ -197,6 +198,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <SalePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/gift-cards"
+                  element={
+                    <AnimatedPage>
+                      <GiftCardsPage />
                     </AnimatedPage>
                   }
                 />

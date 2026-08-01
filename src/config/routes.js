@@ -27,6 +27,12 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
+    path: '/gift-cards',
+    title: 'Gift Cards - Local Effort Cooperative',
+    description: 'Send a Local Effort gift card for private dinners, pizza parties, weekly meals, and other chef-made experiences in Minneapolis-St. Paul.',
+    prerender: true,
+  },
+  {
     path: '/chez-garage',
     title: 'Chez Garage - Hyper-Casual Dining Pop-Up in Edina | Local Effort Cooperative',
     description: 'Chez Garage is hyper-casual dining from Local Effort Cooperative: a pop-up in Edina, Minnesota serving pub pizza, smoked and braised meats, and pantry goods. Order online for pickup or local delivery, or book Chez Garage at your own house for up to 40 guests.',

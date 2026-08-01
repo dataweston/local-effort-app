@@ -21,6 +21,7 @@ import WeeklyMealsPage from '../pages/WeeklyMealsPage';
 import SmallEventsPage from '../pages/SmallEventsPage';
 import LocalistPage from '../pages/LocalistPage';
 import MemberFundraisePage from '../pages/MemberFundraisePage';
+import GiftCardsPage from '../pages/GiftCardsPage';
 
 export default function StaticApp({ helmetContext }) {
   const location = useLocation();
@@ -38,6 +39,7 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/sale" element={<SalePage />} />
+              <Route path="/gift-cards" element={<GiftCardsPage />} />
               <Route path="/chez-garage" element={<ChezGaragePage />} />
               <Route path="/return-policy" element={<ReturnPolicyPage />} />
               <Route path="/happymonday" element={<HappyMondayPage />} />

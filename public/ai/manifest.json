@@ -65,6 +65,7 @@
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
     { "path": "/book", "title": "Book a Private Event", "summary": "Book a chef-led dinner party, pizza party, wedding, or small event; instant estimate and deposit." },
     { "path": "/sale", "title": "Sale", "summary": "Public sale catalog and checkout surface." },
+    { "path": "/gift-cards", "title": "Gift Cards", "summary": "Purchase and send digital or leather-keepsake gift cards for Local Effort experiences." },
     { "path": "/return-policy", "title": "Return and Exchange Policy", "summary": "United States policy: eligible new products may be returned or exchanged within 5 days by mail with free return shipping and no restocking fee." },
     { "path": "/releases", "title": "Releases", "summary": "Press releases and media updates." },
     { "path": "/blog", "title": "Blog", "summary": "News, stories, and updates from Local Effort Cooperative" },
