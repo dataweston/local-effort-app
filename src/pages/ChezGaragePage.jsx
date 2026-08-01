@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { SITE_URL, CONTACT_EMAIL, SOCIAL_LINKS } from '../config/siteMetadata';
 import { MERCHANT_RETURN_POLICY_JSON_LD } from '../config/returnPolicy';
@@ -117,6 +118,9 @@ const buildOffer = (product, url) => {
 
 const ChezGaragePage = () => {
   const { totalQty, openCart } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const openSlug = location.hash ? location.hash.slice(1) : null;
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [loading, setLoading] = useState(INITIAL_PRODUCTS.length === 0);
 
@@ -325,6 +329,9 @@ const ChezGaragePage = () => {
             basePath={`/${STORE_SLUG}`}
             showSku={false}
             showDetailRow={false}
+            openSlug={openSlug}
+            onOpen={(slug) => navigate(`/${STORE_SLUG}#${slug}`, { replace: false })}
+            onClose={() => navigate(`/${STORE_SLUG}`, { replace: false })}
           />
         </section>
       </main>
