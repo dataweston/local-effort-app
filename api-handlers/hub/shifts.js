@@ -88,6 +88,18 @@ function publicShift(card, claims = []) {
   };
 }
 
+function publicConfirmedEvent(card) {
+  return {
+    id: card.id,
+    title: card.title,
+    date: card.date,
+    startTime: card.startTime,
+    endTime: card.endTime,
+    people: card.people || [],
+    status: card.status,
+  };
+}
+
 function dateRange(startDate, endDate) {
   if (!isDate(startDate) || !isDate(endDate) || endDate < startDate) return null;
   const start = new Date(`${startDate}T00:00:00Z`);
@@ -484,6 +496,17 @@ module.exports = async (req, res) => {
       orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
       take: 250,
     });
+    const confirmedEvents = await prisma.plannerCard.findMany({
+      where: {
+        supabaseUid,
+        date: { gte: from, lte: to },
+        enabled: true,
+        objectType: 'event',
+        status: { in: ['confirmed', 'booked', 'scheduled'] },
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      take: 250,
+    });
     const claims = await prisma.hubShiftClaim.findMany({
       where: { plannerCardId: { in: cards.map((card) => card.id) } },
     });
@@ -539,6 +562,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       shifts: cards.filter(isShiftCard).map((card) => publicShift(card, byCard.get(card.id) || [])),
+      confirmedEvents: confirmedEvents.map(publicConfirmedEvent),
       availabilityBlocks: publicAvailabilityBlocks(availabilityForResponse),
       requests: requests.map((request) => publicScheduleRequest(request, profilesByUserId)),
     });

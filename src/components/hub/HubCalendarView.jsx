@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, CreditCard, Plus, RefreshCw, Upload } from 'lucide-react';
+import { CalendarCheck2, CalendarDays, CheckCircle2, CreditCard, Plus, RefreshCw, Upload } from 'lucide-react';
 import { GoogleCalendarSync } from '../weeklyplanner/GoogleCalendarSync';
 import { api, addDays, formatDate, formatMoneyCents, formatTime, todayIso, Panel, Field } from './hubShared';
 
@@ -122,6 +122,7 @@ export function newAvailabilityDraft() {
 export function ShiftsView({ accessToken, profile, isPrivileged, onCalendarChange }) {
   const [from, setFrom] = useState(todayIso());
   const [shifts, setShifts] = useState([]);
+  const [confirmedEvents, setConfirmedEvents] = useState([]);
   const [availabilityBlocks, setAvailabilityBlocks] = useState([]);
   const [payroll, setPayroll] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -135,6 +136,7 @@ export function ShiftsView({ accessToken, profile, isPrivileged, onCalendarChang
       api(`/api/hub/payroll?from=${from}&to=${addDays(from, 14)}`, accessToken).catch(() => null),
     ]);
     setShifts(data.shifts || []);
+    setConfirmedEvents(data.confirmedEvents || []);
     setAvailabilityBlocks(data.availabilityBlocks || []);
     setPayroll(payData);
   }, [accessToken, from]);
@@ -251,6 +253,21 @@ export function ShiftsView({ accessToken, profile, isPrivileged, onCalendarChang
 
   return (
     <div className="hub-schedule-stack">
+      <Panel title="Confirmed Events" icon={CalendarCheck2}>
+        <div className="hub-list">
+          {confirmedEvents.length === 0 && <p className="hub-empty">No confirmed events in this two-week window.</p>}
+          {confirmedEvents.map((event) => (
+            <div className="hub-shift hub-confirmed-event" key={event.id}>
+              <div>
+                <strong>{event.title}</strong>
+                <span>{formatDate(event.date)} / {formatTime(event.startTime) || 'Time TBD'} {event.endTime ? `to ${formatTime(event.endTime)}` : ''}</span>
+                <small>{event.people.length ? `Staff: ${event.people.join(', ')}` : 'Staff assignments not entered yet'}</small>
+              </div>
+              <span className="hub-pill">Confirmed</span>
+            </div>
+          ))}
+        </div>
+      </Panel>
       <Panel
         title={isPrivileged ? 'Staff Shift Calendar' : 'My Shift Calendar'}
         icon={CalendarDays}

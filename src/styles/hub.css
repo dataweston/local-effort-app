@@ -231,6 +231,7 @@
 .hub-calendar-item strong { font-size: 13px; font-weight: 600; }
 .hub-calendar-item small { grid-column: 2; color: var(--hub-muted); font-size: 11px; }
 .hub-calendar-event { border-left: 3px solid var(--hub-accent); }
+.hub-confirmed-event { border-left: 3px solid var(--hub-accent); }
 .hub-calendar-unavailable {
   border-left: 3px solid var(--hub-danger);
   background: color-mix(in srgb, var(--hub-danger) 8%, var(--hub-panel));

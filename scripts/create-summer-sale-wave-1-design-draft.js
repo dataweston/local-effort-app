@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Create or refresh the Summer Sale Wave 1 DESIGN-ONLY draft in Brevo.
+ * Create or refresh the Summer Sale Wave 1 draft in Brevo.
  *
- * The campaign intentionally contains placeholder copy only. It is never
- * scheduled and this script never calls Brevo's send endpoints.
+ * The script updates draft content only. It never schedules the campaign and
+ * never calls Brevo's send endpoints.
  */
 
 const path = require('path');
@@ -13,12 +13,14 @@ dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), '.env.production.local'), override: false });
 
 const CAMPAIGN_NAME = 'Summer Sale 2026 - Wave 1 - design draft';
-const SUBJECT = 'Lorem ipsum dolor sit amet';
+const SUBJECT = 'First access: summer and fall gatherings';
 const WAVE_1_LIST_ID = 21;
 
 const HOME_HERO = 'https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto,w_1200/v1759456148/vjuesai2mxfavpq9d2df.jpg';
-const JULY_DINNER = 'https://res.cloudinary.com/dokyhfvyd/image/upload/c_fill,w_900,h_900,q_auto,f_jpg/s7fngt44mwpptmgoawxc';
+const FROZEN_PIZZA = 'https://cdn.sanity.io/images/d6l9d0ea/localeffort/68e82aa61c648b9dcca0320f9bc6285e36913070-4284x5712.jpg?auto=format&w=900';
+const FROZEN_PIZZA_URL = 'https://www.localeffortfood.com/chez-garage#chez-garage-frozen-pizza';
 const CHEZ_GARAGE = 'https://www.localeffortfood.com/images/chez-garage-hero.jpg';
+const CHEZ_GARAGE_URL = 'https://www.localeffortfood.com/chez-garage';
 const RIJKS_APPLES = 'https://iiif.micr.io/jaTqd/full/900,/0/default.jpg';
 const RIJKS_FLOWERS = 'https://iiif.micr.io/GMEXG/full/900,/0/default.jpg';
 
@@ -44,16 +46,16 @@ const html = `<!doctype html>
   </style>
 </head>
 <body style="margin:0;padding:0;background:#e4e4d8;color:#3a2e3f;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Summer and fall dates are nearly sold out. Wave 1 gets first access.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#e4e4d8;">
     <tr><td align="center" style="padding:24px 10px;">
       <table role="presentation" class="shell" width="640" cellpadding="0" cellspacing="0" style="width:640px;max-width:640px;background:#f3ebe5;border:1px solid #3a2e3f;">
         <tr><td style="padding:7px;border-bottom:1px solid #3a2e3f;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #3a2e3f;">
             <tr>
-              <td width="33.33%" style="padding:8px 10px;border-right:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">Lorem ipsum</td>
-              <td width="33.33%" align="center" style="padding:8px 10px;border-right:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">Dolor sit</td>
-              <td width="33.33%" align="right" style="padding:8px 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">Amet 2026</td>
+              <td width="33.33%" style="padding:8px 10px;border-right:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">LOCAL EFFORT</td>
+              <td width="33.33%" align="center" style="padding:8px 10px;border-right:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">FIRST ACCESS</td>
+              <td width="33.33%" align="right" style="padding:8px 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.2;color:#3a2e3f;">SUMMER / FALL 2026</td>
             </tr>
           </table>
         </td></tr>
@@ -71,8 +73,8 @@ const html = `<!doctype html>
         </td></tr>
 
         <tr><td class="pad" style="padding:20px 46px 30px;">
-          <h1 class="hero-title" style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:54px;line-height:0.96;font-weight:400;letter-spacing:-2px;color:#3a2e3f;">Lorem ipsum<br><em style="color:#8f3031;">dolor sit amet.</em></h1>
-          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#3a2e3f;">Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <h1 class="hero-title" style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:54px;line-height:0.96;font-weight:400;letter-spacing:-2px;color:#3a2e3f;">Minnesotan food<br><em style="color:#8f3031;">for your functions.</em></h1>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#3a2e3f;">Our remaining summer and fall dates are nearly sold out. We wanted to give our best customers first access before we open the calendar more broadly.</p>
         </td></tr>
 
         <tr><td class="pad" style="padding:0 26px 34px;">
@@ -80,14 +82,14 @@ const html = `<!doctype html>
             <tr>
               <td class="stack-cell" width="41%" valign="top" style="width:41%;padding-right:8px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1e3d8;border:1px solid #3a2e3f;">
-                  <tr><td style="padding:6px;"><img src="${JULY_DINNER}" width="224" alt="Red summer tomatoes from the July Dinner page" style="width:100%;max-width:224px;"></td></tr>
-                  <tr><td style="padding:8px 9px;border-top:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:9px;line-height:1.4;">Lorem ipsum &middot; dolor sit</td></tr>
+                  <tr><td style="padding:6px;"><a href="${FROZEN_PIZZA_URL}" style="text-decoration:none;"><img src="${FROZEN_PIZZA}" width="224" alt="Chez Garage frozen pub pizza" style="width:100%;max-width:224px;"></a></td></tr>
+                  <tr><td style="padding:8px 9px;border-top:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:9px;line-height:1.4;"><a href="${FROZEN_PIZZA_URL}" style="color:#3a2e3f;text-decoration:underline;">Frozen pub pizzas &middot; ready at home</a></td></tr>
                 </table>
               </td>
               <td class="stack-cell" width="59%" valign="top" style="width:59%;padding-left:8px;padding-top:28px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1e3d8;border:1px solid #3a2e3f;box-shadow:6px 6px 0 #6e9bb0;">
-                  <tr><td style="padding:6px;"><img src="${CHEZ_GARAGE}" width="316" alt="Chez Garage facade" style="width:100%;max-width:316px;"></td></tr>
-                  <tr><td style="padding:8px 9px;border-top:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:9px;line-height:1.4;">Consectetur &middot; adipiscing elit</td></tr>
+                  <tr><td style="padding:6px;"><a href="${CHEZ_GARAGE_URL}" style="text-decoration:none;"><img src="${CHEZ_GARAGE}" width="316" alt="Chez Garage facade" style="width:100%;max-width:316px;"></a></td></tr>
+                  <tr><td style="padding:8px 9px;border-top:1px solid #3a2e3f;font-family:'Courier New',monospace;font-size:9px;line-height:1.4;"><a href="${CHEZ_GARAGE_URL}" style="color:#3a2e3f;text-decoration:underline;">Chez Garage is our new super-casual concept</a></td></tr>
                 </table>
               </td>
             </tr>
@@ -104,9 +106,9 @@ const html = `<!doctype html>
                 </table>
               </td>
               <td class="stack-cell" width="51%" valign="middle" style="width:51%;padding:20px;">
-                <p style="margin:0 0 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.4;color:#f35c2b;">Lorem ipsum / no. 01</p>
-                <h2 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.05;font-weight:400;color:#f3ebe5;">Lorem ipsum dolor sit amet.</h2>
-                <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#f1e3d8;">Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>
+                <p style="margin:0 0 10px;font-family:'Courier New',monospace;font-size:10px;line-height:1.4;color:#f35c2b;">LOCAL EFFORT / GIFT CARDS</p>
+                <h2 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.05;font-weight:400;color:#f3ebe5;">Give them a dinner worth remembering.</h2>
+                <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#f1e3d8;">Local Effort gift cards make room for a private dinner, a celebration, or something delicious from Chez Garage.</p>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #f3ebe5;border-bottom:1px solid #f3ebe5;">
                   <tr>
                     <td width="33.33%" align="center" style="padding:8px 3px;border-right:1px solid #f3ebe5;font-family:'Courier New',monospace;font-size:10px;color:#f3ebe5;">$100</td>
@@ -115,7 +117,7 @@ const html = `<!doctype html>
                   </tr>
                 </table>
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:17px;"><tr><td bgcolor="#f3ebe5" style="border:1px solid #f3ebe5;">
-                  <a href="https://www.localeffortfood.com/#about" style="display:inline-block;padding:12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#18130c;text-decoration:none;">Lorem ipsum&nbsp;&nbsp;&rarr;</a>
+                  <a href="https://www.localeffortfood.com/gift-cards" style="display:inline-block;padding:12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#18130c;text-decoration:none;">Send a gift card&nbsp;&nbsp;&rarr;</a>
                 </td></tr></table>
               </td>
             </tr>
@@ -126,8 +128,8 @@ const html = `<!doctype html>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #3a2e3f;border-bottom:1px solid #3a2e3f;">
             <tr>
               <td width="62%" valign="middle" style="width:62%;padding:14px 14px 14px 0;">
-                <h2 style="margin:0 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.1;font-weight:400;color:#3a2e3f;">Ut enim ad minima veniam.</h2>
-                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#3a2e3f;">Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse.</p>
+                <h2 style="margin:0 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.1;font-weight:400;color:#3a2e3f;">A season worth gathering for.</h2>
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#3a2e3f;">Private dinners, weddings, and easygoing parties—made here, with Minnesota food at the center of the table.</p>
               </td>
               <td width="38%" align="right" style="width:38%;padding:14px 0 14px 14px;">
                 <img src="${RIJKS_FLOWERS}" width="196" alt="Flowers in a Glass Vase with a Butterfly, Herman Henstenburgh, Rijksmuseum" style="width:100%;max-width:196px;border:1px solid #3a2e3f;">
@@ -138,15 +140,15 @@ const html = `<!doctype html>
 
         <tr><td align="center" style="padding:26px 34px 38px;">
           <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" bgcolor="#8f3031" style="border:1px solid #3a2e3f;box-shadow:5px 5px 0 #3a2e3f;">
-            <a href="https://www.localeffortfood.com/sale" style="display:inline-block;padding:15px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#fffaf2;text-decoration:none;">Lorem ipsum&nbsp;&nbsp;&rarr;</a>
+            <a href="https://www.localeffortfood.com/" style="display:inline-block;padding:15px 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#fffaf2;text-decoration:none;">Start planning&nbsp;&nbsp;&rarr;</a>
           </td></tr></table>
         </td></tr>
 
         <tr><td style="padding:7px;border-top:1px solid #3a2e3f;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #3a2e3f;">
             <tr>
-              <td style="padding:9px 10px;font-family:'Courier New',monospace;font-size:9px;line-height:1.5;color:#3a2e3f;">Lorem ipsum dolor sit amet.</td>
-              <td align="right" style="padding:9px 10px;font-family:'Courier New',monospace;font-size:9px;line-height:1.5;"><a href="{{ unsubscribe }}" style="color:#3a2e3f;">Lorem ipsum</a></td>
+              <td style="padding:9px 10px;font-family:'Courier New',monospace;font-size:9px;line-height:1.5;color:#3a2e3f;">Local Effort Cooperative &middot; Minneapolis, Minnesota</td>
+              <td align="right" style="padding:9px 10px;font-family:'Courier New',monospace;font-size:9px;line-height:1.5;"><a href="{{ unsubscribe }}" style="color:#3a2e3f;">Unsubscribe</a></td>
             </tr>
           </table>
         </td></tr>
@@ -181,7 +183,7 @@ async function main() {
   const drafts = await brevoJson('https://api.brevo.com/v3/emailCampaigns?limit=100&status=draft', {}, headers);
   const existing = (drafts.campaigns || []).find((campaign) => campaign.name === CAMPAIGN_NAME);
   const payload = existing
-    ? { htmlContent: html, recipients: { listIds: [WAVE_1_LIST_ID] } }
+    ? { subject: SUBJECT, htmlContent: html, recipients: { listIds: [WAVE_1_LIST_ID] } }
     : {
       name: CAMPAIGN_NAME,
       subject: SUBJECT,
@@ -211,6 +213,12 @@ async function main() {
   }
   if (!verified.htmlContent?.includes('data-module="gift-card"')) {
     throw new Error(`Campaign ${campaignId} did not retain the gift-card module`);
+  }
+  if (/lorem|ipsum|consectetur|adipiscing|eiusmod|veniam|quis autem/i.test(verified.htmlContent || '')) {
+    throw new Error(`Campaign ${campaignId} still contains placeholder copy`);
+  }
+  if (!verified.htmlContent?.includes(FROZEN_PIZZA_URL) || !verified.htmlContent?.includes(CHEZ_GARAGE_URL)) {
+    throw new Error(`Campaign ${campaignId} did not retain the Chez Garage product links`);
   }
 
   process.stdout.write(JSON.stringify({

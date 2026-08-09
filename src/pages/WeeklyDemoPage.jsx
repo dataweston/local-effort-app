@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Brain, Calendar, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
+import { Brain, Calendar, CalendarCheck2, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -16,6 +16,7 @@ import { BrainInboxDrawer } from '../components/brain/BrainInboxDrawer';
 import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
 import { ForecastPanel } from '../components/weeklyplanner/ForecastPanel';
 import { StaffScheduleView } from '../components/weeklyplanner/StaffScheduleView';
+import { EventsView } from '../components/weeklyplanner/EventsView';
 import '../styles/planner.css';
 
 export default function WeeklyDemoPage() {
@@ -226,6 +227,13 @@ export default function WeeklyDemoPage() {
               <span>Agenda</span>
             </TabsTrigger>
             <TabsTrigger
+              value="events"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+            >
+              <CalendarCheck2 size={14} />
+              <span>Events</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="daily"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
               style={{ '--tw-shadow-color': 'var(--color-border-default)' }}
@@ -279,6 +287,10 @@ export default function WeeklyDemoPage() {
               onPrevDay={goPrevDay}
               onDaySelect={selectDayFromWeek}
             />
+          </TabsContent>
+
+          <TabsContent value="events">
+            <EventsView planner={planner} />
           </TabsContent>
 
           <TabsContent value="weekly">
