@@ -24,11 +24,11 @@ const { methodNotAllowed, asIso, cleanString } = require('./_http');
 const CREDIT_RATE = 0.04;
 
 const TIERS = {
-  monthly: { key: 'monthly', label: 'Monthly', paying: true, price: '$45/month' },
-  annual: { key: 'annual', label: 'Annual', paying: true, price: '$375/year' },
-  waived: { key: 'waived', label: 'Cost waived', paying: false, price: '$0' },
+  monthly: { key: 'monthly', label: 'Monthly', paying: true, price: '$45/month', amountCents: 4500, cadence: 'monthly' },
+  annual: { key: 'annual', label: 'Annual', paying: true, price: '$375/year', amountCents: 37500, cadence: 'annual' },
+  waived: { key: 'waived', label: 'Cost waived', paying: false, price: '$0', amountCents: 0, cadence: 'waived' },
 };
-const UNKNOWN_TIER = { key: 'unknown', label: 'Localist', paying: false, price: null };
+const UNKNOWN_TIER = { key: 'unknown', label: 'Localist', paying: false, price: null, amountCents: null, cadence: 'unknown' };
 
 function tierFromKey(raw) {
   const key = String(raw || '').toLowerCase().trim();
@@ -42,13 +42,13 @@ function tierFromKey(raw) {
  * up by hand through a Hub invite. Non-fatal: a Supabase hiccup degrades to
  * "Localist" rather than failing the page.
  */
-async function loadRosterTier(email) {
+async function loadRosterMembership(email) {
   const supabase = getSupabase();
   if (!supabase || !email) return null;
   try {
     const { data, error } = await supabase
       .from('localist_members')
-      .select('tier, updated_at')
+      .select('*')
       .ilike('email', email)
       .order('updated_at', { ascending: false })
       .limit(1);
@@ -58,7 +58,15 @@ async function loadRosterTier(email) {
     }
     const row = Array.isArray(data) ? data[0] : null;
     if (!row) return null;
-    return { tier: tierFromKey(row.tier), joinedAt: row.updated_at || null };
+    return {
+      tier: tierFromKey(row.tier),
+      status: row.status ? String(row.status).toLowerCase() : null,
+      joinedAt: row.joined_at || row.created_at || row.signup_date || row.updated_at || null,
+      squareCustomerId: row.square_customer_id || null,
+      squareOrderId: row.square_order_id || null,
+      squarePaymentId: row.square_payment_id || null,
+      squareSubscriptionId: row.square_subscription_id || null,
+    };
   } catch (err) {
     console.warn('[hub/membership] roster lookup threw:', err.message);
     return null;
@@ -88,17 +96,29 @@ async function handler(req, res) {
   if (!email) return res.status(400).json({ error: 'No member email resolved' });
 
   try {
-    const [roster, orders, notes] = await Promise.all([
-      loadRosterTier(email),
+    const paidOrdersWhere = {
+      customerEmail: { equals: email, mode: 'insensitive' },
+      paidAt: { not: null },
+    };
+    const qStart = quarterStart();
+    const [roster, orderTotals, quarterTotals, recentOrders, notes] = await Promise.all([
+      loadRosterMembership(email),
+      prisma.hubLocalistOrder.aggregate({
+        where: paidOrdersWhere,
+        _sum: { totalCents: true },
+        _count: { _all: true },
+        _max: { paidAt: true },
+      }),
+      prisma.hubLocalistOrder.aggregate({
+        where: { ...paidOrdersWhere, paidAt: { gte: qStart } },
+        _sum: { totalCents: true },
+      }),
       prisma.hubLocalistOrder.findMany({
-        where: { customerEmail: { equals: email, mode: 'insensitive' }, paidAt: { not: null } },
+        where: paidOrdersWhere,
         select: { id: true, totalCents: true, totalQuantity: true, paidAt: true, squareReceiptUrl: true, pickupWindow: true },
         orderBy: { paidAt: 'desc' },
-        take: 50,
+        take: 12,
       }),
-      // "Messages from us" are Hub documents published to members. No new model:
-      // visibility 'member' is the member-facing channel, same as 'staff' is
-      // the internal one.
       prisma.hubDocument.findMany({
         where: { status: 'published', visibility: 'member' },
         select: { id: true, title: true, summary: true, body: true, createdAt: true },
@@ -107,15 +127,12 @@ async function handler(req, res) {
       }),
     ]);
 
-    const totalCents = orders.reduce((sum, o) => sum + (o.totalCents || 0), 0);
-    const qStart = quarterStart();
-    const quarterOrders = orders.filter((o) => o.paidAt && new Date(o.paidAt) >= qStart);
-    const quarterCents = quarterOrders.reduce((sum, o) => sum + (o.totalCents || 0), 0);
-
-    // Roster first (the real signup record), HubProfile.title as a fallback for
-    // hand-set-up members, then a neutral "Localist".
+    const totalCents = orderTotals?._sum?.totalCents || 0;
+    const orderCount = orderTotals?._count?._all || 0;
+    const quarterCents = quarterTotals?._sum?.totalCents || 0;
     const tier = roster?.tier || tierFromKey(profile?.title) || UNKNOWN_TIER;
-    const memberSince = asIso(profile?.createdAt) || (roster?.joinedAt ? asIso(roster.joinedAt) : null);
+    const memberSince = roster?.joinedAt ? asIso(roster.joinedAt) : asIso(profile?.createdAt);
+    const membershipStatus = roster?.status || profile?.status || 'unknown';
 
     return res.status(200).json({
       ok: true,
@@ -123,16 +140,30 @@ async function handler(req, res) {
         email,
         displayName: profile?.displayName || null,
         accessLevel: profile?.accessLevel || null,
-        status: profile?.status || 'active',
+        status: membershipStatus,
         tier,
         memberSince,
       },
-      spending: {
+      dues: {
+        status: membershipStatus,
+        waived: tier.key === 'waived',
+        amountCents: tier.amountCents,
+        cadence: tier.cadence,
+      },
+      billing: {
+        provider: 'square',
+        subscription: roster?.squareSubscriptionId
+          ? { id: roster.squareSubscriptionId, status: membershipStatus }
+          : null,
+        lastPaymentId: roster?.squarePaymentId || null,
+        history: { available: false, entries: [] },
+      },
+      purchases: {
         totalCents,
-        orderCount: orders.length,
-        lastOrderAt: orders[0]?.paidAt ? asIso(orders[0].paidAt) : null,
+        orderCount,
+        lastOrderAt: orderTotals?._max?.paidAt ? asIso(orderTotals._max.paidAt) : null,
         quarterToDateCents: quarterCents,
-        orders: orders.slice(0, 12).map((o) => ({
+        recent: recentOrders.map((o) => ({
           id: o.id,
           totalCents: o.totalCents,
           totalQuantity: o.totalQuantity,
@@ -142,13 +173,12 @@ async function handler(req, res) {
         })),
       },
       credit: {
-        // Only paying tiers earn the credit. Waived members see the rate and a
-        // zero, not a number they cannot spend.
         rate: CREDIT_RATE,
         eligible: tier.paying,
-        lifetimeCents: tier.paying ? Math.round(totalCents * CREDIT_RATE) : 0,
-        quarterToDateCents: tier.paying ? Math.round(quarterCents * CREDIT_RATE) : 0,
-        nextPayoutNote: 'Credit lands in your account at the end of each quarter.',
+        basis: 'tracked-paid-food-purchases',
+        lifetimeAccruedEstimateCents: tier.paying ? Math.round(totalCents * CREDIT_RATE) : 0,
+        quarterToDateAccruedEstimateCents: tier.paying ? Math.round(quarterCents * CREDIT_RATE) : 0,
+        note: 'Accrued estimate only. Finalized quarterly credit and spendable balances are not yet tracked in Hub.',
       },
       messages: notes.map((n) => ({
         id: n.id,
@@ -165,4 +195,4 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-module.exports._internals = { tierFromKey, quarterStart, loadRosterTier, CREDIT_RATE, TIERS };
+module.exports._internals = { tierFromKey, quarterStart, loadRosterMembership, CREDIT_RATE, TIERS };

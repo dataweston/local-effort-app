@@ -1,5 +1,5 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { toIsoDate, endOfLocalDay, getWeekEnd } = require('./_dates');
 const { plannerCardObjectType } = require('./_planner');
 
@@ -266,21 +266,37 @@ async function buildSpaces({ customer, isAdmin, roles }) {
   return spaces;
 }
 
-async function buildObjectThreads({ customer, isAdmin, menuObjectIds }) {
+function objectThreadWhere(auth, menuObjectIds) {
+  if (auth.isStaff) {
+    const objectFilters = menuObjectIds.map((id) => ({ objectType: 'menu_week', objectId: id }));
+    if (!objectFilters.length) return null;
+    return {
+      OR: objectFilters,
+      visibility: {
+        in: auth.isPrivileged
+          ? ['customer', 'household', 'staff', 'vendor', 'volunteer', 'guest', 'admin']
+          : ['staff'],
+      },
+    };
+  }
+
+  if (!auth.customer?.id) return null;
+  return {
+    OR: [
+      { objectType: 'customer', objectId: auth.customer.id },
+      { objectType: 'household', objectId: auth.customer.id },
+    ],
+    visibility: { in: ['customer', 'household'] },
+  };
+}
+
+async function buildObjectThreads({ auth, menuObjectIds }) {
   if (!prisma.objectThread?.findMany) return [];
-  const objectFilters = menuObjectIds.map((id) => ({ objectType: 'menu_week', objectId: id }));
-  if (!objectFilters.length && !customer) return [];
-  const visibility = isAdmin
-    ? ['customer', 'household', 'staff', 'vendor', 'volunteer', 'guest', 'admin']
-    : customer
-      ? ['customer', 'household', 'guest']
-      : ['guest'];
+  const where = objectThreadWhere(auth, menuObjectIds);
+  if (!where) return [];
 
   const threads = await prisma.objectThread.findMany({
-    where: {
-      OR: objectFilters.length ? objectFilters : undefined,
-      visibility: { in: visibility },
-    },
+    where,
     include: {
       messages: {
         where: { deletedAt: null },
@@ -318,13 +334,18 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth, {
+    allowedAccess: ['localist', 'customer', 'staff', 'privileged'],
+  });
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   try {
     const [menuSlice, plannerSlice, inboxCount] = await Promise.all([
       buildMenuSlice({ customer: auth.customer, dbUser: auth.dbUser }),
-      buildPlannerSlice({ supabaseUid: auth.supabaseUser.id }),
-      countAdminInbox({ isAdmin: auth.isAdmin }),
+      auth.isStaff
+        ? buildPlannerSlice({ supabaseUid: auth.supabaseUser.id })
+        : Promise.resolve({ actions: [], objects: [] }),
+      countAdminInbox({ isAdmin: auth.isPrivileged }),
     ]);
 
     const menuObjectIds = menuSlice.objects
@@ -332,8 +353,8 @@ module.exports = async (req, res) => {
       .map((object) => object.objectId);
 
     const [spaces, objectThreads] = await Promise.all([
-      buildSpaces({ customer: auth.customer, isAdmin: auth.isAdmin, roles: auth.roles }),
-      buildObjectThreads({ customer: auth.customer, isAdmin: auth.isAdmin, menuObjectIds }),
+      buildSpaces({ customer: auth.customer, isAdmin: auth.isPrivileged, roles: auth.roles }),
+      buildObjectThreads({ auth, menuObjectIds }),
     ]);
 
     const threads = [...objectThreads, ...menuSlice.threads];
@@ -365,3 +386,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unable to load hub today' });
   }
 };
+
+module.exports.buildObjectThreads = buildObjectThreads;
+module.exports.objectThreadWhere = objectThreadWhere;

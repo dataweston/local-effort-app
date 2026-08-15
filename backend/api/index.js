@@ -58,6 +58,7 @@ const februaryPaymentLinkHandler = require('../../api-handlers/february/payment-
 const { ingestMealPrepIntake } = require('./brain/mealPrepIntakeIngest');
 const { ingestSquarePayment } = require('./brain/squareIngest');
 const { markLocalistOrderPaidFromSquare } = require('../../api-handlers/hub/_localistOrderBrain');
+const { markLocalistMembershipPaidFromSquare } = require('../../api-handlers/localist/membershipBilling');
 const { registerGmailRoutes } = require('./brain/gmailRoutes');
 const { registerInboxRoutes } = require('./brain/inboxRoutes');
 const { registerInferenceRoutes } = require('./brain/inferenceRoutes');
@@ -522,8 +523,8 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
       return res.status(200).json({ ok: true, handled: 'small-events' });
     }
 
-    markLocalistOrderPaidFromSquare(db, payment)
-      .catch((localistErr) => logger.warn({ err: localistErr, paymentId: payment.id }, 'localist order payment update failed'));
+    await markLocalistOrderPaidFromSquare(db, payment);
+    await markLocalistMembershipPaidFromSquare(payment);
     await applyCompletedPayment(payment, { db });
     // Brain ingestion — fire-and-forget, never blocks the payment response
     ingestSquarePayment(payment, { logger }).catch(() => {});

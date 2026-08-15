@@ -41,10 +41,11 @@ module.exports = async (req, res) => {
     }
 
     const email = cleanString(req.body?.email, 180)?.toLowerCase();
-    const accessLevel = coerceHubAccess(req.body?.accessLevel || 'staff');
+    const accessLevel = coerceHubAccess(req.body?.accessLevel ?? 'staff');
     const displayNameHint = cleanString(req.body?.displayNameHint, 120);
     const days = Math.max(1, Math.min(Number(req.body?.daysValid) || 14, 90));
     if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email is required' });
+    if (!accessLevel) return res.status(400).json({ error: 'Valid access level is required' });
 
     const invite = await prisma.hubInvite.create({
       data: {

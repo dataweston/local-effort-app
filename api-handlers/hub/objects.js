@@ -1,5 +1,5 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString } = require('./_http');
 const { cardToObject, plannerCardObjectType } = require('./_planner');
 
@@ -189,7 +189,10 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth, {
+    allowedAccess: ['localist', 'customer', 'staff', 'privileged'],
+  });
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   const parsed = splitObjectId(req.params?.id || req.query?.id, req.query?.type);
   if (!parsed.id) return res.status(400).json({ error: 'object id is required' });

@@ -57,6 +57,18 @@ MVP questions:
 
 Target flow: `Lead → Opportunity → Transaction → Customer → Reorder`.
 
+**Finance/sales spine update — 2026-08-15:** the staged Finance Core direction is
+documented in `docs/architecture/finance-core-staged-plan.md`. Additive Prisma
+models now cover agreements, subscriptions, commercial orders/lines,
+invoices/AR, and provider-neutral payment attempts/transactions/allocations.
+Weekly ordering is the first migrated vertical slice: it creates a durable order
+and pending attempt before Square can charge. Apply
+`20260815000200_finance_core_now` before deploying that handler. Next slices are
+the general store, authenticated Happy Monday agreement/invoice allocation, and
+projection of Localist dues into the neutral subscription/payment records.
+Local Budget remains the authority for cash classifications and margin; join its
+developing margin output to stable commercial order/line and business-line IDs.
+
 ### 3. Founder platform
 
 Goal: build a founder-facing surface that supports press, speaking, publishing, collaborations, film/TV, food styling, and fundraising credibility.

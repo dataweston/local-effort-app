@@ -319,8 +319,12 @@ module.exports = async (req, res) => {
       const request = await prisma.hubScheduleRequest.findFirst({ where: { id: requestId } });
       if (!request) return res.status(404).json({ error: 'Schedule request not found' });
       if (request.userId !== auth.viewer.userId && !auth.isPrivileged) return res.status(403).json({ error: 'Forbidden' });
-      if (request.status !== 'pending') return res.status(409).json({ error: 'Only pending requests can be canceled' });
-      const updated = await prisma.hubScheduleRequest.update({ where: { id: request.id }, data: { status: 'canceled' } });
+      const canceled = await prisma.hubScheduleRequest.updateMany({
+        where: { id: request.id, status: 'pending' },
+        data: { status: 'canceled' },
+      });
+      if (canceled.count !== 1) return res.status(409).json({ error: 'Schedule request has already been reviewed' });
+      const updated = await prisma.hubScheduleRequest.findUnique({ where: { id: request.id } });
       return res.status(200).json({ ok: true, request: publicScheduleRequest(updated) });
     }
 
@@ -335,6 +339,12 @@ module.exports = async (req, res) => {
 
       const profile = await prisma.hubProfile.findFirst({ where: { userId: request.userId } });
       const result = await prisma.$transaction(async (tx) => {
+        const review = await tx.hubScheduleRequest.updateMany({
+          where: { id: request.id, status: 'pending' },
+          data: { status, reviewedByUserId: auth.viewer.userId, reviewedAt: new Date() },
+        });
+        if (review.count !== 1) return null;
+
         let shift = null;
         if (status === 'approved' && request.plannerCardId) {
           const existing = await tx.plannerCard.findFirst({ where: { id: request.plannerCardId, supabaseUid } });
@@ -370,12 +380,10 @@ module.exports = async (req, res) => {
             },
           });
         }
-        const reviewed = await tx.hubScheduleRequest.update({
-          where: { id: request.id },
-          data: { status, reviewedByUserId: auth.viewer.userId, reviewedAt: new Date() },
-        });
+        const reviewed = await tx.hubScheduleRequest.findUnique({ where: { id: request.id } });
         return { shift, reviewed };
       });
+      if (!result) return res.status(409).json({ error: 'Schedule request has already been reviewed' });
       return res.status(200).json({
         ok: true,
         request: publicScheduleRequest(result.reviewed, new Map([[request.userId, profile]])),
@@ -390,39 +398,53 @@ module.exports = async (req, res) => {
       if (!card) return res.status(404).json({ error: 'Open shift not found' });
       const existingClaims = await prisma.hubShiftClaim.findMany({ where: { plannerCardId } });
       if (!shiftIsOpen(card, existingClaims.filter((claim) => claim.status === 'claimed'))) {
-        return res.status(404).json({ error: 'Open shift not found' });
+        return res.status(409).json({ error: 'Shift has already been claimed' });
       }
-
-      const claim = await prisma.hubShiftClaim.upsert({
-        where: { plannerCardId_userId: { plannerCardId, userId: auth.viewer.userId } },
-        update: { status: 'claimed', note: cleanString(req.body?.note, 500) },
-        create: {
-          plannerCardId,
-          userId: auth.viewer.userId,
-          note: cleanString(req.body?.note, 500),
-        },
-      });
 
       // Anyone who put the shift up hands it over to the claimer.
       const offered = existingClaims.filter((entry) => entry.status === 'offered' && entry.userId !== auth.viewer.userId);
-      let people = card.people || [];
-      if (offered.length) {
-        const offeredProfiles = await prisma.hubProfile.findMany({ where: { userId: { in: offered.map((entry) => entry.userId) } } });
-        const offeredNames = new Set(offeredProfiles.map((profile) => profile.displayName));
-        people = people.filter((person) => !offeredNames.has(person));
-        await prisma.hubShiftClaim.updateMany({
-          where: { id: { in: offered.map((entry) => entry.id) } },
-          data: { status: 'released' },
-        });
-      }
-
+      const offeredProfiles = offered.length
+        ? await prisma.hubProfile.findMany({ where: { userId: { in: offered.map((entry) => entry.userId) } } })
+        : [];
+      const offeredNames = new Set(offeredProfiles.map((profile) => profile.displayName));
       const name = auth.hubProfile?.displayName || auth.viewer.email;
-      people = Array.from(new Set([...people, name].filter(Boolean)));
-      const updated = await prisma.plannerCard.update({
-        where: { id: card.id },
-        data: { people, optional: false, status: 'claimed' },
+      const people = Array.from(new Set([
+        ...(card.people || []).filter((person) => !offeredNames.has(person)),
+        name,
+      ].filter(Boolean)));
+      const result = await prisma.$transaction(async (tx) => {
+        const transition = await tx.plannerCard.updateMany({
+          where: {
+            id: card.id,
+            supabaseUid,
+            status: card.status,
+            optional: card.optional,
+            people: { equals: card.people || [] },
+          },
+          data: { people, optional: false, status: 'claimed' },
+        });
+        if (transition.count !== 1) return null;
+
+        const claim = await tx.hubShiftClaim.upsert({
+          where: { plannerCardId_userId: { plannerCardId, userId: auth.viewer.userId } },
+          update: { status: 'claimed', note: cleanString(req.body?.note, 500) },
+          create: {
+            plannerCardId,
+            userId: auth.viewer.userId,
+            note: cleanString(req.body?.note, 500),
+          },
+        });
+        if (offered.length) {
+          await tx.hubShiftClaim.updateMany({
+            where: { id: { in: offered.map((entry) => entry.id) } },
+            data: { status: 'released' },
+          });
+        }
+        const updated = await tx.plannerCard.findUnique({ where: { id: card.id } });
+        return { claim, updated };
       });
-      return res.status(200).json({ ok: true, shift: publicShift(updated, [claim]) });
+      if (!result) return res.status(409).json({ error: 'Shift has already been claimed' });
+      return res.status(200).json({ ok: true, shift: publicShift(result.updated, [result.claim]) });
     }
 
     if (req.method === 'POST' && req.body?.action === 'putUp') {
@@ -438,22 +460,34 @@ module.exports = async (req, res) => {
         return res.status(403).json({ error: 'Only the assigned person can put a shift up for pickup' });
       }
 
-      const claim = await prisma.hubShiftClaim.upsert({
-        where: { plannerCardId_userId: { plannerCardId, userId: auth.viewer.userId } },
-        update: { status: 'offered', note: cleanString(req.body?.note, 500) },
-        create: {
-          plannerCardId,
-          userId: auth.viewer.userId,
-          status: 'offered',
-          note: cleanString(req.body?.note, 500),
-        },
-      });
+      const result = await prisma.$transaction(async (tx) => {
+        const transition = await tx.plannerCard.updateMany({
+          where: {
+            id: card.id,
+            supabaseUid,
+            status: card.status,
+            optional: card.optional,
+            people: { equals: card.people || [] },
+          },
+          data: { optional: true, status: 'open' },
+        });
+        if (transition.count !== 1) return null;
 
-      const updated = await prisma.plannerCard.update({
-        where: { id: card.id },
-        data: { optional: true, status: 'open' },
+        const claim = await tx.hubShiftClaim.upsert({
+          where: { plannerCardId_userId: { plannerCardId, userId: auth.viewer.userId } },
+          update: { status: 'offered', note: cleanString(req.body?.note, 500) },
+          create: {
+            plannerCardId,
+            userId: auth.viewer.userId,
+            status: 'offered',
+            note: cleanString(req.body?.note, 500),
+          },
+        });
+        const updated = await tx.plannerCard.findUnique({ where: { id: card.id } });
+        return { claim, updated };
       });
-      return res.status(200).json({ ok: true, shift: publicShift(updated, [claim]) });
+      if (!result) return res.status(409).json({ error: 'Shift changed before it could be offered' });
+      return res.status(200).json({ ok: true, shift: publicShift(result.updated, [result.claim]) });
     }
 
     if (req.method === 'POST') {

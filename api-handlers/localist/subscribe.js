@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { getSupabase } = require('../../backend/api/supabaseClient');
 const { getSquareClient } = require('../_lib/squareClient');
+const { prisma } = require('../_lib/prisma');
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
@@ -25,18 +26,49 @@ const planVariationId = (tier) =>
 // backend/api/index.js, and a caller that configures dotenv after that require
 // would otherwise bake in the fallback for the life of the process.
 const siteUrl = () => process.env.PUBLIC_SITE_URL || 'https://www.localeffortfood.com';
-const membershipUrl = () => `${siteUrl()}/hub/membership`;
+const membershipUrl = (inviteToken) =>
+  `${siteUrl()}/hub/membership${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ''}`;
+const localistReturnUrl = (tier, inviteToken) => {
+  const params = new URLSearchParams({ joined: tier, invite: inviteToken });
+  return `${siteUrl()}/localist?${params.toString()}`;
+};
+const INVITE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000;
 const TIER_LABELS = {
   monthly: 'Localist membership — monthly',
   annual: 'Localist membership — annual',
   waived: 'Localist membership — cost waived',
 };
+async function provisionLocalistInvite({ email, name }) {
+  if (!prisma) throw new Error('Hub database unavailable');
 
-// Membership roster row in Supabase. Non-fatal: Brevo is the signup floor,
-// so a Supabase hiccup is logged and the signup still succeeds.
+  const now = new Date();
+  const existing = await prisma.hubInvite.findFirst({
+    where: {
+      email: { equals: email, mode: 'insensitive' },
+      accessLevel: 'localist',
+      acceptedAt: null,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (existing) return existing;
+
+  return prisma.hubInvite.create({
+    data: {
+      token: crypto.randomBytes(32).toString('base64url'),
+      email,
+      accessLevel: 'localist',
+      displayNameHint: name || null,
+      expiresAt: new Date(now.getTime() + INVITE_VALIDITY_MS),
+    },
+  });
+}
+
+// Membership roster row in Supabase. Paid checkout is not returned to the
+// browser unless this durable activation record exists for the webhook.
 async function recordMembership({ name, email, phone, tier, status, squareCustomerId, squareOrderId }) {
   const supabase = getSupabase();
-  if (!supabase) return;
+  if (!supabase) throw new Error('Supabase unavailable while recording Localist membership');
   const row = {
     name,
     phone,
@@ -50,12 +82,7 @@ async function recordMembership({ name, email, phone, tier, status, squareCustom
   const { error } = await supabase
     .from('localist_members')
     .upsert(row, { onConflict: 'phone' });
-  if (error) {
-    console.error(
-      '[localist/subscribe] supabase upsert failed:',
-      error.message || error.code || JSON.stringify(error)
-    );
-  }
+  if (error) throw new Error(error.message || error.code || 'Unable to record Localist membership');
 }
 
 // For paid tiers: find-or-create the Square customer, then mint a Square-hosted
@@ -70,7 +97,7 @@ async function recordMembership({ name, email, phone, tier, status, squareCustom
 // Note the tradeoff that came with it: Checkout-hosted payment links do not
 // support ACH bank transfer (invoices do). The page's ACH copy was removed in
 // the same change rather than left making a promise checkout cannot keep.
-async function createSubscriptionCheckout({ name, email, phone, tier }) {
+async function createSubscriptionCheckout({ name, email, phone, tier, inviteToken }) {
   const priceCents = TIER_PRICING_CENTS[tier];
   if (!priceCents) return {};
   const variationId = planVariationId(tier);
@@ -132,7 +159,7 @@ async function createSubscriptionCheckout({ name, email, phone, tier }) {
       subscriptionPlanId: variationId,
       allowTipping: false,
       askForShippingAddress: false,
-      redirectUrl: `${siteUrl()}/localist?joined=${encodeURIComponent(tier)}`,
+      redirectUrl: localistReturnUrl(tier, inviteToken),
       merchantSupportEmail:
         process.env.SUPPORT_INBOX_EMAIL || process.env.SENDER_EMAIL || undefined,
       acceptedPaymentMethods: {
@@ -250,6 +277,15 @@ module.exports = async (req, res) => {
   if (trimmedEmail && !safeEmail) {
     return res.status(400).json({ error: 'invalid-email' });
   }
+  if (tier && !safeName) {
+    return res.status(400).json({ error: 'name-required' });
+  }
+  if (tier && !safeEmail) {
+    return res.status(400).json({ error: 'valid-email-required' });
+  }
+  if (tier && !prisma) {
+    return res.status(503).json({ error: 'hub-database-unavailable' });
+  }
 
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
@@ -317,12 +353,14 @@ module.exports = async (req, res) => {
       throw new Error(data.message || response.statusText);
     }
 
-    // Membership program (tiered signups from /localist): roster row in
-    // Supabase, a Square subscription checkout for paid tiers, and an ops ping so a
-    // human follows up within the promised day. Each step is non-fatal —
-    // the Brevo contact above is the signup floor.
+    // Tiered signups always receive an email-bound Localist invite. The token is
+    // returned to the browser only; no member message is sent from this handler.
+    let inviteToken = null;
     let billing = {};
-    if (tier && safeName) {
+    if (tier) {
+      const invite = await provisionLocalistInvite({ email: safeEmail, name: safeName });
+      inviteToken = invite.token;
+
       if (tier === 'monthly' || tier === 'annual') {
         try {
           billing = await createSubscriptionCheckout({
@@ -330,24 +368,21 @@ module.exports = async (req, res) => {
             email: safeEmail,
             phone: mobilePhone,
             tier,
+            inviteToken,
           });
         } catch (error) {
           console.error('[localist/subscribe] square checkout creation failed:', error.message);
         }
       }
-      try {
-        await recordMembership({
-          name: safeName,
-          email: safeEmail,
-          phone: mobilePhone,
-          tier,
-          status: billing.squareCheckoutUrl ? 'checkout_started' : 'pending',
-          squareCustomerId: billing.squareCustomerId,
-          squareOrderId: billing.squareOrderId,
-        });
-      } catch (error) {
-        console.error('[localist/subscribe] membership record failed:', error.message);
-      }
+      await recordMembership({
+        name: safeName,
+        email: safeEmail,
+        phone: mobilePhone,
+        tier,
+        status: tier === 'waived' ? 'active' : billing.squareCheckoutUrl ? 'checkout_started' : 'pending',
+        squareCustomerId: billing.squareCustomerId,
+        squareOrderId: billing.squareOrderId,
+      });
       try {
         await notifyTeam({
           apiKey,
@@ -368,7 +403,7 @@ module.exports = async (req, res) => {
     // shows the confirmation state and a human follows up.
     return res.status(200).json({
       ok: true,
-      membershipUrl: membershipUrl(),
+      membershipUrl: membershipUrl(inviteToken),
       checkoutUrl: billing.squareCheckoutUrl || null,
     });
   } catch (error) {

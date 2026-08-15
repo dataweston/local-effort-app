@@ -33,6 +33,18 @@ const TIERS = {
   annual: { label: 'Annual', sub: '$375/yr' },
   waived: { label: 'Cost waived', sub: '$0' },
 };
+export const getLocalistReturnState = (search = '') => {
+  const params = new URLSearchParams(search);
+  const joined = params.get('joined');
+  const invite = params.get('invite') || '';
+  const validInvite = /^[A-Za-z0-9_-]{20,200}$/.test(invite) ? invite : '';
+  const confirmationTier = joined === 'monthly' || joined === 'annual' ? joined : '';
+  return {
+    confirmationTier,
+    status: confirmationTier ? 'confirmation' : 'idle',
+    membershipUrl: `/hub/membership${validInvite ? `?invite=${encodeURIComponent(validInvite)}` : ''}`,
+  };
+};
 
 // Fixed art positions come from hardcoded Cloudinary ids, not the gallery API.
 // Same pattern as .ht-hero-photo elsewhere: the API is for the shuffling grid at
@@ -113,7 +125,7 @@ const FAQ_ITEMS = [
     q: 'What is the 4% credit, and when does it land?',
     a: [
       'Paying members earn 4% of everything they spend with the co-op back as credit. It accrues on its own and posts to your account each quarter — spend it on pickup menus, meal prep, a cake, whatever you like. It does not expire.',
-      'Monthly and annual memberships earn it. Waived memberships do not, which is the only line anywhere between the two.',
+      'Monthly and annual memberships earn it. Waived memberships do not; waived Localists receive their own low-cost menu instead. Every other membership benefit is shared.',
     ],
   },
   {
@@ -221,22 +233,22 @@ const LocalistPage = () => {
   const [error, setError] = useState('');
   const [membershipUrl, setMembershipUrl] = useState('/hub/membership');
   const [images, setImages] = useState([]);
-  // Set when Square bounces the buyer back after a completed checkout
-  // (?joined=monthly|annual). Distinguishes "you have paid" from "we have your
-  // details" — two very different things to say to someone.
-  const [paidTier, setPaidTier] = useState('');
+  // A Square redirect is only evidence that checkout returned to this page.
+  // The verified webhook, not these query parameters, activates membership.
+  const [confirmationTier, setConfirmationTier] = useState('');
   const formRef = useRef(null);
   const pricingRef = useRef(null);
   const waiverRef = useRef(null);
 
   useEffect(() => {
-    const joined = new URLSearchParams(window.location.search).get('joined');
-    if (joined === 'monthly' || joined === 'annual') {
-      setPaidTier(joined);
-      setTier(joined);
-      setStatus('success');
-      // Drop the param so a refresh or a shared link is not a false receipt.
-      window.history.replaceState({}, '', window.location.pathname);
+    const returned = getLocalistReturnState(window.location.search);
+    setMembershipUrl(returned.membershipUrl);
+    if (returned.confirmationTier) {
+      setConfirmationTier(returned.confirmationTier);
+      setTier(returned.confirmationTier);
+      setStatus(returned.status);
+      const preservedInvite = new URL(returned.membershipUrl, window.location.origin).search;
+      window.history.replaceState({}, '', `${window.location.pathname}${preservedInvite}`);
     }
   }, []);
 
@@ -346,10 +358,10 @@ const LocalistPage = () => {
               can plan a life around.
             </p>
             <p className="ht-copy">
-              You get the front of the line for it — member pickup menus, perks
-              along the way, and 4% of your spending back every quarter. It is also
-              the front door to everything else we do: membership is required to
-              become a meal prep customer.
+              You get the front of the line for it — member pickup menus and perks
+              along the way. Paying members also accrue 4% of tracked spending as
+              quarterly credit. Membership is the front door to everything else we
+              do: it is required to become a meal prep customer.
             </p>
             <p className="ht-facts">$45 / month · $375 / year · waived if you need it</p>
             <div className="ht-side-links">
@@ -385,8 +397,8 @@ const LocalistPage = () => {
             </div>
           </div>
           <p className="ht-footnote">
-            Same access on every line. The only difference is the 4% quarterly
-            credit, which paying members earn and waived members do not.
+            Monthly and annual memberships earn the 4% quarterly credit. Cost-waived
+            membership instead includes its waived-only low-cost menu; everything else is shared.
           </p>
           <div className="ht-side-links">
             <button type="button" className="ht-side-link" onClick={() => chooseTier('monthly')}>
@@ -503,25 +515,25 @@ const LocalistPage = () => {
             <h2>Become a Localist</h2>
             <span className="ht-rule-line" aria-hidden="true" />
 
-            {status === 'success' ? (
+            {status === 'success' || status === 'confirmation' ? (
               <div className="ht-success">
                 <p className="ht-success-lead">
-                  {paidTier ? 'you’re in —' : tier === 'waived' ? 'welcome —' : 'received —'}
+                  {status === 'confirmation' ? 'confirmation pending —' : tier === 'waived' ? 'welcome —' : 'received —'}
                 </p>
                 <p className="ht-copy" style={{ marginTop: 0 }}>
-                  {paidTier
-                    ? `Payment went through and your ${paidTier === 'annual' ? 'annual' : 'monthly'} membership is live. Square has emailed the receipt, and it renews ${paidTier === 'annual' ? 'once a year' : 'on this date each month'} until you tell us to stop.`
+                  {status === 'confirmation'
+                    ? `Square checkout returned for your ${confirmationTier === 'annual' ? 'annual' : 'monthly'} membership. Square confirmation is being processed; this page is not a payment receipt, and your roster will become active only after Square confirms the completed payment.`
                     : tier === 'waived'
-                      ? 'Your waived membership is claimed — nothing to pay, and no follow-up questions about it. You’re a Localist on the same terms as everyone else.'
+                      ? 'Your waived membership is claimed — nothing to pay, and no follow-up questions about it. You’re a Localist with the same core membership plus the waived-only low-cost menu.'
                       : 'We have your details. Someone from the co-op will reach out within a day to finish setting up your membership.'}
                 </p>
                 <div className="ht-side-links">
                   <a className="ht-side-link" href={membershipUrl}>
-                    Open my membership page
+                    Set up my invited Hub membership
                   </a>
                 </div>
                 <p className="ht-footnote ht-footnote--tight">
-                  Bookmark it — your perks, your credit, and the 308B offerings all
+                  Your perks, tracked pickup purchases, and estimated accrued credit
                   live there. You&apos;ll sign in with the email you used above.
                 </p>
               </div>

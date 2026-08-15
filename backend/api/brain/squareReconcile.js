@@ -1,12 +1,13 @@
 /**
  * Square Payout ↔ Local Budget income reconciliation (Track 3).
  *
- * Local Budget is the revenue source of truth: its INCOME rows are written as
+ * Local Budget is the bank-cash source of truth: its INCOME rows are written as
  * `payment.received` events with `squareMatchPending: true` and NO payer
  * (localBudgetSync.js). Most LB income is NOT Square (transfers/Zelle/other) —
  * which is exactly why LB owns the money. This job identifies the SUBSET that
- * IS Square revenue and labels it, WITHOUT changing any dollar amount and
- * WITHOUT writing a new revenue event (so no double-count is possible).
+ * IS a Square settlement and labels it, WITHOUT changing any dollar amount or
+ * inferring when revenue was earned. It writes no new cash event, so no
+ * double-count is possible.
  *
  * How: a Square payout is a net bank deposit aggregating charges minus fees and
  * capital-loan payments. We match each pending LB `payment.received` to a Square
@@ -18,7 +19,7 @@
  * The LB amountCents is never touched. CASHFLOW / COGS_RATIO keep reading LB
  * `payment.received` exactly as before. Track 3 only adds a Square/non-Square
  * label onto money that already exists — it tells us WHICH LB deposits are
- * Square sales revenue (vs transfers/Zelle/other), without summing anything.
+ * Square settlements (vs transfers/Zelle/other), without summing anything.
  *
  * Per-deposit BUYER attribution is NOT available: this merchant's payout-entries
  * expose no payment_id on CHARGE entries (verified live 2026-06-29), so the

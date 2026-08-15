@@ -2,11 +2,10 @@ const { prisma } = require('../_lib/prisma');
 const {
   verifySupabaseToken,
   findUserByEmail,
-  isAdminEmail,
   isReadOnlyAdminEmail,
 } = require('../weekly-order/_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
-const { coerceHubAccess } = require('./_auth');
+const { coerceHubAccess, isExplicitHubAdminEmail } = require('./_auth');
 
 
 function publicProfile(profile, user) {
@@ -20,7 +19,8 @@ function publicProfile(profile, user) {
     title: profile.title || null,
     phone: profile.phone || null,
     status: profile.status,
-    isPrivileged: profile.accessLevel === 'privileged' || isAdminEmail(user?.email || profile.email),
+    isPrivileged: profile.accessLevel === 'privileged',
+    isLocalist: profile.accessLevel === 'localist',
     isCustomer: profile.accessLevel === 'customer',
     createdAt: asIso(profile.createdAt),
     updatedAt: asIso(profile.updatedAt),
@@ -77,8 +77,13 @@ module.exports = async (req, res) => {
     const phone = cleanString(req.body?.phone, 80);
     const invite = inviteToken ? await findInvite(inviteToken) : null;
     const normalizedEmail = String(supabaseUser.email).trim().toLowerCase();
+    const existingUser = await findUserByEmail(prisma, normalizedEmail, { hubProfile: true });
+    const explicitAdmin = isExplicitHubAdminEmail(normalizedEmail);
+    if (existingUser?.hubProfile && String(existingUser.hubProfile.status || '').toLowerCase() !== 'active') {
+      return res.status(403).json({ error: 'This Hub profile is inactive; privileged reactivation is required' });
+    }
 
-    if (!invite && !isAdminEmail(normalizedEmail)) {
+    if (!invite && (!explicitAdmin || existingUser?.hubProfile)) {
       return res.status(403).json({ error: 'A valid invite is required' });
     }
     if (invite?.acceptedAt) return res.status(409).json({ error: 'Invite already accepted' });
@@ -89,15 +94,17 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Invite email does not match this account' });
     }
 
+    const accessLevel = coerceHubAccess(invite?.accessLevel || (explicitAdmin ? 'privileged' : null));
+    if (!accessLevel) return res.status(400).json({ error: 'Invite access level is invalid' });
+
     const user = await prisma.user.upsert({
       where: { email: normalizedEmail },
       update: {},
       create: {
         email: normalizedEmail,
-        role: isAdminEmail(normalizedEmail) ? 'admin' : 'member',
+        role: explicitAdmin ? 'admin' : 'member',
       },
     });
-    const accessLevel = coerceHubAccess(invite?.accessLevel || (isAdminEmail(normalizedEmail) ? 'privileged' : 'staff'));
     const profile = await prisma.hubProfile.upsert({
       where: { userId: user.id },
       update: {

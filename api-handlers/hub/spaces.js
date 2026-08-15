@@ -1,22 +1,22 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, safePrisma } = require('./_http');
 
 
 function fallbackSpaces(auth) {
-  const spaces = [{
-    id: 'hub:general',
-    title: 'General',
-    role: auth.viewer.accessLevel || 'staff',
-    visibility: 'staff',
-    unreadCount: 0,
-    objectCount: 0,
-  }];
-  if (auth.hasHubAccess) {
+  const spaces = [];
+  if (auth.isStaff) {
     spaces.push({
+      id: 'hub:general',
+      title: 'General',
+      role: auth.viewer.accessLevel,
+      visibility: 'staff',
+      unreadCount: 0,
+      objectCount: 0,
+    }, {
       id: 'hub:documents',
       title: 'Documents',
-      role: auth.viewer.accessLevel || 'staff',
+      role: auth.viewer.accessLevel,
       visibility: 'staff',
       unreadCount: 0,
       objectCount: 0,
@@ -45,12 +45,21 @@ function fallbackSpaces(auth) {
   return spaces;
 }
 
+function canViewSpace(auth, visibility) {
+  if (auth.isPrivileged) return true;
+  if (auth.isStaff) return visibility !== 'privileged' && visibility !== 'admin';
+  return ['customer', 'household', 'guest'].includes(visibility);
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth, {
+    allowedAccess: ['localist', 'customer', 'staff', 'privileged'],
+  });
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   try {
     const membershipFilters = [
@@ -65,14 +74,16 @@ module.exports = async (req, res) => {
       orderBy: { createdAt: 'asc' },
     }));
 
-    const dbSpaces = memberships.map((membership) => ({
-      id: membership.spaceId,
-      title: membership.space?.title || membership.spaceId,
-      role: membership.role,
-      visibility: membership.visibility || membership.space?.visibility || 'customer',
-      unreadCount: 0,
-      objectCount: 0,
-    }));
+    const dbSpaces = memberships
+      .map((membership) => ({
+        id: membership.spaceId,
+        title: membership.space?.title || membership.spaceId,
+        role: membership.role,
+        visibility: membership.visibility || membership.space?.visibility || 'customer',
+        unreadCount: 0,
+        objectCount: 0,
+      }))
+      .filter((space) => canViewSpace(auth, space.visibility));
 
     const byId = new Map();
     [...fallbackSpaces(auth), ...dbSpaces].forEach((space) => byId.set(space.id, space));
@@ -87,3 +98,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Unable to load hub spaces' });
   }
 };
+
+module.exports.fallbackSpaces = fallbackSpaces;
+module.exports.canViewSpace = canViewSpace;

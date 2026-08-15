@@ -444,7 +444,7 @@ function paymentField(payment, snakeKey, camelKey) {
 
 async function markLocalistOrderPaidFromSquare(prisma, payment) {
   const squareOrderId = paymentField(payment, 'order_id', 'orderId');
-  if (!squareOrderId || !prisma?.hubLocalistOrder?.findUnique) return null;
+  if (!squareOrderId || !prisma?.hubLocalistOrder?.findUnique || !prisma?.hubLocalistOrder?.updateMany) return null;
 
   const existing = await prisma.hubLocalistOrder.findUnique({ where: { squareOrderId } });
   if (!existing) return null;
@@ -452,11 +452,11 @@ async function markLocalistOrderPaidFromSquare(prisma, payment) {
   const paidAtRaw = paymentField(payment, 'created_at', 'createdAt');
   const paidAt = paidAtRaw ? new Date(paidAtRaw) : new Date();
   const buyerEmail = paymentField(payment, 'buyer_email_address', 'buyerEmailAddress') || paymentField(payment, 'receipt_email', 'receiptEmail');
-  const updated = await prisma.hubLocalistOrder.update({
-    where: { id: existing.id },
+  const transition = await prisma.hubLocalistOrder.updateMany({
+    where: { id: existing.id, status: { not: 'paid' } },
     data: {
       status: 'paid',
-      paidAt: existing.paidAt || paidAt,
+      paidAt,
       squarePaymentId: existing.squarePaymentId || payment.id || null,
       customerEmail: existing.customerEmail || buyerEmail || null,
       squareCustomerId: existing.squareCustomerId || paymentField(payment, 'customer_id', 'customerId') || null,
@@ -464,12 +464,16 @@ async function markLocalistOrderPaidFromSquare(prisma, payment) {
     },
   });
 
-  if (existing.status !== 'paid') {
-    await decrementInventoryForOrder(updated).catch((err) => {
-      console.warn('[localistOrderBrain] inventory update failed', err?.message);
-    });
+  if (transition.count !== 1) {
+    return prisma.hubLocalistOrder.findUnique({ where: { id: existing.id } });
   }
 
+  const updated = await prisma.hubLocalistOrder.findUnique({ where: { id: existing.id } });
+  if (!updated) return null;
+
+  await decrementInventoryForOrder(updated).catch((err) => {
+    console.warn('[localistOrderBrain] inventory update failed', err?.message);
+  });
   await writeOrderBrainRecords(prisma, updated, { paid: true });
   return updated;
 }

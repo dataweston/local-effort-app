@@ -4,6 +4,7 @@ const { prisma } = require('../_lib/prisma');
 const { getSanityClient, getSanityReadClient } = require('../../backend/api/sanityClient');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { writeOrderBrainRecords } = require('./_localistOrderBrain');
+const { enforcePublicRateLimit, PUBLIC_RATE_LIMITS } = require('./_publicRateLimit');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -133,6 +134,8 @@ async function validateWindow(token) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  if (!await enforcePublicRateLimit(req, res, PUBLIC_RATE_LIMITS.checkout)) return;
+
 
   if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
   if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });

@@ -1,13 +1,12 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 
 
 function allowedVisibility(auth) {
-  if (auth.isPrivileged || auth.isAdmin) return ['customer', 'household', 'staff', 'privileged', 'vendor', 'volunteer', 'guest', 'admin'];
-  if (auth.hasHubAccess) return ['staff'];
-  if (auth.customer) return ['customer', 'household', 'guest'];
-  return ['guest'];
+  if (auth.isPrivileged) return ['customer', 'household', 'staff', 'privileged', 'vendor', 'volunteer', 'guest', 'admin'];
+  if (auth.isStaff) return ['staff'];
+  return [];
 }
 
 function canReadThread(auth, thread) {
@@ -82,7 +81,8 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   const objectType = cleanString(req.query?.objectType, 80);
   const objectId = cleanString(req.query?.objectId, 120);

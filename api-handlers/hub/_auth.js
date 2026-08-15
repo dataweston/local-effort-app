@@ -1,6 +1,5 @@
 const {
   verifySupabaseToken,
-  isAdminEmail,
   isReadOnlyAdminEmail,
   isReadOnlyMethod,
   findUserByEmail,
@@ -13,31 +12,54 @@ function unique(values) {
 function coerceRole(value) {
   const role = String(value || '').toLowerCase();
   if (role === 'subscriber') return 'subscriber';
-  if (role === 'admin') return 'admin';
-  if (role === 'staff') return 'staff';
   if (role === 'vendor') return 'vendor';
   if (role === 'volunteer') return 'volunteer';
   if (role === 'guest') return 'guest';
   return 'member';
 }
 
+function configuredAdminEmails() {
+  const configured = String(
+    process.env.ADMIN_EMAILS ||
+      process.env.VITE_ADMIN_EMAILS ||
+      process.env.NEXT_PUBLIC_ADMIN_EMAILS ||
+      ''
+  )
+    .split(/[\s,]+/)
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  return configured.length > 0
+    ? configured
+    : ['dataweston@gmail.com', 'colsen03@gmail.com'];
+}
+
+function isExplicitHubAdminEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  return !!normalized && (configuredAdminEmails().includes(normalized) || isReadOnlyAdminEmail(normalized));
+}
+
 function coerceHubAccess(value) {
-  const access = String(value || '').toLowerCase();
+  const access = String(value || '').trim().toLowerCase();
+  if (access === 'localist') return 'localist';
   if (access === 'customer' || access === 'subscriber') return 'customer';
+  if (access === 'staff') return 'staff';
   if (access === 'privileged' || access === 'admin') return 'privileged';
-  return 'staff';
+  return null;
 }
 
 function hubAccessFor(auth) {
-  const accessLevel = auth?.hubProfile?.accessLevel
-    ? coerceHubAccess(auth.hubProfile.accessLevel)
+  const profile = auth?.hubProfile || null;
+  const profileIsActive = String(profile?.status || '').trim().toLowerCase() === 'active';
+  const accessLevel = profile
+    ? (profileIsActive ? coerceHubAccess(profile.accessLevel) : null)
     : (auth?.isAdmin ? 'privileged' : null);
   return {
     accessLevel,
     hasHubAccess: !!accessLevel,
+    isLocalist: accessLevel === 'localist',
     isCustomer: accessLevel === 'customer',
-    isStaff: accessLevel === 'staff' || accessLevel === 'privileged' || !!auth?.isAdmin,
-    isPrivileged: accessLevel === 'privileged' || !!auth?.isAdmin,
+    isStaff: accessLevel === 'staff' || accessLevel === 'privileged',
+    isPrivileged: accessLevel === 'privileged',
   };
 }
 
@@ -47,7 +69,12 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
 
   const dbUser = await findUserByEmail(prisma, supabaseUser.email, { customer: true, hubProfile: true });
   const isReadOnlyAdmin = isReadOnlyAdminEmail(supabaseUser.email);
-  const isAdmin = isAdminEmail(supabaseUser.email) || dbUser?.role === 'admin';
+  const explicitAdmin = isExplicitHubAdminEmail(supabaseUser.email);
+  const access = hubAccessFor({
+    hubProfile: dbUser?.hubProfile || null,
+    isAdmin: explicitAdmin && !dbUser?.hubProfile,
+  });
+  const isAdmin = access.isPrivileged;
   if (isReadOnlyAdmin && !isReadOnlyMethod(req.method)) {
     return { error: 'Read-only admin access', status: 403 };
   }
@@ -69,15 +96,13 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
     return { error: 'No customer profile found', status: 404 };
   }
 
+  const accountRole = coerceRole(dbUser?.role);
   const roles = unique([
-    coerceRole(dbUser?.role),
-    dbUser?.hubProfile ? coerceHubAccess(dbUser.hubProfile.accessLevel) : null,
-    dbUser?.hubProfile ? 'staff' : null,
+    accountRole,
+    access.accessLevel,
     customer ? 'subscriber' : null,
-    isAdmin ? 'admin' : null,
+    access.isPrivileged ? 'admin' : null,
   ]);
-  const access = hubAccessFor({ hubProfile: dbUser?.hubProfile || null, isAdmin });
-
   return {
     supabaseUser,
     dbUser,
@@ -112,4 +137,10 @@ function requireHubAccess(auth, { privileged = false, allowedAccess = ['staff', 
   return null;
 }
 
-module.exports = { resolveHubViewer, requireHubAccess, coerceHubAccess };
+module.exports = {
+  resolveHubViewer,
+  requireHubAccess,
+  coerceHubAccess,
+  hubAccessFor,
+  isExplicitHubAdminEmail,
+};

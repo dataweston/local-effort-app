@@ -5,8 +5,10 @@ The contract lives in the Local Budget repo:
 
 Summary for this repo:
 
-- Local Budget is the source of truth for transactions, vendors, Square
-  payments, and P&L. The **brain** is the primary consumer here. The
+- Local Budget is the source of truth for bank transactions, reviewed cash
+  classifications, vendors, Square settlements, and its cash-basis management
+  P&L. It does not establish when revenue was earned. The **brain** is the
+  primary consumer here. The
   WeeklyDemo planner forecast also reads the versioned cashflow API directly
   for its six-complete-month actual-cost baseline; it does not read the Local
   Budget database or use the Brain mirror as a financial fallback.

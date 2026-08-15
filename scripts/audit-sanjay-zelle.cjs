@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 
+const SUMMARY_ONLY = process.argv.includes('--summary');
+
 for (const file of ['.env', '.env.local', '.env.production.local', '.env.vercel.production']) {
   require('dotenv').config({ path: file, override: false });
 }
@@ -73,10 +75,48 @@ async function main() {
       take: 200,
     });
 
+    const matchedAccountIds = [...new Set(transactions.map((transaction) => transaction.accountId))];
+    const accountCoverage = matchedAccountIds.length
+      ? await localBudget.$queryRawUnsafe(`
+          SELECT "accountId"::text, MIN(date) AS "earliestTransaction", MAX(date) AS "latestTransaction", COUNT(*)::int AS "transactionCount"
+          FROM transactions
+          WHERE "accountId"::text = ANY($1::text[])
+          GROUP BY "accountId"
+        `, matchedAccountIds)
+      : [];
+    const localBudgetCoverage = await localBudget.$queryRawUnsafe(`
+      SELECT MIN(date) AS "earliestTransaction", MAX(date) AS "latestTransaction", COUNT(*)::int AS "transactionCount"
+      FROM transactions
+    `);
+
     const latestCashflowInference = await brain.brainInference.findFirst({
       where: { inferenceType: 'CASHFLOW', knownUntil: null, supersededBy: null },
       select: { id: true, computedAt: true, staleAt: true, summary: true },
       orderBy: { computedAt: 'desc' },
+    });
+    const customer = await brain.brainEntity.findFirst({
+      where: { entityType: 'Customer', tombstonedAt: null, name: { equals: 'Sanjay Roy', mode: 'insensitive' } },
+      select: { id: true, name: true, localEffortCustomerId: true, properties: true },
+    });
+    const stripeCustomerId = customer?.properties?.stripeCustomerId || null;
+    const nonLocalBudgetPaymentEvidence = stripeCustomerId
+      ? await brain.$queryRawUnsafe(`
+          SELECT id, "eventType", source, "occurredAt", payload
+          FROM "LedgerEvent"
+          WHERE "tombstonedAt" IS NULL
+            AND source <> 'local_budget'
+            AND "eventType" ILIKE '%payment%'
+            AND payload::text ILIKE ANY($1::text[])
+          ORDER BY "occurredAt"
+        `, [`%${stripeCustomerId}%`, '%sanjayroy1309@gmail.com%', '%Victor Sanjay Roy%'])
+      : [];
+    const coverageGap = await brain.ledgerEvent.findFirst({
+      where: {
+        eventType: 'customer.payment_history.coverage_gap',
+        sourceId: 'sanjay-stripe-history-gap:2024-06-10:2025-02-16',
+        tombstonedAt: null,
+      },
+      select: { id: true, occurredAt: true, payload: true },
     });
     const latestLocalBudgetRuns = await brain.brainJobRun.findMany({
       where: { jobName: 'local-budget-sync' },
@@ -106,7 +146,7 @@ async function main() {
       .filter((sourceId) => transactions.filter((transaction) => (transaction.externalId || transaction.id) === sourceId).length > 1);
 
     console.log(JSON.stringify({
-      localBudgetPayments: transactions.map(displayTransaction),
+      ...(SUMMARY_ONLY ? {} : { localBudgetPayments: transactions.map(displayTransaction) }),
       verification: {
         localBudgetPaymentCount: transactions.length,
         brainLedgerPaymentCount: ledgerEvents.length,
@@ -123,7 +163,17 @@ async function main() {
         currentEconomicsModelPeriodEnds: '2026-07-31',
       },
       latestCashflowInference,
+      customer: SUMMARY_ONLY ? {
+        id: customer?.id || null,
+        name: customer?.name || null,
+        customerSince: customer?.properties?.mealPrepCustomerSince || customer?.properties?.customerSince || null,
+        paymentHistoryCoverage: customer?.properties?.paymentHistoryCoverage || null,
+      } : customer,
+      nonLocalBudgetPaymentEvidence,
+      coverageGap,
       latestLocalBudgetRuns,
+      accountCoverage,
+      localBudgetCoverage: localBudgetCoverage[0] || null,
     }, null, 2));
   } finally {
     await Promise.all([brain.$disconnect(), localBudget.$disconnect()]);

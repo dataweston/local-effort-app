@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   BadgeCheck,
   CalendarClock,
+  CreditCard,
   Coins,
   ExternalLink,
   Megaphone,
@@ -28,11 +29,6 @@ const PERKS = [
     body: 'Members see and order from the weekly pickup menu before anyone else.',
   },
   {
-    icon: Coins,
-    title: '4% back as credit, quarterly',
-    body: 'Paying members earn 4% of everything they spend with the co-op back as credit.',
-  },
-  {
     icon: BadgeCheck,
     title: 'The door to weekly meal prep',
     body: 'Meal prep customers are members first. Membership is what makes the weekly plan possible.',
@@ -40,9 +36,19 @@ const PERKS = [
   {
     icon: CalendarClock,
     title: 'Perks and first tastes',
-    body: 'Extras in the bag, first tastes of new dishes, and member-only low-cost menus.',
+    body: 'Extras in the bag, first tastes of new dishes, and occasional member-only surprises.',
   },
 ];
+const PAID_CREDIT_PERK = {
+  icon: Coins,
+  title: '4% back as credit, quarterly',
+  body: 'Monthly and annual members accrue 4% of tracked spending as quarterly credit.',
+};
+const WAIVED_PERK = {
+  icon: Coins,
+  title: 'Waived-member low-cost menu',
+  body: 'The low-cost menu is an additional benefit reserved for cost-waived Localists.',
+};
 
 export function MembershipView({ accessToken }) {
   const [data, setData] = useState(null);
@@ -84,10 +90,13 @@ export function MembershipView({ accessToken }) {
   }
 
   const membership = data?.membership || {};
-  const spending = data?.spending || {};
+  const dues = data?.dues || {};
+  const billing = data?.billing || {};
+  const purchases = data?.purchases || {};
   const credit = data?.credit || {};
   const messages = data?.messages || [];
   const tier = membership.tier || {};
+  const perks = tier.key === 'waived' ? [...PERKS, WAIVED_PERK] : [...PERKS, PAID_CREDIT_PERK];
 
   return (
     <div className="hub-membership">
@@ -103,50 +112,83 @@ export function MembershipView({ accessToken }) {
           </p>
         </div>
         <span className={`hub-pill ${membership.status === 'active' ? 'is-good' : ''}`}>
-          {membership.status || 'active'}
+          {membership.status || 'unknown'}
         </span>
       </section>
 
       <div className="hub-membership__grid">
-        {/* ── Spending + credit ── */}
-        <Panel title="Your spending" icon={Receipt}>
+        {/* ── Dues and Square subscription state ── */}
+        <Panel title="Membership dues" icon={CreditCard}>
           <div className="hub-membership__stats">
             <div>
-              <span className="hub-membership__stat-value">{formatCurrency(spending.totalCents || 0)}</span>
-              <span className="hub-membership__stat-label">spent with the co-op</span>
+              <span className="hub-membership__stat-value">
+                {dues.amountCents == null ? 'Not recorded' : formatCurrency(dues.amountCents)}
+              </span>
+              <span className="hub-membership__stat-label">
+                {dues.waived ? 'dues waived' : `${dues.cadence || 'unknown'} dues`}
+              </span>
             </div>
             <div>
-              <span className="hub-membership__stat-value">{spending.orderCount || 0}</span>
-              <span className="hub-membership__stat-label">paid orders</span>
+              <span className="hub-membership__stat-value">{dues.status || 'unknown'}</span>
+              <span className="hub-membership__stat-label">roster status</span>
+            </div>
+          </div>
+          <p className="hub-membership__hint">
+            {dues.waived
+              ? 'No Square subscription is required for your cost-waived membership.'
+              : billing.subscription
+                ? `Square subscription recorded · ${billing.subscription.status || 'status unavailable'}`
+                : 'A Square subscription identifier is not yet available in Hub.'}
+          </p>
+          <p className="hub-membership__hint">
+            {billing.history?.available
+              ? 'Your membership billing history is available below.'
+              : 'Membership billing history is not available in Hub yet. Food purchases are tracked separately.'}
+          </p>
+        </Panel>
+
+        {/* ── Tracked food purchases and accrued-credit estimate ── */}
+        <Panel title="Tracked pickup purchases" icon={Receipt}>
+          <div className="hub-membership__stats">
+            <div>
+              <span className="hub-membership__stat-value">{formatCurrency(purchases.totalCents || 0)}</span>
+              <span className="hub-membership__stat-label">tracked food purchases</span>
             </div>
             <div>
-              <span className="hub-membership__stat-value">{formatCurrency(spending.quarterToDateCents || 0)}</span>
-              <span className="hub-membership__stat-label">this quarter</span>
+              <span className="hub-membership__stat-value">{purchases.orderCount || 0}</span>
+              <span className="hub-membership__stat-label">paid pickup orders</span>
+            </div>
+            <div>
+              <span className="hub-membership__stat-value">{formatCurrency(purchases.quarterToDateCents || 0)}</span>
+              <span className="hub-membership__stat-label">tracked this quarter</span>
             </div>
           </div>
 
           <div className="hub-membership__credit">
             {credit.eligible ? (
               <>
-                <strong>{formatCurrency(credit.quarterToDateCents || 0)}</strong> in credit earned
-                this quarter · {formatCurrency(credit.lifetimeCents || 0)} lifetime.
-                <span className="hub-membership__credit-note">{credit.nextPayoutNote}</span>
+                <strong>{formatCurrency(credit.quarterToDateAccruedEstimateCents || 0)}</strong>{' '}
+                estimated 4% credit accrued this quarter ·{' '}
+                {formatCurrency(credit.lifetimeAccruedEstimateCents || 0)} estimated from all tracked
+                paid food purchases.
+                <span className="hub-membership__credit-note">{credit.note}</span>
               </>
             ) : (
               <>
-                The 4% quarterly credit is reserved for paying memberships. Everything
-                else about your membership — menus, pickups, perks — is the same.
+                The 4% quarterly credit is reserved for monthly and annual memberships.
+                Cost-waived Localists instead receive the waived-member low-cost menu,
+                alongside the same menus, pickups, and other perks.
               </>
             )}
           </div>
 
-          {(spending.orders || []).length > 0 ? (
+          {(purchases.recent || []).length > 0 ? (
             <ul className="hub-membership__orders">
-              {spending.orders.map((order) => (
+              {purchases.recent.map((order) => (
                 <li key={order.id}>
                   <span className="hub-membership__order-date">{formatDate(order.paidAt)}</span>
                   <span className="hub-membership__order-meta">
-                    {order.totalQuantity ? `${order.totalQuantity} items` : 'order'}
+                    {order.totalQuantity ? `${order.totalQuantity} items` : 'pickup order'}
                     {order.pickupWindow ? ` · ${order.pickupWindow}` : ''}
                   </span>
                   <span className="hub-membership__order-total">{formatCurrency(order.totalCents)}</span>
@@ -160,7 +202,7 @@ export function MembershipView({ accessToken }) {
             </ul>
           ) : (
             <p className="hub-membership__hint">
-              No paid orders yet. Your first pickup order will show up here.
+              No tracked paid pickup orders yet. Membership dues do not appear in this list.
             </p>
           )}
         </Panel>
@@ -168,7 +210,7 @@ export function MembershipView({ accessToken }) {
         {/* ── Perks ── */}
         <Panel title="Your perks" icon={BadgeCheck}>
           <ul className="hub-membership__perks">
-            {PERKS.map(({ icon: Icon, title, body }) => (
+            {perks.map(({ icon: Icon, title, body }) => (
               <li key={title}>
                 <Icon size={16} aria-hidden="true" />
                 <div>

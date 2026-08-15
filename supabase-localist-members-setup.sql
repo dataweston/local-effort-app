@@ -51,8 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_localist_members_created_at ON localist_members(c
 
 ALTER TABLE localist_members ENABLE ROW LEVEL SECURITY;
 
--- All writes go through the backend with the service-role key; no public policies.
--- Authenticated users (admin dashboard) may read.
+-- All reads and writes go through the backend service-role client. RLS remains
+-- closed to anon and authenticated browser clients so one member cannot read
+-- another member's name, email, phone, billing identifiers, or notes.
 DROP POLICY IF EXISTS "Allow authenticated reads" ON localist_members;
-CREATE POLICY "Allow authenticated reads" ON localist_members
-  FOR SELECT TO authenticated USING (true);

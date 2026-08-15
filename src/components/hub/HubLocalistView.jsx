@@ -9,8 +9,6 @@ import {
   Send,
   ShieldCheck,
   ShoppingCart,
-  Upload,
-  X,
 } from 'lucide-react';
 import { createPortableTextComponents } from '../../utils/portableTextComponents';
 import { api, age, formatCurrency, Panel, Field } from './hubShared';
@@ -493,9 +491,6 @@ export function LocalistView({
 }
 
 
-export const CHAT_UPLOAD_MIME_TYPES = ['image/gif', 'image/png', 'image/jpeg', 'image/webp'];
-
-export const CHAT_UPLOAD_MAX_BYTES = 1 * 1024 * 1024;
 
 export const URL_PATTERN = /(https?:\/\/[^\s<]+)/gi;
 
@@ -505,7 +500,7 @@ export function isEmbeddableGifPage(url) {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
     const href = parsed.href.toLowerCase();
-    const directImage = /\.(gif|png|jpe?g|webp)(\?|#|$)/.test(href) || href.startsWith('data:image/');
+    const directImage = /\.(gif|png|jpe?g|webp)(\?|#|$)/.test(href);
     return !directImage && (host.includes('giphy.com') || host.includes('tenor.com'));
   } catch (_err) {
     return false;
@@ -546,10 +541,8 @@ export function LocalistChat() {
   });
   const [body, setBody] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [imageUpload, setImageUpload] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const uploadInputRef = useRef(null);
 
   const loadMessages = useCallback(async () => {
     const data = await api('/api/hub/localist-chat');
@@ -577,44 +570,13 @@ export function LocalistChat() {
     setDraftName(senderName);
   };
 
-  const attachUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setError('');
-    if (!CHAT_UPLOAD_MIME_TYPES.includes(file.type)) {
-      setError('Upload a GIF, PNG, JPG, or WebP image.');
-      event.target.value = '';
-      return;
-    }
-    if (file.size > CHAT_UPLOAD_MAX_BYTES) {
-      setError('Upload must be 1 MB or smaller.');
-      event.target.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageUpload({
-        dataUrl: String(reader.result || ''),
-        name: file.name,
-        mimeType: file.type,
-      });
-    };
-    reader.onerror = () => setError('Unable to read that upload.');
-    reader.readAsDataURL(file);
-    event.target.value = '';
-  };
-
-  const clearUpload = () => {
-    setImageUpload(null);
-    if (uploadInputRef.current) uploadInputRef.current.value = '';
-  };
 
   const submit = async (event) => {
     event.preventDefault();
     const name = senderName.trim();
     const text = body.trim();
     const media = imageUrl.trim();
-    if (!joined || !name || (!text && !media && !imageUpload)) return;
+    if (!joined || !name || (!text && !media)) return;
 
     setBusy(true);
     setError('');
@@ -625,12 +587,10 @@ export function LocalistChat() {
           senderName: name,
           body: text,
           imageUrl: media,
-          imageUpload,
         }),
       });
       setBody('');
       setImageUrl('');
-      clearUpload();
       await loadMessages();
     } catch (err) {
       setError(err.message || 'Unable to send message.');
@@ -691,27 +651,7 @@ export function LocalistChat() {
           <Field label="Image/GIF link">
             <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." inputMode="url" autoComplete="url" />
           </Field>
-          <div className="hub-localist-chat-upload">
-            <input
-              ref={uploadInputRef}
-              type="file"
-              accept="image/gif,image/png,image/jpeg,image/webp"
-              onChange={attachUpload}
-            />
-            <button type="button" onClick={() => uploadInputRef.current?.click()}>
-              <Upload size={13} /> Upload
-            </button>
-            {imageUpload && (
-              <div className="hub-localist-upload-preview">
-                <img src={imageUpload.dataUrl} alt="" />
-                <span>{imageUpload.name}</span>
-                <button type="button" onClick={clearUpload} aria-label="Remove upload">
-                  <X size={13} />
-                </button>
-              </div>
-            )}
-          </div>
-          <button className="hub-primary-button" type="submit" disabled={busy || (!body.trim() && !imageUrl.trim() && !imageUpload)}>
+          <button className="hub-primary-button" type="submit" disabled={busy || (!body.trim() && !imageUrl.trim())}>
             <Send size={13} /> {busy ? 'Sending...' : 'Send'}
           </button>
           {error && <p className="hub-error">{error}</p>}

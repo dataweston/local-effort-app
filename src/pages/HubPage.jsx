@@ -106,7 +106,8 @@ export default function HubPage() {
 
   // Privileged viewers also pull hidden docs so they can unhide or delete them;
   // everyone else only ever receives published docs from the API.
-  const docsPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
+  const profileIsActive = String(profile?.status || '').toLowerCase() === 'active';
+  const docsPrivileged = profileIsActive && (profile.accessLevel === 'privileged' || profile.isPrivileged);
   const docsEndpoint = docsPrivileged ? '/api/hub/docs?includeHidden=1' : '/api/hub/docs';
 
   const reloadDocs = useCallback(async () => {
@@ -115,8 +116,8 @@ export default function HubPage() {
   }, [auth.accessToken, docsEndpoint]);
 
   const loadShellData = useCallback(async () => {
-    if (!auth.accessToken || !profile) return;
-    if (profile.accessLevel === 'customer') return;
+    if (!auth.accessToken || !profile || String(profile.status || '').toLowerCase() !== 'active') return;
+    if (profile.accessLevel === 'customer' || profile.accessLevel === 'localist') return;
     const start = todayIso();
     const [peopleData, docsData, calendarData, convData, shiftData] = await Promise.all([
       api('/api/hub/people', auth.accessToken),
@@ -136,9 +137,9 @@ export default function HubPage() {
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
 
   // Real access from the profile (the source of truth for what's permitted).
-  const actualIsPrivileged = !!profile && (profile.accessLevel === 'privileged' || profile.isPrivileged || auth.isAdmin);
-  const isLocalist = !!profile && profile.accessLevel === 'localist';
-  const actualIsCustomer = !!profile && profile.accessLevel === 'customer';
+  const actualIsPrivileged = profileIsActive && (profile.accessLevel === 'privileged' || profile.isPrivileged);
+  const isLocalist = profileIsActive && profile.accessLevel === 'localist';
+  const actualIsCustomer = profileIsActive && profile.accessLevel === 'customer';
 
   // Effective role used to RENDER the Hub. A privileged user can preview the Hub
   // as staff or customer via `viewAs`; this only ever narrows what they see, never
@@ -241,6 +242,13 @@ export default function HubPage() {
     return (
       <>
         <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>
+      </>
+    );
+  }
+  if (!profileIsActive) {
+    return (
+      <>
+        <HubAccessRequired auth={auth} />
       </>
     );
   }

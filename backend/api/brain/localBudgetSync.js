@@ -12,7 +12,7 @@
  *     that PREFERS/AVOIDS/PRICE_DRIFT consume.
  *
  *   INCOME → `payment.received`
- *     LB has income sources beyond Square (the reason LB is the source of truth).
+ *     LB has cash sources beyond Square (the reason LB is the cash authority).
  *     But LB income rows carry no merchantName/payer, so we record amount + date
  *     + description with counterparty null, tagged squareMatchPending for a later
  *     Square-payout matching pass. No double-count risk because these are NOT

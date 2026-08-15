@@ -1,5 +1,5 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { cleanString } = require('./_http');
 const { parseDate, sourceIdFor, writeLedger } = require('./_ledger');
 
@@ -24,7 +24,8 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   const body = req.body || {};
   const rawContent = cleanString(body.rawContent, 6000);

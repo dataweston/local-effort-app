@@ -1,5 +1,5 @@
 const { prisma } = require('../_lib/prisma');
-const { resolveHubViewer } = require('./_auth');
+const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
 const { allowedVisibility, threadSummary, canReadThread } = require('./threads');
 const { findOrCreateThread } = require('./_bot');
@@ -41,7 +41,8 @@ module.exports = async (req, res) => {
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
 
   const auth = await resolveHubViewer(req, prisma, { requireCustomer: false });
-  if (auth.error) return res.status(auth.status).json({ error: auth.error });
+  const denied = requireHubAccess(auth);
+  if (denied) return res.status(denied.status).json({ error: denied.error });
 
   let threadId = cleanString(req.params?.id || req.query?.id, 120);
   let thread = null;
@@ -57,11 +58,12 @@ module.exports = async (req, res) => {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
-      const visibility = cleanString(req.query?.visibility, 40) || 'customer';
+      const visibility = cleanString(req.query?.visibility, 40) || 'staff';
       const title = cleanString(req.query?.title, 200) || objectType;
-      if (visibility === 'privileged' && !auth.isPrivileged) return res.status(403).json({ error: 'Forbidden' });
+      if (!allowedVisibility(auth).includes(visibility)) return res.status(403).json({ error: 'Forbidden' });
       if (objectType === 'hub_dm') return res.status(400).json({ error: 'Use /api/hub/conversations for direct messages' });
       thread = await findOrCreateThread(prisma, { objectType, objectId, visibility, title });
+      if (!canReadThread(auth, thread)) return res.status(403).json({ error: 'Forbidden' });
       threadId = thread.id;
     } else {
       thread = await getThread(auth, threadId);

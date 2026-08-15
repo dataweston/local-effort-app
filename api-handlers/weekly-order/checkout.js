@@ -1,6 +1,10 @@
 const crypto = require('crypto');
 const { Client, Environment } = require('square');
 const { prisma } = require('../_lib/prisma');
+const {
+  markPaymentAttemptFailed,
+  markPaymentAttemptSucceeded,
+} = require('../../backend/api/finance/paymentAttempts');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -74,6 +78,11 @@ module.exports = async (req, res) => {
   }
   if (!LOCATION_ID) {
     return res.status(500).json({ error: 'Square location not configured' });
+  }
+  // Payment integrity is fail-closed: a durable order and pending attempt must
+  // exist before Square is allowed to move money.
+  if (!prisma) {
+    return res.status(503).json({ error: 'Ordering database unavailable. No payment was taken.' });
   }
 
   const {
@@ -237,33 +246,34 @@ module.exports = async (req, res) => {
   const idempotencyKey = sanitizeIdempotencyKey(checkoutAttemptId) || crypto.randomUUID();
 
   try {
-    const paymentBody = {
-      sourceId: paymentToken,
-      idempotencyKey,
-      amountMoney: { amount: Math.round(amountCents), currency: 'USD' },
-      locationId: LOCATION_ID,
-      autocomplete: true,
-      note: `Weekly order (${tier || 'member'}) - ${customerSlug || customerId}`,
-      referenceId: `weekly-order-${menuWeekId}`,
-    };
-    if (verificationToken) {
-      paymentBody.verificationToken = verificationToken;
+    let paymentAttempt = await prisma.financePaymentAttempt.findUnique({
+      where: { provider_idempotencyKey: { provider: 'square', idempotencyKey } },
+      include: { weeklyOrder: true },
+    });
+
+    if (paymentAttempt && paymentAttempt.requestedCents !== Math.round(amountCents)) {
+      return res.status(409).json({ error: 'Checkout attempt amount changed. Please start checkout again.' });
+    }
+    if (paymentAttempt?.status === 'succeeded' && paymentAttempt.externalPaymentId) {
+      return res.status(200).json({
+        ok: true,
+        paymentId: paymentAttempt.externalPaymentId,
+        orderId: paymentAttempt.weeklyOrderId,
+        dbRecorded: true,
+        idempotentReplay: true,
+      });
+    }
+    if (paymentAttempt?.status === 'failed') {
+      return res.status(409).json({ error: 'This checkout attempt failed. Please try again.' });
     }
 
-    const paymentResp = await squareClient.paymentsApi.createPayment(paymentBody);
-    const paymentId = paymentResp.result.payment?.id || null;
-
-    let dbRecorded = false;
-    let orderId = null;
-    if (prisma && prisma.order && prisma.orderItem) {
+    if (!paymentAttempt) {
       try {
-        const order = await prisma.order.create({
+        const pendingOrder = await prisma.order.create({
           data: {
             menuWeekId,
             customerId,
-            submittedAt: new Date(),
-            status: 'paid',
-            squarePaymentId: paymentId,
+            status: 'payment_pending',
             totalsCents: Math.round(amountCents),
             basePriceCents: resolvedPlan.basePriceCents || 0,
             deliveryFeeCents: resolvedPlan.deliveryFeeCents || 0,
@@ -279,20 +289,95 @@ module.exports = async (req, res) => {
                 })),
               },
             },
+            paymentAttempts: {
+              create: {
+                provider: 'square',
+                idempotencyKey,
+                status: 'pending',
+                requestedCents: Math.round(amountCents),
+                currency: 'USD',
+                metadata: {
+                  channel: 'weekly_order',
+                  menuWeekId,
+                  customerId,
+                },
+              },
+            },
           },
+          include: { paymentAttempts: true },
         });
-        dbRecorded = true;
-        orderId = order?.id || null;
-      } catch (err) {
-        console.warn('[weekly-order] prisma insert failed', err?.message || err);
+        paymentAttempt = pendingOrder.paymentAttempts[0];
+      } catch (error) {
+        // A concurrent replay can win the unique idempotency-key insert. Load
+        // its durable attempt instead of creating another order.
+        if (error?.code !== 'P2002') throw error;
+        paymentAttempt = await prisma.financePaymentAttempt.findUnique({
+          where: { provider_idempotencyKey: { provider: 'square', idempotencyKey } },
+          include: { weeklyOrder: true },
+        });
+        if (!paymentAttempt) throw error;
       }
+    }
+
+    const orderId = paymentAttempt.weeklyOrderId;
+    const paymentBody = {
+      sourceId: paymentToken,
+      idempotencyKey,
+      amountMoney: { amount: Math.round(amountCents), currency: 'USD' },
+      locationId: LOCATION_ID,
+      autocomplete: true,
+      note: `Weekly order (${tier || 'member'}) - ${customerSlug || customerId}`,
+      referenceId: orderId,
+    };
+    if (verificationToken) {
+      paymentBody.verificationToken = verificationToken;
+    }
+
+    let paymentResp;
+    try {
+      paymentResp = await squareClient.paymentsApi.createPayment(paymentBody);
+    } catch (paymentError) {
+      try {
+        await markPaymentAttemptFailed({ prisma, attemptId: paymentAttempt.id, error: paymentError });
+      } catch (stateError) {
+        console.error('[weekly-order] failed to persist payment failure', stateError?.message || stateError);
+      }
+      throw paymentError;
+    }
+    const payment = paymentResp.result.payment;
+    const paymentId = payment?.id || null;
+
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: paymentAttempt.id,
+        provider: 'square',
+        payment,
+        amountCents,
+      });
+    } catch (stateError) {
+      // The pre-existing pending attempt is the recovery anchor. Do not tell a
+      // customer a captured payment failed merely because the state transition
+      // needs webhook/reconciliation repair.
+      console.error('[weekly-order] payment captured; state reconciliation pending', {
+        orderId,
+        paymentId,
+        error: stateError?.message || stateError,
+      });
+      return res.status(200).json({
+        ok: true,
+        paymentId,
+        orderId,
+        dbRecorded: true,
+        reconciliationPending: true,
+      });
     }
 
     return res.status(200).json({
       ok: true,
       paymentId,
       orderId,
-      dbRecorded,
+      dbRecorded: true,
     });
   } catch (err) {
     const msg = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Checkout failed';

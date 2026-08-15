@@ -148,6 +148,9 @@ model Customer {
   visibility       DishVisibility[]
   plans            CustomerPlan[]
   profile          CustomerProfile?
+  commercialAgreements CommercialAgreement[]
+  commercialSubscriptions CommercialSubscription[]
+  commercialOrders CommercialOrder[]
 }
 
 model Dish {
@@ -315,6 +318,7 @@ model Order {
   customer        Customer    @relation(fields: [customerId], references: [id])
   user            User?       @relation(fields: [userId], references: [id])
   items           OrderItem[]
+  paymentAttempts FinancePaymentAttempt[]
 }
 
 model OrderItem {
@@ -329,6 +333,231 @@ model OrderItem {
   updatedAt      DateTime @updatedAt
   order          Order    @relation(fields: [orderId], references: [id])
   dish           Dish     @relation(fields: [dishId], references: [id])
+}
+
+// ============================================================================
+// COMMERCIAL + FINANCE CORE (NOW)
+//
+// These records own commercial obligations and payment provenance. They do not
+// replace Local Budget's cash classifications or developing margin tools, and
+// they are not a GAAP general ledger. String statuses/types are intentional at
+// this stage so the live sales channels can converge without enum migrations.
+// ============================================================================
+
+model CommercialAgreement {
+  id                String                   @id @default(uuid())
+  agreementType     String
+  status            String                   @default("draft")
+  title             String
+  customerId        String?
+  counterpartyName  String?
+  counterpartyEmail String?
+  businessLineKey   String?
+  effectiveAt       DateTime?
+  termEndAt         DateTime?
+  autoRenew         Boolean                  @default(false)
+  cancellationTerms String?
+  sourceSystem      String?
+  sourceId          String?
+  documentRef       String?
+  terms             Json?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  customer          Customer?                @relation(fields: [customerId], references: [id])
+  subscriptions     CommercialSubscription[]
+  orders            CommercialOrder[]
+  invoices          CommercialInvoice[]
+
+  @@unique([sourceSystem, sourceId])
+  @@index([customerId, status])
+  @@index([businessLineKey, status])
+}
+
+model CommercialSubscription {
+  id                     String               @id @default(uuid())
+  agreementId            String?
+  customerId             String?
+  status                 String               @default("pending")
+  billingCadence         String
+  recurringBaseCents     Int
+  currency               String               @default("USD")
+  startAt                DateTime
+  currentPeriodStartAt   DateTime?
+  currentPeriodEndAt     DateTime?
+  cancelAt               DateTime?
+  canceledAt             DateTime?
+  provider               String?
+  providerSubscriptionId String?
+  sourceSystem           String?
+  sourceId               String?
+  metadata               Json?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  agreement              CommercialAgreement? @relation(fields: [agreementId], references: [id])
+  customer               Customer?            @relation(fields: [customerId], references: [id])
+  orders                 CommercialOrder[]
+
+  @@unique([provider, providerSubscriptionId])
+  @@unique([sourceSystem, sourceId])
+  @@index([customerId, status])
+  @@index([agreementId, status])
+}
+
+model CommercialOrder {
+  id              String                   @id @default(uuid())
+  agreementId     String?
+  subscriptionId  String?
+  customerId      String?
+  customerName    String?
+  customerEmail   String?
+  channel         String
+  businessLineKey String?
+  status          String                   @default("draft")
+  currency        String                   @default("USD")
+  subtotalCents   Int?
+  totalCents      Int
+  bookedAt        DateTime?
+  serviceStartAt  DateTime?
+  serviceEndAt    DateTime?
+  fulfilledAt     DateTime?
+  sourceSystem    String
+  sourceId        String
+  metadata        Json?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  agreement       CommercialAgreement?     @relation(fields: [agreementId], references: [id])
+  subscription    CommercialSubscription?  @relation(fields: [subscriptionId], references: [id])
+  customer        Customer?                @relation(fields: [customerId], references: [id])
+  lines           CommercialOrderLine[]
+  invoices        CommercialInvoice[]
+  paymentAttempts FinancePaymentAttempt[]
+  allocations     FinancePaymentAllocation[]
+
+  @@unique([sourceSystem, sourceId])
+  @@index([customerId, status])
+  @@index([agreementId, status])
+  @@index([subscriptionId, status])
+  @@index([businessLineKey, bookedAt])
+}
+
+model CommercialOrderLine {
+  id             String          @id @default(uuid())
+  orderId        String
+  lineType       String          @default("item")
+  sku            String?
+  name           String
+  description    String?
+  quantity       Int             @default(1)
+  unitPriceCents Int
+  totalCents     Int
+  sourceSystem   String?
+  sourceId       String?
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  order          CommercialOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([sku])
+}
+
+model CommercialInvoice {
+  id               String                     @id @default(uuid())
+  agreementId      String?
+  orderId          String?
+  invoiceNumber    String?
+  status           String                     @default("draft")
+  currency         String                     @default("USD")
+  totalCents       Int
+  outstandingCents Int
+  issuedAt         DateTime?
+  dueAt            DateTime?
+  paidAt           DateTime?
+  sourceSystem     String
+  sourceId         String
+  metadata         Json?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  agreement        CommercialAgreement?       @relation(fields: [agreementId], references: [id])
+  order            CommercialOrder?           @relation(fields: [orderId], references: [id])
+  paymentAttempts  FinancePaymentAttempt[]
+  allocations      FinancePaymentAllocation[]
+
+  @@unique([sourceSystem, sourceId])
+  @@index([status, dueAt])
+  @@index([agreementId, status])
+  @@index([orderId])
+}
+
+model FinancePaymentAttempt {
+  id                String                      @id @default(uuid())
+  commercialOrderId String?
+  weeklyOrderId     String?
+  invoiceId         String?
+  provider          String
+  idempotencyKey    String
+  status            String                      @default("pending")
+  requestedCents    Int
+  currency          String                      @default("USD")
+  externalPaymentId String?
+  failureCode       String?
+  failureMessage    String?
+  metadata          Json?
+  startedAt         DateTime                    @default(now())
+  completedAt       DateTime?
+  updatedAt         DateTime                    @updatedAt
+  commercialOrder   CommercialOrder?            @relation(fields: [commercialOrderId], references: [id])
+  weeklyOrder       Order?                      @relation(fields: [weeklyOrderId], references: [id])
+  invoice           CommercialInvoice?          @relation(fields: [invoiceId], references: [id])
+  transactions      FinancePaymentTransaction[]
+
+  @@unique([provider, idempotencyKey])
+  @@index([commercialOrderId, status])
+  @@index([weeklyOrderId, status])
+  @@index([invoiceId, status])
+  @@index([externalPaymentId])
+}
+
+model FinancePaymentTransaction {
+  id                String                     @id @default(uuid())
+  attemptId         String?
+  provider          String
+  externalPaymentId String
+  transactionType   String                     @default("payment")
+  status            String
+  currency          String                     @default("USD")
+  grossCents        Int
+  feeCents          Int?
+  netCents          Int?
+  occurredAt        DateTime
+  settledAt         DateTime?
+  metadata          Json?
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  attempt           FinancePaymentAttempt?     @relation(fields: [attemptId], references: [id])
+  allocations       FinancePaymentAllocation[]
+
+  @@unique([provider, externalPaymentId])
+  @@index([attemptId])
+  @@index([occurredAt])
+}
+
+model FinancePaymentAllocation {
+  id            String                    @id @default(uuid())
+  transactionId String
+  targetType    String
+  targetId      String
+  invoiceId     String?
+  orderId       String?
+  amountCents   Int
+  createdAt     DateTime                  @default(now())
+  transaction   FinancePaymentTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  invoice       CommercialInvoice?        @relation(fields: [invoiceId], references: [id])
+  order         CommercialOrder?          @relation(fields: [orderId], references: [id])
+
+  @@unique([transactionId, targetType, targetId])
+  @@index([invoiceId])
+  @@index([orderId])
 }
 
 model RecipeIngest {
@@ -702,6 +931,7 @@ model ObjectThread {
   id             String   @id @default(uuid())
   organizationId String?
   spaceId        String?
+  singletonKey   String?  @unique
   objectType     String
   objectId       String
   visibility     String
@@ -715,6 +945,18 @@ model ObjectThread {
   @@index([organizationId, spaceId])
   @@index([objectType, objectId])
   @@index([visibility])
+}
+
+model HubPublicRateLimitBucket {
+  scope       String
+  clientHash  String
+  windowStart DateTime
+  count       Int      @default(1)
+  expiresAt   DateTime
+  updatedAt   DateTime @updatedAt
+
+  @@id([scope, clientHash, windowStart])
+  @@index([expiresAt])
 }
 
 model ObjectThreadMessage {
