@@ -1,0 +1,164 @@
+{
+  "weekStart": "2026-08-17",
+  "cards": [],
+  "recurringSeries": [
+    {
+      "id": "forecast-samantha-bailey-monday",
+      "templateId": "meal-prep-samantha-bailey-monday",
+      "startDate": "2026-08-17",
+      "endDate": "2027-01-25",
+      "paidThrough": "2026-08-17",
+      "dayOfWeek": "Monday",
+      "card": {
+        "title": "Meal prep — Samantha Bailey: 3 lunches for 2 adults",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 11000,
+        "financialStatus": "committed",
+        "financialSource": "Owner-confirmed reduced plan and $110 weekly Saturday billing; Square invoice 000067 paid August 15",
+        "financialMetadata": {
+          "cashflowBillingOverride": true,
+          "billingCustomerName": "Samantha Bailey",
+          "billingAmountCents": 11000,
+          "billingCadence": "weekly_saturday",
+          "nextBillingDate": "2026-08-22",
+          "billingStatus": "active",
+          "billingEvidence": "owner_reported_empirical",
+          "evidenceAsOf": "2026-08-15",
+          "squareRecipient": "s.anupama.bailey@gmail.com",
+          "serviceDay": "Monday"
+        },
+        "notes": "Three lunches for two adults. Bills $110 each Saturday; Monday service.",
+        "sortOrder": 20
+      }
+    },
+    {
+      "id": "forecast-david-allison-monday",
+      "templateId": "meal-prep-david-allison-monday",
+      "startDate": "2026-08-17",
+      "endDate": "2027-01-25",
+      "paidThrough": "2026-08-31",
+      "dayOfWeek": "Monday",
+      "card": {
+        "title": "Meal prep — David and Allison",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 26700,
+        "financialStatus": "committed",
+        "financialSource": "Square invoice 000013-R-0012 scheduled for $1,068 on September 10; owner identified September 10 billing on a four-week cycle",
+        "financialMetadata": {
+          "cashflowBillingOverride": true,
+          "billingCustomerName": "David and Allison",
+          "billingAmountCents": 106800,
+          "billingCadence": "every_4_weeks",
+          "nextBillingDate": "2026-09-10",
+          "billingStatus": "active",
+          "billingEvidence": "owner_reported_empirical",
+          "evidenceAsOf": "2026-08-15",
+          "squareRecipient": "davelevy3@gmail.com",
+          "serviceDay": "Monday"
+        },
+        "notes": "Billing is $1,068 every four weeks. Square invoice #000013-R-0012 is scheduled for September 10; the August 9 payment covers service through August 31.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-gabriella-scarpa-tuesday",
+      "templateId": "meal-prep-gabriella-scarpa-tuesday",
+      "startDate": "2026-08-18",
+      "endDate": "2027-01-26",
+      "paidThrough": "2026-08-25",
+      "dayOfWeek": "Tuesday",
+      "card": {
+        "title": "Meal prep — Gabriella Scarpa",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 35125,
+        "financialStatus": "committed",
+        "financialSource": "Owner-confirmed $1,405 billing every four weeks; the $1,060 invoice paid August 3 credited one skipped service week",
+        "financialMetadata": {
+          "cashflowBillingOverride": true,
+          "billingCustomerName": "Gabriella Scarpa",
+          "billingAmountCents": 140500,
+          "billingCadence": "every_4_weeks",
+          "nextBillingDate": "2026-08-31",
+          "billingStatus": "active",
+          "billingEvidence": "owner_reported_empirical",
+          "evidenceAsOf": "2026-08-15",
+          "squareRecipient": "scarpa.gabriella5@gmail.com",
+          "serviceDay": "Tuesday",
+          "currentMonthSkippedWeeks": 1
+        },
+        "notes": "Five family dinners for four adults, Tuesday service. Billing is $1,405 every four weeks; the August 3 invoice was $1,060 because it credited one skipped service week. Next billing August 31.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-catherine-squires-wednesday",
+      "templateId": "meal-prep-catherine-squires-wednesday",
+      "startDate": "2026-08-19",
+      "endDate": "2027-01-27",
+      "dayOfWeek": "Wednesday",
+      "card": {
+        "title": "Meal prep — Catherine Squires (confirmation pending)",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 12000,
+        "enabled": false,
+        "financialStatus": "paused_pending_confirmation",
+        "financialSource": "Owner-confirmed pause; owner is in direct communication with the customer as of August 15",
+        "financialMetadata": {
+          "cashflowBillingOverride": true,
+          "billingCustomerName": "Catherine Squires",
+          "billingAmountCents": 12000,
+          "billingCadence": "weekly_monday",
+          "nextBillingDate": null,
+          "billingStatus": "paused_pending_confirmation",
+          "billingEvidence": "owner_reported_empirical",
+          "evidenceAsOf": "2026-08-15",
+          "squareRecipient": "catherine@catherinesquires.com",
+          "serviceDay": "Wednesday"
+        },
+        "notes": "Usually bills $120 on Monday for Wednesday service. Paused — the owner is in direct communication with the customer. A Square invoice is still live on the recurring series; do not forecast this schedule until the owner confirms.",
+        "sortOrder": 10
+      }
+    },
+    {
+      "id": "forecast-sanjay-wednesday",
+      "templateId": "meal-prep-sanjay-wednesday",
+      "startDate": "2026-08-19",
+      "endDate": "2027-01-27",
+      "dayOfWeek": "Wednesday",
+      "card": {
+        "title": "Meal prep — Sanjay: 8 beef bowls",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 12800,
+        "financialStatus": "committed",
+        "financialSource": "Owner-confirmed 8 beef bowls weekly and $512 monthly billing",
+        "financialMetadata": {
+          "cashflowBillingOverride": true,
+          "billingCustomerName": "Sanjay",
+          "billingAmountCents": 51200,
+          "billingCadence": "monthly",
+          "nextBillingDate": "2026-09-05",
+          "billingStatus": "active",
+          "billingEvidence": "owner_reported_empirical",
+          "evidenceAsOf": "2026-08-15",
+          "squareRecipient": "sanjayroy1309@gmail.com",
+          "serviceDay": "Wednesday",
+          "beefBowls": 8
+        },
+        "notes": "Eight beef bowls each Wednesday. Bills $512 monthly; next billing September 5.",
+        "sortOrder": 20
+      }
+    }
+  ],
+  "cogs": [],
+  "overheads": []
+}

@@ -1,0 +1,37 @@
+{
+  "weekStart": "2026-08-16",
+  "cards": [],
+  "recurringSeries": [
+    {
+      "id": "forecast-happy-monday-weekly",
+      "templateId": "happy-monday-weekly-billing",
+      "startDate": "2026-08-16",
+      "endDate": "2027-01-31",
+      "dayOfWeek": "Sunday",
+      "card": {
+        "title": "Happy Monday — weekly billing forecast",
+        "zone": "untimed",
+        "objectType": "prep_task",
+        "people": [],
+        "revenueCents": 38282,
+        "financialStatus": "forecast",
+        "financialSource": "Trailing eight-week average of actual Happy Monday order weeks (2026-06-14 through 2026-08-08) from happymonday_orders; Square invoices to hello@happymonday.company confirm the same weekly totals, batched every one to three weeks",
+        "financialMetadata": {
+          "happyMondayWeeklyForecast": true,
+          "method": "trailing_8_week_zero_filled_average",
+          "windowWeeks": 8,
+          "windowStart": "2026-06-14",
+          "windowEnd": "2026-08-08",
+          "weeklyAverageCents": 38282,
+          "alternativeAverages": { "4": 35276, "13": 45767, "26": 52905 },
+          "sourceTable": "happymonday_orders",
+          "evidenceAsOf": "2026-08-15"
+        },
+        "notes": "Happy Monday orders two or three deliveries a week and settles them in batched invoices every one to three weeks, so cash is forecast a week at a time. $382.82 is the trailing eight-week average of actual order weeks (June 14 – August 8), counting quiet weeks as zero. Sensitivity: $352.76 over four weeks, $457.67 over thirteen, $529.05 over twenty-six — the trend is down, so the eight-week figure is the conservative live read. Each week's amount is booked in its own week; actual payment lands roughly one to two weeks later, so month boundaries are approximate. Disable this card for any week Happy Monday is closed; the forecast counts the larger of this average or the orders Happy Monday has actually placed for that week, so committed orders are never double counted.",
+        "sortOrder": 5
+      }
+    }
+  ],
+  "cogs": [],
+  "overheads": []
+}

@@ -255,7 +255,9 @@ function summarizeRules(rawRules) {
       const weekly = `$${(Number(rules.billing.weeklyTotalCents) / 100).toFixed(0)}/week`;
       items.push(rules.billing.deliveryIncluded ? `${weekly}, delivery included` : weekly);
     } else if (rules?.billing?.monthlyTotalCents != null) {
-      items.push(`$${(Number(rules.billing.monthlyTotalCents) / 100).toFixed(0)}/month`);
+      // A four-week cycle bills thirteen times a year, not twelve — do not call it monthly.
+      const period = rules.billing.cadence === 'every_4_weeks' ? '/4 weeks' : '/month';
+      items.push(`$${(Number(rules.billing.monthlyTotalCents) / 100).toFixed(0)}${period}`);
     }
     if (rules?.billing?.billingDay) items.push(`bills ${rules.billing.billingDay}`);
     if (rules?.billing?.nextBillingDate) items.push(`next ${rules.billing.nextBillingDate}`);

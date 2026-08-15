@@ -19,6 +19,20 @@ function endOfMonthIso(key) {
   return new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
 }
 
+// Weeks run Sunday to Saturday: Happy Monday's billing weeks and the planner's own
+// week boundaries both start on Sunday.
+function weekStartIso(dateString) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - date.getUTCDay());
+  return isoDate(date);
+}
+
+function addWeeks(dateString, count) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 7 * count);
+  return isoDate(date);
+}
+
 function average(values) {
   if (!values.length) return 0;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
@@ -112,6 +126,22 @@ function looksLikeHappyMonday(invoice) {
   return text.includes('happy monday');
 }
 
+// Square keeps the full invoice history of a canceled subscription, so cadence
+// detection alone treats churned customers as recurring revenue forever. A series
+// only projects forward while it is still live: either it has a future open
+// invoice, or its newest invoice is inside one cadence plus a short grace window
+// and was not refunded.
+const FORWARD_OPEN_STATUSES = new Set(['SCHEDULED', 'UNPAID', 'PARTIALLY_PAID']);
+const DEAD_LATEST_STATUSES = new Set(['REFUNDED', 'FAILED']);
+const RECURRING_GRACE_DAYS = 14;
+
+function isLiveRecurringSeries(series, today) {
+  if (series.items.some((item) => item.date >= today && FORWARD_OPEN_STATUSES.has(item.invoice.status))) return true;
+  if (DEAD_LATEST_STATUSES.has(series.latest.invoice.status)) return false;
+  const ageDays = Math.round((new Date(today) - new Date(series.latest.date)) / DAY_MS);
+  return ageDays <= series.cadenceDays + RECURRING_GRACE_DAYS;
+}
+
 async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
   const excludedRecipientSet = new Set(excludedRecipients.map((value) => String(value).trim().toLowerCase()).filter(Boolean));
   const empty = {
@@ -121,6 +151,8 @@ async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
     scheduledOneOffByMonth: {},
     recurringMonthlyCents: 0,
     recurringSeriesCount: 0,
+    churnedSeriesCount: 0,
+    churnedMonthlyCents: 0,
     scheduledOneOffCents: 0,
     scheduledInvoiceCount: 0,
     knownScheduledCents: 0,
@@ -176,14 +208,17 @@ async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
       if (!groups.has(row.seriesKey)) groups.set(row.seriesKey, []);
       groups.get(row.seriesKey).push(row);
     }
-    const recurringSeries = [...groups.entries()].map(([seriesKey, items]) => {
+    const detectedSeries = [...groups.entries()].map(([seriesKey, items]) => {
       const sorted = items.sort((a, b) => a.date.localeCompare(b.date));
       const intervals = sorted.slice(1).map((item, index) => Math.round((new Date(item.date) - new Date(sorted[index].date)) / DAY_MS));
       const cadenceDays = median(intervals);
       return { seriesKey, items: sorted, cadenceDays, latest: sorted.at(-1) };
     }).filter((series) => series.items.length >= 2 && series.cadenceDays >= 25 && series.cadenceDays <= 35);
+    const recurringSeries = detectedSeries.filter((series) => isLiveRecurringSeries(series, today));
+    const churnedSeries = detectedSeries.filter((series) => !isLiveRecurringSeries(series, today));
     const recurringKeys = new Set(recurringSeries.map((series) => series.seriesKey));
     const recurringMonthlyCents = recurringSeries.reduce((sum, series) => sum + series.latest.cents, 0);
+    const churnedMonthlyCents = churnedSeries.reduce((sum, series) => sum + series.latest.cents, 0);
     for (const key of keys) recurringByMonth[key] = recurringMonthlyCents;
 
     for (const { invoice, cents, date, seriesKey, normalizedRecipient } of rows) {
@@ -223,6 +258,8 @@ async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
       scheduledOneOffByMonth,
       recurringMonthlyCents,
       recurringSeriesCount: recurringSeries.length,
+      churnedSeriesCount: churnedSeries.length,
+      churnedMonthlyCents,
       scheduledOneOffCents: knownScheduledCents,
       scheduledInvoiceCount,
       knownScheduledCents,
@@ -238,20 +275,32 @@ async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
   }
 }
 
+// Happy Monday orders two or three deliveries a week and settles them in batched
+// invoices every one to three weeks, so the honest forecast unit is a week of
+// orders rather than an invoice date.
+const HAPPY_MONDAY_RUN_RATE_WEEKS = 8;
+
 async function happyMondayForecast(keys, today) {
   const empty = {
     status: 'unavailable',
     forecastByMonth: {},
     actualByMonth: {},
+    committedByWeek: {},
     historyMonths: 6,
     orderCount: 0,
     futureOrderCount: 0,
     lastOrderDate: null,
+    runRateWeeklyCents: 0,
+    runRateWindowWeeks: HAPPY_MONDAY_RUN_RATE_WEEKS,
+    runRateWeeks: [],
+    runRateAlternatives: {},
+    unpaidOrderCents: 0,
   };
   try {
     const supabase = getSupabase();
     if (!supabase) return empty;
-    const historyStart = isoDate(Date.now() - 183 * DAY_MS);
+    // 210 days covers the widest run-rate window (26 weeks) plus slack.
+    const historyStart = isoDate(Date.now() - 210 * DAY_MS);
     const horizonEnd = endOfMonthIso(keys.at(-1));
     const { data, error } = await supabase
       .from('happymonday_orders')
@@ -266,23 +315,51 @@ async function happyMondayForecast(keys, today) {
     const future = usable.filter((row) => row.order_date >= today);
     const forecastByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
     const actualByMonth = {};
+    const committedByWeek = {};
+    const historyByWeek = new Map();
     for (const row of history) {
       const key = row.order_date.slice(0, 7);
       actualByMonth[key] = (actualByMonth[key] || 0) + Number(row.total_cents || 0);
+      const week = weekStartIso(row.order_date);
+      historyByWeek.set(week, (historyByWeek.get(week) || 0) + Number(row.total_cents || 0));
     }
     for (const row of future) {
       const key = row.order_date.slice(0, 7);
       if (Object.hasOwn(forecastByMonth, key)) forecastByMonth[key] += Number(row.total_cents || 0);
+      const week = weekStartIso(row.order_date);
+      committedByWeek[week] = (committedByWeek[week] || 0) + Number(row.total_cents || 0);
     }
+
+    // Order weeks with no orders count as zero — a quiet week is a real revenue week —
+    // and the in-flight week is excluded because its orders are still being entered.
+    const currentWeek = weekStartIso(today);
+    const weeklyTotals = (count) => Array.from({ length: count }, (_, offset) => {
+      const week = addWeeks(currentWeek, offset - count);
+      return { week, cents: historyByWeek.get(week) || 0 };
+    });
+    const runRateWeeks = weeklyTotals(HAPPY_MONDAY_RUN_RATE_WEEKS);
+    const runRateAlternatives = Object.fromEntries([4, 13, 26].map((count) => [
+      count,
+      average(weeklyTotals(count).map((entry) => entry.cents)),
+    ]));
+    const unpaidOrderCents = usable
+      .filter((row) => String(row.status || '').toLowerCase() === 'unpaid' && row.order_date < today)
+      .reduce((sum, row) => sum + Number(row.total_cents || 0), 0);
 
     return {
       status: 'ready',
       forecastByMonth,
       actualByMonth,
+      committedByWeek,
       historyMonths: empty.historyMonths,
       orderCount: history.length,
       futureOrderCount: future.length,
       lastOrderDate: usable.map((row) => row.order_date).sort().at(-1) || null,
+      runRateWeeklyCents: average(runRateWeeks.map((entry) => entry.cents)),
+      runRateWindowWeeks: HAPPY_MONDAY_RUN_RATE_WEEKS,
+      runRateWeeks,
+      runRateAlternatives,
+      unpaidOrderCents,
     };
   } catch (err) {
     return { ...empty, error: err.message };
@@ -393,6 +470,7 @@ function summarizePlannerCards(cards, keys, today) {
   const laborByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
   const eventRevenueByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
   const mealPrepBillingByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const happyMondayPlannedByWeek = {};
   const events = [];
   const unpricedEvents = [];
   const billingTemplates = new Map();
@@ -445,6 +523,14 @@ function summarizePlannerCards(cards, keys, today) {
     if (laborCents > 0) laborCardCount += 1;
 
     const revenueCents = cardRevenueCents(card);
+    const metadata = card.financialMetadata || {};
+    if (metadata.happyMondayWeeklyForecast) {
+      // One card per Sunday stands for that week of Happy Monday orders. Cash for the
+      // week is reconciled against committed orders in buildPlannerForecast, so it is
+      // neither dropped as operational revenue nor double counted.
+      if (card.date >= today) happyMondayPlannedByWeek[weekStartIso(card.date)] = (happyMondayPlannedByWeek[weekStartIso(card.date)] || 0) + revenueCents;
+      continue;
+    }
     if (card.objectType !== 'event') {
       excludedOperationalRevenueCents += revenueCents;
       continue;
@@ -495,6 +581,7 @@ function summarizePlannerCards(cards, keys, today) {
     laborCardCount,
     eventRevenueByMonth,
     mealPrepBillingByMonth,
+    happyMondayPlannedByWeek,
     billingSeries: billingSeries.sort((a, b) => a.name.localeCompare(b.name)),
     pausedBillingSeries: pausedBillingSeries.sort((a, b) => a.name.localeCompare(b.name)),
     squareOverrideRecipients: [...new Set([...billingSeries, ...pausedBillingSeries].map((series) => series.squareRecipient).filter(Boolean))],
@@ -554,11 +641,30 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
     localBudgetCostForecast(keys),
   ]);
 
+  // Happy Monday cash is settled week by week. For every week in the horizon take the
+  // larger of what Happy Monday has already ordered and the planner's weekly run-rate
+  // card, so committed orders are never double counted with the average and a week the
+  // owner disables drops out. Each week's cash lands in the month of its Sunday.
+  const happyMondayByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const happyMondayCommittedByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const happyMondayWeeks = [...new Set([
+    ...Object.keys(planner.happyMondayPlannedByWeek || {}),
+    ...Object.keys(happyMonday.committedByWeek || {}),
+  ])].sort();
+  for (const week of happyMondayWeeks) {
+    const key = week.slice(0, 7);
+    if (!Object.hasOwn(happyMondayByMonth, key)) continue;
+    const committedCents = Number(happyMonday.committedByWeek?.[week] || 0);
+    const plannedCents = Number(planner.happyMondayPlannedByWeek?.[week] || 0);
+    happyMondayByMonth[key] += Math.max(committedCents, plannedCents);
+    happyMondayCommittedByMonth[key] += committedCents;
+  }
+
   const months = keys.map((key) => {
     const recurringSquareRevenueCents = square.recurringByMonth[key] || 0;
     const scheduledSquareRevenueCents = square.scheduledOneOffByMonth[key] || 0;
     const squareRevenueCents = recurringSquareRevenueCents + scheduledSquareRevenueCents;
-    const happyMondayRevenueCents = happyMonday.forecastByMonth[key] || 0;
+    const happyMondayRevenueCents = happyMondayByMonth[key] || 0;
     const plannerEventRevenueCents = planner.eventRevenueByMonth[key] || 0;
     const mealPrepRevenueCents = planner.mealPrepBillingByMonth[key] || 0;
     const cogsCents = localBudget.cogsByMonth[key] || 0;
@@ -578,6 +684,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
       recurringSquareRevenueCents,
       scheduledSquareRevenueCents,
       happyMondayRevenueCents,
+      happyMondayCommittedCents: happyMondayCommittedByMonth[key] || 0,
       plannerEventRevenueCents,
       mealPrepRevenueCents,
       cogsCents,
@@ -595,7 +702,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
     ok: true,
     generatedAt: new Date().toISOString(),
     currency: 'USD',
-    methodology: 'Expected cash in combines non-meal-prep Square invoices, owner-confirmed meal-prep billing schedules, committed Happy Monday orders, and unpaid balances on dated planner events. Owner-confirmed meal-prep schedules override matching Square invoice projections so stale recurring invoices are not counted. Event deposits already received are excluded from future cash. Costs use six complete Local Budget months; labor uses the higher of that actual baseline or scheduled planner labor. Net is withheld when Local Budget costs are unavailable.',
+    methodology: 'Expected cash in combines non-meal-prep Square invoices, owner-confirmed meal-prep billing schedules, Happy Monday weekly billing, and unpaid balances on dated planner events. Owner-confirmed meal-prep schedules override matching Square invoice projections so stale recurring invoices are not counted, and Square subscription series stop projecting once they churn. Happy Monday uses, per week, the larger of already-committed orders or the planner Sunday run-rate card, which carries the trailing eight-week average of actual order weeks. Event deposits already received are excluded from future cash. Costs use six complete Local Budget months; labor uses the higher of that actual baseline or scheduled planner labor. Net is withheld when Local Budget costs are unavailable.',
     months,
     sources: {
       square,
@@ -609,6 +716,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
 module.exports = {
   buildPlannerForecast,
   __internals: {
+    isLiveRecurringSeries,
     localBudgetCostForecast,
     localBudgetApiConfig,
     unavailableLocalBudgetForecast,

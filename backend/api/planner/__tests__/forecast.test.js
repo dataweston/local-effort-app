@@ -4,9 +4,10 @@ const originalUrl = process.env.LOCAL_BUDGET_API_URL;
 const originalToken = process.env.LOCAL_BUDGET_API_TOKEN;
 let localBudgetCostForecast;
 let summarizePlannerCards;
+let isLiveRecurringSeries;
 
 beforeEach(async () => {
-  ({ __internals: { localBudgetCostForecast, summarizePlannerCards } } = await import('../forecast'));
+  ({ __internals: { localBudgetCostForecast, summarizePlannerCards, isLiveRecurringSeries } } = await import('../forecast'));
 });
 
 function cashflowPayload(months) {
@@ -155,5 +156,67 @@ describe('planner event cash forecast', () => {
 
     expect(result.eventRevenueByMonth['2026-09']).toBe(0);
     expect(result.unpricedEvents).toEqual([{ id: 'tbd', title: 'Unpriced event', date: '2026-09-20' }]);
+  });
+});
+
+describe('Happy Monday weekly billing forecast', () => {
+  const sundayCard = (date, revenueCents, enabled = true) => ({
+    id: `hm-${date}`,
+    templateId: 'happy-monday-weekly-billing',
+    title: 'Happy Monday — weekly billing forecast',
+    date,
+    objectType: 'prep_task',
+    revenueCents,
+    enabled,
+    financialMetadata: { happyMondayWeeklyForecast: true, weeklyAverageCents: revenueCents },
+  });
+
+  it('collects future Sunday run-rate cards by week and keeps them out of excluded operational revenue', () => {
+    const result = summarizePlannerCards([
+      sundayCard('2026-08-09', 38282),
+      sundayCard('2026-08-16', 38282),
+      sundayCard('2026-08-23', 38282, false),
+      sundayCard('2026-08-30', 38282),
+    ], ['2026-08', '2026-09'], '2026-08-15');
+
+    expect(result.happyMondayPlannedByWeek).toEqual({ '2026-08-16': 38282, '2026-08-30': 38282 });
+    expect(result.excludedOperationalRevenueCents).toBe(0);
+  });
+});
+
+describe('Square recurring series liveness', () => {
+  const series = (cadenceDays, items) => ({
+    cadenceDays,
+    items,
+    latest: items[items.length - 1],
+  });
+  const item = (date, status) => ({ date, invoice: { status } });
+
+  it('keeps series with a future open invoice', () => {
+    expect(isLiveRecurringSeries(series(28, [
+      item('2026-08-09', 'PAID'),
+      item('2026-09-10', 'SCHEDULED'),
+    ]), '2026-08-15')).toBe(true);
+  });
+
+  it('keeps a paid series still inside one cadence plus grace', () => {
+    expect(isLiveRecurringSeries(series(28, [
+      item('2026-06-20', 'PAID'),
+      item('2026-07-18', 'PAID'),
+    ]), '2026-08-15')).toBe(true);
+  });
+
+  it('drops churned series whose newest invoice is older than one cadence plus grace', () => {
+    expect(isLiveRecurringSeries(series(28, [
+      item('2026-05-11', 'PAID'),
+      item('2026-06-08', 'PARTIALLY_REFUNDED'),
+    ]), '2026-08-15')).toBe(false);
+  });
+
+  it('drops series whose newest invoice was refunded', () => {
+    expect(isLiveRecurringSeries(series(28, [
+      item('2026-07-05', 'PAID'),
+      item('2026-08-02', 'REFUNDED'),
+    ]), '2026-08-15')).toBe(false);
   });
 });
