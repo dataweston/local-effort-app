@@ -3,9 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const originalUrl = process.env.LOCAL_BUDGET_API_URL;
 const originalToken = process.env.LOCAL_BUDGET_API_TOKEN;
 let localBudgetCostForecast;
+let summarizePlannerCards;
 
 beforeEach(async () => {
-  ({ __internals: { localBudgetCostForecast } } = await import('../forecast'));
+  ({ __internals: { localBudgetCostForecast, summarizePlannerCards } } = await import('../forecast'));
 });
 
 function cashflowPayload(months) {
@@ -83,5 +84,76 @@ describe('Local Budget forecast actuals', () => {
     expect(result).not.toHaveProperty('source');
     expect(result.error).toContain('incomplete actuals');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('planner event cash forecast', () => {
+  it('forecasts only unpaid event balances and keeps deposits out of future cash', () => {
+    const keys = ['2026-09', '2026-10'];
+    const result = summarizePlannerCards([
+      {
+        id: 'gigi', title: 'Gigi baby shower', date: '2026-09-26', objectType: 'event',
+        revenueCents: 175000, cashReceivedCents: 25000, financialStatus: 'booked_deposit_received_estimate',
+      },
+      {
+        id: 'laura', title: 'Laura wedding', date: '2026-10-10', objectType: 'event',
+        revenueCents: 300000, cashReceivedCents: 41500, financialStatus: 'booked_deposit_received_estimate',
+      },
+      {
+        id: 'meal-prep', title: 'Weekly meal prep', date: '2026-09-02', objectType: 'prep_task',
+        revenueCents: 38100, cashReceivedCents: 0, financialStatus: 'forecast',
+      },
+    ], keys, '2026-08-15');
+
+    expect(result).toMatchObject({
+      eventContractValueCents: 475000,
+      eventCashReceivedCents: 66500,
+      eventBalanceCents: 408500,
+      securedEventBalanceCents: 408500,
+      plannedEventBalanceCents: 0,
+      excludedOperationalRevenueCents: 38100,
+      eventRevenueByMonth: { '2026-09': 150000, '2026-10': 258500 },
+      eventCount: 2,
+      unpricedEventCount: 0,
+    });
+  });
+
+  it('uses canonical meal-prep billing dates and excludes paused schedules', () => {
+    const billingCard = (templateId, name, metadata, enabled = true) => ({
+      id: templateId,
+      templateId,
+      title: `Meal prep — ${name}`,
+      date: '2026-08-20',
+      objectType: 'prep_task',
+      revenueCents: 10000,
+      enabled,
+      financialMetadata: { cashflowBillingOverride: true, billingCustomerName: name, ...metadata },
+    });
+    const result = summarizePlannerCards([
+      billingCard('samantha', 'Samantha Bailey', { billingAmountCents: 11000, billingCadence: 'weekly_saturday', nextBillingDate: '2026-08-22', billingStatus: 'active', squareRecipient: 'sam@example.com' }),
+      billingCard('sanjay', 'Sanjay', { billingAmountCents: 51200, billingCadence: 'monthly', nextBillingDate: '2026-09-05', billingStatus: 'active', squareRecipient: 'sanjay@example.com' }),
+      billingCard('gabriella', 'Gabriella Scarpa', { billingAmountCents: 140500, billingCadence: 'monthly_month_end', nextBillingDate: '2026-08-31', billingStatus: 'active', squareRecipient: 'gabriella@example.com' }),
+      billingCard('david', 'David and Allison', { billingAmountCents: 106800, billingCadence: 'monthly', nextBillingDate: '2026-09-10', billingStatus: 'active', squareRecipient: 'david@example.com' }),
+      billingCard('catherine', 'Catherine Squires', { billingAmountCents: 12000, billingCadence: 'weekly_monday', nextBillingDate: null, billingStatus: 'paused_pending_confirmation', squareRecipient: 'catherine@example.com' }, false),
+    ], ['2026-08', '2026-09', '2026-10'], '2026-08-15');
+
+    expect(result.mealPrepBillingByMonth).toEqual({
+      '2026-08': 162500,
+      '2026-09': 342500,
+      '2026-10': 353500,
+    });
+    expect(result.billingSeries).toHaveLength(4);
+    expect(result.pausedBillingSeries).toHaveLength(1);
+    expect(result.squareOverrideRecipients).toHaveLength(5);
+  });
+
+  it('flags unpriced events without inventing revenue', () => {
+    const result = summarizePlannerCards([
+      { id: 'tbd', title: 'Unpriced event', date: '2026-09-20', objectType: 'event', revenue: 0, notes: 'Confirmed date.' },
+      { id: 'milestone', title: 'RFP selection', date: '2026-09-21', objectType: 'event', revenue: 0, notes: 'Expected, not guaranteed.' },
+    ], ['2026-09'], '2026-08-15');
+
+    expect(result.eventRevenueByMonth['2026-09']).toBe(0);
+    expect(result.unpricedEvents).toEqual([{ id: 'tbd', title: 'Unpriced event', date: '2026-09-20' }]);
   });
 });

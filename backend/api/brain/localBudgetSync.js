@@ -36,12 +36,24 @@ const verifyAdminRequest = createAdminVerifier();
 
 // Lazy singleton read-only client for the Local Budget DB.
 let lbClient = null;
+function withReadOnlyPoolParams(value) {
+  if (!/^postgres(ql)?:/i.test(value || '')) return value;
+  try {
+    const parsed = new URL(value);
+    parsed.searchParams.set('connection_limit', '1');
+    parsed.searchParams.set('pool_timeout', '30');
+    return parsed.toString();
+  } catch {
+    return value;
+  }
+}
+
 function getLbClient() {
   if (lbClient) return lbClient;
   let url = (process.env.LOCAL_BUDGET_DATABASE_URL || '').trim();
   url = url.replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
   if (!url) return null;
-  lbClient = new PrismaClient({ datasources: { db: { url } } });
+  lbClient = new PrismaClient({ datasources: { db: { url: withReadOnlyPoolParams(url) } } });
   return lbClient;
 }
 

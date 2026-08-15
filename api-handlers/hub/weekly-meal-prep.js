@@ -254,7 +254,11 @@ function summarizeRules(rawRules) {
     if (rules?.billing?.weeklyTotalCents != null) {
       const weekly = `$${(Number(rules.billing.weeklyTotalCents) / 100).toFixed(0)}/week`;
       items.push(rules.billing.deliveryIncluded ? `${weekly}, delivery included` : weekly);
+    } else if (rules?.billing?.monthlyTotalCents != null) {
+      items.push(`$${(Number(rules.billing.monthlyTotalCents) / 100).toFixed(0)}/month`);
     }
+    if (rules?.billing?.billingDay) items.push(`bills ${rules.billing.billingDay}`);
+    if (rules?.billing?.nextBillingDate) items.push(`next ${rules.billing.nextBillingDate}`);
     return items.join('; ');
   }
   const max = rules?.maxTotalItems ? `${rules.maxTotalItems} max items` : '';
@@ -480,7 +484,7 @@ async function loadBrainRosterCustomers() {
       source: 'brain',
       mealPrepStage: props.mealPrepStage || 'active',
       priceTierDefault: null,
-      planSummary: props.latestMealPrepIntakeSummary || '',
+      planSummary: summarizeRules(props.mealPrepPlan) || props.latestMealPrepIntakeSummary || '',
       profile: {
         householdSize: props.householdSize || '',
         phone: props.phone || '',

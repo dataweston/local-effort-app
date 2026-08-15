@@ -112,11 +112,13 @@ function looksLikeHappyMonday(invoice) {
   return text.includes('happy monday');
 }
 
-async function squareForecast(keys, today) {
+async function squareForecast(keys, today, { excludedRecipients = [] } = {}) {
+  const excludedRecipientSet = new Set(excludedRecipients.map((value) => String(value).trim().toLowerCase()).filter(Boolean));
   const empty = {
     status: 'unavailable',
     scheduledByMonth: {},
     recurringByMonth: {},
+    scheduledOneOffByMonth: {},
     recurringMonthlyCents: 0,
     recurringSeriesCount: 0,
     scheduledOneOffCents: 0,
@@ -125,6 +127,8 @@ async function squareForecast(keys, today) {
     outstandingCents: 0,
     draftCents: 0,
     overlapExcludedCents: 0,
+    ownerOverrideExcludedCents: 0,
+    ownerOverrideRecipientCount: excludedRecipientSet.size,
     lastUpdatedAt: null,
   };
 
@@ -147,21 +151,28 @@ async function squareForecast(keys, today) {
     let outstandingCents = 0;
     let draftCents = 0;
     let overlapExcludedCents = 0;
+    let ownerOverrideExcludedCents = 0;
 
     const rows = [];
     for (const invoice of invoices) {
       const cents = await invoiceAmountCents(client, invoice);
       const date = invoiceForecastDate(invoice);
-      const recipient = invoice.primaryRecipient?.customerId
-        || invoice.primaryRecipient?.emailAddress
+      const recipient = invoice.primaryRecipient?.emailAddress
         || invoice.primaryRecipient?.companyName
+        || invoice.primaryRecipient?.customerId
         || 'unknown';
+      const normalizedRecipient = String(recipient).trim().toLowerCase();
       const seriesKey = `${recipient}|${String(invoice.title || '').trim().toLowerCase()}`;
-      rows.push({ invoice, cents, date, seriesKey });
+      rows.push({ invoice, cents, date, seriesKey, normalizedRecipient });
     }
 
     const groups = new Map();
-    for (const row of rows.filter(({ invoice, cents, date }) => invoice.status !== 'CANCELED' && cents > 0 && date)) {
+    for (const row of rows.filter(({ invoice, cents, date, normalizedRecipient }) => (
+      invoice.status !== 'CANCELED'
+      && cents > 0
+      && date
+      && !excludedRecipientSet.has(normalizedRecipient)
+    ))) {
       if (!groups.has(row.seriesKey)) groups.set(row.seriesKey, []);
       groups.get(row.seriesKey).push(row);
     }
@@ -175,7 +186,7 @@ async function squareForecast(keys, today) {
     const recurringMonthlyCents = recurringSeries.reduce((sum, series) => sum + series.latest.cents, 0);
     for (const key of keys) recurringByMonth[key] = recurringMonthlyCents;
 
-    for (const { invoice, cents, date, seriesKey } of rows) {
+    for (const { invoice, cents, date, seriesKey, normalizedRecipient } of rows) {
       if (invoice.status === 'DRAFT') {
         draftCents += cents;
         continue;
@@ -185,6 +196,10 @@ async function squareForecast(keys, today) {
         continue;
       }
       if (invoice.status !== 'SCHEDULED' || !date || date < today || !Object.hasOwn(scheduledOneOffByMonth, date.slice(0, 7))) continue;
+      if (excludedRecipientSet.has(normalizedRecipient)) {
+        ownerOverrideExcludedCents += cents;
+        continue;
+      }
       if (recurringKeys.has(seriesKey)) continue;
       if (looksLikeHappyMonday(invoice)) {
         overlapExcludedCents += cents;
@@ -205,6 +220,7 @@ async function squareForecast(keys, today) {
       status: 'ready',
       scheduledByMonth,
       recurringByMonth,
+      scheduledOneOffByMonth,
       recurringMonthlyCents,
       recurringSeriesCount: recurringSeries.length,
       scheduledOneOffCents: knownScheduledCents,
@@ -213,6 +229,8 @@ async function squareForecast(keys, today) {
       outstandingCents,
       draftCents,
       overlapExcludedCents,
+      ownerOverrideExcludedCents,
+      ownerOverrideRecipientCount: excludedRecipientSet.size,
       lastUpdatedAt,
     };
   } catch (err) {
@@ -344,17 +362,176 @@ async function localBudgetCostForecast(keys, fetchImpl = fetch) {
   }
 }
 
-async function plannerForecast(prisma, plannerUid, keys) {
+function cardRevenueCents(card) {
+  return card.revenueCents != null
+    ? Number(card.revenueCents || 0)
+    : Math.round(Number(card.revenue || 0) * 100);
+}
+
+function addBillingInterval(dateString, cadence) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const current = new Date(Date.UTC(year, month - 1, day));
+  if (String(cadence).startsWith('weekly')) {
+    current.setUTCDate(current.getUTCDate() + 7);
+    return isoDate(current);
+  }
+  if (cadence === 'every_4_weeks') {
+    current.setUTCDate(current.getUTCDate() + 28);
+    return isoDate(current);
+  }
+  const nextMonthStart = new Date(Date.UTC(year, month, 1));
+  const finalDay = new Date(Date.UTC(nextMonthStart.getUTCFullYear(), nextMonthStart.getUTCMonth() + 1, 0)).getUTCDate();
+  if (cadence === 'monthly_month_end') {
+    nextMonthStart.setUTCDate(finalDay);
+    return isoDate(nextMonthStart);
+  }
+  nextMonthStart.setUTCDate(Math.min(day, finalDay));
+  return isoDate(nextMonthStart);
+}
+
+function summarizePlannerCards(cards, keys, today) {
+  const laborByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const eventRevenueByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const mealPrepBillingByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
+  const events = [];
+  const unpricedEvents = [];
+  const billingTemplates = new Map();
+  let laborCardCount = 0;
+  let eventContractValueCents = 0;
+  let eventCashReceivedCents = 0;
+  let eventBalanceCents = 0;
+  let securedEventBalanceCents = 0;
+  let plannedEventBalanceCents = 0;
+  let excludedOperationalRevenueCents = 0;
+
+  for (const card of cards) {
+    const metadata = card.financialMetadata || {};
+    if (!metadata.cashflowBillingOverride || !card.templateId || billingTemplates.has(card.templateId)) continue;
+    billingTemplates.set(card.templateId, {
+      templateId: card.templateId,
+      name: metadata.billingCustomerName || card.title.replace(/^Meal prep\s*[—-]\s*/i, ''),
+      billingAmountCents: Number(metadata.billingAmountCents || 0),
+      billingCadence: metadata.billingCadence || null,
+      nextBillingDate: metadata.nextBillingDate || null,
+      billingStatus: metadata.billingStatus || 'active',
+      squareRecipient: String(metadata.squareRecipient || '').trim().toLowerCase() || null,
+      evidence: metadata.billingEvidence || null,
+    });
+  }
+
+  const billingSeries = [];
+  const pausedBillingSeries = [];
+  const horizonEnd = endOfMonthIso(keys.at(-1));
+  for (const series of billingTemplates.values()) {
+    const target = series.billingStatus === 'active' ? billingSeries : pausedBillingSeries;
+    target.push(series);
+    if (series.billingStatus !== 'active' || series.billingAmountCents <= 0 || !series.nextBillingDate) continue;
+    let billingDate = series.nextBillingDate;
+    while (billingDate < today) billingDate = addBillingInterval(billingDate, series.billingCadence);
+    while (billingDate <= horizonEnd) {
+      const key = billingDate.slice(0, 7);
+      if (Object.hasOwn(mealPrepBillingByMonth, key)) mealPrepBillingByMonth[key] += series.billingAmountCents;
+      billingDate = addBillingInterval(billingDate, series.billingCadence);
+    }
+  }
+
+  for (const card of cards) {
+    const key = card.date.slice(0, 7);
+    if (!Object.hasOwn(laborByMonth, key)) continue;
+    if (card.enabled === false) continue;
+
+    const laborCents = plannerCardLaborCents(card);
+    laborByMonth[key] += laborCents;
+    if (laborCents > 0) laborCardCount += 1;
+
+    const revenueCents = cardRevenueCents(card);
+    if (card.objectType !== 'event') {
+      excludedOperationalRevenueCents += revenueCents;
+      continue;
+    }
+
+    if (revenueCents <= 0) {
+      const confirmed = card.status === 'confirmed'
+        || /confirmed|booked/i.test(String(card.financialStatus || ''))
+        || /confirmed|booked/i.test(String(card.notes || ''));
+      if (card.date >= today && confirmed) unpricedEvents.push({ id: card.id, title: card.title, date: card.date });
+      continue;
+    }
+
+    if (card.date < today) continue;
+
+    const cashReceivedCents = Math.min(revenueCents, Math.max(0, Number(card.cashReceivedCents || 0)));
+    const balanceCents = Math.max(0, revenueCents - cashReceivedCents);
+    eventContractValueCents += revenueCents;
+    eventCashReceivedCents += cashReceivedCents;
+    eventBalanceCents += balanceCents;
+    const secured = cashReceivedCents > 0
+      || /booked|committed|confirmed/.test(String(card.financialStatus || card.status || '').toLowerCase());
+    if (secured) securedEventBalanceCents += balanceCents;
+    else plannedEventBalanceCents += balanceCents;
+
+    const event = {
+      id: card.id,
+      title: card.title,
+      date: card.date,
+      revenueCents,
+      cashReceivedCents,
+      balanceCents,
+      financialStatus: card.financialStatus || card.status || 'planned',
+      secured,
+      financialSource: card.financialSource || null,
+      financialMetadata: card.financialMetadata || null,
+    };
+    events.push(event);
+
+    if (!['canceled', 'cancelled'].includes(card.financialStatus)) {
+      eventRevenueByMonth[key] += balanceCents;
+    }
+  }
+
+  return {
+    status: 'ready',
+    laborByMonth,
+    laborCardCount,
+    eventRevenueByMonth,
+    mealPrepBillingByMonth,
+    billingSeries: billingSeries.sort((a, b) => a.name.localeCompare(b.name)),
+    pausedBillingSeries: pausedBillingSeries.sort((a, b) => a.name.localeCompare(b.name)),
+    squareOverrideRecipients: [...new Set([...billingSeries, ...pausedBillingSeries].map((series) => series.squareRecipient).filter(Boolean))],
+    eventContractValueCents,
+    eventCashReceivedCents,
+    eventBalanceCents,
+    securedEventBalanceCents,
+    plannedEventBalanceCents,
+    eventCount: events.length,
+    events: events.sort((a, b) => a.date.localeCompare(b.date)),
+    unpricedEventCount: unpricedEvents.length,
+    unpricedEvents: unpricedEvents.sort((a, b) => a.date.localeCompare(b.date)),
+    excludedOperationalRevenueCents,
+  };
+}
+
+async function plannerForecast(prisma, plannerUid, keys, today) {
   const cards = await prisma.plannerCard.findMany({
     where: {
       supabaseUid: plannerUid,
       date: { gte: `${keys[0]}-01`, lte: endOfMonthIso(keys.at(-1)) },
-      enabled: true,
     },
     select: {
       date: true,
+      id: true,
+      title: true,
+      templateId: true,
+      enabled: true,
+      objectType: true,
       revenue: true,
       revenueCents: true,
+      cashReceivedCents: true,
+      financialStatus: true,
+      financialSource: true,
+      financialMetadata: true,
+      notes: true,
+      status: true,
       cost: true,
       costCents: true,
       costPerHour: true,
@@ -364,46 +541,53 @@ async function plannerForecast(prisma, plannerUid, keys) {
     },
   });
 
-  const laborByMonth = Object.fromEntries(keys.map((key) => [key, 0]));
-  let excludedEventRevenueCents = 0;
-  for (const card of cards) {
-    const key = card.date.slice(0, 7);
-    if (!Object.hasOwn(laborByMonth, key)) continue;
-    laborByMonth[key] += plannerCardLaborCents(card);
-    excludedEventRevenueCents += card.revenueCents != null
-      ? Number(card.revenueCents || 0)
-      : Math.round(Number(card.revenue || 0) * 100);
-  }
-  return { status: 'ready', laborByMonth, laborCardCount: cards.length, excludedEventRevenueCents };
+  return summarizePlannerCards(cards, keys, today);
 }
 
 async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
   const keys = monthKeys(6, now);
   const today = isoDate(now);
-  const [square, happyMonday, localBudget, planner] = await Promise.all([
-    squareForecast(keys, today),
+  const planner = await plannerForecast(prisma, plannerUid, keys, today);
+  const [square, happyMonday, localBudget] = await Promise.all([
+    squareForecast(keys, today, { excludedRecipients: planner.squareOverrideRecipients }),
     happyMondayForecast(keys, today),
     localBudgetCostForecast(keys),
-    plannerForecast(prisma, plannerUid, keys),
   ]);
 
   const months = keys.map((key) => {
-    const squareRevenueCents = square.scheduledByMonth[key] || 0;
+    const recurringSquareRevenueCents = square.recurringByMonth[key] || 0;
+    const scheduledSquareRevenueCents = square.scheduledOneOffByMonth[key] || 0;
+    const squareRevenueCents = recurringSquareRevenueCents + scheduledSquareRevenueCents;
     const happyMondayRevenueCents = happyMonday.forecastByMonth[key] || 0;
+    const plannerEventRevenueCents = planner.eventRevenueByMonth[key] || 0;
+    const mealPrepRevenueCents = planner.mealPrepBillingByMonth[key] || 0;
     const cogsCents = localBudget.cogsByMonth[key] || 0;
     const operatingCents = localBudget.operatingByMonth[key] || 0;
-    const laborCents = planner.laborByMonth[key] || 0;
-    const revenueCents = squareRevenueCents + happyMondayRevenueCents;
-    const costCents = cogsCents + operatingCents + laborCents;
+    const scheduledLaborCents = planner.laborByMonth[key] || 0;
+    const laborBaselineCents = localBudget.laborBaselineByMonth[key] || 0;
+    const laborCents = localBudget.status === 'ready'
+      ? Math.max(scheduledLaborCents, laborBaselineCents)
+      : scheduledLaborCents;
+    const revenueCents = squareRevenueCents + happyMondayRevenueCents + plannerEventRevenueCents + mealPrepRevenueCents;
+    const costsAvailable = localBudget.status === 'ready';
+    const costCents = costsAvailable ? cogsCents + operatingCents + laborCents : null;
     return {
       month: key,
       revenueCents,
       squareRevenueCents,
+      recurringSquareRevenueCents,
+      scheduledSquareRevenueCents,
       happyMondayRevenueCents,
+      plannerEventRevenueCents,
+      mealPrepRevenueCents,
       cogsCents,
       operatingCents,
       laborCents,
-      netCents: revenueCents - costCents,
+      scheduledLaborCents,
+      laborBaselineCents,
+      costsAvailable,
+      costCents,
+      netCents: costsAvailable ? revenueCents - costCents : null,
     };
   });
 
@@ -411,7 +595,7 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
     ok: true,
     generatedAt: new Date().toISOString(),
     currency: 'USD',
-    methodology: 'Square monthly invoice series inferred from repeated 25-35 day invoice history, plus scheduled one-offs and committed Happy Monday orders, less six complete months of Local Budget actual cost averages and scheduled planner labor. Event revenue is excluded.',
+    methodology: 'Expected cash in combines non-meal-prep Square invoices, owner-confirmed meal-prep billing schedules, committed Happy Monday orders, and unpaid balances on dated planner events. Owner-confirmed meal-prep schedules override matching Square invoice projections so stale recurring invoices are not counted. Event deposits already received are excluded from future cash. Costs use six complete Local Budget months; labor uses the higher of that actual baseline or scheduled planner labor. Net is withheld when Local Budget costs are unavailable.',
     months,
     sources: {
       square,
@@ -424,5 +608,10 @@ async function buildPlannerForecast({ prisma, plannerUid, now = new Date() }) {
 
 module.exports = {
   buildPlannerForecast,
-  __internals: { localBudgetCostForecast, localBudgetApiConfig, unavailableLocalBudgetForecast },
+  __internals: {
+    localBudgetCostForecast,
+    localBudgetApiConfig,
+    unavailableLocalBudgetForecast,
+    summarizePlannerCards,
+  },
 };
