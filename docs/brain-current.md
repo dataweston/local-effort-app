@@ -36,7 +36,8 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 | Cron (UTC) | Path | What |
 |---|---|---|
 | 02:30 daily | `/api/brain/square-orders/sync` | Square COMPLETED orders → `order.placed` ledger events (`squareOrdersSync.js`) |
-| 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/REPEAT_CUSTOMER/PRICE_DRIFT + CHANNEL_TRAFFIC_TREND/WEB_CONVERSION (web-funnel) pass |
+| 02:52 daily | `/api/brain/local-budget/items-sync` | Local Budget `/integration/v1/items` → `line_item.recorded` (`localBudgetItemsSync.js`): per-unit price + quantity for purchased receipt lines (Vendor resolved by LB vendor id) and sold Square lines (Dish/Product matched, never minted) |
+| 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/REPEAT_CUSTOMER/PRICE_DRIFT + CHANNEL_TRAFFIC_TREND/WEB_CONVERSION (web-funnel) pass. PRICE_DRIFT prefers per-unit line-item evidence and falls back to average payment size |
 | 03:30 daily | `/api/brain/hypothesis/run` | Hypothesis predicate evaluation |
 | 04:00 daily | `/api/brain/ga4/sync` | GA4 landing-page + acquisition performance → `web.traffic.daily` |
 | 04:15 daily | `/api/brain/google-business-profile/sync` | Business Profile listing, Search/Maps metrics, and discovery keywords |

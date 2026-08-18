@@ -121,7 +121,7 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
     vendorsResolved: 0, vendorsCreated: 0, vendorsBlocked: 0,
     incomeSeen: 0, incomeWritten: 0, incomeExisting: 0,
     captureSeen: 0, captureWritten: 0, captureExisting: 0,
-    capturesUnattributed: 0,
+    capturesUnattributed: 0, duplicateCashRetired: 0,
     customersResolved: 0, customersCreated: 0, customersBlocked: 0,
     errors: [],
   };
@@ -328,6 +328,26 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
         },
       });
       if (event._existing) stats.captureExisting++; else stats.captureWritten++;
+
+      // Self-healing history. Before the processor-ledger exclusion existed,
+      // this same row was ingested as `payment.received` — cash — alongside the
+      // bank deposit of the same money, so every Square dollar was counted
+      // twice by CASHFLOW and revenue. Retire those events as the capture
+      // stream replaces them. Matched on the Local Budget transaction id, which
+      // survives LB's rewrite of legacy externalIds to canonical ones.
+      const retired = await prisma.ledgerEvent.updateMany({
+        where: {
+          eventType: 'payment.received',
+          source: 'local_budget',
+          tombstonedAt: null,
+          payload: { path: ['localBudgetTxId'], equals: tx.id },
+        },
+        data: {
+          tombstonedAt: new Date(),
+          tombstoneReason: 'processor-ledger row: superseded by payment.captured (was double-counting the bank deposit)',
+        },
+      });
+      stats.duplicateCashRetired += retired.count;
     } catch (err) {
       stats.errors.push(`capture ${tx.id}: ${err.message}`);
       if (stats.errors.length > 30) break;
