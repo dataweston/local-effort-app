@@ -23,6 +23,30 @@ Summary for this repo:
   - `GET /api/integration/v1/recurring-revenue?asOf=YYYY-MM-DD`
     (authoritative recurring invoice series; do not substitute Square
     subscription records)
+  - `GET /api/integration/v1/items?from&to&lineType&source&limit&cursor`
+    (one row per Local Budget `LineItem` — the per-unit price and quantity
+    stream, for both purchased receipt lines and sold Square order lines.
+    Consumed by `backend/api/brain/localBudgetItemsSync.js`)
+  - `GET /api/integration/v1/price-drift` (Local Budget's own per-item unit-price
+    trend. **Not consumed here yet** — the brain currently computes its own drift
+    from the `/items` stream in `inferenceEngine.js`. If both are kept, one must
+    be declared authoritative)
+
+### Square is recorded twice on purpose — count it once
+
+Local Budget mirrors Square's books: a Square-linked account holds the **gross
+capture** of each sale at payment time, and the **bank deposit** of that same
+money (net of fees) arrives days later on a real account. Both rows are wanted —
+the pair is what makes processor fees visible — and only the deposit is cash.
+
+Local Budget keeps its own totals right by scoping them to accounts where
+`squareConnectionId IS NULL` (its `src/lib/processor-ledger.ts`). **Any consumer
+here that sums Local Budget income must apply the same filter.**
+`localBudgetSync.js` does: bank income becomes `payment.received` (cash, summed by
+`businessInferences.js`), while processor-ledger rows become `payment.captured`,
+flagged `cashEvent: false` and never summed. Capture rows exist for one reason —
+they carry the payer, resolved by Local Budget from Square's payment-level
+`customer_id`, which is the brain's own `squareCustomerId` Customer FK anchor.
 - Env vars to use here: `LOCAL_BUDGET_API_URL`, `LOCAL_BUDGET_API_TOKEN`
   (`Authorization: Bearer <token>`).
 - Consumers to migrate off direct DB access:

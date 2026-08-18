@@ -460,6 +460,9 @@ const PizzaPartyPage = () => {
       } catch (_) { /* ignore */ }
       setTimeout(() => setJustBooked(false), 6000);
     } catch (e) {
+      // Retire the attempt id so a retry is a new payment rather than a replay
+      // of the cached decline under the same idempotency key.
+      clearCheckoutAttempt();
       setBookingState(s => ({ ...s, [date]: { loading: false, error: e.message || 'Error' } }));
     } finally {
       setSubmitting(false);

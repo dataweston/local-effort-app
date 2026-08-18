@@ -77,6 +77,7 @@ const { registerOrderProjectionRoutes } = require('./brain/orderGraphProjector')
 const { registerConstraintCorrectionRoutes } = require('./brain/constraintCorrection');
 const { registerIngestRoutes } = require('./brain/ingest/routes');
 const { registerLocalBudgetRoutes } = require('./brain/localBudgetSync');
+const { registerLocalBudgetItemsRoutes } = require('./brain/localBudgetItemsSync');
 const { registerCogsRollupRoutes } = require('./brain/cogsRollup');
 const { registerSquareReconcileRoutes } = require('./brain/squareReconcile');
 const { registerGa4Routes } = require('./brain/ga4Sync');
@@ -115,6 +116,10 @@ const {
   listFeedback,
 } = require('../../packages/lib/crowdfundingPipeline');
 const { applySmallEventPayment } = require('./utils/smallEventsPayments');
+const { prisma: financePrisma } = require('./utils/prisma');
+const { recordSquarePaymentEvidence } = require('./finance/squarePaymentEvidence');
+const { createFinanceRouter } = require('./routes/finance');
+const { createSalesRouter } = require('./routes/sales');
 const {
   loadPublishedCrowdfundingSummary,
 } = require('../../packages/lib/crowdfundingFallbacks');
@@ -518,9 +523,14 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
       return res.status(200).json({ ok: true, ignored: true });
     }
 
+    // Finance Core evidence first: every completed capture is linked to its
+    // attempt (or recorded as an orphan) before channel-specific handling, so
+    // no payment depends on a downstream handler recognising it.
+    const financeEvidence = await recordSquarePaymentEvidence(payment, { prisma: financePrisma, logger });
+
     const handledSmallEvent = await applySmallEventPayment(payment, { logger });
     if (handledSmallEvent) {
-      return res.status(200).json({ ok: true, handled: 'small-events' });
+      return res.status(200).json({ ok: true, handled: 'small-events', finance: financeEvidence.outcome });
     }
 
     await markLocalistOrderPaidFromSquare(db, payment);
@@ -528,7 +538,7 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     await applyCompletedPayment(payment, { db });
     // Brain ingestion — fire-and-forget, never blocks the payment response
     ingestSquarePayment(payment, { logger }).catch(() => {});
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, finance: financeEvidence.outcome });
   } catch (err) {
     if (logger?.error) {
       logger.error({ err }, 'square webhook handler error');
@@ -594,6 +604,7 @@ registerOrderProjectionRoutes(app, { logger });
 registerConstraintCorrectionRoutes(app, { logger });
 registerIngestRoutes(app, { logger });
 registerLocalBudgetRoutes(app, { logger });
+registerLocalBudgetItemsRoutes(app, { logger });
 registerCogsRollupRoutes(app, { logger });
 registerSquareReconcileRoutes(app, { logger });
 registerGa4Routes(app, { logger });
@@ -1030,6 +1041,8 @@ try {
 
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
 app.use('/api/small-events', createSmallEventsRouter({ logger }));
+app.use('/api/finance', createFinanceRouter({ logger }));
+app.use('/api/sales', createSalesRouter({ logger }));
 app.use('/api/planner', createPlannerRouter());
 app.use('/ucp/v1', createUcpRouter({ logger }));
 app.all('/api/crowdfund/checkout', async (req, res, next) => {

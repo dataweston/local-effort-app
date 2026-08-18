@@ -194,6 +194,10 @@ const AtHomeDialog = ({ onClose }) => {
         receiptSent: data.receiptSent === true,
       });
     } catch (submitError) {
+      // Rotate the attempt id so a retry is a genuinely new payment: Square
+      // replays the cached decline for a reused idempotency key, and the
+      // server refuses a second charge under a failed attempt.
+      attemptIdRef.current = createAttemptId();
       setError(submitError?.message || 'Unable to complete your booking.');
     } finally {
       setSubmitting(false);

@@ -11,12 +11,28 @@
  *     resolved vendorEntityId. This is the long-missing vendor outflow stream
  *     that PREFERS/AVOIDS/PRICE_DRIFT consume.
  *
- *   INCOME → `payment.received`
+ *   INCOME on a BANK account → `payment.received`
  *     LB has cash sources beyond Square (the reason LB is the cash authority).
- *     But LB income rows carry no merchantName/payer, so we record amount + date
- *     + description with counterparty null, tagged squareMatchPending for a later
- *     Square-payout matching pass. No double-count risk because these are NOT
- *     attributed to a customer yet.
+ *     Bank income rows carry no payer, so we record amount + date + description
+ *     with counterparty null, tagged squareMatchPending for the Square-payout
+ *     labelling pass (squareReconcile.js).
+ *
+ *   INCOME on a PROCESSOR-LEDGER account → `payment.captured`
+ *     Local Budget mirrors Square's own books: a Square-linked account holds the
+ *     GROSS CAPTURE of each sale, recorded when the customer paid, and days later
+ *     the same money lands in the bank as a net deposit. Both rows are real and
+ *     both are wanted — the pair is what makes fees visible — but only the bank
+ *     deposit is cash. LB keeps its own totals right by scoping them to accounts
+ *     with `squareConnectionId IS NULL` (see its `processor-ledger.ts`); this sync
+ *     must do the same or every Square dollar is counted twice, because
+ *     businessInferences.js sums `payment.received` for CASHFLOW and revenue.
+ *
+ *     So capture rows get their own event type, marked `cashEvent: false`, and are
+ *     ingested for the one thing the bank side cannot give: WHO paid. LB resolves
+ *     `payment.customer_id` into its `square_customers` directory, a
+ *     payment-level field richer than the order-level `customerId` Square stamps
+ *     on only a fraction of orders. That id is the brain's own Customer FK
+ *     anchor, so the join is exact.
  *
  * Idempotent: dedupes on (eventType, source='local_budget', sourceId=LB tx id).
  * The unique index from 20260627000100 enforces this at the DB level too.
@@ -104,11 +120,18 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
     expenseSeen: 0, expenseWritten: 0, expenseExisting: 0,
     vendorsResolved: 0, vendorsCreated: 0, vendorsBlocked: 0,
     incomeSeen: 0, incomeWritten: 0, incomeExisting: 0,
+    captureSeen: 0, captureWritten: 0, captureExisting: 0,
+    capturesUnattributed: 0,
+    customersResolved: 0, customersCreated: 0, customersBlocked: 0,
     errors: [],
   };
 
   const dateFilter = sinceDays
     ? `AND date >= now() - interval '${parseInt(sinceDays)} days'`
+    : '';
+  // Qualified variant for the queries that join accounts/customers.
+  const txDateFilter = sinceDays
+    ? `AND t.date >= now() - interval '${parseInt(sinceDays)} days'`
     : '';
 
   // ── EXPENSE (COGS|OPERATING) → payment.completed ──
@@ -184,12 +207,17 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
     }
   }
 
-  // ── INCOME → payment.received (counterparty deferred to Square match) ──
+  // ── INCOME on bank accounts → payment.received (the cash stream) ──
+  // The processor-ledger exclusion is the whole reason for the account join:
+  // without it the Square gross capture and its bank deposit both land here.
   const incomes = await lb.$queryRawUnsafe(
-    `SELECT id, "externalId", date, "merchantName", amount, classification::text AS classification, description
-     FROM transactions
-     WHERE type::text='INCOME' ${dateFilter}
-     ORDER BY date DESC LIMIT ${parseInt(limit)}`
+    `SELECT t.id, t."externalId", t.date, t."merchantName", t.amount,
+            t.classification::text AS classification, t.description
+     FROM transactions t
+     JOIN financial_accounts a ON a.id = t."accountId"
+     WHERE t.type::text='INCOME'
+       AND a."squareConnectionId" IS NULL ${txDateFilter}
+     ORDER BY t.date DESC LIMIT ${parseInt(limit)}`
   );
 
   for (const tx of incomes) {
@@ -209,8 +237,8 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
           classification: tx.classification,
           merchantName: (tx.merchantName || '').trim() || null,
           description: tx.description || null,
-          customerEntityId: null,           // LB income carries no payer
-          squareMatchPending: true,         // a later pass joins to a Square payout/customer
+          customerEntityId: null,           // a bank deposit aggregates many payers
+          squareMatchPending: true,         // squareReconcile.js labels Square settlements
         },
       });
       if (event._existing) stats.incomeExisting++; else stats.incomeWritten++;
@@ -220,13 +248,99 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
     }
   }
 
+  // ── INCOME on processor-ledger accounts → payment.captured (WHO paid) ──
+  // Not cash: the bank deposit above already counted this money. What these rows
+  // add is the payer, resolved by LB from Square's payment-level customer_id.
+  const captures = await lb.$queryRawUnsafe(
+    `SELECT t.id, t."externalId", t.date, t."merchantName", t.amount, t.description,
+            sc."squareCustomerId" AS square_customer_id,
+            sc.name AS customer_name, sc.email AS customer_email,
+            sc.phone AS customer_phone, sc."companyName" AS customer_company
+     FROM transactions t
+     JOIN financial_accounts a ON a.id = t."accountId"
+     LEFT JOIN square_customers sc ON sc.id = t."squareCustomerId"
+     WHERE t.type::text='INCOME'
+       AND a."squareConnectionId" IS NOT NULL ${txDateFilter}
+     ORDER BY t.date DESC LIMIT ${parseInt(limit)}`
+  );
+
+  const customerCache = new Map();
+  for (const tx of captures) {
+    stats.captureSeen++;
+    try {
+      const squareCustomerId = (tx.square_customer_id || '').trim() || null;
+      const name = (tx.customer_name || tx.customer_company || '').trim() || null;
+      const email = (tx.customer_email || '').trim().toLowerCase() || null;
+      const phone = (tx.customer_phone || '').trim() || null;
+
+      // Resolve the payer. The Square customer id is the brain's own Customer FK
+      // anchor, so a match is exact rather than fuzzy. Mint only when Square gave
+      // us contactable identity — a bare name never creates a Customer (founder
+      // decision 2026-06-27, same rule the order projector follows).
+      let customerEntityId = null;
+      if (squareCustomerId || email || phone) {
+        const cacheKey = squareCustomerId || email || phone;
+        if (customerCache.has(cacheKey)) {
+          customerEntityId = customerCache.get(cacheKey);
+        } else {
+          const r = await resolveEntity({
+            type: 'Customer',
+            name: name || email || phone,
+            ids: squareCustomerId ? { squareCustomerId } : {},
+            aliases: [email, phone].filter(Boolean),
+            create: !!(email || phone),
+            properties: { source: 'local_budget_square_capture' },
+          });
+          if (r.blocked) stats.customersBlocked++;
+          else {
+            customerEntityId = r.entity?.id || null;
+            if (r.created) stats.customersCreated++; else if (r.entity) stats.customersResolved++;
+          }
+          customerCache.set(cacheKey, customerEntityId);
+        }
+      } else {
+        stats.capturesUnattributed++;
+      }
+
+      const event = await writeLedgerEvent({
+        eventType: 'payment.captured',
+        occurredAt: tx.date,
+        source: 'local_budget',
+        sourceId: tx.externalId || tx.id,
+        actorType: 'system',
+        // updatePayload: identity improves as LB backfills its customer
+        // directory, so a re-run should enrich an event rather than skip it.
+        updatePayload: true,
+        payload: {
+          localBudgetTxId: tx.id,
+          squarePaymentId: tx.externalId || null,
+          amountCents: toCents(tx.amount),
+          direction: 'inflow',
+          // The bank deposit is the cash event. Nothing may sum this as cash.
+          cashEvent: false,
+          processorLedger: true,
+          merchantName: (tx.merchantName || '').trim() || null,
+          description: tx.description || null,
+          squareCustomerId,
+          customerEntityId,
+          customerName: name,
+          customerEmail: email,
+        },
+      });
+      if (event._existing) stats.captureExisting++; else stats.captureWritten++;
+    } catch (err) {
+      stats.errors.push(`capture ${tx.id}: ${err.message}`);
+      if (stats.errors.length > 30) break;
+    }
+  }
+
   logger?.info(stats, 'brain/local-budget: sync complete');
   return {
     ok: true,
     ...stats,
     // jobRuns freshness reads these; without them the run shows written=null.
-    itemsProcessed: stats.expenseSeen + stats.incomeSeen,
-    itemsWritten: stats.expenseWritten + stats.incomeWritten,
+    itemsProcessed: stats.expenseSeen + stats.incomeSeen + stats.captureSeen,
+    itemsWritten: stats.expenseWritten + stats.incomeWritten + stats.captureWritten,
   };
 }
 

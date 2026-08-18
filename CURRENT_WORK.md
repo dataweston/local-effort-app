@@ -57,17 +57,29 @@ MVP questions:
 
 Target flow: `Lead → Opportunity → Transaction → Customer → Reorder`.
 
-**Finance/sales spine update — 2026-08-15:** the staged Finance Core direction is
-documented in `docs/architecture/finance-core-staged-plan.md`. Additive Prisma
-models now cover agreements, subscriptions, commercial orders/lines,
-invoices/AR, and provider-neutral payment attempts/transactions/allocations.
-Weekly ordering is the first migrated vertical slice: it creates a durable order
-and pending attempt before Square can charge. Apply
-`20260815000200_finance_core_now` before deploying that handler. Next slices are
-the general store, authenticated Happy Monday agreement/invoice allocation, and
-projection of Localist dues into the neutral subscription/payment records.
-Local Budget remains the authority for cash classifications and margin; join its
-developing margin output to stable commercial order/line and business-line IDs.
+**Finance/sales spine update — 2026-08-17:** all six migration steps in
+`docs/architecture/finance-core-staged-plan.md` are implemented. Weekly ordering
+(step 1, 2026-08-15) plus the general store, Chez Garage at-home deposits, and
+pizza-party bookings now create a durable order and pending payment attempt
+before Square can charge. Happy Monday requires an authenticated caller and
+projects portal orders into agreement/order/invoice records with payments
+allocated oldest-invoice-first. Localist dues project into provider-neutral
+agreements and subscriptions, kept strictly apart from food orders. Small-event
+estimates become commercial orders with deposit and balance invoices. Read-only
+sales views live at `/api/sales/{pipeline,expected,collections,reorders,channels,coverage}`.
+
+**Deployment prerequisites:** apply `20260815000200_finance_core_now` before
+deploying, and note that the store, Chez Garage at-home, pizza-party, and Happy
+Monday payment paths are now **fail-closed** — they return 503 and take no
+payment if the database is unreachable. The Happy Monday portal must ship with
+its updated client: payments now require a Supabase bearer token.
+
+**Still open:** coverage has not been measured against live data. Run
+`/api/finance/reconcile-payments` and `/api/sales/coverage` after a week of real
+traffic to get the plan's kill-condition number (95% of captured payments linked
+to one commercial record). Local Budget remains the authority for cash
+classifications and margin; join its margin output to stable commercial
+order/line and business-line IDs.
 
 ### 3. Founder platform
 

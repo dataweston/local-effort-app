@@ -264,20 +264,106 @@ async function computeRepeatCustomer(prisma, now) {
 }
 
 // ── PRICE_DRIFT ───────────────────────────────────────────────────────────────
-// Avg payment to vendor shifted >15% in last 90 days vs prior 90 days
+// Per-unit price of an item bought from a vendor shifted >15% in the last 90
+// days vs the prior 90 — falling back to average payment size where no
+// line-item evidence exists.
+//
+// The average-payment version is a proxy that cannot tell a price rise from a
+// bigger order. Local Budget now exports per-line unit prices
+// (localBudgetItemsSync.js), so where those exist the drift is measured on the
+// thing actually named: "Flour up 22%" instead of "payments up 22%".
+
+const PRICE_DRIFT_MIN_OBSERVATIONS = 2;
+
+/**
+ * Unit-price drift per vendor, from purchased line items. Returns a Map keyed by
+ * the same vendor key the payment buckets use, so either evidence source can
+ * answer for a vendor.
+ */
+function bucketUnitPriceDrift(lineEvents, period2Start) {
+  const byVendorItem = new Map();
+  for (const ev of lineEvents) {
+    const payload = ev.payload || {};
+    if (payload.lineRole !== 'purchased') continue;
+    const unitPriceCents = Number(payload.unitPriceCents);
+    if (!Number.isFinite(unitPriceCents) || unitPriceCents <= 0) continue;
+
+    const vendorKey = payload.vendorEntityId
+      || (payload.merchantName ? String(payload.merchantName).toLowerCase().trim() : null);
+    const itemName = payload.itemName || payload.description;
+    if (!vendorKey || !itemName) continue;
+
+    const key = `${vendorKey}::${String(itemName).toLowerCase().trim()}`;
+    if (!byVendorItem.has(key)) {
+      byVendorItem.set(key, {
+        vendorKey,
+        vendorEntityId: payload.vendorEntityId || null,
+        itemName,
+        unit: payload.unitOfMeasure || null,
+        prior: [],
+        recent: [],
+      });
+    }
+    const bucket = byVendorItem.get(key);
+    const target = new Date(ev.occurredAt) < period2Start ? bucket.prior : bucket.recent;
+    target.push({ id: ev.id, unitPriceCents });
+  }
+
+  // Keep, per vendor, the item whose price moved most — that is the one worth
+  // telling the operator about.
+  const byVendor = new Map();
+  for (const bucket of byVendorItem.values()) {
+    if (bucket.prior.length < PRICE_DRIFT_MIN_OBSERVATIONS) continue;
+    if (bucket.recent.length < PRICE_DRIFT_MIN_OBSERVATIONS) continue;
+
+    const avg = (rows) => rows.reduce((sum, row) => sum + row.unitPriceCents, 0) / rows.length;
+    const priorAvg = avg(bucket.prior);
+    const recentAvg = avg(bucket.recent);
+    if (priorAvg === 0) continue;
+
+    const drift = (recentAvg - priorAvg) / priorAvg;
+    const existing = byVendor.get(bucket.vendorKey);
+    if (existing && Math.abs(existing.drift) >= Math.abs(drift)) continue;
+
+    byVendor.set(bucket.vendorKey, {
+      vendorKey: bucket.vendorKey,
+      vendorEntityId: bucket.vendorEntityId,
+      itemName: bucket.itemName,
+      unit: bucket.unit,
+      drift,
+      priorAvg,
+      recentAvg,
+      evIds: [...bucket.prior, ...bucket.recent].map((row) => row.id),
+      observations: bucket.prior.length + bucket.recent.length,
+    });
+  }
+  return byVendor;
+}
 
 async function computePriceDrift(prisma, now) {
   const period2Start = daysAgo(90);
   const period1Start = daysAgo(180);
 
-  const events = await prisma.ledgerEvent.findMany({
-    where: {
-      eventType: 'payment.completed',
-      occurredAt: { gte: period1Start },
-      tombstonedAt: null,
-    },
-    select: { id: true, payload: true, occurredAt: true },
-  });
+  const [events, lineEvents] = await Promise.all([
+    prisma.ledgerEvent.findMany({
+      where: {
+        eventType: 'payment.completed',
+        occurredAt: { gte: period1Start },
+        tombstonedAt: null,
+      },
+      select: { id: true, payload: true, occurredAt: true },
+    }),
+    prisma.ledgerEvent.findMany({
+      where: {
+        eventType: 'line_item.recorded',
+        occurredAt: { gte: period1Start },
+        tombstonedAt: null,
+      },
+      select: { id: true, payload: true, occurredAt: true },
+    }),
+  ]);
+
+  const unitDriftByVendor = bucketUnitPriceDrift(lineEvents, period2Start);
 
   const buckets = new Map();
   for (const ev of events) {
@@ -295,7 +381,31 @@ async function computePriceDrift(prisma, now) {
   }
 
   const results = [];
+  const seenVendorKeys = new Set();
+
+  // Unit-price evidence first: it measures price, not order size.
+  for (const [key, unit] of unitDriftByVendor) {
+    if (Math.abs(unit.drift) < 0.15) continue;
+    const entity = await resolveVendor(prisma, key, unit.vendorEntityId);
+    if (!entity) continue;
+
+    const pct = Math.round(unit.drift * 100);
+    const dir = unit.drift > 0 ? 'up' : 'down';
+    const per = unit.unit ? ` per ${unit.unit}` : '';
+    results.push({
+      entity,
+      evIds: unit.evIds,
+      conf: confidence(Math.min(Math.abs(pct), 80), 80),
+      summary: `${unit.itemName} unit price ${dir} ${Math.abs(pct)}%${per} vs prior 90 days ($${(unit.recentAvg / 100).toFixed(2)} vs $${(unit.priorAvg / 100).toFixed(2)}, ${unit.observations} line items)`,
+      drift: unit.drift,
+    });
+    seenVendorKeys.add(key);
+  }
+
   for (const [key, { prior, recent, entityId }] of buckets) {
+    // A vendor with real unit prices has already been answered above; adding the
+    // average-payment proxy on top would contradict it with weaker evidence.
+    if (seenVendorKeys.has(key) || unitDriftByVendor.has(key)) continue;
     if (prior.length < 2 || recent.length < 2) continue;
 
     const avg = arr => arr.reduce((s, e) => s + (e.payload?.amountCents || 0), 0) / arr.length;
@@ -614,4 +724,4 @@ async function runInferencePass({ logger } = {}) {
   return { written, superseded, staleMarked, errors, diagnostics };
 }
 
-module.exports = { runInferencePass };
+module.exports = { runInferencePass, __internals: { bucketUnitPriceDrift } };

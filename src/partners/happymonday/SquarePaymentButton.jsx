@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, CreditCard, AlertCircle } from 'lucide-react';
 import { useSquarePayments } from '../../lib/useSquarePayments';
+import { supabase } from '../../lib/supabaseClient';
 import { recordSquarePayment } from './supabaseClient';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 
@@ -69,9 +70,17 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
     setFallbackStatus({ loading: true, error: '' });
     try {
       const amountCents = Math.round(parseFloat(amount || suggestedAmount) * 100);
+      const { data: { session } = {} } = (await supabase?.auth?.getSession()) || {};
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error('Your session expired. Please sign in again.');
+      }
       const response = await fetch('/api/happymonday/payment-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ userId, amountCents }),
       });
       const data = await response.json().catch(() => ({}));
@@ -126,10 +135,20 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
         }
         const checkoutAttemptId = resolveCheckoutAttemptId();
 
+        // The server resolves who is paying from this token, not from userId.
+        const { data: { session } = {} } = (await supabase?.auth?.getSession()) || {};
+        const accessToken = session?.access_token;
+        if (!accessToken) {
+          throw new Error('Your session expired. Please sign in again before paying.');
+        }
+
         // Send payment to backend
         const response = await fetch('/api/happymonday/process-payment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
           body: JSON.stringify({
             userId,
             token,
@@ -157,6 +176,9 @@ const SquarePaymentButton = ({ userId, currentBalance, onClose, onSuccess }) => 
       }
     } catch (err) {
       console.error('[Square] Payment error:', err);
+      // A failed attempt id cannot be reused: Square replays the cached
+      // decline, and the server refuses a second charge under it.
+      clearCheckoutAttempt();
       setError(err.message || 'Payment failed. Please try again.');
     } finally {
       setProcessing(false);

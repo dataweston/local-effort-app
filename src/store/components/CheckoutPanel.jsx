@@ -339,12 +339,18 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       await submitCheckout({ token, verificationToken, method: 'card' });
     } catch (err) {
       trackEvent('payment.failed', { store, reason: err?.message });
+      // Retire the attempt id on failure. Square caches a result per
+      // idempotency key, so reusing it after a decline replays the decline
+      // rather than taking a fresh payment; the server also refuses a second
+      // charge under an attempt it has already recorded as failed.
+      clearCheckoutAttempt();
       setStatus('error');
       setError(err?.message || 'Unable to complete purchase.');
     }
   }, [
     amountCents,
     canSubmit,
+    clearCheckoutAttempt,
     resolveCheckoutAttemptId,
     status,
     store,
@@ -367,10 +373,11 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       trackEvent('express_pay.used', { store, amountCents });
       await submitCheckout({ token, verificationToken: undefined, method: 'express' });
     } catch (err) {
+      clearCheckoutAttempt();
       setStatus('error');
       setError(err?.message || 'Unable to complete purchase.');
     }
-  }, [amountCents, canSubmit, status, store, submitCheckout]);
+  }, [amountCents, canSubmit, clearCheckoutAttempt, status, store, submitCheckout]);
 
   const { googlePayAvailable, applePayAvailable, error: expressError } = useSquareExpressPay({
     amountCents,

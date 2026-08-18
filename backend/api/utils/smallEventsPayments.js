@@ -1,4 +1,6 @@
 const { prisma } = require('./prisma');
+const { fifoOrder } = require('../finance/receivables');
+const { projectEstimate, projectPayments } = require('../finance/smallEventsProjection');
 
 const extractEstimateId = (payment) => {
   const reference = payment?.reference_id || payment?.referenceId || '';
@@ -58,6 +60,29 @@ async function applySmallEventPayment(payment, { logger } = {}) {
       where: { estimateId },
       data: { status: 'confirmed' },
     });
+
+    // Finance Core: a confirmed event is booked work with a deposit paid and a
+    // balance owed. Best effort — the native records above are already durable
+    // and the projection route can rebuild this at any time.
+    try {
+      const estimate = await prisma.smallEventEstimate.findUnique({
+        where: { id: estimateId },
+        include: { payments: true },
+      });
+      if (estimate) {
+        const { invoices } = await projectEstimate({ prisma, estimate });
+        if (invoices.length) {
+          await projectPayments({
+            prisma,
+            estimate,
+            payments: estimate.payments || [],
+            invoices: fifoOrder(invoices),
+          });
+        }
+      }
+    } catch (projectionError) {
+      if (logger?.warn) logger.warn({ err: projectionError, estimateId }, 'small-events finance projection deferred');
+    }
 
     return true;
   } catch (error) {

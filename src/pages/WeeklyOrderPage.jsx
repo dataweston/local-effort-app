@@ -637,6 +637,9 @@ const WeeklyOrderPage = () => {
       loadData();
     } catch (err) {
       console.error('[weekly-order] checkout error', err);
+      // Retire the attempt id: Square caches the decline against it, and the
+      // server refuses to charge again under a failed attempt.
+      clearCheckoutAttempt();
       setCheckoutStatus('error');
       setCheckoutError(err?.message || 'Checkout failed. Please try again.');
     }

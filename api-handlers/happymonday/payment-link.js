@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const { Client, Environment } = require('square');
+const { prisma } = require('../_lib/prisma');
+const { resolveHappyMondayCaller, resolvePaymentTarget } = require('./_auth');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -31,7 +33,7 @@ const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.random
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
   if (req.method === 'OPTIONS') {
@@ -53,7 +55,7 @@ module.exports = async function handler(req, res) {
   }
 
   const { userId, amountCents } = req.body || {};
-  if (!userId || !amountCents) {
+  if (!amountCents) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -62,11 +64,22 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Minimum payment is $1.00' });
   }
 
+  // Same rule as the card path: a hosted link is still an instruction to
+  // collect money against a named account, so the caller must be authenticated.
+  const caller = await resolveHappyMondayCaller(req, supabase);
+  if (caller.error) {
+    return res.status(caller.status).json({ error: caller.error });
+  }
+  const target = resolvePaymentTarget(caller, userId);
+  if (target.error) {
+    return res.status(target.status).json({ error: target.error });
+  }
+
   try {
     const { data: user, error: userError } = await supabase
       .from('happymonday_users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', target.userId)
       .single();
 
     if (userError || !user) {
@@ -74,6 +87,31 @@ module.exports = async function handler(req, res) {
     }
 
     const note = `Happy Monday payment - ${user.name || user.email}`.slice(0, 60);
+
+    // Raise the pending attempt first and stamp it on the order, so a payment
+    // made through the hosted link comes back linkable instead of orphaned.
+    let attempt = null;
+    if (prisma) {
+      try {
+        attempt = await prisma.financePaymentAttempt.create({
+          data: {
+            provider: 'square',
+            idempotencyKey: `hm-link-${createKey()}`,
+            status: 'pending',
+            requestedCents: Math.round(cents),
+            currency: 'USD',
+            metadata: {
+              channel: 'happy_monday',
+              method: 'hosted_checkout_link',
+              portalUserId: target.userId,
+              requestedByPortalUserId: String(caller.user.id),
+            },
+          },
+        });
+      } catch (attemptError) {
+        console.error('[HappyMonday] payment-link attempt not recorded:', attemptError?.message || attemptError);
+      }
+    }
 
     const response = await sq.checkoutApi.createPaymentLink({
       idempotencyKey: createKey(),
@@ -87,6 +125,7 @@ module.exports = async function handler(req, res) {
           },
         ],
         note,
+        ...(attempt ? { referenceId: attempt.id } : {}),
       },
       checkoutOptions: {
         redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/partners/happymonday` : undefined,

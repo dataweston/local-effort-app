@@ -32,6 +32,63 @@ function failureDetails(error) {
   };
 }
 
+/**
+ * What this payment pays for. An attempt bound to an invoice allocates to the
+ * invoice (receivables are the obligation being settled); otherwise it
+ * allocates to the commercial order it was raised against. Weekly orders have
+ * no commercial record yet and allocate to nothing — their native Order status
+ * remains the evidence until that channel is migrated.
+ */
+function allocationTarget(attempt) {
+  if (attempt?.invoiceId) {
+    return {
+      targetType: 'invoice',
+      targetId: attempt.invoiceId,
+      invoiceId: attempt.invoiceId,
+      orderId: attempt.commercialOrderId || null,
+    };
+  }
+  if (attempt?.commercialOrderId) {
+    return {
+      targetType: 'commercial_order',
+      targetId: attempt.commercialOrderId,
+      invoiceId: null,
+      orderId: attempt.commercialOrderId,
+    };
+  }
+  return null;
+}
+
+/**
+ * Recompute an invoice from its allocations rather than decrementing it.
+ * Webhooks redeliver and reconciliation re-runs; a subtraction would drift on
+ * every replay, a recomputation cannot.
+ */
+async function settleInvoiceFromAllocations(tx, invoiceId) {
+  const invoice = await tx.commercialInvoice.findUnique({ where: { id: invoiceId } });
+  if (!invoice) return null;
+
+  const applied = await tx.financePaymentAllocation.aggregate({
+    where: { invoiceId },
+    _sum: { amountCents: true },
+  });
+  const paidCents = Number(applied?._sum?.amountCents || 0);
+  const outstandingCents = Math.max(0, invoice.totalCents - paidCents);
+
+  let status = invoice.status;
+  if (outstandingCents === 0) status = 'paid';
+  else if (paidCents > 0) status = 'partially_paid';
+
+  return tx.commercialInvoice.update({
+    where: { id: invoiceId },
+    data: {
+      outstandingCents,
+      status,
+      paidAt: outstandingCents === 0 ? (invoice.paidAt || new Date()) : null,
+    },
+  });
+}
+
 async function markPaymentAttemptSucceeded({ prisma, attemptId, provider, payment, amountCents }) {
   if (!prisma) throw new Error('Prisma is required');
   const externalPaymentId = cleanString(payment?.id, 240);
@@ -86,7 +143,33 @@ async function markPaymentAttemptSucceeded({ prisma, attemptId, provider, paymen
       });
     }
 
-    return { attempt, transaction, externalPaymentId };
+    // Explicit application of money to the obligation it settles. Keyed on
+    // (transaction, target) so a redelivered webhook rewrites one row instead
+    // of inflating what the invoice looks paid against.
+    const target = allocationTarget(attempt);
+    let allocation = null;
+    if (target) {
+      allocation = await tx.financePaymentAllocation.upsert({
+        where: {
+          transactionId_targetType_targetId: {
+            transactionId: transaction.id,
+            targetType: target.targetType,
+            targetId: target.targetId,
+          },
+        },
+        update: { amountCents: Math.round(Number(amountCents)) },
+        create: {
+          transactionId: transaction.id,
+          ...target,
+          amountCents: Math.round(Number(amountCents)),
+        },
+      });
+      if (target.invoiceId) {
+        await settleInvoiceFromAllocations(tx, target.invoiceId);
+      }
+    }
+
+    return { attempt, transaction, allocation, externalPaymentId };
   });
 }
 
@@ -115,9 +198,11 @@ async function markPaymentAttemptFailed({ prisma, attemptId, error }) {
 }
 
 module.exports = {
+  allocationTarget,
   failureDetails,
   markPaymentAttemptFailed,
   markPaymentAttemptSucceeded,
   paymentEvidence,
   paymentOccurredAt,
+  settleInvoiceFromAllocations,
 };

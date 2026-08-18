@@ -69,6 +69,10 @@
       "schedule": "50 2 * * *"
     },
     {
+      "path": "/api/brain/local-budget/items-sync",
+      "schedule": "52 2 * * *"
+    },
+    {
       "path": "/api/brain/cogs-rollup/run",
       "schedule": "55 2 * * *"
     },
@@ -79,6 +83,22 @@
     {
       "path": "/api/brain/jobs/freshness",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/finance/happy-monday/project",
+      "schedule": "10 3 * * *"
+    },
+    {
+      "path": "/api/finance/localist/project",
+      "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/finance/small-events/project",
+      "schedule": "20 3 * * *"
+    },
+    {
+      "path": "/api/finance/reconcile-payments",
+      "schedule": "0 */6 * * *"
     }
   ],
   "headers": [

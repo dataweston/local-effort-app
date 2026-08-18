@@ -3,6 +3,12 @@
 // Creates a direct Square payment instead of a hosted payment link. Returns { ok, paymentId }.
 
 const { Client, Environment } = require('square');
+const { prisma } = require('../_lib/prisma');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const {
+  markPaymentAttemptFailed,
+  markPaymentAttemptSucceeded,
+} = require('../../backend/api/finance/paymentAttempts');
 let db = null;
 try {
   const admin = require('firebase-admin');
@@ -44,6 +50,11 @@ module.exports = async (req, res) => {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!sq) return res.status(500).json({ error: 'Square not configured' });
+  // The booking record must survive the charge. Firestore keyed the booking on
+  // the Square payment id, which made a provider id the business identity.
+  if (!prisma) {
+    return res.status(503).json({ error: 'Booking is temporarily unavailable. No payment was taken.' });
+  }
   const {
     date,
     email,
@@ -69,9 +80,64 @@ module.exports = async (req, res) => {
       `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const guestsInt = parseInt(addOnGuests, 10) || 0;
     const amount = basePriceCents + (guestsInt > 0 ? guestsInt * addOnPricePerGuestCents : 0);
+
+    const lines = [{
+      lineType: 'item',
+      name: 'Pizza party — base booking',
+      quantity: 1,
+      unitPriceCents: basePriceCents,
+      sourceSystem: 'store',
+      sourceId: 'pizza-party-base',
+    }];
+    if (guestsInt > 0) {
+      lines.push({
+        lineType: 'item',
+        name: 'Pizza party — additional guests',
+        quantity: guestsInt,
+        unitPriceCents: addOnPricePerGuestCents,
+        sourceSystem: 'store',
+        sourceId: 'pizza-party-add-on-guest',
+      });
+    }
+
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'store',
+      sourceId: idempotencyKey,
+      channel: 'store',
+      businessLineKey: 'pizza',
+      customerName: name || null,
+      customerEmail: email || null,
+      totalCents: amount,
+      lines,
+      orderMetadata: {
+        offer: 'pizza-party',
+        // Free-text date ("Oct 2"), kept as the customer wrote it. Parsing it
+        // into serviceStartAt would invent precision the booking never had.
+        requestedDate: date,
+        mealTime: mealTime || null,
+        addOnGuests: guestsInt,
+        contactPhone: phone || null,
+      },
+      attemptMetadata: { channel: 'store', offer: 'pizza-party' },
+    });
+
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        orderId: checkout.order?.id || null,
+        idempotentReplay: true,
+      });
+    }
+
+    const commercialOrderId = checkout.order?.id || null;
+    const paymentAttemptId = checkout.attempt.id;
     const paymentsApi = sq.paymentsApi;
     const paymentBody = {
       idempotencyKey,
+      referenceId: commercialOrderId,
       sourceId: token,
       locationId: LOCATION_ID,
       amountMoney: { amount, currency: 'USD' },
@@ -94,9 +160,38 @@ module.exports = async (req, res) => {
     if (verificationToken) {
       paymentBody.verificationToken = verificationToken;
     }
-    const resp = await paymentsApi.createPayment(paymentBody);
-    const paymentId = resp.result.payment?.id;
+    let resp;
+    try {
+      resp = await paymentsApi.createPayment(paymentBody);
+    } catch (paymentError) {
+      try {
+        await markPaymentAttemptFailed({ prisma, attemptId: paymentAttemptId, error: paymentError });
+      } catch (stateError) {
+        console.warn('[pizza-party.checkout] failed to persist payment failure', stateError?.message || stateError);
+      }
+      throw paymentError;
+    }
+    const payment = resp.result.payment;
+    const paymentId = payment?.id;
     if (!paymentId) throw new Error('Payment failed');
+
+    let reconciliationPending = false;
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: paymentAttemptId,
+        provider: 'square',
+        payment,
+        amountCents: amount,
+      });
+    } catch (stateError) {
+      reconciliationPending = true;
+      console.error('[pizza-party.checkout] payment captured; state reconciliation pending', {
+        commercialOrderId,
+        paymentId,
+        error: stateError?.message || stateError,
+      });
+    }
     // Persist booking & create calendar event (best-effort)
     if (db) {
       try {
@@ -147,12 +242,19 @@ module.exports = async (req, res) => {
           console.warn('[pizza-party.checkout] failed to create calendar event', calErr?.message);
         }
         if (eventId) doc.eventId = eventId;
+        // Mirror only: CommercialOrder is the booking of record now.
+        doc.commercialOrderId = commercialOrderId;
         await db.collection('pizzaPartyBookings').doc(paymentId).set(doc, { merge: true });
       } catch (err) {
         console.warn('[pizza-party.checkout] failed to persist booking', err?.message);
       }
     }
-    return res.status(200).json({ ok: true, paymentId });
+    return res.status(200).json({
+      ok: true,
+      paymentId,
+      orderId: commercialOrderId,
+      ...(reconciliationPending ? { reconciliationPending: true } : {}),
+    });
   } catch (e) {
     const squareErrors = e?.errors ? e.errors.map(er => ({ code: er.code, detail: er.detail })).slice(0,3) : null;
     if (squareErrors) console.warn('[pizza-party.checkout] Square errors', squareErrors);

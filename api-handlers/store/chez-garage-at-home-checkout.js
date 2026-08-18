@@ -2,6 +2,12 @@
 // Charges the server-authoritative $200 date-hold deposit and sends a Brevo receipt.
 
 const { Client, Environment } = require('square');
+const { prisma } = require('../_lib/prisma');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const {
+  markPaymentAttemptFailed,
+  markPaymentAttemptSucceeded,
+} = require('../../backend/api/finance/paymentAttempts');
 const { isRealIsoDate, isSelectableDate } = require('./_dateSelection');
 
 const DEPOSIT_CENTS = 20000;
@@ -150,6 +156,10 @@ module.exports = async (req, res) => {
   if (!squareClient || !LOCATION_ID) {
     return res.status(503).json({ error: 'Payment is temporarily unavailable.' });
   }
+  // A deposit with no durable booking is an orphan capture. Fail closed.
+  if (!prisma) {
+    return res.status(503).json({ error: 'Booking is temporarily unavailable. No payment was taken.' });
+  }
 
   const date = cleanText(body.date, 10);
   const name = cleanText(body.name, 100);
@@ -175,8 +185,56 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const idempotencyKey = sanitizeIdempotencyKey(body.checkoutAttemptId);
+
+    // The deposit books a private event. It is the first money against a job
+    // whose balance is invoiced later, so it is an events-line commercial order
+    // from the start rather than a bare payment with an email receipt.
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'store',
+      sourceId: idempotencyKey,
+      channel: 'store',
+      businessLineKey: 'events',
+      customerName: name,
+      customerEmail: email,
+      totalCents: DEPOSIT_CENTS,
+      serviceStartAt: new Date(`${date}T12:00:00Z`),
+      lines: [{
+        lineType: 'deposit',
+        name: 'Chez Garage at Home — date-hold deposit',
+        quantity: 1,
+        unitPriceCents: DEPOSIT_CENTS,
+        sourceSystem: 'store',
+        sourceId: 'chez-garage-at-home-deposit',
+      }],
+      orderMetadata: {
+        offer: 'chez-garage-at-home',
+        eventDate: date,
+        guestCount: guestCount || null,
+        contactPhone: phone,
+      },
+      attemptMetadata: { channel: 'store', offer: 'chez-garage-at-home' },
+    });
+
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        orderId: checkout.order?.id || null,
+        amountCents: DEPOSIT_CENTS,
+        receiptSent: false,
+        idempotentReplay: true,
+      });
+    }
+
+    const commercialOrderId = checkout.order?.id || null;
+    const paymentAttemptId = checkout.attempt.id;
+
     const paymentRequest = {
-      idempotencyKey: sanitizeIdempotencyKey(body.checkoutAttemptId),
+      idempotencyKey,
+      referenceId: commercialOrderId,
       sourceId: token,
       locationId: LOCATION_ID,
       amountMoney: { amount: DEPOSIT_CENTS, currency: 'USD' },
@@ -193,9 +251,38 @@ module.exports = async (req, res) => {
     };
     if (verificationToken) paymentRequest.verificationToken = verificationToken;
 
-    const paymentResponse = await squareClient.paymentsApi.createPayment(paymentRequest);
-    const paymentId = paymentResponse.result.payment?.id;
+    let paymentResponse;
+    try {
+      paymentResponse = await squareClient.paymentsApi.createPayment(paymentRequest);
+    } catch (paymentError) {
+      try {
+        await markPaymentAttemptFailed({ prisma, attemptId: paymentAttemptId, error: paymentError });
+      } catch (stateError) {
+        console.error('[chez-garage-at-home] failed to persist payment failure', stateError?.message || stateError);
+      }
+      throw paymentError;
+    }
+    const payment = paymentResponse.result.payment;
+    const paymentId = payment?.id;
     if (!paymentId) throw new Error('Square did not return a payment ID.');
+
+    let reconciliationPending = false;
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: paymentAttemptId,
+        provider: 'square',
+        payment,
+        amountCents: DEPOSIT_CENTS,
+      });
+    } catch (stateError) {
+      reconciliationPending = true;
+      console.error('[chez-garage-at-home] deposit captured; state reconciliation pending', {
+        commercialOrderId,
+        paymentId,
+        error: stateError?.message || stateError,
+      });
+    }
 
     let receipt = { sent: false, skipped: false };
     try {
@@ -216,8 +303,10 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       paymentId,
+      orderId: commercialOrderId,
       amountCents: DEPOSIT_CENTS,
       receiptSent: receipt.sent,
+      ...(reconciliationPending ? { reconciliationPending: true } : {}),
     });
   } catch (error) {
     const squareErrors = Array.isArray(error?.errors)

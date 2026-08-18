@@ -21,12 +21,17 @@
  * label onto money that already exists — it tells us WHICH LB deposits are
  * Square settlements (vs transfers/Zelle/other), without summing anything.
  *
- * Per-deposit BUYER attribution is NOT available: this merchant's payout-entries
- * expose no payment_id on CHARGE entries (verified live 2026-06-29), so the
- * payout → payment → order → customer chain can't be walked. Customer
- * attribution therefore lives only on the Track-2 ORDERED edges, which is the
- * right place for it. `withCustomers` is retained as an opt-in but is a no-op
- * until Square exposes payment_id on entries.
+ * Per-deposit BUYER attribution is still not available FROM PAYOUTS: this
+ * merchant's payout-entries expose no payment_id on CHARGE entries (verified live
+ * 2026-06-29), so the payout → payment → order → customer chain can't be walked
+ * here. It is also no longer needed. Local Budget now resolves Square's
+ * payment-level `customer_id` into its own customer directory, and
+ * localBudgetSync.js ingests those rows as `payment.captured` events carrying
+ * `customerEntityId` — the payer arrives on the capture, where it belongs,
+ * instead of being reverse-engineered out of an aggregated deposit. Customer
+ * attribution therefore lives on the Track-2 ORDERED edges and on
+ * `payment.captured`. `withCustomers` is retained for API compatibility and
+ * remains a deliberate no-op; do not build on it.
  *
  * Match key is EXACT NET AMOUNT, so date tolerance is only a tiebreaker among
  * equal-amount payouts (verified: match count is stable from 1d to 7d windows).

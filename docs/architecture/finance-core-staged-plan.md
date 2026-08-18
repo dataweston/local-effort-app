@@ -1,7 +1,7 @@
 # Staged Finance Core and sales-layer boundary
 
 **Decision date:** 2026-08-15  
-**Status:** accepted implementation direction; additive foundation in progress  
+**Status:** all six migration steps implemented (2026-08-17); coverage not yet measured against live data  
 **Primary flow:** `Lead -> Opportunity -> Agreement/Subscription -> Order -> Fulfillment -> Invoice -> Payment -> Reorder`
 
 ## Decision
@@ -87,12 +87,25 @@ The sales layer can then answer “which channels produce contribution margin?�
 
 ## Migration order
 
-1. Weekly meal checkout: native `Order` plus payment attempt before Square.
-2. General store: `CommercialOrder` before Square; retain Firestore only as a temporary downstream mirror.
-3. Happy Monday: authenticate the caller, promote accepted work to agreement/order/invoice, and allocate payments to invoices.
-4. Localist: project the existing roster and Square identifiers into provider-neutral agreement/subscription/payment records without mixing dues with food orders.
-5. Small events and deposits: map the existing estimate/hold/payment pattern into commercial order/invoice/payment records.
-6. Add read-only sales-layer views for pipeline stage, expected 7/30/90-day value, collections, and reorder outcomes.
+1. **Done (2026-08-15).** Weekly meal checkout: native `Order` plus payment attempt before Square.
+2. **Done (2026-08-17).** General store: `CommercialOrder` before Square; retain Firestore only as a temporary downstream mirror. Covers `/api/store/checkout`, the Chez Garage at-home deposit, and pizza-party bookings — the last two previously charged with no durable order at all, and the pizza booking used the Square payment id as its Firestore key.
+3. **Done (2026-08-17).** Happy Monday: authenticate the caller, promote accepted work to agreement/order/invoice, and allocate payments to invoices. Portal orders project through `backend/api/finance/happyMondayProjection.js`; `process-payment` and `payment-link` now require a Supabase bearer token and resolve the paying account from it.
+4. **Done (2026-08-17).** Localist: project the existing roster and Square identifiers into provider-neutral agreement/subscription/payment records without mixing dues with food orders. Only the roster's own `square_order_id` counts as a dues payment.
+5. **Done (2026-08-17).** Small events and deposits: map the existing estimate/hold/payment pattern into commercial order/invoice/payment records. The balance invoice is withheld until an estimate is confirmed so quotes never inflate AR.
+6. **Done (2026-08-17).** Read-only sales-layer views at `/api/sales/*`: pipeline, expected 7/30/90-day value, collections aging, reorder outcomes, channel revenue with margin join keys, and payment coverage.
+
+### Supporting work these steps required
+
+- `backend/api/finance/commercialOrders.js` — one pre-charge primitive enforcing invariants 1, 2, 5, 6, and 7 per channel, including replay and race resolution.
+- `backend/api/finance/receivables.js` — invoices settled by recomputation from allocations, and oldest-first allocation for accounts that pay a running balance rather than a chosen invoice.
+- `backend/api/finance/squarePaymentEvidence.js` — the webhook writes provider-neutral evidence for every completed capture (orphans included), and `/api/finance/reconcile-payments` recovers attempts stranded between capture and commit. This is the recovery path invariant 6 assumed and the codebase did not have.
+- Projections and reconciliation run nightly by Vercel cron; each is idempotent and re-runnable.
+
+### Not yet done
+
+- Coverage has not been measured against live data: the migration ran against schema and tests, not against a production month. `/api/sales/coverage` and `/api/finance/reconcile-payments` report the kill-condition numbers once real traffic flows.
+- Weekly orders still carry no `CommercialOrder`, only the native `Order` plus attempt. They are absent from `/api/sales/*` revenue views for that reason.
+- Gift cards (`/api/store/gift-card-checkout`) and the one-off dinner checkouts (february, june, july-dinner, winter-dinner, psyche, pizzafunder) still charge without commercial records.
 
 ## Steelman, kill condition, and calibration
 

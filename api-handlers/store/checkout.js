@@ -5,8 +5,15 @@
 const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
+const { prisma } = require('../_lib/prisma');
+const { businessLineForStore } = require('../../backend/api/finance/businessLines');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const {
+  markPaymentAttemptFailed,
+  markPaymentAttemptSucceeded,
+} = require('../../backend/api/finance/paymentAttempts');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
-const { isSelectableDate } = require('./_dateSelection');
+const { isRealIsoDate, isSelectableDate } = require('./_dateSelection');
 const {
   getManualInventoryRequirements,
   releaseManualInventory,
@@ -127,6 +134,53 @@ const buildOptionSummary = (doc, variationId, addOnIndices, dairyFree) => {
   return labels.join(', ');
 };
 
+// Commercial sale lines for Finance Core. Each priced basket line becomes one
+// order line keyed by its Sanity product id, and a charged delivery fee becomes
+// its own fee line so margin work never mistakes fulfilment revenue for food.
+const buildCommercialLines = (pricedLines, deliveryFee) => {
+  const lines = pricedLines.map((line) => ({
+    lineType: 'item',
+    sku: line.productId,
+    name: line.title || 'Store item',
+    description: line.optionSummary || null,
+    quantity: line.qty,
+    unitPriceCents: line.unitPrice,
+    totalCents: line.lineTotal,
+    sourceSystem: 'sanity',
+    sourceId: line.variationId || line.productId,
+    metadata: {
+      variationId: line.variationId || null,
+      addOnIndices: line.addOnIndices,
+      dairyFree: line.dairyFree,
+      selectedDate: line.selectedDate || null,
+    },
+  }));
+
+  if (deliveryFee > 0) {
+    lines.push({
+      lineType: 'fee',
+      name: 'Local delivery',
+      quantity: 1,
+      unitPriceCents: deliveryFee,
+      totalCents: deliveryFee,
+      sourceSystem: 'store',
+      sourceId: 'local_delivery_fee',
+    });
+  }
+
+  return lines;
+};
+
+// The earliest customer-chosen date in the basket is when this order is owed.
+// Step 6's expected-value windows need a service date, not just a booking date.
+const earliestServiceDate = (pricedLines) => {
+  const dates = pricedLines
+    .map((line) => line.selectedDate)
+    .filter((date) => isRealIsoDate(date))
+    .sort();
+  return dates.length ? new Date(`${dates[0]}T12:00:00Z`) : null;
+};
+
 const normalizeAddress = (address) => {
   if (!address || typeof address !== 'object') return null;
   return {
@@ -143,6 +197,14 @@ module.exports = async (req, res) => {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
     if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
+    // Payment integrity is fail-closed: the booked commercial order and its
+    // pending attempt must exist before Square is allowed to move money.
+    if (!prisma) {
+      return res.status(503).json({
+        error: 'Ordering database unavailable. No payment was taken; please try again shortly.',
+        code: 'ordering-database-unavailable',
+      });
+    }
 
     const {
       items,
@@ -261,6 +323,51 @@ module.exports = async (req, res) => {
       `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const storeLabel = pickupDetails.name || store || 'Local Effort';
 
+    // Finance Core: book the commercial order and a pending payment attempt
+    // before the processor is called. Firestore below is now a downstream
+    // mirror of this record, not the order of record.
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'store',
+      sourceId: idempotencyKey,
+      channel: 'store',
+      businessLineKey: businessLineForStore(store),
+      customerName: customer?.name || null,
+      customerEmail: customer?.email || null,
+      subtotalCents: subtotal,
+      totalCents: amount,
+      serviceStartAt: earliestServiceDate(pricedLines),
+      lines: buildCommercialLines(pricedLines, deliveryFee),
+      orderMetadata: {
+        store,
+        storeName: pickupDetails.name,
+        fulfillment,
+        pickupWindow: resolvedPickupWindow,
+        deliveryFeeCents: deliveryFee,
+        itemCount: pricedLines.reduce((sum, line) => sum + line.qty, 0),
+      },
+      attemptMetadata: { channel: 'store', store },
+    });
+
+    // The provider already captured this exact attempt. Return the first
+    // outcome instead of charging a second time.
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        orderId: checkout.order?.id || null,
+        amountCents: amount,
+        subtotalCents: subtotal,
+        deliveryFeeCents: deliveryFee,
+        lines: pricedLines,
+        idempotentReplay: true,
+      });
+    }
+
+    const commercialOrderId = checkout.order?.id || null;
+    const paymentAttemptId = checkout.attempt.id;
+
     const paymentBody = {
       sourceId: token,
       idempotencyKey,
@@ -269,7 +376,9 @@ module.exports = async (req, res) => {
       autocomplete: true,
       buyerEmailAddress: customer?.email || undefined,
       note: `[${storeLabel}] ${customer?.name || 'Customer'} - ${pricedLines.length} item(s) - ${fulfillment}`,
-      referenceId: `${store}-${Date.now()}`,
+      // Our order id, not a timestamp: the payment must point back at the
+      // business record, and the business record must not be a provider id.
+      referenceId: commercialOrderId,
     };
     if (verificationToken) paymentBody.verificationToken = verificationToken;
 
@@ -300,9 +409,39 @@ module.exports = async (req, res) => {
           inventoryReservation,
         });
       }
+      // The order and attempt survive the failure carrying why it failed.
+      try {
+        await markPaymentAttemptFailed({ prisma, attemptId: paymentAttemptId, error: paymentError });
+      } catch (stateError) {
+        console.error('[store.checkout] failed to persist payment failure', {
+          commercialOrderId,
+          error: stateError?.message || stateError,
+        });
+      }
       throw paymentError;
     }
-    const paymentId = resp.result.payment?.id;
+    const payment = resp.result.payment;
+    const paymentId = payment?.id;
+
+    let reconciliationPending = false;
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: paymentAttemptId,
+        provider: 'square',
+        payment,
+        amountCents: amount,
+      });
+    } catch (stateError) {
+      // Money moved. The pending attempt is the recovery anchor the webhook
+      // reconciles later; never tell a paid customer their payment failed.
+      reconciliationPending = true;
+      console.error('[store.checkout] payment captured; state reconciliation pending', {
+        commercialOrderId,
+        paymentId,
+        error: stateError?.message || stateError,
+      });
+    }
 
     const { firestore } = getFirebaseAdmin();
     if (firestore) {
@@ -311,6 +450,8 @@ module.exports = async (req, res) => {
           store,
           storeName: pickupDetails.name,
           paymentId,
+          // Mirror only: the durable order lives in CommercialOrder.
+          commercialOrderId,
           customer: {
             name: customer?.name || 'Unknown',
             email: customer?.email || '',
@@ -409,10 +550,12 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       paymentId,
+      orderId: commercialOrderId,
       amountCents: amount,
       subtotalCents: subtotal,
       deliveryFeeCents: deliveryFee,
       lines: pricedLines,
+      ...(reconciliationPending ? { reconciliationPending: true } : {}),
     });
   } catch (error) {
     const msg = (error?.errors && JSON.stringify(error.errors)) || error?.message || 'Checkout failed';

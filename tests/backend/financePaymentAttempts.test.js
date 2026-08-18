@@ -60,6 +60,80 @@ describe('Finance Core payment-attempt transitions', () => {
     expect(tx.commercialOrder.update).not.toHaveBeenCalled();
   });
 
+  it('allocates an invoice-bound payment and settles the invoice from allocations', async () => {
+    const attempt = {
+      id: 'attempt-3',
+      currency: 'USD',
+      weeklyOrderId: null,
+      commercialOrderId: 'commercial-order-3',
+      invoiceId: 'invoice-3',
+    };
+    const tx = {
+      financePaymentAttempt: { update: vi.fn().mockResolvedValue(attempt) },
+      financePaymentTransaction: { upsert: vi.fn().mockResolvedValue({ id: 'txn-3' }) },
+      order: { update: vi.fn() },
+      commercialOrder: { update: vi.fn().mockResolvedValue({ id: 'commercial-order-3' }) },
+      financePaymentAllocation: {
+        upsert: vi.fn().mockResolvedValue({ id: 'alloc-3' }),
+        aggregate: vi.fn().mockResolvedValue({ _sum: { amountCents: 25000 } }),
+      },
+      commercialInvoice: {
+        findUnique: vi.fn().mockResolvedValue({ id: 'invoice-3', totalCents: 25000, status: 'issued', paidAt: null }),
+        update: vi.fn().mockResolvedValue({ id: 'invoice-3' }),
+      },
+    };
+
+    await markPaymentAttemptSucceeded({
+      prisma: prismaWithTransaction(tx),
+      attemptId: 'attempt-3',
+      provider: 'square',
+      amountCents: 25000,
+      payment: { id: 'square-payment-3', status: 'COMPLETED' },
+    });
+
+    // The invoice is the obligation being settled, so the allocation targets it
+    // rather than the order it came from.
+    expect(tx.financePaymentAllocation.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      create: expect.objectContaining({
+        targetType: 'invoice',
+        targetId: 'invoice-3',
+        orderId: 'commercial-order-3',
+        amountCents: 25000,
+      }),
+    }));
+    expect(tx.commercialInvoice.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ outstandingCents: 0, status: 'paid' }),
+    }));
+  });
+
+  it('leaves a weekly order unallocated: it has no commercial record yet', async () => {
+    const tx = {
+      financePaymentAttempt: {
+        update: vi.fn().mockResolvedValue({
+          id: 'attempt-4',
+          currency: 'USD',
+          weeklyOrderId: 'weekly-order-4',
+          commercialOrderId: null,
+          invoiceId: null,
+        }),
+      },
+      financePaymentTransaction: { upsert: vi.fn().mockResolvedValue({ id: 'txn-4' }) },
+      order: { update: vi.fn() },
+      commercialOrder: { update: vi.fn() },
+      financePaymentAllocation: { upsert: vi.fn() },
+    };
+
+    await markPaymentAttemptSucceeded({
+      prisma: prismaWithTransaction(tx),
+      attemptId: 'attempt-4',
+      provider: 'square',
+      amountCents: 8000,
+      payment: { id: 'square-payment-4', status: 'COMPLETED' },
+    });
+
+    expect(tx.financePaymentAllocation.upsert).not.toHaveBeenCalled();
+  });
+
   it('preserves a failed attempt and advances its native order to payment_failed', async () => {
     const tx = {
       financePaymentAttempt: {
