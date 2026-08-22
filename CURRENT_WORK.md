@@ -1,6 +1,6 @@
 # CURRENT_WORK.md — Local Effort execution checkpoint
 
-**Updated:** 2026-08-14  
+**Updated:** 2026-08-18
 **Scope:** Aug–Oct 2026 capital, revenue, founder-platform, speaking, RFP, and execution work.  
 **Read first:** `AGENTS.md`, then this file.
 
@@ -17,8 +17,8 @@ This is an execution handoff, not a financial source of truth. The repository is
 ## Important current-state corrections
 
 - Capital Master Record **v2.3** is canonical for cap table, founder compensation, founder-draw reconciliation, revenue history, Hopkins facility economics, and diligence gaps.
-- The owner is building the **actual use-of-funds list**. Agents must not invent or silently preserve the preliminary allocation from an older record as final.
-- The Wefunder target remains **$65,000**, but the security is **not final**. Master Record v2.3 still carries a 6% cumulative-return concept; subsequent strategy work explored an **8% accruing convertible note** for a cooperative, potentially converting only into a nonvoting investor/preferred cooperative class. Treat this as an unresolved decision requiring owner + securities counsel/Wefunder confirmation before publication.
+- The owner supplied a **partial owner-authored use-of-funds list on 2026-08-18**. It is analyzed separately from the prior estimate in [docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md](docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md); unpriced items and labor still prevent treating it as final.
+- Wefunder now has an **initial $65,000 ask and a working $120,000 high target**. Current SEC issuer guidance places offerings of $124,000 or less in a lower financial-statement tier, but that is not an appraisal or platform rule; confirm Wefunder's current requirements, prior-offering treatment, and counsel's view before publication. The security is still not final. Master Record v2.3 carries a 6% cumulative-return concept; subsequent strategy work explored an 8% accruing convertible note for a cooperative, potentially converting only into a nonvoting investor/preferred cooperative class. Treat the instrument and all offering requirements as unresolved decisions requiring owner + securities counsel/Wefunder confirmation before publication.
 - The next authoritative financial artifact remains the **13-month capital cash model** using Master Record v2.3 inputs and owner-authored uses of funds.
 - Keep **speaking** separate from cultural PR/representation work.
 
@@ -29,7 +29,7 @@ This is an execution handoff, not a financial source of truth. The repository is
 Goal: make Local Effort financeable without depending on one source.
 
 Active lanes:
-- Wefunder $65k Community Round.
+- Wefunder staged Community Round: $65k initial ask / $120k working high target.
 - Shared Capital Cooperative application path.
 - Groove Capital invitation/application.
 - MCCD shared-ownership/public-capital discussion.
@@ -43,6 +43,28 @@ Sequence:
 5. data room + campaign materials;
 6. anchor/soft-launch investor work;
 7. public campaign only after evidence and initial momentum are credible.
+
+**Owner growth direction - 2026-08-18:** the initial raise should include one
+sales/customer-service hire at $25/hour for 15 hours per week plus commission,
+one full-time kitchen owner-worker, and two part-time kitchen workers. Maria's
+role has changed to occasional jobs; her equity status is unchanged. A larger
+raise can fund additional hires and equipment. A front-of-house team is a
+contingent later stage, activated only if raise momentum and other capital are
+visible: an event director, visual director, packaging manager, and human
+customer-service agents who also contribute to sales.
+
+**Cooperative recruitment direction - 2026-08-18:** Local Effort is exploring
+two chef-cooperative paths: Twin Cities chefs can join from anywhere as worker
+owners, with a cost structure, first access to generated or purchased event
+leads, network promotion, assigned work, and possible access to inventory and
+kitchen hours; chefs producing Local Effort food in the kitchen can earn
+cost-covered facility hours tied to hours worked, in addition to wages. Select
+bartenders and servers may also be recruited. This is a growth design, not yet
+a finalized membership, pricing, or legal offering.
+
+**Growth / future ideal outcome:** Food hub meets homestead — a rooted,
+community-serving food system that connects production, gathering, hospitality,
+and cooperative economic life.
 
 ### 2. Revenue / sales operating system
 
@@ -125,7 +147,7 @@ Goal: paid/nominal-fee engagements about local ingredients, small food business,
 ## Dated operator queue
 
 ### Aug. 14–18
-- Owner: produce actual use-of-funds list and amounts.
+- Owner: partial use-of-funds list supplied; price the unpriced items and approve the staged $65k/$120k scenarios.
 - Send MCCD several meeting options **after the third week of September**; do not wait until September to respond.
 - Assemble Shared Capital prerequisites from its “Next Steps” email.
 - Submit Groove application or use office hours if a material application question remains; acknowledge the invitation.
@@ -176,8 +198,9 @@ The current plan should be represented as persistent Planner projects/cards with
 ## Owner / agent request queue
 
 ### Owner input required
-- Final use-of-funds list and amounts.
+- Complete and approved use-of-funds list, including equipment, packaging, kitchen labor, payroll burden, commission, and reserve amounts. The partial owner list and comparison are in `docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md`.
 - Final Wefunder security preference after comparing the co-op-compatible options.
+- Confirmation of Wefunder's high-target and appraisal/diligence rules before publishing the $120k case.
 - Approval of any external communications before send, per `AGENTS.md`.
 
 ### Agent should obtain, not guess

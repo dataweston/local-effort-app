@@ -1,6 +1,8 @@
 # Current Local Effort facts
 
-As of 2026-07-23. Recheck by 2026-08-27 (asOf + 35 days): after that date, re-verify these facts with the owner before relying on them for raise or other material work. Recheck live sources before any material decision regardless.
+Core evidence is as of 2026-07-23, with an owner update appended 2026-08-18.
+Recheck dated facts with the owner before relying on them for a raise or other
+material work. Recheck live sources before any material decision regardless.
 
 ## Maintenance rules
 
@@ -9,12 +11,12 @@ As of 2026-07-23. Recheck by 2026-08-27 (asOf + 35 days): after that date, re-ve
 
 ## Owner-confirmed policy and structure
 
-- Founder compensation policy effective 2026-04-01: Weston Smith and Catherine Olsen **each $65,000 annual, deferred**; assessed at month end. Revised down from the earlier $90,000/$70,000 split by the owner on 2026-07-23 (see decisions-log; the old split is superseded, not evidentiarily retired). Combined $130,000/year = $10,833.33/month. In the meantime the company covers the founders' living expenses; those post to Local Budget as **PERSONAL**, and every PERSONAL transaction dated 2026-04-01 or later counts as an owner draw against the deferred salary (owner-confirmed 2026-07-23). Accountant treatment of the draw-vs-accrual offset is still to be finalized.
+- Founder compensation policy effective 2026-04-01: Weston Smith and Catherine Olsen **each $45,000 annual, deferred**; assessed at month end. Combined policy compensation is **$90,000/year = $7,500/month** and is prorated from April for 2026. In the meantime the company covers the founders' living expenses; those post to Local Budget as **PERSONAL**, and every PERSONAL transaction dated 2026-04-01 or later counts as an owner draw against the deferred salary. Accountant treatment of the draw-vs-accrual offset is still to be finalized. Owner reconfirmed this policy on 2026-08-21; prior $90,000/$70,000 and $65,000-each records are superseded.
 - Fully diluted accepted ownership: Weston 45.5%, Catherine 47.5%, Sarah Olsen 5%, Renee Owens 2%. Renee paid $6,000 for 2% transferred from Weston.
-- Maria Beck is an active chef paid through Square Payroll at $35/hour. She has been offered an additional 1% from Weston but has not accepted; exclude it from the cap table.
+- Maria Beck is no longer working in the prior regular capacity. She may take occasional jobs. There is no change to her equity status: the unaccepted additional 1% offer remains excluded from the cap table.
 - Current kitchen cash price: $40/hour for the first 20 hours in a month, $35/hour thereafter, plus $200 monthly storage.
 - Local-first is a loose 75–85% inventory target plus substantial contributions to aesthetics, branding, menu design, and other proprietary details.
-- A Wefunder/SMBX raise is operationally ready to go, but no accepted financial model or final raise terms exist.
+- A Wefunder raise is being planned with an initial $65,000 ask and a working $120,000 high target to open room for additional hires and equipment. Current SEC issuer guidance places offerings of $124,000 or less in a lower financial-statement tier, but that is not an appraisal or platform rule; confirm Wefunder's current requirements, prior-offering treatment, and counsel's view before publication. No accepted financial model or final security terms exist.
 - The managerial business-line taxonomy has not been chosen by the owner. The line model uses a configurable working taxonomy.
 
 ### Deferred-compensation and equity-to-treasury policy
@@ -63,10 +65,36 @@ Owner-stated; label `owner-reported empirical`. These exist to be corroborated a
 - Meal prep core prep + package: ~12 hours/week involving 3 workers, plus some remainder (confirm whether "12 hours" is wall-clock or person-hours before deriving per-order labor).
 - Happy Monday: 2–3 hours, 3×/week (≈6–9 hrs/week).
 - Focaccia + pizza dough combined: ~8 hours/week.
-- Maria Beck: ~15 hours/week (paid $35/hr via Square Payroll).
+- Maria Beck: occasional jobs only under the current arrangement; no standing weekly labor assumption.
 - Deliveries: mostly the owner. Local Budget's **delivery category** captures Uber + Accell spend (mostly deliveries, some other transportation — not yet split). If Uber exposes trip-level API data, adopt it; otherwise add the distinction in Local Budget later.
 
 **June operating-cost spike is real and somewhat permanent** (resolves the earlier "one-time vs structural" question toward structural — see the Local Budget pricing review). The kitchen is very expensive; the owner's response is to scale up quickly: cut the kitchen hourly by ~$10 and add staff to make production times denser. Model this as a structural cost the current price level must cover, with the hourly reduction and density gains as the offsetting levers.
+
+## Owner-reported capital and cooperative growth direction (2026-08-18)
+
+These are owner-authored planning inputs, not measured financial outputs. The
+separate comparison and subtotal live in
+`docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md`.
+
+- Initial Wefunder case: $65,000. Working high target: $120,000, or the
+	platform-verified ceiling before any additional appraisal or diligence
+	requirement. The high case is intended to open room for equipment and
+	additional hiring, not to imply that all funds should be spent immediately.
+- Initial staffing direction: one sales/customer-service hire at $25/hour for
+	15 hours/week plus commission; one full-time kitchen owner-worker; and two
+	part-time kitchen workers. The kitchen-worker wage, hours, payroll burden,
+	and the meaning of "owner-worker" for compensation still need to be priced.
+- Contingent front-of-house expansion, only after visible raise momentum and
+	additional capital: event director, visual director, packaging manager, and
+	human customer-service agents who also contribute to sales.
+- Cooperative recruitment has two paths: Twin Cities chefs may join as worker
+	owners from anywhere under a defined cost structure, receiving first access
+	to Local Effort-generated or purchased event leads, network promotion,
+	assigned work, and possible inventory and kitchen-hour access; chefs who
+	produce Local Effort food in the kitchen may earn cost-covered facility hours
+	tied to hours worked, in addition to wages. Select bartenders and servers may
+	also be recruited. Membership terms, pricing, eligibility, and legal
+	structure remain open.
 
 ## Retired claims
 

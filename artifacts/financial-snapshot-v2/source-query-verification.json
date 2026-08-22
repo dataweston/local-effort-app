@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-08-22T03:53:03.756Z",
+  "sqlPath": "artifacts\\financial-snapshot-v2\\source-query.sql",
+  "rowCount": 5522,
+  "counts": {
+    "transaction": 5263,
+    "settlement_entry": 258,
+    "business_cash": 1
+  }
+}

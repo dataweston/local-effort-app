@@ -1,0 +1,204 @@
+{
+  "generatedAt": "2026-08-21T22:39:57.401Z",
+  "sqlPath": "artifacts\\financial-snapshot\\source-query.sql",
+  "rows": [
+    {
+      "month": "2025-02",
+      "gross_revenue": 4656.96,
+      "refunds": 0,
+      "inventory_purchases": 1399.01,
+      "paid_labor": 0,
+      "operating_including_debt": 3383.01,
+      "unclassified_outflow": 50.15,
+      "founder_draws": 745.71,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-03",
+      "gross_revenue": 5257.74,
+      "refunds": 0,
+      "inventory_purchases": 2078.9,
+      "paid_labor": 0,
+      "operating_including_debt": 1562.89,
+      "unclassified_outflow": 728.46,
+      "founder_draws": 3700.38,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-04",
+      "gross_revenue": 5584.79,
+      "refunds": 0,
+      "inventory_purchases": 1634.74,
+      "paid_labor": 0,
+      "operating_including_debt": 3884.14,
+      "unclassified_outflow": 27.46,
+      "founder_draws": 1145.98,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-05",
+      "gross_revenue": 2442.28,
+      "refunds": 0,
+      "inventory_purchases": 1119.8,
+      "paid_labor": 0,
+      "operating_including_debt": 2482.77,
+      "unclassified_outflow": 170.55,
+      "founder_draws": 1778.98,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-06",
+      "gross_revenue": 4753.02,
+      "refunds": 0,
+      "inventory_purchases": 1770.73,
+      "paid_labor": 0,
+      "operating_including_debt": 4346.1,
+      "unclassified_outflow": 118.97,
+      "founder_draws": 937.6,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-07",
+      "gross_revenue": 3863.01,
+      "refunds": 0,
+      "inventory_purchases": 1411.57,
+      "paid_labor": 0,
+      "operating_including_debt": 3595.79,
+      "unclassified_outflow": 75.01,
+      "founder_draws": 559.75,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-08",
+      "gross_revenue": 7051.45,
+      "refunds": 0,
+      "inventory_purchases": 1536.8,
+      "paid_labor": 0,
+      "operating_including_debt": 2905.25,
+      "unclassified_outflow": 31.25,
+      "founder_draws": 1169.23,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-09",
+      "gross_revenue": 8314.64,
+      "refunds": 0,
+      "inventory_purchases": 1870.94,
+      "paid_labor": 0,
+      "operating_including_debt": 4374.35,
+      "unclassified_outflow": 197.71,
+      "founder_draws": 2157.36,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-10",
+      "gross_revenue": 7708.3,
+      "refunds": 0,
+      "inventory_purchases": 1805.75,
+      "paid_labor": 0,
+      "operating_including_debt": 3972.01,
+      "unclassified_outflow": 262.68,
+      "founder_draws": 2078.15,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-11",
+      "gross_revenue": 7300.07,
+      "refunds": 200,
+      "inventory_purchases": 2543.38,
+      "paid_labor": 0,
+      "operating_including_debt": 3514.05,
+      "unclassified_outflow": 107.6,
+      "founder_draws": 396.89,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2025-12",
+      "gross_revenue": 8864.59,
+      "refunds": 0,
+      "inventory_purchases": 1946.18,
+      "paid_labor": 0,
+      "operating_including_debt": 6416.71,
+      "unclassified_outflow": 94.46,
+      "founder_draws": 1396.53,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2026-01",
+      "gross_revenue": 10704.23,
+      "refunds": 0,
+      "inventory_purchases": 1815.23,
+      "paid_labor": 0,
+      "operating_including_debt": 8146.3,
+      "unclassified_outflow": 120.46,
+      "founder_draws": 427.2,
+      "observed_debt_service": 252.73
+    },
+    {
+      "month": "2026-02",
+      "gross_revenue": 7893.49,
+      "refunds": 0,
+      "inventory_purchases": 3486.39,
+      "paid_labor": 0,
+      "operating_including_debt": 2320.54,
+      "unclassified_outflow": 490.46,
+      "founder_draws": 781.3,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2026-03",
+      "gross_revenue": 6207.6,
+      "refunds": 0,
+      "inventory_purchases": 2298.64,
+      "paid_labor": 0,
+      "operating_including_debt": 5564.75,
+      "unclassified_outflow": 1347.85,
+      "founder_draws": 957.76,
+      "observed_debt_service": 116.44
+    },
+    {
+      "month": "2026-04",
+      "gross_revenue": 11115.9,
+      "refunds": 0,
+      "inventory_purchases": 3739.26,
+      "paid_labor": 0,
+      "operating_including_debt": 3260.93,
+      "unclassified_outflow": 2783.98,
+      "founder_draws": 1712.46,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2026-05",
+      "gross_revenue": 15033.69,
+      "refunds": 0,
+      "inventory_purchases": 3226.97,
+      "paid_labor": 210,
+      "operating_including_debt": 4245.61,
+      "unclassified_outflow": 4197.5,
+      "founder_draws": 2260.19,
+      "observed_debt_service": 0
+    },
+    {
+      "month": "2026-06",
+      "gross_revenue": 12396.09,
+      "refunds": 0,
+      "inventory_purchases": 3325.58,
+      "paid_labor": 2416,
+      "operating_including_debt": 5134.8,
+      "unclassified_outflow": 986.03,
+      "founder_draws": 2587.57,
+      "observed_debt_service": 1090
+    },
+    {
+      "month": "2026-07",
+      "gross_revenue": 13211.14,
+      "refunds": 0,
+      "inventory_purchases": 4077.22,
+      "paid_labor": 1104,
+      "operating_including_debt": 5181.88,
+      "unclassified_outflow": 1303.93,
+      "founder_draws": 842.52,
+      "observed_debt_service": 0
+    }
+  ]
+}

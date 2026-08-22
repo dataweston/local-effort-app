@@ -1,0 +1,565 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Local Effort financial snapshot — revised August 2026",
+    "description": "Revised trailing 18-month cash snapshot through July 2026, with exact Square Capital remittances, founder-owned vehicle treatment, business cash, debt coverage, and capital productivity.",
+    "generatedAt": "2026-08-22T03:52:55.057Z",
+    "cards": [
+      {
+        "id": "revenue",
+        "description": "Operating revenue excludes Square financing proceeds and nets refunds.",
+        "dataset": "headline",
+        "sourceId": "local_budget_live_v2",
+        "metrics": [
+          {
+            "label": "TTM net revenue",
+            "field": "netRevenue",
+            "format": "currency"
+          },
+          {
+            "label": "18-month net revenue",
+            "field": "netRevenue18",
+            "format": "currency"
+          }
+        ]
+      },
+      {
+        "id": "cfads",
+        "description": "Cash available for debt service before founder compensation or draws.",
+        "dataset": "headline",
+        "sourceId": "local_budget_live_v2",
+        "metrics": [
+          {
+            "label": "TTM cash CFADS",
+            "field": "cashCfads",
+            "format": "currency"
+          },
+          {
+            "label": "CFADS margin",
+            "field": "cfadsMargin",
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": "coverage",
+        "description": "Exact net Square Capital remittances from settlement entries.",
+        "dataset": "headline",
+        "sourceId": "local_budget_live_v2",
+        "metrics": [
+          {
+            "label": "Debt service",
+            "field": "debtService",
+            "format": "currency"
+          },
+          {
+            "label": "Cash DSCR",
+            "field": "cashDscr",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "liquidity",
+        "description": "Provider-reported available balance in the owner-confirmed primary business account.",
+        "dataset": "headline",
+        "sourceId": "local_budget_live_v2",
+        "metrics": [
+          {
+            "label": "Available business cash",
+            "field": "availableCash",
+            "format": "currency"
+          },
+          {
+            "label": "Current ledger balance",
+            "field": "currentCash",
+            "format": "currency"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "coverage_chart",
+        "title": "Trailing-12-month cash capacity by treatment",
+        "subtitle": "Positive as-paid cash turns negative when current founder compensation is recognized.",
+        "type": "horizontalBar",
+        "dataset": "coverageRows",
+        "sourceId": "local_budget_live_v2",
+        "valueFormat": "currency",
+        "encodings": {
+          "x": {
+            "field": "view",
+            "type": "nominal",
+            "label": "Treatment"
+          },
+          "y": {
+            "field": "amount",
+            "type": "quantitative",
+            "label": "Annual dollars",
+            "format": "currency"
+          }
+        }
+      }
+    ],
+    "tables": [],
+    "sources": [
+      {
+        "id": "local_budget_live_v2",
+        "label": "Local Budget live production cash subledger",
+        "path": "artifacts/financial-snapshot-v2/calculations.json",
+        "description": "Fresh posted, split-aware aggregation through July 2026 using Local Budget operating-report scope, processor settlement entries, current Local Pizza balances, and owner-directed treatment of car and Square financing. Transformation: scripts/build-financial-snapshot-v2.cjs.",
+        "query": {
+          "engine": "postgresql",
+          "language": "sql",
+          "sql": "WITH operating_transactions AS (\n  SELECT\n    t.id,\n    t.date AS effective_at,\n    t.amount,\n    t.type,\n    t.classification,\n    t.description,\n    t.\"merchantName\" AS merchant_name,\n    t.\"categoryId\" AS category_id,\n    c.name AS category_name,\n    c.\"defaultClassification\" AS category_default_classification,\n    t.\"accountId\" AS account_id,\n    COALESCE((\n      SELECT jsonb_agg(jsonb_build_object(\n        'amount', ts.amount,\n        'classification', ts.classification,\n        'categoryId', ts.\"categoryId\",\n        'categoryName', sc.name,\n        'categoryDefaultClassification', sc.\"defaultClassification\"\n      ) ORDER BY ts.id)\n      FROM transaction_splits ts\n      LEFT JOIN categories sc ON sc.id = ts.\"categoryId\"\n      WHERE ts.\"transactionId\" = t.id\n    ), '[]'::jsonb) AS splits\n  FROM transactions t\n  LEFT JOIN categories c ON c.id = t.\"categoryId\"\n  WHERE t.status = 'POSTED'\n    AND t.date >= DATE '2025-02-01'\n    AND t.date < DATE '2026-08-01'\n    AND NOT EXISTS (\n      SELECT 1\n      FROM reconciliation_allocations ra\n      WHERE ra.\"transactionId\" = t.id\n        AND ra.\"isCurrent\" = TRUE\n        AND ra.role = 'BANK_SETTLEMENT'\n    )\n),\ncurrent_settlement_entries AS (\n  SELECT\n    pse.id,\n    COALESCE(pse.\"effectiveAt\", ps.\"effectiveAt\") AS effective_at,\n    pse.type,\n    pse.\"grossAmount\" AS gross_amount,\n    pse.\"feeAmount\" AS fee_amount,\n    pse.\"netAmount\" AS net_amount,\n    ps.\"reconciliationStatus\" AS reconciliation_status\n  FROM processor_settlement_entries pse\n  JOIN processor_settlements ps ON ps.id = pse.\"settlementId\"\n  WHERE pse.\"isCurrent\" = TRUE\n    AND ps.\"effectiveAt\" >= DATE '2025-02-01'\n    AND ps.\"effectiveAt\" < DATE '2026-08-01'\n),\ncurrent_business_cash AS (\n  SELECT\n    fa.id,\n    fa.name,\n    fa.\"currentBalance\" AS current_balance,\n    fa.\"availableBalance\" AS available_balance,\n    fa.\"lastSyncedAt\" AS last_synced_at\n  FROM financial_accounts fa\n  WHERE fa.\"isActive\" = TRUE\n    AND LOWER(fa.name) = 'local pizza'\n)\nSELECT 'transaction' AS record_type, to_jsonb(operating_transactions) AS record\nFROM operating_transactions\nUNION ALL\nSELECT 'settlement_entry' AS record_type, to_jsonb(current_settlement_entries) AS record\nFROM current_settlement_entries\nUNION ALL\nSELECT 'business_cash' AS record_type, to_jsonb(current_business_cash) AS record\nFROM current_business_cash;\n",
+          "executed_at": "2026-08-22T03:52:55.057Z",
+          "tables_used": [
+            "public.transactions",
+            "public.transaction_splits",
+            "public.categories",
+            "public.reconciliation_allocations",
+            "public.processor_settlements",
+            "public.processor_settlement_entries",
+            "public.financial_accounts"
+          ],
+          "filters": [
+            "2025-02-01 through 2026-07-31",
+            "status = POSTED",
+            "matched bank settlements excluded",
+            "current processor settlement entries only"
+          ]
+        }
+      },
+      {
+        "id": "local_budget_native_export",
+        "label": "Local Budget native trailing-12-month P&L export",
+        "path": "artifacts/financial-snapshot-v2/local-budget-export/profit-and-loss_2025-08_2026-07.csv",
+        "description": "Independent native export used to reconcile gross P&L totals before financing, car, fee-source, and debt-service adjustments."
+      },
+      {
+        "id": "owner_inputs_aug21",
+        "label": "Owner inputs, August 21, 2026",
+        "description": "Local Pizza is the primary business account; vehicle debt and paperwork belong to Weston; approximate vehicle balance $13,000, scheduled payment $550/month, approximately 80,000 miles; taxes deferred to a later analysis."
+      },
+      {
+        "id": "current_facts",
+        "label": "Local Effort current facts",
+        "path": "skills/le-economist/references/current-facts.md",
+        "description": "Owner-confirmed founder compensation policy: Weston $45,000 annual and Catherine $45,000 annual, $90,000 combined, effective April 1, 2026 and prorated from April for 2026."
+      },
+      {
+        "id": "capital_master",
+        "label": "Capital Master Record v2.3",
+        "path": "artifacts/local_effort_capital_master_record_v2_3.docx",
+        "description": "Owner-authorized capital record used for prior financing context; live Local Budget cash data controls current remittance totals."
+      },
+      {
+        "id": "recovery_obligations",
+        "label": "Owner recovery-obligations list, August 18, 2026",
+        "path": "docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md",
+        "description": "Owner planning record listing $11,550 of recovery obligations; classification and aging remain open."
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "layout": "full",
+        "body": "# Local Effort financial snapshot — revised August 2026"
+      },
+      {
+        "id": "executive",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Executive Summary\n\n- **Cash operations improved materially.** TTM net operating revenue is **$130,110** and cash CFADS is **$42,450**. Exact net Square Capital service was **$3,517**, producing **12.07x cash DSCR** and **$38,934** after debt.\n- **The business is not yet economically self-supporting at the current founder-pay policy.** Deducting the owner-confirmed **$90,000 annual combined** policy yields normalized CFADS of **-$47,550** and normalized free cash after debt of **-$51,066**.\n- **Liquidity is the binding constraint.** Local Pizza shows **$6 available** and **$0 current balance** as of the latest provider sync. That is effectively **zero normalized runway**.\n- **Confidence is medium for cash performance and low for lender-grade coverage.** Four months contain pending rows; 85 Square payouts remain partially reconciled; taxes, the current Square payoff, AP/AR, and a complete company balance sheet are not yet included."
+      },
+      {
+        "id": "metrics",
+        "type": "metric-strip",
+        "layout": "full",
+        "cardIds": [
+          "revenue",
+          "cfads",
+          "coverage",
+          "liquidity"
+        ]
+      },
+      {
+        "id": "changed",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## The revised ledger changes the prior answer\n\nThe updated treatment excludes **$4,440** of Square advances from operating revenue, replaces **$1,459** of operating Debt-category placeholders with exact settlement remittances, and moves **$6,888** of TTM CarMax payments from company operating expense to founder draws. Processing fees are **$2,056**: settlement-entry fees control when available, with the September 2025 legacy fee retained before settlement coverage begins.\n\nThe Local Budget native export reconciles the unadjusted P&L. The report then applies the financing and owner-policy adjustments above as a transparent management bridge."
+      },
+      {
+        "id": "cash_bridge",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## The cash bridge supports debt, but not normalized founder pay\n\n**Trailing 12 months:** net revenue **$130,110** less inventory purchases **$32,584**, paid labor **$4,445**, operating expense **$48,756**, and unclassified outflow **$1,874** produces cash CFADS of **$42,450**. After exact Square debt service of **$3,517**, free cash is **$38,934**; after **$31,321** of founder draws, **$7,612** remains.\n\n**Eighteen months:** net revenue **$156,668**, inventory **$41,999**, paid labor **$4,445**, operating expense **$64,616**, unclassified **$3,045**, cash CFADS **$42,563**, debt service **$3,517**, and free cash after debt **$39,047**. Founder draws total **$43,585**.",
+        "sourceId": "local_budget_live_v2"
+      },
+      {
+        "id": "chart_explain",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Founder compensation is the decisive normalization\n\nThe chart separates cash survival from full economics. As-paid operations cover current Square remittances, and cash remains positive after actual draws. Recognizing the **$90,000 annual combined** founder policy reverses the result to a **$47,550 deficit before debt**. This is the binding economic frame: the operation produces cash, but current revenue does not yet support its intended founder labor cost."
+      },
+      {
+        "id": "coverage_chart_block",
+        "type": "chart",
+        "layout": "full",
+        "chartId": "coverage_chart"
+      },
+      {
+        "id": "debt",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Debt and accrued obligations\n\n- **Square Capital cash service:** $3,619 gross payments less **$103** reversals = **$3,517 net**. The current payoff balance is not available, so company debt principal cannot be reported responsibly.\n- **Weston vehicle obligation:** approximately **$13,000** remaining and **$550/month**, owner-reported, with roughly **80,000 miles** and useful life remaining. The lease/debt/title paperwork belongs to Weston, so this is excluded from company debt, CFADS, and DSCR and shown as founder personal debt.\n- **Founder deferred compensation:** the $90,000 combined annual policy is deferred and prorated from April. April–July accrual is **$30,000**; **$15,165** of company-covered founder expenses reduce that liability, leaving **$14,835 aggregate backpay due** through July. Local Budget does not yet allocate every PERSONAL outflow between Weston and Catherine, so only the aggregate is decision-grade.\n- **Investor obligations:** **$0 of executed investor return/redemption obligations is evidenced.** The contemplated raise is prospective. Owner-listed recovery obligations of **$11,550** remain unclassified by counterparty and legal form.\n- **Taxes:** intentionally excluded from this version at the owner's direction; adding them will reduce cash capacity."
+      },
+      {
+        "id": "liquidity_detail",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Liquidity and runway are effectively zero\n\nLocal Pizza is assigned to Local Effort and is the owner-confirmed primary business account. Its provider record shows **$6 available** but a **$0 current balance**, an internal inconsistency that should be resolved before relying on either figure. At the normalized post-debt burn of roughly **$4,256/month**, available cash implies **less than 0.01 months of runway**.\n\nHistorical after-draw cash is positive, so a conventional trailing-burn runway calculation is not meaningful; the practical finding is simpler: there is no operating buffer for timing, taxes, or a bad month.",
+        "sourceId": "local_budget_live_v2"
+      },
+      {
+        "id": "productivity",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Capital productivity is improving, but true ROIC remains blocked\n\n- **Revenue per inventory-purchase dollar: 3.99x**; cash inventory purchases are **25.0%** of net revenue. This is not consumed COGS because ending inventory is unmeasured.\n- **Revenue per paid-labor dollar: 29.27x.** This is inflated by unpaid/deferred founder labor.\n- **Cash CFADS margin: 32.6%.** Free cash after debt is **29.9%** of net revenue; after founder draws it is **5.9%**.\n- **Capital turnover and ROIC: unavailable.** Current invested capital, inventory value, fixed assets, AP/AR, and debt balances are not complete enough to calculate them without invention.",
+        "sourceId": "local_budget_live_v2"
+      },
+      {
+        "id": "quality",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Data quality is better, but four months remain incomplete\n\n- **Incomplete months:** 2026-01, 2026-02, 2026-06, 2026-07 contain **21 pending rows totaling $1,446**. All other months pass the complete-month gate.\n- **Split integrity:** zero split mismatches in the 18-month window.\n- **Square reconciliation:** 104 matched payouts and 85 partial payouts; matched payouts represent **89.6% of payout dollars**.\n- **Duplicate screening:** 49 exact-key candidate groups contain 58 excess rows. These are candidates, not confirmed duplicates; repeated same-day sales can be legitimate.\n- **Freshness:** posted activity extends through 2026-08-20; the report was frozen at 2026-08-22T03:52:55.057Z.\n\n| Month | Status | Net revenue | Inventory | Paid labor | Operating | Unclassified | Founder draws | Debt service | Cash CFADS |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|\n| 2025-02 | Complete | $4,657 | $1,399 | $0 | $2,788 | $50 | $1,341 | $0 | $420 |\n| 2025-03 | Complete | $5,258 | $2,079 | $0 | $963 | $728 | $4,300 | $0 | $1,487 |\n| 2025-04 | Complete | $5,585 | $1,635 | $0 | $3,284 | $27 | $1,746 | $0 | $638 |\n| 2025-05 | Complete | $2,442 | $1,120 | $0 | $2,483 | $171 | $1,779 | $0 | -$1,331 |\n| 2025-06 | Complete | $4,753 | $1,771 | $0 | $3,746 | $119 | $1,538 | $0 | -$883 |\n| 2025-07 | Complete | $3,863 | $1,412 | $0 | $2,596 | $75 | $1,560 | $0 | -$219 |\n| 2025-08 | Complete | $7,051 | $1,537 | $0 | $2,905 | $31 | $1,169 | $0 | $2,578 |\n| 2025-09 | Complete | $13,815 | $1,871 | $0 | $3,357 | $114 | $3,441 | $0 | $8,472 |\n| 2025-10 | Complete | $10,302 | $1,806 | $0 | $2,427 | $186 | $3,705 | $0 | $5,884 |\n| 2025-11 | Complete | $7,305 | $2,543 | $0 | $3,678 | $108 | $397 | $265 | $976 |\n| 2025-12 | Complete | $9,410 | $1,946 | $0 | $5,767 | $15 | $1,476 | $473 | $1,682 |\n| 2026-01 | Incomplete: 3 pending | $10,915 | $1,815 | $0 | $7,487 | $30 | $1,090 | $425 | $1,582 |\n| 2026-02 | Incomplete: 7 pending | $7,380 | $3,486 | $40 | $2,515 | $30 | $1,201 | $395 | $1,308 |\n| 2026-03 | Complete | $6,947 | $2,630 | $0 | $3,802 | $144 | $3,678 | $595 | $370 |\n| 2026-04 | Complete | $11,396 | $3,784 | $0 | $3,903 | $227 | $3,862 | $0 | $3,482 |\n| 2026-05 | Complete | $15,096 | $3,527 | $560 | $3,042 | $568 | $6,572 | $0 | $7,399 |\n| 2026-06 | Incomplete: 1 pending | $13,038 | $3,326 | $2,566 | $4,281 | $126 | $3,298 | $34 | $2,739 |\n| 2026-07 | Incomplete: 10 pending | $17,454 | $4,312 | $1,279 | $5,590 | $294 | $1,433 | $1,330 | $5,979 |",
+        "sourceId": "local_budget_live_v2"
+      },
+      {
+        "id": "recommendation",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Recommendation and review conditions\n\n**Do not add fixed-payment business debt or make a lender-facing DSCR claim yet.** The cash result is encouraging, but the current business cash buffer is effectively zero and normalized founder compensation produces a large deficit.\n\nThe strongest honest case against waiting is that as-paid CFADS covers the observed Square remittances by **12.07x**, after-draw cash is positive, and the vehicle is not a company liability. The fact most likely to reverse this recommendation is a verified low Square payoff combined with funded working capital and a credible revenue/capacity plan that lifts normalized CFADS above zero.\n\n1. Resolve the **21 pending rows**, candidate duplicates, and Local Pizza current-versus-available balance.\n2. Retrieve the exact Square payoff and complete debt schedule; add taxes in the next pass.\n3. Re-run monthly until normalized DSCR is at least **1.25x** and unrestricted business cash covers at least **two months of fully loaded fixed obligations**.\n\nThe smallest reversible next step is a one-page cash-and-debt close: freeze July, confirm the Square payoff, classify the recovery obligations, and establish a minimum cash reserve before considering new financing."
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Definitions and caveats\n\nCash CFADS equals net operating revenue less inventory purchases, paid labor, operating expense, and unclassified outflows; debt service is excluded from CFADS and deducted afterward. Founder compensation is deferred, and company-covered founder expenses reduce the backpay due; those offsets are not an additional operating cost. Normalized CFADS deducts the current annual founder-compensation policy. This is a cash-management report, not GAAP financial statements. Taxes, accrued interest, inventory consumption, depreciation, AP/AR, and legal debt balances are outside scope."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-22T03:52:55.057Z",
+    "status": "partial",
+    "datasets": {
+      "headline": [
+        {
+          "netRevenue": 130110.07,
+          "netRevenue18": 156667.87,
+          "cashCfads": 42450.35,
+          "cfadsMargin": 0.3262649078584003,
+          "debtService": 3516.6,
+          "cashDscr": 12.07141841551499,
+          "availableCash": 6.16,
+          "currentCash": 0
+        }
+      ],
+      "coverageRows": [
+        {
+          "view": "As-paid cash CFADS",
+          "amount": 42450.35
+        },
+        {
+          "view": "After debt and founder draws",
+          "amount": 7612.3
+        },
+        {
+          "view": "Normalized founder compensation",
+          "amount": -47549.65
+        }
+      ],
+      "monthlyRows": [
+        {
+          "month": "2025-02",
+          "status": "Complete",
+          "netRevenue": 4656.96,
+          "inventory": 1399.01,
+          "labor": 0,
+          "operating": 2788.01,
+          "founderDraws": 1340.71,
+          "unclassified": 50.15,
+          "debtService": 0,
+          "cashCfads": 419.79
+        },
+        {
+          "month": "2025-03",
+          "status": "Complete",
+          "netRevenue": 5257.74,
+          "inventory": 2078.9,
+          "labor": 0,
+          "operating": 962.89,
+          "founderDraws": 4300.38,
+          "unclassified": 728.46,
+          "debtService": 0,
+          "cashCfads": 1487.49
+        },
+        {
+          "month": "2025-04",
+          "status": "Complete",
+          "netRevenue": 5584.79,
+          "inventory": 1634.74,
+          "labor": 0,
+          "operating": 3284.14,
+          "founderDraws": 1745.98,
+          "unclassified": 27.46,
+          "debtService": 0,
+          "cashCfads": 638.45
+        },
+        {
+          "month": "2025-05",
+          "status": "Complete",
+          "netRevenue": 2442.28,
+          "inventory": 1119.8,
+          "labor": 0,
+          "operating": 2482.77,
+          "founderDraws": 1778.98,
+          "unclassified": 170.55,
+          "debtService": 0,
+          "cashCfads": -1330.84
+        },
+        {
+          "month": "2025-06",
+          "status": "Complete",
+          "netRevenue": 4753.02,
+          "inventory": 1770.73,
+          "labor": 0,
+          "operating": 3746.1,
+          "founderDraws": 1537.6,
+          "unclassified": 118.97,
+          "debtService": 0,
+          "cashCfads": -882.78
+        },
+        {
+          "month": "2025-07",
+          "status": "Complete",
+          "netRevenue": 3863.01,
+          "inventory": 1411.57,
+          "labor": 0,
+          "operating": 2595.79,
+          "founderDraws": 1559.75,
+          "unclassified": 75.01,
+          "debtService": 0,
+          "cashCfads": -219.36
+        },
+        {
+          "month": "2025-08",
+          "status": "Complete",
+          "netRevenue": 7051.45,
+          "inventory": 1536.8,
+          "labor": 0,
+          "operating": 2905.25,
+          "founderDraws": 1169.23,
+          "unclassified": 31.25,
+          "debtService": 0,
+          "cashCfads": 2578.15
+        },
+        {
+          "month": "2025-09",
+          "status": "Complete",
+          "netRevenue": 13814.64,
+          "inventory": 1870.94,
+          "labor": 0,
+          "operating": 3357.25,
+          "founderDraws": 3440.86,
+          "unclassified": 114.21,
+          "debtService": 0,
+          "cashCfads": 8472.24
+        },
+        {
+          "month": "2025-10",
+          "status": "Complete",
+          "netRevenue": 10302.08,
+          "inventory": 1805.75,
+          "labor": 0,
+          "operating": 2426.9,
+          "founderDraws": 3705.15,
+          "unclassified": 185.68,
+          "debtService": 0,
+          "cashCfads": 5883.75
+        },
+        {
+          "month": "2025-11",
+          "status": "Complete",
+          "netRevenue": 7304.67,
+          "inventory": 2543.38,
+          "labor": 0,
+          "operating": 3677.77,
+          "founderDraws": 396.89,
+          "unclassified": 107.6,
+          "debtService": 265.19,
+          "cashCfads": 975.92
+        },
+        {
+          "month": "2025-12",
+          "status": "Complete",
+          "netRevenue": 9410.47,
+          "inventory": 1946.18,
+          "labor": 0,
+          "operating": 5766.81,
+          "founderDraws": 1475.53,
+          "unclassified": 15.46,
+          "debtService": 472.61,
+          "cashCfads": 1682.02
+        },
+        {
+          "month": "2026-01",
+          "status": "Incomplete: 3 pending",
+          "netRevenue": 10914.69,
+          "inventory": 1815.23,
+          "labor": 0,
+          "operating": 7487.27,
+          "founderDraws": 1089.73,
+          "unclassified": 30.46,
+          "debtService": 425.47,
+          "cashCfads": 1581.73
+        },
+        {
+          "month": "2026-02",
+          "status": "Incomplete: 7 pending",
+          "netRevenue": 7379.86,
+          "inventory": 3486.39,
+          "labor": 40,
+          "operating": 2515.2,
+          "founderDraws": 1201.3,
+          "unclassified": 30.46,
+          "debtService": 395.27,
+          "cashCfads": 1307.81
+        },
+        {
+          "month": "2026-03",
+          "status": "Complete",
+          "netRevenue": 6946.7,
+          "inventory": 2630.47,
+          "labor": 0,
+          "operating": 3802.49,
+          "founderDraws": 3677.76,
+          "unclassified": 144.02,
+          "debtService": 594.92,
+          "cashCfads": 369.72
+        },
+        {
+          "month": "2026-04",
+          "status": "Complete",
+          "netRevenue": 11396.43,
+          "inventory": 3784.26,
+          "labor": 0,
+          "operating": 3903.46,
+          "founderDraws": 3862.46,
+          "unclassified": 226.98,
+          "debtService": 0,
+          "cashCfads": 3481.73
+        },
+        {
+          "month": "2026-05",
+          "status": "Complete",
+          "netRevenue": 15096.45,
+          "inventory": 3526.97,
+          "labor": 560,
+          "operating": 3042.35,
+          "founderDraws": 6572.45,
+          "unclassified": 568.26,
+          "debtService": 0,
+          "cashCfads": 7398.87
+        },
+        {
+          "month": "2026-06",
+          "status": "Incomplete: 1 pending",
+          "netRevenue": 13038.3,
+          "inventory": 3325.58,
+          "labor": 2566,
+          "operating": 4281.47,
+          "founderDraws": 3297.57,
+          "unclassified": 126.03,
+          "debtService": 33.61,
+          "cashCfads": 2739.22
+        },
+        {
+          "month": "2026-07",
+          "status": "Incomplete: 10 pending",
+          "netRevenue": 17454.33,
+          "inventory": 4312.22,
+          "labor": 1279,
+          "operating": 5589.99,
+          "founderDraws": 1432.52,
+          "unclassified": 293.93,
+          "debtService": 1329.53,
+          "cashCfads": 5979.19
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "local_budget_live_v2",
+      "label": "Local Budget live production cash subledger",
+      "path": "artifacts/financial-snapshot-v2/calculations.json",
+      "description": "Fresh posted, split-aware aggregation through July 2026 using Local Budget operating-report scope, processor settlement entries, current Local Pizza balances, and owner-directed treatment of car and Square financing. Transformation: scripts/build-financial-snapshot-v2.cjs.",
+      "query": {
+        "engine": "postgresql",
+        "language": "sql",
+        "sql": "WITH operating_transactions AS (\n  SELECT\n    t.id,\n    t.date AS effective_at,\n    t.amount,\n    t.type,\n    t.classification,\n    t.description,\n    t.\"merchantName\" AS merchant_name,\n    t.\"categoryId\" AS category_id,\n    c.name AS category_name,\n    c.\"defaultClassification\" AS category_default_classification,\n    t.\"accountId\" AS account_id,\n    COALESCE((\n      SELECT jsonb_agg(jsonb_build_object(\n        'amount', ts.amount,\n        'classification', ts.classification,\n        'categoryId', ts.\"categoryId\",\n        'categoryName', sc.name,\n        'categoryDefaultClassification', sc.\"defaultClassification\"\n      ) ORDER BY ts.id)\n      FROM transaction_splits ts\n      LEFT JOIN categories sc ON sc.id = ts.\"categoryId\"\n      WHERE ts.\"transactionId\" = t.id\n    ), '[]'::jsonb) AS splits\n  FROM transactions t\n  LEFT JOIN categories c ON c.id = t.\"categoryId\"\n  WHERE t.status = 'POSTED'\n    AND t.date >= DATE '2025-02-01'\n    AND t.date < DATE '2026-08-01'\n    AND NOT EXISTS (\n      SELECT 1\n      FROM reconciliation_allocations ra\n      WHERE ra.\"transactionId\" = t.id\n        AND ra.\"isCurrent\" = TRUE\n        AND ra.role = 'BANK_SETTLEMENT'\n    )\n),\ncurrent_settlement_entries AS (\n  SELECT\n    pse.id,\n    COALESCE(pse.\"effectiveAt\", ps.\"effectiveAt\") AS effective_at,\n    pse.type,\n    pse.\"grossAmount\" AS gross_amount,\n    pse.\"feeAmount\" AS fee_amount,\n    pse.\"netAmount\" AS net_amount,\n    ps.\"reconciliationStatus\" AS reconciliation_status\n  FROM processor_settlement_entries pse\n  JOIN processor_settlements ps ON ps.id = pse.\"settlementId\"\n  WHERE pse.\"isCurrent\" = TRUE\n    AND ps.\"effectiveAt\" >= DATE '2025-02-01'\n    AND ps.\"effectiveAt\" < DATE '2026-08-01'\n),\ncurrent_business_cash AS (\n  SELECT\n    fa.id,\n    fa.name,\n    fa.\"currentBalance\" AS current_balance,\n    fa.\"availableBalance\" AS available_balance,\n    fa.\"lastSyncedAt\" AS last_synced_at\n  FROM financial_accounts fa\n  WHERE fa.\"isActive\" = TRUE\n    AND LOWER(fa.name) = 'local pizza'\n)\nSELECT 'transaction' AS record_type, to_jsonb(operating_transactions) AS record\nFROM operating_transactions\nUNION ALL\nSELECT 'settlement_entry' AS record_type, to_jsonb(current_settlement_entries) AS record\nFROM current_settlement_entries\nUNION ALL\nSELECT 'business_cash' AS record_type, to_jsonb(current_business_cash) AS record\nFROM current_business_cash;\n",
+        "executed_at": "2026-08-22T03:52:55.057Z",
+        "tables_used": [
+          "public.transactions",
+          "public.transaction_splits",
+          "public.categories",
+          "public.reconciliation_allocations",
+          "public.processor_settlements",
+          "public.processor_settlement_entries",
+          "public.financial_accounts"
+        ],
+        "filters": [
+          "2025-02-01 through 2026-07-31",
+          "status = POSTED",
+          "matched bank settlements excluded",
+          "current processor settlement entries only"
+        ]
+      }
+    },
+    {
+      "id": "local_budget_native_export",
+      "label": "Local Budget native trailing-12-month P&L export",
+      "path": "artifacts/financial-snapshot-v2/local-budget-export/profit-and-loss_2025-08_2026-07.csv",
+      "description": "Independent native export used to reconcile gross P&L totals before financing, car, fee-source, and debt-service adjustments."
+    },
+    {
+      "id": "owner_inputs_aug21",
+      "label": "Owner inputs, August 21, 2026",
+      "description": "Local Pizza is the primary business account; vehicle debt and paperwork belong to Weston; approximate vehicle balance $13,000, scheduled payment $550/month, approximately 80,000 miles; taxes deferred to a later analysis."
+    },
+    {
+      "id": "current_facts",
+      "label": "Local Effort current facts",
+      "path": "skills/le-economist/references/current-facts.md",
+      "description": "Owner-confirmed founder compensation policy: Weston $45,000 annual and Catherine $45,000 annual, $90,000 combined, effective April 1, 2026 and prorated from April for 2026."
+    },
+    {
+      "id": "capital_master",
+      "label": "Capital Master Record v2.3",
+      "path": "artifacts/local_effort_capital_master_record_v2_3.docx",
+      "description": "Owner-authorized capital record used for prior financing context; live Local Budget cash data controls current remittance totals."
+    },
+    {
+      "id": "recovery_obligations",
+      "label": "Owner recovery-obligations list, August 18, 2026",
+      "path": "docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md",
+      "description": "Owner planning record listing $11,550 of recovery obligations; classification and aging remain open."
+    }
+  ]
+}

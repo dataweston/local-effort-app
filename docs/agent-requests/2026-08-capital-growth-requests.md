@@ -5,16 +5,23 @@ This file records information/actions the operating agent must request rather th
 ## Owner inputs
 
 1. **Final use of funds**
-   - Owner supplies categories and amounts.
-   - Do not treat any older preliminary allocation as final.
-   - Once supplied, propagate consistently into the capital model, Wefunder materials, Shared Capital/Groove/MCCD packets, and any grant/lender application.
+   - Owner supplied a partial list on 2026-08-18. The known priced subtotal is $43,350; see `docs/economics/wefunder-use-of-funds-analysis-2026-08-18.md`.
+   - Do not treat any older preliminary allocation or the partial owner list as final. Unpriced equipment, packaging, merch, kitchen labor, payroll burden, commission, and reserve requirements remain open.
+   - Once priced and approved, propagate the selected scenario consistently into the capital model, Wefunder materials, Shared Capital/Groove/MCCD packets, and any grant/lender application.
 
-2. **Wefunder security decision**
+2. **Wefunder target and security decision**
+   - Initial smaller ask: $65,000. Working high target: $120,000. Current SEC issuer guidance places offerings of $124,000 or less in a lower financial-statement tier; confirm Wefunder's current rules, prior-offering treatment, and counsel's view before treating that as a final threshold.
+   - The high case is intended to open room for additional hires and equipment. Front-of-house expansion is contingent on raise momentum and additional capital.
    - Present co-op-compatible options with economics and dilution/control implications.
    - Current unresolved contrast: older 6% cumulative-return concept versus later 8% accruing convertible-note concept.
    - Do not publish terms before owner selection and securities counsel/Wefunder confirmation.
 
-3. **External communication approval**
+3. **Staffing and cooperative growth inputs**
+   - Maria is now an occasional worker; her equity status is unchanged.
+   - Initial staffing direction: one sales/customer-service hire at $25/hour for 15 hours/week plus commission; one full-time kitchen owner-worker; and two part-time kitchen workers. Obtain missing wage, hour, burden, and owner-worker compensation inputs.
+   - Develop the two-path chef cooperative concept, including membership costs/benefits, lead allocation, inventory and kitchen access, and the cost-covered facility-hour benefit for production chefs. Obtain cooperative, labor, tax, and securities review before public promises.
+
+4. **External communication approval**
    - Follow `AGENTS.md`: exact dry-run through the exact channel, then explicit owner approval naming real recipients.
 
 ## Financial evidence the agent must obtain

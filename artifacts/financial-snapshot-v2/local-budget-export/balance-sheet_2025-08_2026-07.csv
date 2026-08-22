@@ -1,0 +1,37 @@
+Local Effort — Balance Sheet
+Period: 2025-08 to 2026-07 (month-end)
+Generated: 2026-08-22  |  Currency: USD
+"INCOMPLETE — cash only. See ""Not tracked"" rows and the notes at the bottom."
+
+Line item,2025-08,2025-09,2025-10,2025-11,2025-12,2026-01,2026-02,2026-03,2026-04,2026-05,2026-06,2026-07
+ASSETS
+  General savings (SAVINGS),0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+  Local Pizza (CHECKING),unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6
+  SoFi Checking (CHECKING),unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6
+  SoFi Savings (SAVINGS),70.17,70.17,20.23,5.00,0.00,0.00,0.00,3.91,0.02,68.76,0.76,16.03
+  Square (OTHER),unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6
+  TOTAL CHECKING (CHECKING),unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6
+  Venmo Wallet (OTHER),unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6,unreliable — see note 6
+Total cash and equivalents (reliable accounts only),70.17,70.17,20.23,5.00,0.00,0.00,0.00,3.91,0.02,68.76,0.76,16.03
+  Inventory,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+  Accounts receivable,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+"  Fixed assets (vehicle, equipment)",n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+TOTAL ASSETS,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+
+LIABILITIES
+  Credit cards (no such account exists in this system),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+"  Loans payable (Square Capital, auto finance)",n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+  Accounts payable,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+TOTAL LIABILITIES,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+
+EQUITY
+  Owner's equity / retained earnings,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+TOTAL LIABILITIES AND EQUITY,n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked),n/a (not tracked)
+
+NOTES
+1. Cash balances are reconstructed by unwinding posted activity from the current balance.
+2. 371 TRANSFER-type rows in this window carry no direction and are excluded from the reconstruction.
+"3. No liability accounts exist in this system, so debt is absent — not zero. The Square Capital loan and the vehicle finance balance are both real and unrecorded."
+"4. Inventory, receivables, payables and fixed assets are not tracked; totals are therefore not computable and are left blank rather than implied."
+"5. All accounts belong to a single ""Personal"" entity; no business/personal separation exists at the account level."
+"6. 5 account(s) reconstructed to an impossible negative cash balance and are excluded from the total: Local Pizza, SoFi Checking, Square, TOTAL CHECKING, Venmo Wallet. Their current balance is stale (Square accounts report 0), so the unwind has no valid starting point."

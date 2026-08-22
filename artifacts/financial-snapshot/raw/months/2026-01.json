@@ -1,0 +1,53 @@
+{
+  "artifact": "local-budget-month-snapshot",
+  "contractVersion": 2,
+  "methodVersion": "cashflow-actuals-v2",
+  "currency": "USD",
+  "timezone": "America/Chicago",
+  "generatedAt": "2026-08-21T22:29:33.247Z",
+  "month": "2026-01",
+  "isCompleteMonth": false,
+  "sourceMaxDate": "2026-08-20",
+  "latestBankSyncAt": "2026-08-20T06:39:35.488Z",
+  "totals": {
+    "incomeCents": 1650017,
+    "inventoryCents": 181523,
+    "operatingCents": 831253,
+    "laborCents": 0,
+    "reimbursableCents": 0,
+    "personalExcludedCents": 53354,
+    "transferExcludedCents": 1389732,
+    "unclassifiedCents": 3046,
+    "transactionCount": 169,
+    "splitLineCount": 2
+  },
+  "founderDraws": {
+    "totalCents": 51720,
+    "byFounder": {},
+    "unattributedCents": 51720
+  },
+  "quality": {
+    "pendingTransactionCount": 3,
+    "unclassifiedTransactionCount": 4,
+    "splitMismatchCount": 0
+  },
+  "sanitization": "Aggregates only, integer cents. No transaction rows, customer identities, or account/bank descriptors.",
+  "omittedFields": [
+    {
+      "field": "transactions",
+      "reason": "row-level data is never published"
+    },
+    {
+      "field": "customers",
+      "reason": "names, emails, and Square customer IDs are never published"
+    },
+    {
+      "field": "accounts",
+      "reason": "account numbers and bank descriptors are never published"
+    },
+    {
+      "field": "vendorBreakdown",
+      "reason": "per-vendor spend stays behind the authenticated /v1/vendors API"
+    }
+  ]
+}
