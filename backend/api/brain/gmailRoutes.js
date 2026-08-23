@@ -1,7 +1,8 @@
 /**
  * Gmail OAuth + sync routes - registered in index.js.
  *
- * GET  /api/brain/gmail/auth     -> redirect to Google OAuth (admin only)
+ * GET  /api/brain/gmail/auth     -> redirect to Google OAuth (Bearer/admin-key clients)
+ * POST /api/brain/gmail/auth     -> return OAuth URL to authenticated browser UI
  * GET  /api/brain/gmail/callback -> receive OAuth code, store tokens
  * POST /api/brain/gmail/sync     -> run sync (admin only, or cron)
  */
@@ -28,10 +29,21 @@ function hasBrainAdminHeader(req) {
   return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
 }
 
-function registerGmailRoutes(app, { logger } = {}) {
-  app.get('/api/brain/gmail/auth', async (req, res) => {
+function registerGmailRoutes(
+  app,
+  {
+    logger,
+    verifyAdminRequestForAuth = verifyAdminRequest,
+    getAuthUrlForAuth = getAuthUrl,
+  } = {}
+) {
+  // Supabase browser sessions are stored in browser storage, not an HTTP
+  // cookie. A direct address-bar GET therefore has no Bearer token even when
+  // the operator is logged in. The Brain UI uses this POST to authenticate
+  // first, then navigates to the returned Google URL.
+  app.post('/api/brain/gmail/auth', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequest(req);
+      const isAdmin = await verifyAdminRequestForAuth(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
@@ -42,7 +54,32 @@ function registerGmailRoutes(app, { logger } = {}) {
         });
       }
 
-      const url = getAuthUrl();
+      return res.json({ ok: true, authUrl: getAuthUrlForAuth() });
+    } catch (err) {
+      logger?.error({ err }, 'brain/gmail auth-url error');
+      return res.status(500).json({ error: 'auth-error' });
+    }
+  });
+
+  app.get('/api/brain/gmail/auth', async (req, res) => {
+    try {
+      const isAdmin = await verifyAdminRequestForAuth(req);
+      const keyOk = hasBrainAdminHeader(req);
+      if (!isAdmin && !keyOk) {
+        return res.status(403).json({
+          error: 'admin only',
+          action: 'Open the Brain Partners view and use Connect Gmail.',
+        });
+      }
+
+      if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
+        return res.status(500).json({
+          error: 'Gmail OAuth not configured',
+          required: ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REDIRECT_URI'],
+        });
+      }
+
+      const url = getAuthUrlForAuth();
       return res.redirect(url);
     } catch (err) {
       logger?.error({ err }, 'brain/gmail auth error');
@@ -104,7 +141,12 @@ function registerGmailRoutes(app, { logger } = {}) {
     try {
       const isAdmin = await verifyAdminRequest(req);
       const keyOk = hasBrainAdminHeader(req);
-      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
+      if (!isAdmin && !keyOk) {
+        return res.status(403).json({
+          error: 'admin only',
+          action: 'Open the Brain Partners view and use Connect Gmail.',
+        });
+      }
 
       const { batchSize = 50, monthsBack = 36 } = req.body || {};
       const result = await runNextVendorDocumentBatch({ batchSize, monthsBack, logger });

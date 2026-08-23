@@ -1450,6 +1450,28 @@ function PartnerReviewPanel({ accessToken }) {
     setOperationResult(await response.json().catch(() => ({ error: 'request failed' })));
     setOperation(''); load(selected?.id);
   };
+  const connectGmail = async () => {
+    setOperation('/api/brain/gmail/auth');
+    setOperationResult(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/brain/gmail/auth`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.authUrl) {
+        throw new Error(data.error || 'Could not start Gmail authorization');
+      }
+      const destination = new URL(data.authUrl);
+      if (destination.protocol !== 'https:' || destination.hostname !== 'accounts.google.com') {
+        throw new Error('Gmail authorization returned an unexpected destination');
+      }
+      window.location.assign(destination.toString());
+    } catch (error) {
+      setOperationResult({ error: error.message || 'Could not start Gmail authorization' });
+      setOperation('');
+    }
+  };
   const toggleSelected = id => setSelectedIds(previous => {
     const next = new Set(previous);
     if (next.has(id)) next.delete(id); else next.add(id);
@@ -1493,6 +1515,7 @@ function PartnerReviewPanel({ accessToken }) {
           <div className="flex flex-wrap gap-1">{[['needs_review', 'Needs review'], ['draft', 'Drafts'], ['approved', 'Approved'], ['rejected', 'Rejected'], ['orphans', 'No evidence'], ['all', 'All']].map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`rounded px-2 py-1 text-[10px] ${filter === value ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>{label}</button>)}</div>
         </div>
         <div className="p-3 border-b flex flex-wrap gap-2 text-[11px]">
+          <button disabled={!!operation} onClick={connectGmail} className="border rounded px-2 py-1 bg-blue-50">Connect Gmail</button>
           <button disabled={!!operation} onClick={() => runOperation('/api/brain/gmail/vendor-documents/batch', { batchSize: 50, monthsBack: 36 })} className="border rounded px-2 py-1">Ingest next Gmail batch</button>
           <button disabled={!!operation} onClick={() => runOperation('/api/brain/partners/reconcile-payments', { apply: false, daysBack: 1095 })} className="border rounded px-2 py-1">Preview invoice matches</button>
           <button disabled={!!operation} onClick={() => runOperation('/api/brain/partners/reconcile-payments', { apply: true, daysBack: 1095 })} className="border rounded px-2 py-1 bg-amber-50">Create match suggestions</button>
