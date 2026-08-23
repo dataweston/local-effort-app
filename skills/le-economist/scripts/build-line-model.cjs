@@ -428,11 +428,12 @@ function classifyPosting(row) {
   // Direction alone is insufficient: investment and reimbursement receipts can
   // also have an INCOME transaction direction.
   if (row.type === 'TRANSFER' || classification === 'TRANSFER') return 'transfer';
+  if (classification === 'INCOME' && row.type === 'EXPENSE') return 'refunds';
   if (classification === 'INCOME') return 'revenue';
   if (classification === 'REIMBURSEMENT') return 'reimbursementIncome';
   if (classification === 'REIMBURSABLE') return 'reimbursableExpense';
-  if (/labor|payroll|wage|contractor|staff/i.test(category)) return 'paidLabor';
   if (classification === 'COGS') return 'cogs';
+  if (classification === 'OPERATING' && /labor|payroll|wage|contractor|staff/i.test(category)) return 'paidLabor';
   if (classification === 'OPERATING') return 'operatingExLabor';
   if (classification === 'PERSONAL') return 'personalFounderDraws';
   if (row.type === 'INCOME') return 'excludedOrUnresolvedIncome';
@@ -497,12 +498,26 @@ async function localBudgetApiActuals(startText, endExclusiveText) {
   }
 }
 
-async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvidenceRules = []) {
-  const apiActuals = await localBudgetApiActuals(startText, endExclusiveText);
-  if (apiActuals) return apiActuals;
+async function localBudgetActuals(
+  repo,
+  startText,
+  endExclusiveText,
+  vendorEvidenceRules = [],
+  founderDrawOffsetDate = null,
+) {
   const url = String(process.env.LOCAL_BUDGET_DATABASE_URL || '').trim()
     .replace(/^["']|["']$/g, '').replace(/^[A-Z_]+=/, '').replace(/^["']|["']$/g, '');
-  if (!url) throw new Error('LOCAL_BUDGET_DATABASE_URL is required for authoritative cash actuals');
+  if (!url) {
+    const hasCashflowApi = String(process.env.LOCAL_BUDGET_API_URL || '').trim()
+      && String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
+    if (hasCashflowApi) {
+      throw new Error(
+        'The Local Budget cashflow API cannot supply canonical operating P&L actuals. '
+        + 'Configure LOCAL_BUDGET_DATABASE_URL until a date-range P&L API is available.',
+      );
+    }
+    throw new Error('LOCAL_BUDGET_DATABASE_URL is required for authoritative operating actuals');
+  }
   const prisma = getLbClient(repo, url);
   try {
     const rows = await prisma.$queryRawUnsafe(`
@@ -518,8 +533,9 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
           sc."defaultClassification"::text,
           t.classification::text,
           c."defaultClassification"::text,
-          CASE WHEN t.type::text = 'TRANSFER' THEN 'TRANSFER'
-               ELSE 'UNKNOWN' END
+          CASE WHEN t.type::text = 'INCOME' THEN 'INCOME'
+               WHEN t.type::text = 'TRANSFER' THEN 'TRANSFER'
+               ELSE 'UNCLASSIFIED' END
         ) AS classification,
         ABS(CASE WHEN s.id IS NULL THEN t.amount ELSE s.amount END) AS amount
       FROM transactions t
@@ -528,6 +544,13 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
       LEFT JOIN categories sc ON sc.id = s."categoryId"
       WHERE t.date >= $1::date AND t.date < $2::date
         AND t.status::text = 'POSTED'
+        AND NOT EXISTS (
+          SELECT 1
+          FROM reconciliation_allocations ra
+          WHERE ra."transactionId" = t.id
+            AND ra."isCurrent" = true
+            AND ra.role = 'BANK_SETTLEMENT'
+        )
       ORDER BY t.date, t.id
     `, startText, endExclusiveText);
     const freshness = await prisma.$queryRawUnsafe(`
@@ -535,14 +558,20 @@ async function localBudgetActuals(repo, startText, endExclusiveText, vendorEvide
       FROM transactions WHERE status::text = 'POSTED'
     `);
     const totals = {
-      revenue: 0, cogs: 0, paidLabor: 0, operatingExLabor: 0,
+      revenue: 0, refunds: 0, cogs: 0, paidLabor: 0, operatingExLabor: 0,
       personalFounderDraws: 0, reimbursementIncome: 0,
       reimbursableExpense: 0, excludedOrUnresolvedIncome: 0,
-      unknownOrUnresolved: 0, transfer: 0,
+      unknownOrUnresolved: 0, transfer: 0, founderDrawsEligibleOffset: 0,
     };
     for (const row of rows) {
       const bucket = classifyPosting(row);
       totals[bucket] += Number(row.amount || 0);
+      const rowDate = row.date?.toISOString?.().slice(0, 10) || String(row.date).slice(0, 10);
+      if (bucket === 'personalFounderDraws'
+        && founderDrawOffsetDate
+        && rowDate >= founderDrawOffsetDate) {
+        totals.founderDrawsEligibleOffset += Number(row.amount || 0);
+      }
     }
     for (const key of Object.keys(totals)) totals[key] = roundMoney(totals[key]);
     return {
@@ -667,23 +696,36 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   const endExclusive = addDays(end, 1);
   const endExclusiveText = endExclusive.toISOString().slice(0, 10);
   const [cash, square] = await Promise.all([
-    localBudgetActuals(repo, startText, endExclusiveText, config.vendorEvidenceRules),
+    localBudgetActuals(
+      repo,
+      startText,
+      endExclusiveText,
+      config.vendorEvidenceRules,
+      config.founderCompensation.personalDrawsCountFromDate
+        || config.founderCompensation.policyEffectiveDate,
+    ),
     squareAttribution(repo, start, endExclusive, config),
   ]);
   const evidenceRecovery = buildEvidenceRecovery(config, square.lines, cash.vendorEvidence, observedEvidence);
   const months = completeCalendarMonths(start, end);
   const annualFounderPolicy = config.founderCompensation.westonAnnual + config.founderCompensation.catherineAnnual;
-  const founderPolicyCompensation = months == null ? null : roundMoney(annualFounderPolicy / 12 * months);
+  const policyEffectiveDate = isoDay(config.founderCompensation.policyEffectiveDate, 'founder compensation policyEffectiveDate');
+  const policyStart = policyEffectiveDate > start ? policyEffectiveDate : start;
+  const founderPolicyMonths = policyStart > end ? 0 : completeCalendarMonths(policyStart, end);
+  const founderPolicyCompensation = founderPolicyMonths == null
+    ? null
+    : roundMoney(annualFounderPolicy / 12 * founderPolicyMonths);
   const t = cash.totals;
+  const netOperatingRevenue = roundMoney(t.revenue - t.refunds);
   const cashContributionBeforeFounderDraws = roundMoney(
-    t.revenue - t.cogs - t.paidLabor - t.operatingExLabor - t.reimbursableExpense
+    netOperatingRevenue - t.cogs - t.paidLabor - t.operatingExLabor
   );
   const cashContributionAfterUnresolvedExpense = roundMoney(
     cashContributionBeforeFounderDraws - t.unknownOrUnresolved
   );
   const scenario = buildScenario(config);
   const result = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     generatedAt: new Date().toISOString(),
     methodVersion: buildMethodVersion(configRawBytes, configHashSource),
     period: { start: startText, end: endText, completeCalendarMonths: months },
@@ -697,7 +739,9 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
       recoveredEvidence: { source: 'gmail_company_brain_and_local_budget_cross_source_matches', asOf: observedEvidence.asOf },
     },
     companyBridge: {
-      cashRevenue: t.revenue,
+      grossOperatingRevenue: t.revenue,
+      refundsAndReturns: t.refunds,
+      cashRevenue: netOperatingRevenue,
       cogs: t.cogs,
       paidNonfounderLabor: t.paidLabor,
       operatingExpenseExLabor: t.operatingExLabor,
@@ -708,20 +752,26 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
       cashContributionBeforeFounderDraws,
       cashContributionAfterUnresolvedExpense,
       personalTransactionsTreatedAsFounderDraws: t.personalFounderDraws,
+      personalTransactionsEligibleToOffsetFounderCompensation: t.founderDrawsEligibleOffset,
       cashAfterFounderDraws: roundMoney(cashContributionBeforeFounderDraws - t.personalFounderDraws),
       cashAfterFounderDrawsAndUnresolvedExpense: roundMoney(cashContributionAfterUnresolvedExpense - t.personalFounderDraws),
       founderCompensationPolicyExpense: founderPolicyCompensation,
       fullyLoadedOperatingResult: founderPolicyCompensation == null ? null : roundMoney(cashContributionBeforeFounderDraws - founderPolicyCompensation),
       fullyLoadedOperatingResultAfterUnresolvedExpense: founderPolicyCompensation == null
         ? null : roundMoney(cashContributionAfterUnresolvedExpense - founderPolicyCompensation),
-      deferredFounderCompensationIncrease: founderPolicyCompensation == null ? null : roundMoney(founderPolicyCompensation - t.personalFounderDraws),
-      caveat: 'PERSONAL offsets founder compensation only if owner review confirms those transactions are valid draws.',
+      founderCompensationPolicyAnnual: annualFounderPolicy,
+      founderCompensationPolicyEffectiveDate: config.founderCompensation.policyEffectiveDate,
+      founderCompensationPolicyMonthsInPeriod: founderPolicyMonths,
+      deferredFounderCompensationIncrease: founderPolicyCompensation == null
+        ? null
+        : roundMoney(founderPolicyCompensation - t.founderDrawsEligibleOffset),
+      caveat: 'Only PERSONAL transactions on or after the configured draw-offset date are candidate offsets, and owner review must still confirm they are valid draws.',
     },
     revenueAttribution: {
       observedSquareOrderRevenue: square.observedOrderRevenue,
       observedSquareLineItemRevenue: square.observedLineItemRevenue,
-      squareToCashRevenueRatio: t.revenue ? Math.round(square.observedOrderRevenue / t.revenue * 10000) / 10000 : null,
-      cashLessObservedSquareOrders: roundMoney(t.revenue - square.observedOrderRevenue),
+      squareToCashRevenueRatio: netOperatingRevenue ? Math.round(square.observedOrderRevenue / netOperatingRevenue * 10000) / 10000 : null,
+      cashLessObservedSquareOrders: roundMoney(netOperatingRevenue - square.observedOrderRevenue),
       attributedSquareRevenue: evidenceRecovery.attributedSquareRevenue,
       unallocatedSquareRevenue: evidenceRecovery.unallocatedSquareRevenue,
       squareRevenueAttributionCoverage: evidenceRecovery.squareRevenueAttributionCoverage,

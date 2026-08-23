@@ -3,12 +3,12 @@
   "modelStatus": "working_taxonomy_not_canonical",
   "currency": "USD",
   "founderCompensation": {
-    "westonAnnual": 65000,
-    "catherineAnnual": 65000,
+    "westonAnnual": 45000,
+    "catherineAnnual": 45000,
     "policyEffectiveDate": "2026-04-01",
     "personalTransactionsOffsetAccrual": true,
     "personalDrawsCountFromDate": "2026-04-01",
-    "note": "Revised to $65k each, deferred, by owner 2026-07-23 (was $90k/$70k). PERSONAL transactions dated 2026-04-01 or later count as owner draws against the deferred salary."
+    "note": "Owner-reconfirmed 2026-08-21: $45k each, deferred and effective 2026-04-01. This supersedes the prior $90k/$70k and $65k-each records. PERSONAL transactions dated 2026-04-01 or later count as owner draws against deferred salary."
   },
   "kitchen": {
     "firstTierHoursPerMonth": 20,

@@ -1,6 +1,6 @@
 # LE Economist line-level model
 
-Status: active working model, generated against sources current through 2026-07-18. The business-line taxonomy is configurable and has not been canonically chosen by the owner.
+Status: active working model, reconciled to Local Budget on 2026-08-22 with source activity through 2026-08-20. The business-line taxonomy is configurable and has not been canonically chosen by the owner.
 
 ## What is implemented
 
@@ -16,7 +16,11 @@ node "skills/le-economist/scripts/build-line-model.cjs" --repo . --start 2026-04
 
 ## April–June baseline
 
-Local Budget classified operating revenue is approximately $29.25K. The Brain contains $14.96K of Square orders in the comparable order-date window, or about 51.2% of classified cash revenue. This ratio is a coverage diagnostic, not a reconciliation match.
+Local Budget reports $40,066.66 gross operating revenue, $1,020.00 of refunds,
+and $39,046.66 net operating revenue. The Brain contains $14.96K of Square
+orders in the comparable order-date window, or about 38.3% of net operating
+revenue. This ratio is a coverage diagnostic, not a reconciliation match or a
+claim that revenue is missing.
 
 Of observed Square line-item revenue:
 
@@ -37,7 +41,12 @@ Cost and operating evidence is also partially recovered:
 - Local Budget contains $351.92 of Thumbtack acquisition spend. Brain/Gmail ties at least one current-period dinner quote to a Thumbtack lead, but the spend is channel/CAC evidence rather than food contribution cost.
 - Event threads expose guest counts, quote changes, supplied ingredients, service load, kitchen changes, and exact payments. They do not yet establish complete final consideration or job-level cost.
 
-The founder policy accrued $40,000 for the three closed months. Confirmed PERSONAL draws were $5,820.19, producing a $34,179.81 deferred-compensation increase. The model does not treat unpaid founder compensation as profit.
+The current founder policy is $45,000 annually for each founder, effective
+April 1, 2026. It accrued $22,500 for the three closed months. PERSONAL
+transactions dated on or after the effective date totaled $12,167.46, producing
+a provisional $10,332.54 deferred-compensation increase if owner review
+confirms every transaction is a valid draw. The model does not treat unpaid
+founder compensation as profit.
 
 ## Decision boundary
 
@@ -45,4 +54,8 @@ The model does not yet support a defensible raise point estimate, but line econo
 
 For a deadline decision, the scenario layer provides the sanctioned fallback rather than refusing to calculate: shared kitchen cash cost is allocated by modeled kitchen hours, while another documented shared production pool may be allocated by modeled direct production labor hours. Every fallback result is labeled modeled and paired with order-count and revenue-share sensitivities. The decision must report the range and whether the line ranking or recommendation reverses. Direct joins replace—not validate—the fallback when they arrive.
 
-One calibration point should remain visible: April-June operating revenue of approximately $29.25K, adjusted with measured seasonality including October at 2.37 times baseline, may ultimately imply an annual figure near the retired $120K claim. The claim was retired because it lacked provenance, not because proximity was impossible; a later nearby reconstruction would demonstrate the evidence system working.
+The reconciled April-June baseline supersedes the older $29.25K operating-
+revenue figure and the prior $160,000 and $130,000 founder-compensation inputs.
+Any annual reconstruction should start from refreshed monthly actuals and retain
+the measured seasonality adjustment rather than reviving the retired $120K
+claim as an assumption.

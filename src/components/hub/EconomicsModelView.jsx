@@ -115,7 +115,9 @@ function ActualsPanel({ model }) {
   const lines = model.lineActuals || [];
   const maxLineRevenue = Math.max(1, ...lines.map((line) => Number(line.observedSquareRevenue || 0)));
   const bridgeRows = [
-    ['Classified operating revenue', bridge.cashRevenue, 'positive'],
+    ['Gross operating revenue', bridge.grossOperatingRevenue, 'positive'],
+    ['Refunds and returns', -bridge.refundsAndReturns, 'cost'],
+    ['Net operating revenue', bridge.cashRevenue, 'subtotal'],
     ['COGS', -bridge.cogs, 'cost'],
     ['Paid nonfounder labor', -bridge.paidNonfounderLabor, 'cost'],
     ['Operating expense ex labor', -bridge.operatingExpenseExLabor, 'cost'],

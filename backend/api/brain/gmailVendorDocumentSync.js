@@ -15,6 +15,8 @@ const SOURCE = 'gmail_vendor_documents';
 const STREAM = 'vendor-documents-v1';
 const MAX_BATCH = 100;
 const DEFAULT_BATCH = 50;
+const RETRY_DELAY_MS = 15 * 60 * 1000;
+const STALE_RUNNING_MS = 30 * 60 * 1000;
 const QUERY_TERMS = '{invoice receipt statement "order confirmation" "purchase order" "amount due" "payment confirmation" "fresh sheet" "price list"}';
 const BLOCKED_DOMAINS = /(?:^|\.)(?:localeffortfood\.com|google\.com|intuit\.com|turbotax\.com)$/i;
 
@@ -148,8 +150,7 @@ function extractDocument(message) {
   };
 }
 
-async function ensureCursors({ monthsBack = 36 } = {}) {
-  const prisma = getPrisma();
+async function ensureCursors({ monthsBack = 36, prisma = getPrisma() } = {}) {
   const windows = buildVendorDocumentWindows(new Date(), monthsBack);
   for (const window of windows) {
     await prisma.brainSyncCursor.upsert({
@@ -174,14 +175,31 @@ async function ensureCursors({ monthsBack = 36 } = {}) {
   return windows.length;
 }
 
-async function nextCursor() {
-  const prisma = getPrisma();
+async function recoverStaleRunningCursors(prisma = getPrisma(), now = new Date()) {
+  const staleBefore = new Date(now.getTime() - STALE_RUNNING_MS);
+  // A process can die after claiming a window. Recover only stale claims; a
+  // currently running page must never be selected by another invocation.
+  return prisma.brainSyncCursor.updateMany({
+    where: {
+      source: SOURCE,
+      stream: STREAM,
+      status: 'running',
+      OR: [
+        { lastObservedAt: { lte: staleBefore } },
+        { lastObservedAt: null, updatedAt: { lte: staleBefore } },
+      ],
+    },
+    data: { status: 'error', retryAfter: now },
+  });
+}
+
+async function nextCursor(prisma = getPrisma()) {
   const now = new Date();
   return prisma.brainSyncCursor.findFirst({
     where: {
       source: SOURCE,
       stream: STREAM,
-      status: { in: ['pending', 'running', 'error'] },
+      status: { in: ['pending', 'error'] },
       OR: [{ retryAfter: null }, { retryAfter: { lte: now } }],
     },
     // Recent-first. A window keeps returning until its page token is exhausted.
@@ -213,24 +231,42 @@ async function ingestVendorDocumentMessage(gmail, messageId) {
 }
 
 /** Process one Gmail result page; callers repeat until all cursors are complete. */
-async function runNextVendorDocumentBatch({ batchSize = DEFAULT_BATCH, monthsBack = 36, logger } = {}) {
-  const prisma = getPrisma();
-  await ensureCursors({ monthsBack });
-  const cursor = await nextCursor();
+async function runNextVendorDocumentBatch({
+  batchSize = DEFAULT_BATCH,
+  monthsBack = 36,
+  logger,
+  dependencies,
+} = {}) {
+  // Dependency injection is intentionally private to deterministic reliability
+  // tests. Production callers omit it and use the real Prisma/Gmail/ledger path.
+  const prisma = dependencies?.prisma || getPrisma();
+  const authorizeGmail = dependencies?.getAuthorizedGmailClient || getAuthorizedGmailClient;
+  const ingestMessage = dependencies?.ingestVendorDocumentMessage || ingestVendorDocumentMessage;
+  await ensureCursors({ monthsBack, prisma });
+  await recoverStaleRunningCursors(prisma);
+  // Authorize before selecting or claiming a window. A missing/revoked token is
+  // a stream-level problem and must not march every pending cursor into error.
+  const gmail = await authorizeGmail();
+  const cursor = await nextCursor(prisma);
   if (!cursor) return { complete: true, processed: 0, errors: 0 };
 
   const limit = Math.max(1, Math.min(MAX_BATCH, Number(batchSize) || DEFAULT_BATCH));
-  await prisma.brainSyncCursor.update({ where: { id: cursor.id }, data: { status: 'running', retryAfter: null } });
-  const gmail = await getAuthorizedGmailClient();
   const q = `after:${gmailDate(cursor.windowStart)} before:${gmailDate(cursor.windowEnd)} -in:sent ${QUERY_TERMS}`;
   let processed = 0, skipped = 0, errors = 0;
   try {
+    const claim = await prisma.brainSyncCursor.updateMany({
+      where: { id: cursor.id, status: { in: ['pending', 'error'] } },
+      data: { status: 'running', retryAfter: null, lastObservedAt: new Date() },
+    });
+    if (claim.count !== 1) {
+      return { complete: false, claimed: false, processed: 0, skipped: 0, errors: 0 };
+    }
     const page = await gmail.users.messages.list({
       userId: 'me', q, maxResults: limit, ...(cursor.pageToken ? { pageToken: cursor.pageToken } : {}),
     });
     for (const stub of (page.data.messages || [])) {
       try {
-        const result = await ingestVendorDocumentMessage(gmail, stub.id);
+        const result = await ingestMessage(gmail, stub.id);
         if (result.skipped) skipped++; else processed++;
       } catch (err) {
         errors++;
@@ -238,6 +274,42 @@ async function runNextVendorDocumentBatch({ batchSize = DEFAULT_BATCH, monthsBac
       }
     }
     const pageToken = page.data.nextPageToken || null;
+    if (errors > 0) {
+      const retryAfter = new Date(Date.now() + RETRY_DELAY_MS);
+      await prisma.brainSyncCursor.update({
+        where: { id: cursor.id },
+        data: {
+          // Keep the original pageToken. Successful messages are idempotent;
+          // replaying the page is safer than permanently skipping failures.
+          status: 'error',
+          retryAfter,
+          errorCount: { increment: errors },
+          lastObservedAt: new Date(),
+          metadata: {
+            ...(cursor.metadata || {}),
+            query: q,
+            deferredPage: true,
+            successfulOnDeferredPage: processed + skipped,
+            lastBatchSize: (page.data.messages || []).length,
+            lastErrorCount: errors,
+          },
+        },
+      });
+      const result = {
+        complete: false,
+        cursorId: cursor.id,
+        windowStart: cursor.windowStart,
+        windowEnd: cursor.windowEnd,
+        windowComplete: false,
+        pageDeferred: true,
+        retryAfter,
+        processed,
+        skipped,
+        errors,
+      };
+      logger?.warn?.(result, 'brain/gmail-vendor: page deferred for lossless retry');
+      return result;
+    }
     await prisma.brainSyncCursor.update({
       where: { id: cursor.id },
       data: {
@@ -246,7 +318,14 @@ async function runNextVendorDocumentBatch({ batchSize = DEFAULT_BATCH, monthsBac
         processedCount: { increment: processed + skipped },
         errorCount: { increment: errors },
         lastObservedAt: new Date(),
-        metadata: { ...(cursor.metadata || {}), query: q, lastBatchSize: processed + skipped, lastErrorCount: errors },
+        metadata: {
+          ...(cursor.metadata || {}),
+          query: q,
+          deferredPage: false,
+          successfulOnDeferredPage: 0,
+          lastBatchSize: processed + skipped,
+          lastErrorCount: errors,
+        },
       },
     });
     const result = {
@@ -264,7 +343,12 @@ async function runNextVendorDocumentBatch({ batchSize = DEFAULT_BATCH, monthsBac
   } catch (err) {
     await prisma.brainSyncCursor.update({
       where: { id: cursor.id },
-      data: { status: 'error', errorCount: { increment: 1 }, retryAfter: new Date(Date.now() + 15 * 60 * 1000) },
+      data: {
+        status: 'error',
+        errorCount: { increment: 1 },
+        retryAfter: new Date(Date.now() + RETRY_DELAY_MS),
+        lastObservedAt: new Date(),
+      },
     });
     throw err;
   }
@@ -295,4 +379,7 @@ module.exports = {
   ensureCursors,
   runNextVendorDocumentBatch,
   getVendorDocumentSyncStatus,
+  // Exported for focused reliability tests; not an API surface.
+  nextCursor,
+  recoverStaleRunningCursors,
 };

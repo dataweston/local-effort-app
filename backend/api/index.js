@@ -103,6 +103,7 @@ const { createPublicContextRouter } = require('./routes/publicContext');
 const { createProductFeedsRouter } = require('./routes/productFeeds');
 const { createSupportRouter } = require('./routes/support');
 const { createDecisionRouter } = require('./routes/decision');
+const { createThumbtackRouter } = require('./routes/thumbtack');
 const {
   CHECKOUT_SCOPES,
   createUcpRouter,
@@ -2257,6 +2258,7 @@ app.use('/api', createPublicContextRouter({
 }));
 app.use('/api', createSupportRouter({ logger }));
 app.use('/api', createDecisionRouter({ logger }));
+app.use('/api', createThumbtackRouter({ logger, rateLimit: webhookRateLimit }));
 app.use('/api', createProductFeedsRouter({ logger, siteUrl: publicSiteUrl }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
