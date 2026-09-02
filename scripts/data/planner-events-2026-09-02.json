@@ -1,0 +1,92 @@
+{
+  "weekStart": "2026-08-31",
+  "cards": [
+    {
+      "id": "event-2026-09-04-rad-pizza-steak-dinner",
+      "title": "Rad — pizza dinner with steak",
+      "date": "2026-09-04",
+      "dayOfWeek": "Friday",
+      "zone": "untimed",
+      "objectType": "event",
+      "people": [],
+      "revenueCents": 0,
+      "cashReceivedCents": 0,
+      "financialStatus": "scheduled_time_tbd",
+      "financialSource": "Owner instruction 2026-09-02; no invoice or estimate located in Square, brain, or planner",
+      "financialMetadata": {
+        "detailSource": "owner_verbal_only",
+        "gmailLookupStatus": "blocked_oauth_expired",
+        "eventTimeTbd": true,
+        "openQuestions": [
+          "Rad — full name and contact",
+          "Service time and location",
+          "Guest count",
+          "Price / deposit status",
+          "Menu beyond pizza + steak"
+        ]
+      },
+      "notes": "Pizza dinner with steak. Created from owner instruction on 2026-09-02.\n\nDETAIL PENDING — Gmail lookup could not run: the Gmail OAuth grant expired around 2026-04-23 (invalid_grant), and the brain's Gmail index stops at 2026-04-26, so no September thread is available from any local source. Reconnect via Brain → Partners → \"Connect Gmail\", then this card should be enriched from the thread.\n\nUnconfirmed: guest count, service time, location, price, deposit, full menu.",
+      "sortOrder": 10,
+      "priority": 2
+    },
+    {
+      "id": "event-2026-09-23-john-dinner",
+      "title": "John — dinner",
+      "date": "2026-09-23",
+      "dayOfWeek": "Wednesday",
+      "zone": "untimed",
+      "objectType": "event",
+      "people": [],
+      "revenueCents": 0,
+      "cashReceivedCents": 0,
+      "financialStatus": "scheduled_time_tbd",
+      "financialSource": "Owner instruction 2026-09-02; no invoice or estimate located in Square, brain, or planner",
+      "financialMetadata": {
+        "detailSource": "owner_verbal_only",
+        "gmailLookupStatus": "blocked_oauth_expired",
+        "eventTimeTbd": true,
+        "openQuestions": [
+          "John — full name and contact",
+          "Service time and location",
+          "Guest count",
+          "Price / deposit status",
+          "Menu / service style"
+        ]
+      },
+      "notes": "Dinner for John. Created from owner instruction on 2026-09-02.\n\nDETAIL PENDING — Gmail lookup could not run: the Gmail OAuth grant expired around 2026-04-23 (invalid_grant), and the brain's Gmail index stops at 2026-04-26. Reconnect via Brain → Partners → \"Connect Gmail\", then enrich this card from the thread.\n\nUnconfirmed: guest count, service time, location, price, deposit, menu. Falls on the same Wednesday as the Catherine Squires and Sanjay meal-prep slots — check kitchen capacity once the time is known.",
+      "sortOrder": 10,
+      "priority": 2
+    },
+    {
+      "id": "event-2026-09-25-clare-apple-crisps",
+      "title": "Clare — apple crisps",
+      "date": "2026-09-25",
+      "dayOfWeek": "Friday",
+      "zone": "untimed",
+      "objectType": "event",
+      "people": [],
+      "revenueCents": 0,
+      "cashReceivedCents": 0,
+      "financialStatus": "scheduled_time_tbd",
+      "financialSource": "Owner instruction 2026-09-02; no invoice or estimate located in Square, brain, or planner",
+      "financialMetadata": {
+        "detailSource": "owner_verbal_only",
+        "gmailLookupStatus": "blocked_oauth_expired",
+        "eventTimeTbd": true,
+        "possibleBrainCustomerId": "f4230c23-cdc4-4699-8eda-f9aca605856c",
+        "possibleBrainCustomerName": "Clare Holte",
+        "possibleBrainCustomerConfidence": "unconfirmed_name_match_only",
+        "openQuestions": [
+          "Is this Clare Holte (brain Customer) or a different Clare?",
+          "Quantity of apple crisps",
+          "Delivery or pickup, and time",
+          "Price / deposit status",
+          "Individual portions or full pans"
+        ]
+      },
+      "notes": "Apple crisps for Clare. Created from owner instruction on 2026-09-02.\n\nDETAIL PENDING — Gmail lookup could not run: the Gmail OAuth grant expired around 2026-04-23 (invalid_grant), and the brain's Gmail index stops at 2026-04-26. Reconnect via Brain → Partners → \"Connect Gmail\", then enrich this card from the thread.\n\nPossible match: brain Customer \"Clare Holte\" (created 2026-04-28) — NAME MATCH ONLY, not confirmed.\n\nUnconfirmed: quantity, portion format, delivery vs pickup, time, price. Note this is the day before the Gigi Rehnberg baby shower (2026-09-26) — production may overlap.",
+      "sortOrder": 10,
+      "priority": 2
+    }
+  ]
+}
