@@ -77,6 +77,30 @@ pnpm lint / lint:fix    # eslint on src/
 pnpm test:e2e           # Playwright
 ```
 
+### Operator CLIs (use these before writing a one-off script)
+
+```bash
+node scripts/gmail.cjs status                    # auth health + index freshness + how to fix
+node scripts/gmail.cjs search "rad pizza" --max 5
+node scripts/gmail.cjs thread <threadId>
+
+node scripts/planner.cjs list --from 2026-09-01 --to 2026-09-30
+node scripts/planner.cjs add --date fri --title "Rad — pizza dinner" --type event
+node scripts/planner.cjs add --date "sep 25" --title "Clare — apple crisps" --apply
+```
+
+`planner.cjs add` parses `fri` / `tomorrow` / `sep 25` / `9/25` forward from today,
+derives `dayOfWeek` and a deterministic id, prints same-day cards as a capacity
+check, and is a **dry run until `--apply`**. For multi-card batches with COGS and
+recurring series, `scripts/upsert-planner-week.cjs --data <file.json>` still applies.
+
+**Gmail keeps breaking?** Run `scripts/gmail.cjs status` first — it distinguishes
+"never connected" from "grant expired" and detects the real root cause: while the
+Google Cloud OAuth client sits in **Testing** publishing status, Google expires
+refresh tokens every 7 days. Publish the consent screen to stop the bleeding.
+Reconnect via the Brain UI → Partners → **Connect Gmail** (that POST signs the
+OAuth state server-side; a locally generated URL can fail state verification).
+
 ## Conventions
 
 - pnpm only; Node 20; React pinned to 18.2.0 via overrides.

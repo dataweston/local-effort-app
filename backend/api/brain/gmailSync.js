@@ -91,34 +91,70 @@ async function exchangeCodeForTokens(code) {
   return tokens;
 }
 
+/**
+ * One stable row per label. tokenHash is the upsert key, so hashing the token
+ * payload minted a brand new row on every refresh — eight orphans accumulated,
+ * and loadGmailTokens then ordered by a lastUsedAt nothing ever set, picking
+ * among them arbitrarily. Hash the label instead: same row forever.
+ */
+function tokenRowKey(label = GMAIL_TOKEN_LABEL) {
+  const crypto = require('crypto');
+  return crypto.createHash('sha256').update(`brain-api-token:${label}`).digest('hex');
+}
+
 async function storeGmailTokens(tokens) {
   const prisma = getPrisma();
-  const crypto = require('crypto');
-  const tokenData = JSON.stringify(tokens);
-  const tokenHash = crypto.createHash('sha256').update(tokenData).digest('hex');
+  const tokenHash = tokenRowKey();
+
+  // Google returns refresh_token only on the first consent. Refresh responses
+  // carry just access_token/expiry_date, so a blind write would drop the
+  // refresh_token and silently un-authorize the integration.
+  const existing = await prisma.brainApiToken.findUnique({ where: { tokenHash } });
+  const merged = { ...(existing?.tokenData || {}), ...tokens };
+  if (!merged.refresh_token && existing?.tokenData?.refresh_token) {
+    merged.refresh_token = existing.tokenData.refresh_token;
+  }
 
   await prisma.brainApiToken.upsert({
     where: { tokenHash },
-    update: { lastUsedAt: new Date(), tokenData: tokens },
+    update: { lastUsedAt: new Date(), tokenData: merged, scopes: GMAIL_SCOPES },
     create: {
       label: GMAIL_TOKEN_LABEL,
       tokenHash,
       scopes: GMAIL_SCOPES,
-      tokenData: tokens,
+      tokenData: merged,
     },
   });
 
   return tokenHash;
 }
 
+/** Local fallback written by earlier one-off scripts; gitignored. */
+function loadGmailTokenFile() {
+  const fs = require('fs');
+  const path = require('path');
+  const file = path.resolve(__dirname, '..', '..', '..', '.gmail-tokens.json');
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 async function loadGmailTokens() {
   const prisma = getPrisma();
-  const row = await prisma.brainApiToken.findFirst({
-    where: { label: GMAIL_TOKEN_LABEL },
-    orderBy: { lastUsedAt: 'desc' },
-  });
-  if (!row?.tokenData) return null;
-  const raw = row.tokenData;
+  // Canonical row first, then any legacy row that still holds data, then the
+  // local file. Legacy rows predate tokenRowKey and have no usable ordering.
+  const row =
+    (await prisma.brainApiToken.findUnique({ where: { tokenHash: tokenRowKey() } }))
+    || (await prisma.brainApiToken.findFirst({
+      where: { label: GMAIL_TOKEN_LABEL, NOT: { tokenData: { equals: null } } },
+      orderBy: { createdAt: 'desc' },
+    }));
+
+  const raw = row?.tokenData || loadGmailTokenFile();
+  if (!raw) return null;
   // Normalize python google-auth-oauthlib format for google-auth-library.
   // Python writes: { token, refresh_token, token_uri, client_id, client_secret, scopes }
   // OAuth2Client expects: { access_token, refresh_token, expiry_date, ... }
@@ -143,10 +179,58 @@ async function getAuthorizedGmailClient() {
   }
   const oauth2Client = getOAuthClient();
   oauth2Client.setCredentials(tokens);
-  oauth2Client.on('tokens', async (newTokens) => {
-    if (newTokens.refresh_token) await storeGmailTokens({ ...tokens, ...newTokens });
+  // Persist every refresh, not just ones carrying a refresh_token. Refreshed
+  // access tokens were previously discarded, so each run re-refreshed from a
+  // grant that had already lapsed.
+  oauth2Client.on('tokens', (newTokens) => {
+    storeGmailTokens(newTokens).catch(() => {});
   });
   return createGmailClient({ version: 'v1', auth: oauth2Client });
+}
+
+/**
+ * Non-throwing auth probe for health checks and CLI diagnostics.
+ * Returns { ok, reason, detail, expiresAt, testingModeGrant }.
+ */
+async function getGmailAuthHealth() {
+  let tokens;
+  try {
+    tokens = await loadGmailTokens();
+  } catch (err) {
+    return { ok: false, reason: 'load-failed', detail: err.message };
+  }
+  if (!tokens) return { ok: false, reason: 'not-connected', detail: 'No stored Gmail tokens' };
+  if (!tokens.refresh_token) {
+    return { ok: false, reason: 'no-refresh-token', detail: 'Stored grant cannot refresh; reconnect required' };
+  }
+
+  // A 7-day refresh window means the Google Cloud OAuth client is still in
+  // "Testing" publishing status, which expires refresh tokens weekly.
+  const testingModeGrant = Number(tokens.refresh_token_expires_in) > 0
+    && Number(tokens.refresh_token_expires_in) <= 8 * 86400;
+
+  const oauth2Client = getOAuthClient();
+  oauth2Client.setCredentials(tokens);
+  try {
+    const { token } = await oauth2Client.getAccessToken();
+    if (!token) throw new Error('No access token returned');
+    const creds = oauth2Client.credentials || {};
+    if (creds.access_token) await storeGmailTokens(creds);
+    return {
+      ok: true,
+      reason: 'connected',
+      expiresAt: creds.expiry_date ? new Date(creds.expiry_date).toISOString() : null,
+      testingModeGrant,
+    };
+  } catch (err) {
+    const invalid = /invalid_grant/i.test(err.message || '');
+    return {
+      ok: false,
+      reason: invalid ? 'grant-expired' : 'refresh-failed',
+      detail: err.message,
+      testingModeGrant,
+    };
+  }
 }
 
 // ── Sync logic ───────────────────────────────────────────────────────────────
@@ -219,10 +303,8 @@ async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress
   const oauth2Client = getOAuthClient();
   oauth2Client.setCredentials(tokens);
 
-  oauth2Client.on('tokens', async (newTokens) => {
-    if (newTokens.refresh_token) {
-      await storeGmailTokens({ ...tokens, ...newTokens });
-    }
+  oauth2Client.on('tokens', (newTokens) => {
+    storeGmailTokens(newTokens).catch(() => {});
   });
 
   const gmail = createGmailClient({ version: 'v1', auth: oauth2Client });
@@ -329,7 +411,9 @@ module.exports = {
   getAuthUrl,
   exchangeCodeForTokens,
   storeGmailTokens,
+  loadGmailTokens,
   syncGmailThreads,
   verifyOAuthState,
   getAuthorizedGmailClient,
+  getGmailAuthHealth,
 };
