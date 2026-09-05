@@ -39,13 +39,22 @@ function orderStatus(status) {
   return 'booked';
 }
 
-/** Portal order status → invoice status. Money applied refines this later. */
-function invoiceStatus(status) {
-  const value = String(status || '').trim().toLowerCase();
-  if (value === 'paid' || value === 'synced') return 'paid';
-  if (value === 'partial') return 'partially_paid';
-  if (value === 'refunded' || value === 'returned') return 'void';
-  return 'issued';
+/** Portal state plus linked payment evidence → internally consistent invoice. */
+function invoiceSettlement({ status, totalCents, allocatedCents = 0 }) {
+  const portalStatus = String(status || '').trim().toLowerCase();
+  const total = Math.max(0, Math.round(Number(totalCents) || 0));
+  const allocated = Math.min(total, Math.max(0, Math.round(Number(allocatedCents) || 0)));
+
+  if (portalStatus === 'refunded' || portalStatus === 'returned') {
+    return { status: 'void', outstandingCents: 0 };
+  }
+  if (portalStatus === 'paid' || portalStatus === 'synced' || allocated === total) {
+    return { status: 'paid', outstandingCents: 0 };
+  }
+  if (allocated > 0 || portalStatus === 'partial') {
+    return { status: 'partially_paid', outstandingCents: total - allocated };
+  }
+  return { status: 'issued', outstandingCents: total };
 }
 
 function orderDate(order) {
@@ -180,6 +189,7 @@ async function projectOrder({ prisma, agreementId, order }) {
       });
     }
 
+    const initialSettlement = invoiceSettlement({ status: order.status, totalCents });
     const invoice = await tx.commercialInvoice.upsert({
       where: { sourceSystem_sourceId: { sourceSystem: SOURCE_SYSTEM, sourceId: order.id } },
       update: {
@@ -187,15 +197,15 @@ async function projectOrder({ prisma, agreementId, order }) {
         issuedAt,
         invoiceNumber: order.order_number || null,
         orderId: commercialOrder.id,
+        metadata: { portalStatus: order.status || null },
       },
       create: {
         agreementId,
         orderId: commercialOrder.id,
         invoiceNumber: order.order_number || null,
-        status: invoiceStatus(order.status),
+        status: initialSettlement.status,
         totalCents,
-        // Outstanding starts at the full amount; allocations settle it.
-        outstandingCents: totalCents,
+        outstandingCents: initialSettlement.outstandingCents,
         issuedAt,
         sourceSystem: SOURCE_SYSTEM,
         sourceId: order.id,
@@ -203,8 +213,48 @@ async function projectOrder({ prisma, agreementId, order }) {
       },
     });
 
-    return { commercialOrder, invoice, lineCount: lines.length };
+    const allocated = await tx.financePaymentAllocation.aggregate({
+      where: { invoiceId: invoice.id },
+      _sum: { amountCents: true },
+    });
+    const settlement = invoiceSettlement({
+      status: order.status,
+      totalCents,
+      allocatedCents: allocated?._sum?.amountCents,
+    });
+    const settledInvoice = await tx.commercialInvoice.update({
+      where: { id: invoice.id },
+      data: settlement,
+    });
+
+    return { commercialOrder, invoice: settledInvoice, lineCount: lines.length };
   });
+}
+
+/**
+ * The portal stores two unrelated things in `happymonday_payments`: money a
+ * customer actually paid, and movements of a standing credit balance recorded
+ * as `credit_adjustment`. A credit grant is positive and a credit application
+ * is negative, but neither is cash: the grant creates a balance the customer
+ * did not pay for, and the application only reduces what is owed.
+ *
+ * Classifying by sign alone would post a positive credit top-up as a customer
+ * payment and allocate it against invoices, inventing a receipt. Classify by
+ * type. Both the live path and the dry-run estimate read these predicates so
+ * the estimate can never drift from what a real run would write.
+ */
+const CREDIT_PAYMENT_TYPES = new Set(['credit_adjustment']);
+
+function paymentCents(payment) {
+  return Math.round(Number(payment?.amount_cents) || 0);
+}
+
+function isCreditMovement(payment) {
+  return CREDIT_PAYMENT_TYPES.has(String(payment?.payment_type || '').toLowerCase());
+}
+
+function isSettlingPayment(payment) {
+  return !isCreditMovement(payment) && paymentCents(payment) > 0;
 }
 
 /**
@@ -214,7 +264,8 @@ async function projectOrder({ prisma, agreementId, order }) {
  * because no processor was involved.
  */
 async function projectPayment({ prisma, payment, invoices }) {
-  const amountCents = Math.round(Number(payment?.amount_cents) || 0);
+  const amountCents = paymentCents(payment);
+  if (isCreditMovement(payment)) return { skipped: 'credit-movement-not-cash' };
   if (amountCents <= 0) return { skipped: 'non-positive-amount' };
 
   const provider = payment?.square_payment_id ? 'square' : 'happymonday_portal';
@@ -263,9 +314,19 @@ async function runHappyMondayProjection({ prisma, supabase, dryRun = false, logg
     .order('created_at', { ascending: true });
   if (paymentsError) throw new Error(paymentsError.message || 'Unable to read happymonday_payments');
 
+  const settling = (payments || []).filter(isSettlingPayment);
+  const credits = (payments || []).filter(isCreditMovement);
+  const unusable = (payments || []).filter(
+    (payment) => !isSettlingPayment(payment) && !isCreditMovement(payment),
+  );
+
   const summary = {
     orders: orders?.length || 0,
     payments: payments?.length || 0,
+    settlingPayments: settling.length,
+    creditMovements: credits.length,
+    creditMovementCents: credits.reduce((sum, payment) => sum + paymentCents(payment), 0),
+    unusablePayments: unusable.length,
     invoicesWritten: 0,
     paymentsApplied: 0,
     billedCents: 0,
@@ -276,7 +337,7 @@ async function runHappyMondayProjection({ prisma, supabase, dryRun = false, logg
 
   if (dryRun) {
     summary.billedCents = (orders || []).reduce((sum, order) => sum + (Number(order.total_cents) || 0), 0);
-    summary.collectedCents = (payments || []).reduce((sum, row) => sum + (Number(row.amount_cents) || 0), 0);
+    summary.collectedCents = settling.reduce((sum, payment) => sum + paymentCents(payment), 0);
     return summary;
   }
 
@@ -325,8 +386,11 @@ module.exports = {
   SOURCE_SYSTEM,
   buildLines,
   ensureAgreement,
-  invoiceStatus,
+  invoiceSettlement,
+  isCreditMovement,
+  isSettlingPayment,
   orderStatus,
+  paymentCents,
   projectOrder,
   projectPayment,
   runHappyMondayProjection,

@@ -171,11 +171,30 @@ describe('Happy Monday projection', () => {
     expect(lines.some((line) => line.lineType === 'reconciliation')).toBe(false);
   });
 
-  it('maps portal statuses onto commercial and invoice states', () => {
+  it('maps portal statuses without contradicting invoice balances', () => {
     expect(happyMonday.orderStatus('paid')).toBe('paid');
     expect(happyMonday.orderStatus('partial')).toBe('partially_paid');
     expect(happyMonday.orderStatus('unpaid')).toBe('booked');
-    expect(happyMonday.invoiceStatus('refunded')).toBe('void');
+    expect(happyMonday.invoiceSettlement({
+      status: 'paid',
+      totalCents: 10000,
+      allocatedCents: 0,
+    })).toEqual({ status: 'paid', outstandingCents: 0 });
+    expect(happyMonday.invoiceSettlement({
+      status: 'unpaid',
+      totalCents: 10000,
+      allocatedCents: 2500,
+    })).toEqual({ status: 'partially_paid', outstandingCents: 7500 });
+    expect(happyMonday.invoiceSettlement({
+      status: 'unpaid',
+      totalCents: 10000,
+      allocatedCents: 0,
+    })).toEqual({ status: 'issued', outstandingCents: 10000 });
+    expect(happyMonday.invoiceSettlement({
+      status: 'refunded',
+      totalCents: 10000,
+      allocatedCents: 10000,
+    })).toEqual({ status: 'void', outstandingCents: 0 });
   });
 });
 
