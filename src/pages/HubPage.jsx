@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   CalendarDays,
+  ClipboardList,
   ChartNoAxesCombined,
   FileText,
   Home,
@@ -27,6 +28,7 @@ import { PeopleView } from '../components/hub/HubPeopleView';
 import { WeeklyMealPrepView } from '../components/hub/HubMealPrepView';
 import { FoodInputsView } from '../components/hub/HubFoodInputsView';
 import { PrivilegedTools } from '../components/hub/HubPrivilegedTools';
+import { OwnerInterviewView } from '../components/hub/HubOwnerInterviewView';
 import { LocalistClosedScreen, LocalistGuestShell, LocalistView } from '../components/hub/HubLocalistView';
 import { MembershipView } from '../components/hub/HubMembershipView';
 import { SecurityGuestShell, SecurityView } from '../components/hub/HubSecurityView';
@@ -46,6 +48,7 @@ const mealPrepTab = { id: 'weeklyMealPrep', label: 'Meal Prep', icon: Soup };
 const foodInputsTab = { id: 'foodInputs', label: 'Ingredient Intake', icon: Utensils };
 
 const economicsTab = { id: 'economics', label: 'Economics', icon: ChartNoAxesCombined };
+const interviewTab = { id: 'interview', label: 'Owner interview', icon: ClipboardList };
 
 
 export default function HubPage() {
@@ -58,12 +61,13 @@ export default function HubPage() {
   const isSecurityRoute = hubPath === '/hub/security';
   const isInputsRoute = hubPath === '/hub/inputs';
   const isEconomicsRoute = hubPath === '/hub/economics';
+  const isInterviewRoute = hubPath === '/hub/interview';
   // /hub/membership is the link a new Localist gets in their signup email.
   const isMembershipRoute = hubPath === '/hub/membership' || hubPath === '/hub/member';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
-  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : isMembershipRoute ? 'membership' : sharedDocId ? 'docs' : 'today');
+  const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : isMembershipRoute ? 'membership' : isInterviewRoute ? 'interview' : sharedDocId ? 'docs' : 'today');
   // Privileged-only "view as" override: see the whole Hub as a staff or customer
   // would. null = view with your real (privileged) access. Production-safe: only
   // a genuinely privileged profile can set this; it never elevates access.
@@ -147,6 +151,7 @@ export default function HubPage() {
   const canViewAs = actualIsPrivileged;
   const effectiveViewAs = canViewAs ? viewAs : null;
   const isPrivileged = actualIsPrivileged && !effectiveViewAs;
+  const isOwnerView = profileIsActive && Boolean(auth.isAdmin) && !effectiveViewAs;
   const isCustomer = actualIsCustomer || effectiveViewAs === 'customer';
   const adminTab = { id: 'admin', label: 'Admin', icon: ShieldCheck };
   const localistTab = { id: 'localist', label: 'Localist', icon: ShoppingCart };
@@ -165,7 +170,7 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [...tabs, mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, membershipTab, securityTab]
+    ? [...tabs, ...(isOwnerView ? [interviewTab] : []), mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, membershipTab, securityTab]
     : [...tabs, mealPrepTab, foodInputsTab, localistTab, membershipTab, securityTab];
   const mobileNavTabs = isInputsRoute
     ? [foodInputsTab]
@@ -185,9 +190,18 @@ export default function HubPage() {
     ? (localistTabIds.has(tab) ? tab : 'localist')
     : isCustomer
     ? (sharedDocId ? 'docs' : customerTabIds.has(tab) ? tab : 'today')
-    : !isPrivileged && tab === 'economics'
+    : (!isPrivileged && tab === 'economics') || (tab === 'interview' && !isOwnerView)
     ? 'today'
     : tab;
+
+  const chooseTab = (id) => {
+    setTab(id);
+    if (id === 'interview') {
+      window.history.replaceState(window.history.state, '', '/hub/interview');
+    } else if (window.location.pathname.replace(/\/+$/, '').toLowerCase() === '/hub/interview') {
+      window.history.replaceState(window.history.state, '', '/hub');
+    }
+  };
 
   if (localistToken) {
     if (!localistAccess.loaded) {
@@ -252,6 +266,13 @@ export default function HubPage() {
       </>
     );
   }
+  if (isInterviewRoute && !isOwnerView) {
+    return (
+      <>
+        <HubAccessRequired auth={auth} />
+      </>
+    );
+  }
 
   return (
     <div className="hub-app">
@@ -265,7 +286,7 @@ export default function HubPage() {
         </div>
         <nav>
           {navTabs.map(({ id, label, icon: Icon }) => (
-            <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => setTab(id)}>
+            <button key={id} className={activeTab === id ? 'is-active' : ''} onClick={() => chooseTab(id)}>
               <Icon size={15} aria-hidden="true" />
               {label}
             </button>
@@ -311,6 +332,7 @@ export default function HubPage() {
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} isPrivileged={isPrivileged} isCustomer={isCustomer} />}
         {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
         {activeTab === 'economics' && isPrivileged && <EconomicsModelView accessToken={auth.accessToken} />}
+        {activeTab === 'interview' && isOwnerView && <OwnerInterviewView accessToken={auth.accessToken} />}
         {activeTab === 'admin' && isPrivileged && <PrivilegedTools accessToken={auth.accessToken} reloadDocs={reloadDocs} />}
         {activeTab === 'localist' && <LocalistView />}
         {activeTab === 'membership' && <MembershipView accessToken={auth.accessToken} />}

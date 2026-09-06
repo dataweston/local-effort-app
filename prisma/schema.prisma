@@ -1324,6 +1324,59 @@ model BrainApiToken {
   createdAt  DateTime  @default(now())
 }
 
+// Owner-authored interview evidence is intentionally separate from the ledger,
+// graph, inbox, inference, and operational system-of-record models.
+model BrainOwnerInterviewSession {
+  id                  String   @id @default(uuid())
+  interviewKey        String
+  definitionVersion   Int
+  definitionSnapshot  Json
+  respondentUserId    String
+  respondentEmail     String
+  status              String   @default("in_progress")
+  currentQuestionId   String
+  revision            Int      @default(0)
+  startedAt           DateTime @default(now())
+  submittedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  answers BrainOwnerInterviewAnswer[]
+
+  @@index([respondentUserId, interviewKey, status, updatedAt])
+  @@index([status, updatedAt])
+}
+
+model BrainOwnerInterviewAnswer {
+  id              String   @id @default(uuid())
+  sessionId       String
+  questionId      String
+  revision        Int
+  responseText    String
+  knowledgeKind   String?
+  confidence      String?
+  applicability   String[] @default([])
+  asOfDate        DateTime?
+  sourceReference String?
+  caveats         String?
+  sensitivity     String   @default("confidential_business")
+  disposition     String   @default("draft")
+  supersedesId    String?  @unique
+  supersededAt    DateTime?
+  submittedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  session      BrainOwnerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  supersedes   BrainOwnerInterviewAnswer?  @relation("BrainOwnerInterviewAnswerRevision", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy BrainOwnerInterviewAnswer[] @relation("BrainOwnerInterviewAnswerRevision")
+
+  @@unique([sessionId, questionId, revision])
+  @@index([sessionId, questionId, supersededAt])
+  @@index([sessionId, disposition])
+  @@index([submittedAt])
+}
+
 model BrainSeedReview {
   id          String    @id @default(uuid())
   entityAId   String
