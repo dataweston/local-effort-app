@@ -17,6 +17,29 @@ function resolveAdminEmails() {
   return ['dataweston@gmail.com', 'colsen03@gmail.com'];
 }
 
+function resolveOwnerEmails() {
+  const configured = parseAdminEmails(process.env.OWNER_EMAILS || process.env.OWNER_EMAIL);
+  if (configured.length > 0) return configured;
+  return ['dataweston@gmail.com'];
+}
+
+function resolveOwnerUserIds() {
+  return String(process.env.OWNER_USER_IDS || process.env.OWNER_USER_ID || '')
+    .split(/[\s,]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function isOwnerEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  return Boolean(normalized && resolveOwnerEmails().includes(normalized));
+}
+
+function isOwnerIdentity(user) {
+  if (!user?.id || !user?.email) return false;
+  return isOwnerEmail(user.email) || resolveOwnerUserIds().includes(String(user.id));
+}
+
 function resolveReadOnlyAdminEmails() {
   const configured = parseAdminEmails(
     process.env.READ_ONLY_ADMIN_EMAILS ||
@@ -77,12 +100,40 @@ function createAdminVerifier({ getSupabaseImpl = getSupabase } = {}) {
   };
 }
 
+function createOwnerVerifier({ getSupabaseImpl = getSupabase } = {}) {
+  return async function verifyOwnerRequest(req) {
+    const supabase = getSupabaseImpl();
+    const token = extractBearerToken(req);
+    if (!supabase || !token) {
+      return null;
+    }
+
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(token);
+      if (error || !isOwnerIdentity(user)) {
+        return null;
+      }
+      return user;
+    } catch (_err) {
+      return null;
+    }
+  };
+}
+
 module.exports = {
+  createOwnerVerifier,
   createAdminVerifier,
   extractBearerToken,
+  isOwnerEmail,
+  isOwnerIdentity,
   isAdminEmail,
   isReadOnlyAdminEmail,
   isReadOnlyMethod,
+  resolveOwnerEmails,
+  resolveOwnerUserIds,
   resolveAdminEmails,
   resolveReadOnlyAdminEmails,
 };
