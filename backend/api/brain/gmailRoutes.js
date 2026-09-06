@@ -4,7 +4,8 @@
  * GET  /api/brain/gmail/auth     -> redirect to Google OAuth (Bearer/admin-key clients)
  * POST /api/brain/gmail/auth     -> return OAuth URL to authenticated browser UI
  * GET  /api/brain/gmail/callback -> receive OAuth code, store tokens
- * POST /api/brain/gmail/sync     -> run sync (admin only, or cron)
+ * POST /api/brain/gmail/sync     -> run one bounded, resumable thread pass
+ * GET  /api/brain/gmail/sync/status -> per-stream cursor progress
  */
 
 const crypto = require('crypto');
@@ -15,6 +16,7 @@ const {
   exchangeCodeForTokens,
   storeGmailTokens,
   syncGmailThreads,
+  getThreadSyncStatus,
   verifyOAuthState,
 } = require('./gmailSync');
 const {
@@ -33,8 +35,9 @@ function registerGmailRoutes(
   app,
   {
     logger,
-    verifyAdminRequestForAuth = verifyAdminRequest,
-    getAuthUrlForAuth = getAuthUrl,
+    verifyAdminRequest: verifyAdmin = verifyAdminRequest,
+    getAuthUrl: authUrlFor = getAuthUrl,
+    syncGmailThreads: runThreadSyncPass = syncGmailThreads,
   } = {}
 ) {
   // Supabase browser sessions are stored in browser storage, not an HTTP
@@ -43,7 +46,7 @@ function registerGmailRoutes(
   // first, then navigates to the returned Google URL.
   app.post('/api/brain/gmail/auth', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequestForAuth(req);
+      const isAdmin = await verifyAdmin(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
@@ -54,7 +57,7 @@ function registerGmailRoutes(
         });
       }
 
-      return res.json({ ok: true, authUrl: getAuthUrlForAuth() });
+      return res.json({ ok: true, authUrl: authUrlFor() });
     } catch (err) {
       logger?.error({ err }, 'brain/gmail auth-url error');
       return res.status(500).json({ error: 'auth-error' });
@@ -63,7 +66,7 @@ function registerGmailRoutes(
 
   app.get('/api/brain/gmail/auth', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequestForAuth(req);
+      const isAdmin = await verifyAdmin(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) {
         return res.status(403).json({
@@ -79,7 +82,7 @@ function registerGmailRoutes(
         });
       }
 
-      const url = getAuthUrlForAuth();
+      const url = authUrlFor();
       return res.redirect(url);
     } catch (err) {
       logger?.error({ err }, 'brain/gmail auth error');
@@ -105,26 +108,26 @@ function registerGmailRoutes(
     }
   });
 
+  // Process one bounded page per call and answer with the real counts. Work
+  // detached after the response used to be killed with the serverless
+  // instance mid-loop, which reported success and ingested a partial mailbox.
   app.post('/api/brain/gmail/sync', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequest(req);
+      const isAdmin = await verifyAdmin(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
 
-      const { daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com' } = req.body || {};
-
-      // Respond immediately — the sync can take many minutes for a 2-year backfill.
-      // Running it inside the HTTP response would hit serverless timeouts and DB
-      // connection limits. The job logs its own progress and errors.
-      res.json({ ok: true, started: true, message: 'Gmail sync started in background' });
-
-      syncGmailThreads({ daysBack, maxPerQuery, yumAddress, logger })
-        .then(result => {
-          logger?.info(result, 'brain/gmail: sync complete');
-        })
-        .catch(err => {
-          logger?.error({ err }, 'brain/gmail: sync failed');
-        });
+      const { batchSize, maxBatches, timeBudgetMs, restart, daysBack, yumAddress } = req.body || {};
+      const result = await runThreadSyncPass({
+        batchSize,
+        maxBatches,
+        timeBudgetMs,
+        restart,
+        daysBack,
+        yumAddress,
+        logger,
+      });
+      return res.json({ ok: true, ...result });
     } catch (err) {
       const message = err?.message || 'sync-failed';
       logger?.error({ err }, 'brain/gmail sync error');
@@ -135,11 +138,23 @@ function registerGmailRoutes(
     }
   });
 
+  app.get('/api/brain/gmail/sync/status', async (req, res) => {
+    try {
+      const isAdmin = await verifyAdmin(req);
+      const keyOk = hasBrainAdminHeader(req);
+      if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
+      return res.json({ ok: true, ...(await getThreadSyncStatus()) });
+    } catch (err) {
+      logger?.error({ err }, 'brain/gmail sync status error');
+      return res.status(500).json({ error: err?.message || 'sync-status-failed' });
+    }
+  });
+
   // Process exactly one bounded page of likely vendor documents. Repeated calls
   // resume from BrainSyncCursor and work newest-to-oldest over three years.
   app.post('/api/brain/gmail/vendor-documents/batch', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequest(req);
+      const isAdmin = await verifyAdmin(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) {
         return res.status(403).json({
@@ -163,7 +178,7 @@ function registerGmailRoutes(
 
   app.get('/api/brain/gmail/vendor-documents/status', async (req, res) => {
     try {
-      const isAdmin = await verifyAdminRequest(req);
+      const isAdmin = await verifyAdmin(req);
       const keyOk = hasBrainAdminHeader(req);
       if (!isAdmin && !keyOk) return res.status(403).json({ error: 'admin only' });
       return res.json({ ok: true, ...(await getVendorDocumentSyncStatus()) });

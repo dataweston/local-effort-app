@@ -1,15 +1,16 @@
 /**
  * Gmail → Brain ingestion.
  *
- * Syncs recent Gmail threads from the founder's account into BrainInboxItems.
- * Filters to threads with vendor/customer keywords to reduce noise.
+ * Ingests Gmail threads from the founder's sent mail and the shared yum@
+ * mailbox into LedgerEvents plus one triage BrainInboxItem per new thread.
  *
  * Setup required (one-time):
  *   1. Enable Gmail API in Google Cloud Console (same project as Google Calendar)
  *   2. Add GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET to .env
  *   3. GET /api/brain/gmail/auth  → redirect to Google OAuth
  *   4. Google redirects to /api/brain/gmail/callback → stores refresh token in BrainApiToken
- *   5. Sync runs via POST /api/brain/gmail/sync (cron or manual)
+ *   5. Sync runs via POST /api/brain/gmail/sync or `node scripts/gmail.cjs sync`.
+ *      Each call drains bounded pages; repeat until it reports complete.
  *
  * The existing GoogleCalendarToken model pattern is reused here via BrainApiToken
  * with label: "gmail-sync" and scopes: ["gmail:readonly"].
@@ -236,27 +237,6 @@ async function getGmailAuthHealth() {
 // ── Sync logic ───────────────────────────────────────────────────────────────
 
 /**
- * Paginate through all results of a Gmail threads.list query.
- * Returns an array of { id, snippet } thread stubs.
- */
-async function listAllThreads(gmail, q, maxResults = 5000) {
-  const threads = [];
-  let pageToken;
-  do {
-    const res = await gmail.users.threads.list({
-      userId: 'me',
-      q,
-      maxResults: Math.min(500, maxResults - threads.length),
-      ...(pageToken ? { pageToken } : {}),
-    });
-    const page = res.data.threads || [];
-    threads.push(...page);
-    pageToken = res.data.nextPageToken;
-  } while (pageToken && threads.length < maxResults);
-  return threads;
-}
-
-/**
  * Collect all unique participant addresses across all messages in a thread.
  */
 function collectParticipants(messages) {
@@ -277,134 +257,400 @@ function collectParticipants(messages) {
 }
 
 /**
- * Full historical Gmail sync.
+ * Bounded, resumable thread sync.
  *
- * Runs two queries and unions their results by threadId:
- *   1. in:sent after:<2yr ago>           — everything the founder sent
- *   2. yum@localeffortfood.com           — any thread involving the yum@ address
+ * Two queries feed the brain: everything the founder sent inside the retention
+ * window, and everything touching the shared yum@ mailbox. One unbounded pass
+ * cannot finish inside a serverless invocation, and detaching it after the HTTP
+ * response does not escape that limit - it only hides the kill, because the
+ * instance freezes mid-loop and the run reports nothing.
  *
- * Threads are indexed at the thread level (one ledger event per thread).
- * Each thread gets metadata from the first message plus all participants
- * aggregated across every message in the thread.
- *
- * @param {object} options
- * @param {number} options.daysBack       - how far back for sent query (default 730 = 2yr)
- * @param {number} options.maxPerQuery    - max threads per query (default 5000)
- * @param {string} options.yumAddress     - the yum@ address to search (default yum@localeffortfood.com)
- * @param {object} options.logger
- * @returns {{ processed, skipped, errors, queryCounts }}
+ * So a call claims one stream, processes exactly one Gmail result page, stores
+ * the next page token on BrainSyncCursor, and returns real counts. Repeated
+ * calls resume from the stored token; a finished pass restarts on request.
  */
-async function syncGmailThreads({ daysBack = 730, maxPerQuery = 5000, yumAddress = 'yum@localeffortfood.com', logger } = {}) {
-  const tokens = await loadGmailTokens();
-  if (!tokens) {
-    throw new Error('Gmail not authorized — visit /api/brain/gmail/auth to connect');
+
+const THREAD_EVENT_TYPE = 'email.thread';
+const THREAD_SOURCE = 'gmail';
+const DEFAULT_YUM_ADDRESS = 'yum@localeffortfood.com';
+// Streams are query-shaped, not time-windowed. The cursor table keys on
+// (source, stream, windowStart, windowEnd), so both rows pin their window to
+// the epoch and carry identity in the stream name.
+const THREAD_WINDOW = new Date(0);
+const THREAD_STREAMS = Object.freeze([
+  Object.freeze({ stream: 'threads-v1:sent', label: 'sent' }),
+  Object.freeze({ stream: 'threads-v1:yum', label: 'yum' }),
+]);
+const THREAD_STREAM_NAMES = Object.freeze(THREAD_STREAMS.map((entry) => entry.stream));
+const DEFAULT_THREAD_BATCH = 100;
+const MAX_THREAD_BATCH = 250;
+const MAX_THREAD_BATCHES = 500;
+const DEFAULT_THREAD_TIME_BUDGET_MS = 40 * 1000;
+const THREAD_RETRY_DELAY_MS = 15 * 60 * 1000;
+const THREAD_STALE_RUNNING_MS = 30 * 60 * 1000;
+
+function gmailQueryDate(value) {
+  const date = new Date(value);
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function buildThreadQuery(label, { daysBack = 730, yumAddress = DEFAULT_YUM_ADDRESS } = {}) {
+  if (label === 'sent') return `in:sent after:${gmailQueryDate(Date.now() - daysBack * 86400000)}`;
+  if (label === 'yum') return yumAddress;
+  throw new Error(`Unknown Gmail thread stream: ${label}`);
+}
+
+function threadStreamLabel(stream) {
+  const entry = THREAD_STREAMS.find((candidate) => candidate.stream === stream);
+  if (!entry) throw new Error(`Unknown Gmail thread stream: ${stream}`);
+  return entry.label;
+}
+
+async function ensureThreadCursors({
+  prisma = getPrisma(),
+  daysBack = 730,
+  yumAddress = DEFAULT_YUM_ADDRESS,
+} = {}) {
+  for (const { stream, label } of THREAD_STREAMS) {
+    await prisma.brainSyncCursor.upsert({
+      where: {
+        source_stream_windowStart_windowEnd: {
+          source: THREAD_SOURCE,
+          stream,
+          windowStart: THREAD_WINDOW,
+          windowEnd: THREAD_WINDOW,
+        },
+      },
+      // Never clobber a live page token just because a caller re-entered.
+      update: {},
+      create: {
+        source: THREAD_SOURCE,
+        stream,
+        windowStart: THREAD_WINDOW,
+        windowEnd: THREAD_WINDOW,
+        metadata: { label, query: buildThreadQuery(label, { daysBack, yumAddress }), queryVersion: 1 },
+      },
+    });
   }
+  return THREAD_STREAMS.length;
+}
 
-  const oauth2Client = getOAuthClient();
-  oauth2Client.setCredentials(tokens);
+async function recoverStaleRunningThreadCursors(prisma = getPrisma(), now = new Date()) {
+  const staleBefore = new Date(now.getTime() - THREAD_STALE_RUNNING_MS);
+  // A killed invocation leaves its claim behind. Recover only stale claims; a
+  // page another invocation is still working must never be selected twice.
+  return prisma.brainSyncCursor.updateMany({
+    where: {
+      source: THREAD_SOURCE,
+      stream: { in: THREAD_STREAM_NAMES },
+      status: 'running',
+      OR: [
+        { lastObservedAt: { lte: staleBefore } },
+        { lastObservedAt: null, updatedAt: { lte: staleBefore } },
+      ],
+    },
+    data: { status: 'error', retryAfter: now },
+  });
+}
 
-  oauth2Client.on('tokens', (newTokens) => {
-    storeGmailTokens(newTokens).catch(() => {});
+async function nextThreadCursor(prisma = getPrisma()) {
+  const now = new Date();
+  return prisma.brainSyncCursor.findFirst({
+    where: {
+      source: THREAD_SOURCE,
+      stream: { in: THREAD_STREAM_NAMES },
+      status: { in: ['pending', 'error'] },
+      OR: [{ retryAfter: null }, { retryAfter: { lte: now } }],
+    },
+    orderBy: { stream: 'asc' },
+  });
+}
+
+/** Begin a fresh pass over streams whose previous pass ran to completion. */
+async function resetCompletedThreadCursors(prisma = getPrisma()) {
+  return prisma.brainSyncCursor.updateMany({
+    where: { source: THREAD_SOURCE, stream: { in: THREAD_STREAM_NAMES }, status: 'complete' },
+    data: { status: 'pending', pageToken: null, retryAfter: null },
+  });
+}
+
+/** Thread ids already ingested, using the same predicate writeLedgerEvent dedupes on. */
+async function findIngestedThreadIds(threadIds, prisma = getPrisma()) {
+  if (!threadIds.length) return new Set();
+  const rows = await prisma.ledgerEvent.findMany({
+    where: {
+      eventType: THREAD_EVENT_TYPE,
+      source: THREAD_SOURCE,
+      sourceId: { in: threadIds },
+      tombstonedAt: null,
+    },
+    select: { sourceId: true },
+  });
+  return new Set(rows.map((row) => row.sourceId));
+}
+
+async function ingestGmailThread(gmail, threadId) {
+  const threadRes = await gmail.users.threads.get({
+    userId: 'me',
+    id: threadId,
+    format: 'metadata',
+    metadataHeaders: ['Subject', 'From', 'To', 'Cc', 'Bcc', 'Date'],
   });
 
-  const gmail = createGmailClient({ version: 'v1', auth: oauth2Client });
-  const prisma = getPrisma();
+  const messages = threadRes.data.messages || [];
+  if (!messages.length) return { status: 'empty' };
 
-  // Build after: date string for Gmail query (YYYY/MM/DD)
-  const after = new Date(Date.now() - daysBack * 86400000);
-  const afterStr = `${after.getFullYear()}/${String(after.getMonth() + 1).padStart(2, '0')}/${String(after.getDate()).padStart(2, '0')}`;
-
-  const queries = [
-    { label: 'sent', q: `in:sent after:${afterStr}` },
-    { label: 'yum', q: yumAddress },
-  ];
-
-  // Collect all thread IDs from both queries, dedup
-  const threadIdSet = new Set();
-  const queryCounts = {};
-  for (const { label, q } of queries) {
-    logger?.info({ q }, `brain/gmail: listing threads for query "${label}"`);
-    const stubs = await listAllThreads(gmail, q, maxPerQuery);
-    queryCounts[label] = stubs.length;
-    for (const t of stubs) threadIdSet.add(t.id);
-  }
-
-  const allThreadIds = [...threadIdSet];
-  logger?.info({ total: allThreadIds.length, ...queryCounts }, 'brain/gmail: thread union complete');
-
-  // Batch idempotency check — one query instead of N round-trips
-  const alreadyIngested = new Set(
-    (await prisma.ledgerEvent.findMany({
-      where: { source: 'gmail', sourceId: { in: allThreadIds } },
-      select: { sourceId: true },
-    })).map(r => r.sourceId)
+  const headers = Object.fromEntries(
+    (messages[0].payload?.headers || []).map((h) => [h.name.toLowerCase(), h.value])
   );
-  const newThreadIds = allThreadIds.filter(id => !alreadyIngested.has(id));
-  logger?.info({ total: allThreadIds.length, alreadyIngested: alreadyIngested.size, toProcess: newThreadIds.length }, 'brain/gmail: idempotency check complete');
+  const subject = headers['subject'] || '(no subject)';
+  const from = headers['from'] || '';
+  const to = headers['to'] || '';
+  const date = headers['date'] || '';
+  // A malformed Date header must not fail the page; the ledger keeps arrival order.
+  const parsed = date ? new Date(date) : null;
+  const occurredAt = parsed && !Number.isNaN(parsed.valueOf()) ? parsed : new Date();
+  const snippet = threadRes.data.snippet || '';
 
-  let processed = 0, skipped = alreadyIngested.size, errors = 0;
+  const event = await writeLedgerEvent({
+    eventType: THREAD_EVENT_TYPE,
+    occurredAt,
+    source: THREAD_SOURCE,
+    sourceId: threadId,
+    actorType: 'system',
+    payload: {
+      threadId,
+      subject,
+      from,
+      to,
+      messageCount: messages.length,
+      participants: collectParticipants(messages),
+      snippet,
+    },
+  });
 
-  for (const threadId of newThreadIds) {
-    try {
-      const threadRes = await gmail.users.threads.get({
-        userId: 'me',
-        id: threadId,
-        format: 'metadata',
-        metadataHeaders: ['Subject', 'From', 'To', 'Cc', 'Bcc', 'Date'],
-      });
+  // A replayed page must not mint a second triage item for the same thread.
+  if (event._existing) return { status: 'existing', eventId: event.id };
 
-      const messages = threadRes.data.messages || [];
-      if (!messages.length) { skipped++; continue; }
+  await createInboxItem({
+    rawContent: `Email thread: "${subject}"\nFrom: ${from}\nTo: ${to}\nMessages: ${messages.length}\nSnippet: ${snippet}`.trim(),
+    source: THREAD_SOURCE,
+    ledgerEventId: event.id,
+    attachments: [{
+      url: `https://mail.google.com/mail/u/0/#all/${threadId}`,
+      mimeType: 'text/html',
+      label: 'Open in Gmail',
+    }],
+  });
 
-      const firstMsg = messages[0];
-      const headers = Object.fromEntries(
-        (firstMsg.payload?.headers || []).map(h => [h.name.toLowerCase(), h.value])
-      );
+  return { status: 'ingested', eventId: event.id };
+}
 
-      const subject = headers['subject'] || '(no subject)';
-      const from = headers['from'] || '';
-      const to = headers['to'] || '';
-      const date = headers['date'] || '';
-      const messageCount = messages.length;
-      const participants = collectParticipants(messages);
+/** Process one Gmail thread page; callers repeat until the pass reports complete. */
+async function runNextThreadBatch({
+  batchSize = DEFAULT_THREAD_BATCH,
+  daysBack = 730,
+  yumAddress = DEFAULT_YUM_ADDRESS,
+  logger,
+  dependencies,
+} = {}) {
+  // Dependency injection is intentionally private to deterministic reliability
+  // tests. Production callers omit it and use the real Prisma/Gmail/ledger path.
+  const prisma = dependencies?.prisma || getPrisma();
+  const authorizeGmail = dependencies?.getAuthorizedGmailClient || getAuthorizedGmailClient;
+  const ingestThread = dependencies?.ingestGmailThread || ingestGmailThread;
+  const findIngested = dependencies?.findIngestedThreadIds || findIngestedThreadIds;
 
-      const occurredAt = date ? new Date(date) : new Date();
+  await ensureThreadCursors({ prisma, daysBack, yumAddress });
+  await recoverStaleRunningThreadCursors(prisma);
+  // Authorize before selecting or claiming a stream. A revoked token is a
+  // source-level problem and must not march every cursor into error.
+  const gmail = await authorizeGmail();
+  const cursor = await nextThreadCursor(prisma);
+  if (!cursor) return { complete: true, processed: 0, skipped: 0, errors: 0 };
 
-      await writeLedgerEvent({
-        eventType: 'email.thread',
-        occurredAt,
-        source: 'gmail',
-        sourceId: threadId,
-        actorType: 'system',
-        payload: {
-          threadId,
-          subject,
-          from,
-          to,
-          messageCount,
-          participants,
-          snippet: threadRes.data.snippet || '',
+  const limit = Math.max(1, Math.min(MAX_THREAD_BATCH, Number(batchSize) || DEFAULT_THREAD_BATCH));
+  const label = threadStreamLabel(cursor.stream);
+  const q = buildThreadQuery(label, { daysBack, yumAddress });
+  let processed = 0, skipped = 0, errors = 0;
+
+  try {
+    const claim = await prisma.brainSyncCursor.updateMany({
+      where: { id: cursor.id, status: { in: ['pending', 'error'] } },
+      data: { status: 'running', retryAfter: null, lastObservedAt: new Date() },
+    });
+    if (claim.count !== 1) {
+      return { complete: false, claimed: false, processed: 0, skipped: 0, errors: 0 };
+    }
+
+    const page = await gmail.users.threads.list({
+      userId: 'me',
+      q,
+      maxResults: limit,
+      ...(cursor.pageToken ? { pageToken: cursor.pageToken } : {}),
+    });
+    const threadIds = (page.data.threads || []).map((stub) => stub.id);
+    // One lookup decides the whole page, so re-listed history costs no Gmail reads.
+    const alreadyIngested = await findIngested(threadIds, prisma);
+
+    for (const threadId of threadIds) {
+      if (alreadyIngested.has(threadId)) { skipped++; continue; }
+      try {
+        const result = await ingestThread(gmail, threadId);
+        if (result.status === 'ingested') processed++; else skipped++;
+      } catch (err) {
+        errors++;
+        logger?.warn?.({ err, threadId }, 'brain/gmail: thread ingest failed');
+      }
+    }
+
+    const pageToken = page.data.nextPageToken || null;
+    if (errors > 0) {
+      const retryAfter = new Date(Date.now() + THREAD_RETRY_DELAY_MS);
+      await prisma.brainSyncCursor.update({
+        where: { id: cursor.id },
+        data: {
+          // Keep the original pageToken. Ingested threads are idempotent, so
+          // replaying the page is safer than skipping failures forever.
+          status: 'error',
+          retryAfter,
+          errorCount: { increment: errors },
+          lastObservedAt: new Date(),
+          metadata: {
+            ...(cursor.metadata || {}),
+            label,
+            query: q,
+            deferredPage: true,
+            successfulOnDeferredPage: processed + skipped,
+            lastBatchSize: threadIds.length,
+            lastErrorCount: errors,
+          },
         },
       });
-
-      await createInboxItem({
-        rawContent: `Email thread: "${subject}"\nFrom: ${from}\nTo: ${to}\nMessages: ${messageCount}\nSnippet: ${threadRes.data.snippet || ''}`.trim(),
-        source: 'gmail',
-        attachments: [{
-          url: `https://mail.google.com/mail/u/0/#all/${threadId}`,
-          mimeType: 'text/html',
-          label: 'Open in Gmail',
-        }],
-      });
-
-      processed++;
-    } catch (err) {
-      errors++;
-      logger?.warn({ err, threadId }, 'brain/gmail: thread error');
+      const deferred = {
+        complete: false,
+        cursorId: cursor.id,
+        stream: cursor.stream,
+        streamComplete: false,
+        pageDeferred: true,
+        retryAfter,
+        processed,
+        skipped,
+        errors,
+      };
+      logger?.warn?.(deferred, 'brain/gmail: thread page deferred for lossless retry');
+      return deferred;
     }
+
+    await prisma.brainSyncCursor.update({
+      where: { id: cursor.id },
+      data: {
+        pageToken,
+        status: pageToken ? 'pending' : 'complete',
+        processedCount: { increment: processed + skipped },
+        errorCount: { increment: errors },
+        lastObservedAt: new Date(),
+        metadata: {
+          ...(cursor.metadata || {}),
+          label,
+          query: q,
+          deferredPage: false,
+          successfulOnDeferredPage: 0,
+          lastBatchSize: threadIds.length,
+          lastErrorCount: 0,
+        },
+      },
+    });
+
+    const result = {
+      complete: false,
+      cursorId: cursor.id,
+      stream: cursor.stream,
+      streamComplete: !pageToken,
+      processed,
+      skipped,
+      errors,
+    };
+    logger?.info?.(result, 'brain/gmail: bounded thread batch complete');
+    return result;
+  } catch (err) {
+    await prisma.brainSyncCursor.update({
+      where: { id: cursor.id },
+      data: {
+        status: 'error',
+        errorCount: { increment: 1 },
+        retryAfter: new Date(Date.now() + THREAD_RETRY_DELAY_MS),
+        lastObservedAt: new Date(),
+      },
+    });
+    throw err;
+  }
+}
+
+/**
+ * Run bounded batches until the pass completes, the batch ceiling is reached,
+ * or the time budget expires. Always returns before the caller's own deadline,
+ * so an unfinished backfill is reported instead of silently truncated.
+ */
+async function syncGmailThreads({
+  batchSize = DEFAULT_THREAD_BATCH,
+  maxBatches = 1,
+  timeBudgetMs = DEFAULT_THREAD_TIME_BUDGET_MS,
+  restart = false,
+  daysBack = 730,
+  yumAddress = DEFAULT_YUM_ADDRESS,
+  logger,
+  dependencies,
+} = {}) {
+  const prisma = dependencies?.prisma || getPrisma();
+  const runBatch = dependencies?.runNextThreadBatch || runNextThreadBatch;
+  const ceiling = Math.max(1, Math.min(MAX_THREAD_BATCHES, Number(maxBatches) || 1));
+  const budgetMs = Number.isFinite(timeBudgetMs) ? Math.max(0, Number(timeBudgetMs)) : Infinity;
+
+  if (restart) {
+    await ensureThreadCursors({ prisma, daysBack, yumAddress });
+    await resetCompletedThreadCursors(prisma);
   }
 
-  return { processed, skipped, errors, queryCounts };
+  const startedAt = Date.now();
+  const totals = { processed: 0, skipped: 0, errors: 0 };
+  let batches = 0;
+  let complete = false;
+  let stoppedBy = 'batchCeiling';
+
+  for (let index = 0; index < ceiling; index += 1) {
+    if (index > 0 && Date.now() - startedAt >= budgetMs) { stoppedBy = 'timeBudget'; break; }
+    const batch = await runBatch({ batchSize, daysBack, yumAddress, logger, dependencies });
+    batches++;
+    totals.processed += batch.processed || 0;
+    totals.skipped += batch.skipped || 0;
+    totals.errors += batch.errors || 0;
+    if (batch.complete) { complete = true; stoppedBy = 'complete'; break; }
+    if (batch.pageDeferred) { stoppedBy = 'pageDeferred'; break; }
+    if (batch.claimed === false) { stoppedBy = 'claimContended'; break; }
+  }
+
+  const result = { complete, stoppedBy, batches, ...totals, elapsedMs: Date.now() - startedAt };
+  logger?.info?.(result, 'brain/gmail: thread sync pass finished');
+  return result;
+}
+
+async function getThreadSyncStatus(prisma = getPrisma()) {
+  const cursors = await prisma.brainSyncCursor.findMany({
+    where: { source: THREAD_SOURCE, stream: { in: THREAD_STREAM_NAMES } },
+    orderBy: { stream: 'asc' },
+  });
+  return {
+    source: THREAD_SOURCE,
+    streams: cursors.map((row) => ({
+      stream: row.stream,
+      status: row.status,
+      processed: row.processedCount,
+      errors: row.errorCount,
+      pending: Boolean(row.pageToken),
+      lastObservedAt: row.lastObservedAt,
+    })),
+  };
 }
 
 module.exports = {
@@ -412,8 +658,16 @@ module.exports = {
   exchangeCodeForTokens,
   storeGmailTokens,
   loadGmailTokens,
+  ensureThreadCursors,
+  runNextThreadBatch,
   syncGmailThreads,
+  getThreadSyncStatus,
   verifyOAuthState,
   getAuthorizedGmailClient,
   getGmailAuthHealth,
+  // Exported for focused reliability tests; not an API surface.
+  ingestGmailThread,
+  nextThreadCursor,
+  recoverStaleRunningThreadCursors,
+  resetCompletedThreadCursors,
 };

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Gmail CLI — read-only search over the founder's mailbox.
+ * Gmail CLI — read-only search plus the resumable thread-ingestion drain.
  *
  *   node scripts/gmail.cjs status
+ *   node scripts/gmail.cjs sync [--batch 100] [--max-batches 500] [--restart] [--days 730]
  *   node scripts/gmail.cjs search "rad pizza" [--max 8] [--chars 2000]
  *   node scripts/gmail.cjs thread <threadId>
  *   node scripts/gmail.cjs auth-url
@@ -17,6 +18,8 @@ const {
   getAuthorizedGmailClient,
   getGmailAuthHealth,
   getAuthUrl,
+  syncGmailThreads,
+  getThreadSyncStatus,
 } = require('../backend/api/brain/gmailSync.js');
 
 const RECONNECT = [
@@ -109,12 +112,23 @@ async function cmdStatus() {
     if (newest) {
       const ageDays = Math.floor((Date.now() - new Date(newest.occurredAt).getTime()) / 86400000);
       console.log(`Brain gmail index: ${total} threads, newest ${newest.occurredAt.toISOString().slice(0, 10)} (${ageDays}d old)`);
-      if (ageDays > 14) console.log('  NOTE: index is stale — run POST /api/brain/gmail/sync after reconnecting.');
+      if (ageDays > 14) console.log('  NOTE: index is stale — run: node scripts/gmail.cjs sync');
     } else {
       console.log('Brain gmail index: empty');
     }
   } catch (err) {
     console.log(`Brain gmail index: unavailable (${err.message})`);
+  }
+
+  try {
+    const status = await getThreadSyncStatus();
+    for (const stream of status.streams) {
+      const pending = stream.pending ? ', mid-stream' : '';
+      console.log(`Thread stream ${stream.stream}: ${stream.status} (${stream.processed} listed, ${stream.errors} errors${pending})`);
+    }
+    if (!status.streams.length) console.log('Thread streams: not started');
+  } catch (err) {
+    console.log(`Thread streams: unavailable (${err.message})`);
   }
 
   if (health.testingModeGrant) console.log(`\n${TESTING_MODE_WARNING}`);
@@ -167,9 +181,53 @@ function cmdAuthUrl() {
   console.log('the LOCAL state secret; if it differs from production the callback rejects it.');
 }
 
+/**
+ * Drain the resumable thread sync. The HTTP route runs one bounded page per
+ * call so it always answers inside the serverless deadline; this CLI has no
+ * such deadline and repeats batches until the pass finishes.
+ */
+async function cmdSync() {
+  const batchSize = Number(arg('--batch', 100));
+  const maxBatches = Number(arg('--max-batches', 500));
+  const daysBack = Number(arg('--days', 730));
+  const restart = process.argv.includes('--restart');
+
+  const health = await getGmailAuthHealth();
+  if (!health.ok) {
+    console.error(`Gmail auth BROKEN (${health.reason}): ${health.detail || ''}`);
+    console.error(`\n${RECONNECT}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (health.testingModeGrant) console.error(`${TESTING_MODE_WARNING}\n`);
+
+  const logger = {
+    info: (payload, message) => {
+      if (!/bounded thread batch|thread sync pass/.test(message || '')) return;
+      console.log(`${message}: ${JSON.stringify(payload)}`);
+    },
+    warn: (payload, message) => console.warn(`${message}: ${JSON.stringify({ ...payload, err: payload?.err?.message })}`),
+  };
+
+  const result = await syncGmailThreads({
+    batchSize,
+    maxBatches,
+    daysBack,
+    restart,
+    timeBudgetMs: Infinity,
+    logger,
+  });
+
+  console.log(`\npass complete: ${result.complete}  stoppedBy: ${result.stoppedBy}`);
+  console.log(`batches: ${result.batches}  ingested: ${result.processed}  already held: ${result.skipped}  errors: ${result.errors}`);
+  if (!result.complete) console.log('Backlog remains — run the same command again to continue.');
+  if (result.errors > 0) process.exitCode = 1;
+}
+
 async function main() {
   const cmd = process.argv[2];
   if (cmd === 'status') return cmdStatus();
+  if (cmd === 'sync') return cmdSync();
   if (cmd === 'search') {
     const q = process.argv[3];
     if (!q) throw new Error('usage: gmail.cjs search "<gmail query>" [--max N] [--chars N]');
