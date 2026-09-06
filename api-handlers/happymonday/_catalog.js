@@ -30,6 +30,7 @@ const HAPPY_MONDAY_MENU_ITEMS = [
   { id: 13, name: '12" Gluten Free', price: 8.1, category: 'Pizza' },
   { id: 14, name: 'Beet Salad', price: 5.1, category: 'Salads' },
   { id: 15, name: 'Pasta Salad (gluten free)', price: 3.1, category: 'Salads' },
+  { id: 22, name: 'Tomato Cucumber Salad', price: 4.5, category: 'Salads' },
   { id: 16, name: 'Yogurt & Granola (gluten free)', price: 3.1, category: 'Breakfast' },
   { id: 17, name: 'Yogurt & Granola with chocolate (gluten free)', price: 3.85, category: 'Breakfast' },
   { id: 18, name: 'Chia Pudding', price: 3.1, category: 'Breakfast' },

@@ -74,6 +74,7 @@ module.exports = async function handler(req, res) {
       { id: 11, name: '12" Gluten Free', price: 8.1, category: "Pizza" },
       { id: 12, name: "Beet Salad", price: 5.1, category: "Salads" },
       { id: 13, name: "Pasta Salad (gluten free)", price: 3.1, category: "Salads" },
+      { id: 22, name: "Tomato Cucumber Salad", price: 4.5, category: "Salads" },
       { id: 14, name: "Yogurt & Granola (gluten free)", price: 3.1, category: "Breakfast" },
       { id: 15, name: "Yogurt & Granola with chocolate (gluten free)", price: 4.1, category: "Breakfast" },
       { id: 16, name: "Chia Pudding", price: 3.1, category: "Breakfast" },
