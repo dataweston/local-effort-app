@@ -1,18 +1,19 @@
 import express from 'express';
 import request from 'supertest';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gmailRoutesModule from '../gmailRoutes';
 
 const { registerGmailRoutes } = gmailRoutesModule;
 
-function buildApp() {
+function buildApp(overrides = {}) {
   const app = express();
   app.use(express.json());
   registerGmailRoutes(app, {
-    verifyAdminRequestForAuth: async (req) =>
+    verifyAdminRequest: async (req) =>
       req.headers.authorization === 'Bearer valid-admin-token' ? { id: 'admin-1' } : null,
-    getAuthUrlForAuth: () =>
+    getAuthUrl: () =>
       'https://accounts.google.com/o/oauth2/v2/auth?state=signed',
+    ...overrides,
   });
   return app;
 }
@@ -51,5 +52,58 @@ describe('Gmail OAuth browser handoff', () => {
       ok: true,
       authUrl: 'https://accounts.google.com/o/oauth2/v2/auth?state=signed',
     });
+  });
+});
+
+describe('Gmail thread sync route', () => {
+  it('refuses an unauthenticated sync before touching Gmail', async () => {
+    const syncGmailThreads = vi.fn();
+    const response = await request(buildApp({ syncGmailThreads })).post('/api/brain/gmail/sync').send({});
+    expect(response.status).toBe(403);
+    expect(syncGmailThreads).not.toHaveBeenCalled();
+  });
+
+  it('answers with measured counts, not a started flag', async () => {
+    const syncGmailThreads = vi.fn().mockResolvedValue({
+      complete: false,
+      stoppedBy: 'batchCeiling',
+      batches: 1,
+      processed: 7,
+      skipped: 93,
+      errors: 0,
+      elapsedMs: 1200,
+    });
+
+    const response = await request(buildApp({ syncGmailThreads }))
+      .post('/api/brain/gmail/sync')
+      .set('Authorization', 'Bearer valid-admin-token')
+      .send({ batchSize: 100, maxBatches: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      ok: true,
+      complete: false,
+      stoppedBy: 'batchCeiling',
+      processed: 7,
+      skipped: 93,
+    });
+    expect(response.body).not.toHaveProperty('started');
+    expect(syncGmailThreads).toHaveBeenCalledWith(
+      expect.objectContaining({ batchSize: 100, maxBatches: 1 })
+    );
+  });
+
+  it('reports a revoked grant as 401 with the reconnect path', async () => {
+    const syncGmailThreads = vi
+      .fn()
+      .mockRejectedValue(new Error('Gmail not authorized — visit /api/brain/gmail/auth to connect'));
+
+    const response = await request(buildApp({ syncGmailThreads }))
+      .post('/api/brain/gmail/sync')
+      .set('Authorization', 'Bearer valid-admin-token')
+      .send({});
+
+    expect(response.status).toBe(401);
+    expect(response.body.authUrl).toBe('/api/brain/gmail/auth');
   });
 });
