@@ -41,7 +41,9 @@ Always separate:
 - founder PERSONAL draws;
 - deferred founder compensation under owner policy;
 - fully loaded economics, including founder labor;
-- financing, investments, reimbursements, and transfers, which are not operating revenue.
+- financing, investments, reimbursements, and transfers, which are not operating revenue;
+- processor and personal-account custody, which is neither company revenue nor the account holder's income until each receipt is attributed from source evidence;
+- legal operator and tax owner per transaction for as long as entity continuity between the predecessor operators and the cooperative is unresolved.
 
 Do not call cash remaining after unpaid founder labor profit. Do not combine founder hourly opportunity cost with the full founder salary policy unless the allocations reconcile without double counting.
 

@@ -54,6 +54,10 @@ Before committing `skills/le-raise/`:
 - `methodVersion` is cited for every model-derived figure;
 - one line binds investor outreach to `AGENTS.md` §Human-facing communications (investor emails are human-facing comms — dry-run to owner first, Brevo only);
 - keep "no filing without securities counsel + accountant review" verbatim;
+- the entity perimeter is disclosed as unresolved — three candidate legal-operator periods (September 2022 brand use, the 2024-04-10 Delaware corporation, the 2026-04-21 Minnesota 308B cooperative) with no filed conversion or merger reviewed — and no founding-date, "since", or multi-year history claim is published against a single entity;
+- no cap-table, dilution, or per-founder-value figure is published while the owner-confirmed schedule and Capital Master Record v2.3 conflict (2026-09-06 open row);
+- the William Lange obligation appears in events-line contribution and in uses of funds — 8% of qualifying-event gross with a $1,500 quarterly minimum, $32,500 contractual total, $26,500 outstanding, noticed default 2026-04-23 — disclosed as related-party-adjacent until the borrower question is settled, and the Square Capital advance is carried as unverified debt;
+- no Local Budget figure is presented as a closed period: cite its run date, and remember the journal has never posted an entry and its own gate requires two reconciling shadow closes;
 - `current-facts.md` is within its recheck window, or re-verified with the owner.
 
 ## Definition of done — acceptance test

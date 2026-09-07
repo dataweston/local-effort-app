@@ -7,7 +7,9 @@ Do not apply one global precedence ladder to unlike facts.
 - **Policy, intent, definitions, decisions, and acceptance:** current owner statements control. Examples include what counts as a founder draw, what local-first means, whether an equity offer was accepted, and whether a raise is operationally ready.
 - **Cash amounts and reviewed classifications:** Local Budget posted, split-aware records control. Owner recollection may identify a classification problem but does not replace the reconciled total.
 - **Orders, payroll, hours, rates, invoices, and dates:** prefer the native operating document or system, then source-backed Brain records. Owner recollection remains empirical evidence, labeled `owner-reported empirical`, until corroborated when the distinction is material.
-- **Ownership economics:** use the current owner-confirmed accepted cap table for economic modeling; preserve document, approval, issuance, and counsel warnings as separate legal facts.
+- **Ownership economics:** use the current owner-confirmed accepted cap table for economic modeling; preserve document, approval, issuance, and counsel warnings as separate legal facts. When two records each claim to state the accepted schedule, the owner's current confirmation controls modeling and neither record may be cited as executed capitalization until executed member, transfer, voting, and tax documents settle it.
+- **Legal operator, entity continuity, and accounting perimeter:** filed formation, conversion, merger, asset-transfer, and dissolution documents plus counsel control. Owner recollection of when the business "started" is `owner-reported empirical` brand history and never moves the perimeter. Absent filed continuity documents, keep a legal operator and tax owner attached to every transaction, label the earlier operator `predecessor`, and reserve `continuing company` for documented continuity.
+- **Custody versus economic ownership:** a processor ledger (Square, Stripe) and a bank account prove custody and gross provider facts only. Local Budget's `custodyRole` and `economicScope` record custody; the economic owner comes from source evidence — contract, customer, invoice, 1099-K. A receipt in a founder-held processor or personal account is neither company revenue nor that founder's income until attributed.
 - **Historical reasoning and intent:** use current repository records and the append-only decisions log. Treat old plans as dated memory only.
 
 An owner can authoritatively say that a prior claim had no known basis or was never adopted, which retires it as a standing premise. That does not prove the opposite empirical value. Likewise, an owner-described contract term can control an operating decision provisionally while remaining `owner-reported empirical` until the contract or invoices corroborate it.
@@ -16,6 +18,7 @@ An owner can authoritatively say that a prior claim had no known basis or was ne
 
 - Compare equivalent periods, grains, and definitions.
 - Never equate Square order date with Local Budget settlement date without a timing bridge.
+- Never call a processor receipt or payout a settled cash leg without the destination bank or card ledger covering that period; an identified destination account is an identification, not a reconciliation.
 - Preserve Unallocated and unresolved categories.
 - Do not allocate pooled COGS, labor, rent, or founder time to lines by revenue share and call the result observed.
 - Under a real decision deadline, a sanctioned allocation may be used only in the modeled layer. Use the configured causal driver, show alternative-driver sensitivity, preserve any residual pool, and state whether the decision changes. Never merge it into observed actuals.
