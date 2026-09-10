@@ -743,6 +743,9 @@ model HubOrganization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   spaces    HubSpace[]
+
+  memberships       Membership[]
+  relationshipRoles MembershipRelationshipRole[]
 }
 
 model HubProfile {
@@ -759,6 +762,8 @@ model HubProfile {
   updatedAt   DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+  memberships       Membership[]
+  relationshipRoles MembershipRelationshipRole[]
 
   @@index([accessLevel])
   @@index([status])
@@ -1409,4 +1414,144 @@ model BrainJobRun {
 
   @@index([jobName, startedAt])
   @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Organization-scoped membership.
+//
+// Replaces the single-access-level assumption (HubProfile.accessLevel, plus the
+// external Supabase `localist_members` roster) with membership that is scoped to
+// an organization and activated through four gates: identity, agreements,
+// payment, entitlements. See backend/api/membership/membershipClasses.js for the
+// owner-confirmed tier constants; class rows are seeded from those constants and
+// are never invented here.
+//
+// Nothing reads these tables yet. The migration that creates them is additive so
+// existing membership reads (api-handlers/hub/membership.js) keep working.
+// ---------------------------------------------------------------------------
+
+// A membership tier. `entitlementSet` is the persisted fallback for classes that
+// are not one of the seeded owner-confirmed codes; for seeded codes the code
+// constants are authoritative so a stale row cannot widen access.
+model MembershipClass {
+  id                        String   @id @default(uuid())
+  code                      String   @unique
+  label                     String
+  duesCadence               String
+  duesCents                 Int
+  entitlementSet            String[] @default([])
+  waivedEligible            Boolean  @default(false)
+  accruesCoopCredit         Boolean  @default(false)
+  coopCreditBasisPoints     Int      @default(0)
+  coopCreditCadence         String?
+  coopCreditNonExpiring     Boolean  @default(false)
+  active                    Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  memberships Membership[]
+
+  @@index([active, duesCadence])
+}
+
+// One profile's membership in one organization, at one class. `billingAuthority`
+// records which system is authoritative for dues; Square remains current
+// authority until an explicit owner-approved provider migration.
+model Membership {
+  id                   String    @id @default(uuid())
+  profileId            String
+  organizationId       String
+  classId              String
+  status               String    @default("pending")
+  billingAuthority     String    @default("square")
+  activatedAt          DateTime?
+  deactivatedAt        DateTime?
+  agreementAcceptedAt  DateTime?
+  agreementVersion     String?
+  externalRosterId     String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  profile      HubProfile      @relation(fields: [profileId], references: [id])
+  organization HubOrganization @relation(fields: [organizationId], references: [id])
+  class        MembershipClass @relation(fields: [classId], references: [id])
+  duesPlans    MembershipDuesPlan[]
+  grants       MembershipEntitlementGrant[]
+
+  @@unique([profileId, organizationId, classId])
+  @@index([organizationId, status])
+  @@index([profileId, status])
+  @@index([classId])
+  @@index([billingAuthority])
+}
+
+// A profile's role within an organization. Many-to-many: one profile may hold
+// several roles in one organization and roles across several organizations.
+model MembershipRelationshipRole {
+  id             String    @id @default(uuid())
+  profileId      String
+  organizationId String
+  role           String
+  status         String    @default("active")
+  grantedAt      DateTime  @default(now())
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  profile      HubProfile      @relation(fields: [profileId], references: [id])
+  organization HubOrganization @relation(fields: [organizationId], references: [id])
+
+  @@unique([profileId, organizationId, role])
+  @@index([organizationId, role, status])
+  @@index([profileId, status])
+}
+
+// Provider-neutral dues plan. `externalSubscriptionRef` holds the Square
+// subscription id while Square is billing authority. Co-op credit balance is
+// carried in cents and is non-expiring for the paid tiers.
+model MembershipDuesPlan {
+  id                       String    @id @default(uuid())
+  membershipId             String
+  cadence                  String
+  amountCents              Int
+  status                   String    @default("pending")
+  billingAuthority         String    @default("square")
+  externalSubscriptionRef  String?
+  externalCustomerRef      String?
+  coopCreditBalanceCents   Int       @default(0)
+  coopCreditNonExpiring    Boolean   @default(true)
+  currentPeriodStart       DateTime?
+  currentPeriodEnd         DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  membership Membership @relation(fields: [membershipId], references: [id])
+
+  @@unique([billingAuthority, externalSubscriptionRef])
+  @@index([membershipId, status])
+  @@index([status, cadence])
+}
+
+// Idempotent entitlement grant. The natural key is
+// (membershipId, entitlementCode, periodKey) so replaying a grant for the same
+// period is a no-op instead of a second row. Non-periodic entitlements use the
+// sentinel period key from backend/api/membership/membershipClasses.js.
+model MembershipEntitlementGrant {
+  id              String    @id @default(uuid())
+  membershipId    String
+  entitlementCode String
+  periodKey       String
+  status          String    @default("active")
+  source          String
+  grantedAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  detail          Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  membership Membership @relation(fields: [membershipId], references: [id])
+
+  @@unique([membershipId, entitlementCode, periodKey])
+  @@index([membershipId, status])
+  @@index([entitlementCode, periodKey])
 }
