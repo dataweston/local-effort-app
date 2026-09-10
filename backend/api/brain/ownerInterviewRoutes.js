@@ -335,7 +335,34 @@ function registerOwnerInterviewRoutes(
             },
             orderBy: { updatedAt: 'desc' },
           });
-          if (active) return active;
+          if (active) {
+            if (Number(active.definitionVersion) >= Number(definition.version)) return active;
+            const answerCount = await tx.brainOwnerInterviewAnswer.count({
+              where: { sessionId: active.id },
+            });
+            if (answerCount > 0) return active;
+
+            const firstQuestionId = getQuestionIds(definition)[0];
+            if (!firstQuestionId) throw new Error('Owner interview definition has no questions.');
+            const changed = await tx.brainOwnerInterviewSession.updateMany({
+              where: {
+                id: active.id,
+                respondentUserId: owner.id,
+                status: 'in_progress',
+                revision: active.revision,
+              },
+              data: {
+                definitionVersion: definition.version,
+                definitionSnapshot: definitionSnapshot(definition),
+                currentQuestionId: firstQuestionId,
+                revision: { increment: 1 },
+              },
+            });
+            if (changed.count !== 1) {
+              throw new Error('Owner interview changed while its empty definition was being refreshed.');
+            }
+            return tx.brainOwnerInterviewSession.findUnique({ where: { id: active.id } });
+          }
 
           const firstQuestionId = getQuestionIds(definition)[0];
           if (!firstQuestionId) throw new Error('Owner interview definition has no questions.');

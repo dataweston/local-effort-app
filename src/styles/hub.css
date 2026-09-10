@@ -1896,14 +1896,14 @@
 
 .hub-interview-layout {
   display: grid;
-  grid-template-columns: minmax(232px, 268px) minmax(0, 1fr) minmax(268px, 312px);
+  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
   align-items: start;
   gap: 12px;
   min-width: 0;
 }
 .hub-interview-layout > .hub-panel { min-width: 0; }
 
-.hub-interview-rail { display: grid; gap: 10px; padding: 14px; max-height: calc(100vh - 190px); overflow-y: auto; }
+.hub-interview-rail { grid-row: 1 / span 2; display: grid; gap: 10px; padding: 14px; max-height: calc(100vh - 190px); overflow-y: auto; }
 .hub-interview-rail > header { display: grid; gap: 8px; }
 .hub-interview-rail > header strong { display: block; font-family: var(--hub-font-display); font-size: 14.5px; }
 .hub-interview-rail > header span { color: var(--hub-muted); font-size: 12.5px; }
@@ -1983,7 +1983,7 @@
 .hub-interview progress::-webkit-progress-value { background: var(--hub-accent); border-radius: 999px; }
 .hub-interview progress::-moz-progress-bar { background: var(--hub-accent); border-radius: 999px; }
 
-.hub-interview-sheet { display: grid; gap: 14px; padding: 18px; }
+.hub-interview-sheet { grid-column: 2; display: grid; gap: 14px; padding: 18px; }
 .hub-interview-question-head {
   display: flex;
   align-items: flex-end;
@@ -2086,9 +2086,28 @@
 .hub-interview-save-actions span.is-unsaved { color: var(--hub-warn); }
 .hub-interview-save-actions span.is-error { color: var(--hub-danger); font-weight: 600; }
 
-.hub-interview-provenance { display: grid; gap: 12px; padding: 14px; }
-.hub-interview-provenance > header strong { display: block; font-family: var(--hub-font-display); font-size: 14px; }
-.hub-interview-provenance > header span { color: var(--hub-muted); font-size: 12.5px; }
+.hub-interview-provenance { grid-column: 2; padding: 0; overflow: hidden; }
+.hub-interview-provenance-details { display: grid; gap: 12px; padding: 14px; }
+.hub-interview-provenance-details > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+.hub-interview-provenance-details > summary::-webkit-details-marker { display: none; }
+.hub-interview-provenance-details > summary::after {
+  content: '+';
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--hub-accent-strong);
+  font-size: 20px;
+  line-height: 1;
+}
+.hub-interview-provenance-details[open] > summary::after { content: '−'; }
+.hub-interview-provenance-details > summary strong { font-family: var(--hub-font-display); font-size: 14px; }
+.hub-interview-provenance-details > summary span { color: var(--hub-muted); font-size: 12.5px; }
 .hub-interview-provenance fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 4px; }
 .hub-interview-provenance legend { padding: 0; font-size: 13px; font-weight: 600; }
 .hub-interview-provenance fieldset label {
@@ -2243,12 +2262,13 @@
 }
 
 @media (max-width: 1180px) {
-  .hub-interview-layout { grid-template-columns: minmax(0, 1fr) minmax(268px, 312px); }
-  .hub-interview-rail { grid-column: 1 / -1; max-height: none; }
+  .hub-interview-layout { grid-template-columns: minmax(200px, 230px) minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
   .hub-interview-layout { grid-template-columns: 1fr; }
-  .hub-interview-rail { max-height: none; }
+  .hub-interview-rail { grid-row: auto; max-height: none; }
+  .hub-interview-sheet,
+  .hub-interview-provenance { grid-column: 1; }
   .hub-interview-sheet,
   .hub-interview-review,
   .hub-interview-receipt { padding: 14px; }

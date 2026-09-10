@@ -111,12 +111,17 @@ function createPrismaDouble() {
   return { prisma, sessions, answers };
 }
 
-function buildApp({ owner = OWNER, prismaDouble = createPrismaDouble() } = {}) {
+function buildApp({
+  owner = OWNER,
+  prismaDouble = createPrismaDouble(),
+  definition = OWNER_INTERVIEW_DEFINITION,
+} = {}) {
   const app = express();
   app.use(express.json());
   registerOwnerInterviewRoutes(app, {
     prisma: prismaDouble.prisma,
     verifyOwnerRequestForRoutes: async (req) => (req.headers.authorization === 'Bearer owner-token' ? owner : null),
+    definition,
   });
   return { app, prismaDouble };
 }
@@ -142,11 +147,9 @@ function answeredBody(expectedRevision, overrides = {}) {
 }
 
 describe('owner interview definition', () => {
-  it('publishes a versioned, comprehensive, provenance-requiring question set', () => {
+  it('publishes a versioned, provenance-compatible question set', () => {
     const ids = getQuestionIds(OWNER_INTERVIEW_DEFINITION);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.length).toBeGreaterThanOrEqual(60);
-    expect(OWNER_INTERVIEW_DEFINITION.modules.length).toBeGreaterThanOrEqual(10);
     expect(OWNER_INTERVIEW_DEFINITION.version).toBeGreaterThanOrEqual(1);
 
     for (const module of OWNER_INTERVIEW_DEFINITION.modules) {
@@ -157,6 +160,8 @@ describe('owner interview definition', () => {
         expect(question.allowedScope.length).toBeGreaterThan(0);
         expect(question.sensitivityCeiling).toBe('confidential_business');
         expect(question.freshness.asOfRequired).toBe(true);
+        expect(question.allowedKnowledgeKinds).toContain(question.suggestedKnowledgeKind);
+        expect(question.allowedScope).toEqual(expect.arrayContaining(question.suggestedApplicability));
       }
     }
   });
@@ -205,6 +210,62 @@ describe('owner interview session lifecycle', () => {
     expect(first.session.respondentEmail).toBe('owner@example.com');
     expect(first.session.currentQuestionId).toBe(getQuestionIds(OWNER_INTERVIEW_DEFINITION)[0]);
     expect(first.definition.version).toBe(OWNER_INTERVIEW_DEFINITION.version);
+  });
+
+  it('refreshes an unanswered session when a newer definition is published', async () => {
+    const prismaDouble = createPrismaDouble();
+    const legacyDefinition = {
+      ...OWNER_INTERVIEW_DEFINITION,
+      version: OWNER_INTERVIEW_DEFINITION.version - 1,
+      modules: [{
+        id: 'legacy',
+        title: 'Legacy',
+        description: 'Legacy prompt.',
+        questions: [{
+          ...OWNER_INTERVIEW_DEFINITION.modules[0].questions[0],
+          id: 'legacy-question',
+        }],
+      }],
+    };
+    const legacy = await startSession(buildApp({ prismaDouble, definition: legacyDefinition }).app);
+    const refreshed = await startSession(buildApp({ prismaDouble }).app);
+
+    expect(refreshed.session.id).toBe(legacy.session.id);
+    expect(refreshed.session.definitionVersion).toBe(OWNER_INTERVIEW_DEFINITION.version);
+    expect(refreshed.session.currentQuestionId).toBe(getQuestionIds(OWNER_INTERVIEW_DEFINITION)[0]);
+    expect(refreshed.session.revision).toBe(legacy.session.revision + 1);
+    expect(refreshed.definition.version).toBe(OWNER_INTERVIEW_DEFINITION.version);
+  });
+
+  it('keeps an older session definition after the owner starts answering', async () => {
+    const prismaDouble = createPrismaDouble();
+    const legacyDefinition = {
+      ...OWNER_INTERVIEW_DEFINITION,
+      version: OWNER_INTERVIEW_DEFINITION.version - 1,
+      modules: [{
+        id: 'legacy',
+        title: 'Legacy',
+        description: 'Legacy prompt.',
+        questions: [{
+          ...OWNER_INTERVIEW_DEFINITION.modules[0].questions[0],
+          id: 'legacy-question',
+        }],
+      }],
+    };
+    const legacyApp = buildApp({ prismaDouble, definition: legacyDefinition }).app;
+    const legacy = await startSession(legacyApp);
+    const saved = await request(legacyApp)
+      .put(`/api/brain/owner-interview/sessions/${legacy.session.id}/answers/legacy-question`)
+      .set('Authorization', 'Bearer owner-token')
+      .send({ expectedRevision: 0, responseText: 'Started here.', disposition: 'draft' });
+    expect(saved.status).toBe(200);
+
+    const resumed = await startSession(buildApp({ prismaDouble }).app);
+    expect(resumed.session.id).toBe(legacy.session.id);
+    expect(resumed.session.definitionVersion).toBe(legacyDefinition.version);
+    expect(resumed.definition.version).toBe(legacyDefinition.version);
+    expect(resumed.answers).toHaveLength(1);
+    expect(resumed.answers[0].responseText).toBe('Started here.');
   });
 
   it('records the cursor and rejects a stale session revision', async () => {

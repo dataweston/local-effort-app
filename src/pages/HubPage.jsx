@@ -48,7 +48,7 @@ const mealPrepTab = { id: 'weeklyMealPrep', label: 'Meal Prep', icon: Soup };
 const foodInputsTab = { id: 'foodInputs', label: 'Ingredient Intake', icon: Utensils };
 
 const economicsTab = { id: 'economics', label: 'Economics', icon: ChartNoAxesCombined };
-const interviewTab = { id: 'interview', label: 'Owner interview', icon: ClipboardList };
+const interviewTab = { id: 'interview', label: 'Field interview', icon: ClipboardList };
 
 
 export default function HubPage() {

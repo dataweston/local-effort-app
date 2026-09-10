@@ -37,13 +37,31 @@ const SENSITIVITY_OPTIONS = [
   { value: 'external_shareable', label: 'External-shareable', help: 'Suitable to share outside Local Effort after review.' },
 ];
 
-function emptyDraft() {
+function currentDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function emptyDraft(question) {
+  const allowedScope = Array.isArray(question?.allowedScope) && question.allowedScope.length
+    ? question.allowedScope
+    : APPLICABILITY_OPTIONS.map((option) => option.value);
+  const suggestedScope = Array.isArray(question?.suggestedApplicability)
+    ? question.suggestedApplicability.filter((scope) => allowedScope.includes(scope))
+    : [];
   return {
     responseText: '',
-    knowledgeKind: '',
-    confidence: '',
-    applicability: [],
-    asOfDate: '',
+    knowledgeKind: KNOWLEDGE_KINDS.some((item) => item.value === question?.suggestedKnowledgeKind)
+      ? question.suggestedKnowledgeKind
+      : 'owner_experience',
+    confidence: CONFIDENCE_LEVELS.some((item) => item.value === question?.suggestedConfidence)
+      ? question.suggestedConfidence
+      : 'context_dependent',
+    applicability: suggestedScope.length
+      ? suggestedScope
+      : allowedScope.includes('local_effort')
+      ? ['local_effort']
+      : allowedScope.slice(0, 1),
+    asOfDate: currentDate(),
     sourceReference: '',
     caveats: '',
     sensitivity: 'confidential_business',
@@ -51,14 +69,17 @@ function emptyDraft() {
   };
 }
 
-function answerToDraft(answer) {
-  if (!answer) return emptyDraft();
+function answerToDraft(answer, question) {
+  const suggested = emptyDraft(question);
+  if (!answer) return suggested;
   return {
     responseText: answer.responseText || '',
-    knowledgeKind: answer.knowledgeKind || '',
-    confidence: answer.confidence || '',
-    applicability: Array.isArray(answer.applicability) ? answer.applicability : [],
-    asOfDate: answer.asOfDate ? String(answer.asOfDate).slice(0, 10) : '',
+    knowledgeKind: answer.knowledgeKind || suggested.knowledgeKind,
+    confidence: answer.confidence || suggested.confidence,
+    applicability: Array.isArray(answer.applicability) && answer.applicability.length
+      ? answer.applicability
+      : suggested.applicability,
+    asOfDate: answer.asOfDate ? String(answer.asOfDate).slice(0, 10) : suggested.asOfDate,
     sourceReference: answer.sourceReference || '',
     caveats: answer.caveats || '',
     sensitivity: answer.sensitivity || 'confidential_business',
@@ -268,7 +289,7 @@ export function OwnerInterviewView({ accessToken }) {
     const entry = flattenDefinition(nextDefinition).find(({ question }) => question.id === questionId);
     if (!entry) return false;
     const answer = answerList.find((item) => item.questionId === questionId);
-    const nextDraft = answerToDraft(answer);
+    const nextDraft = answerToDraft(answer, entry.question);
     currentQuestionRef.current = questionId;
     draftRef.current = nextDraft;
     savedSignatureRef.current = draftSignature(nextDraft);
@@ -396,7 +417,12 @@ export function OwnerInterviewView({ accessToken }) {
       adoptResponse(payload);
       autosaveBlockedRef.current = '';
       const savedAnswer = (payload.answers || []).find((answer) => answer.questionId === questionId);
-      const normalized = answerToDraft(savedAnswer || { ...body, updatedAt: new Date().toISOString() });
+      const savedQuestion = flattenDefinition(definitionRef.current)
+        .find(({ question }) => question.id === questionId)?.question;
+      const normalized = answerToDraft(
+        savedAnswer || { ...body, updatedAt: new Date().toISOString() },
+        savedQuestion,
+      );
       const exact = currentQuestionRef.current === questionId
         && contentSignature(draftRef.current) === sourceContentSignature;
 
@@ -535,7 +561,9 @@ export function OwnerInterviewView({ accessToken }) {
   const useAuthoritativeAnswer = () => {
     if (saveErrorRef.current?.kind !== 'conflict') return;
     const serverAnswer = saveErrorRef.current.authoritativeAnswer;
-    const nextDraft = answerToDraft(serverAnswer);
+    const activeQuestion = flattenDefinition(definitionRef.current)
+      .find(({ question }) => question.id === currentQuestionRef.current)?.question;
+    const nextDraft = answerToDraft(serverAnswer, activeQuestion);
     const nextAnswers = serverAnswer
       ? [...answersRef.current.filter((answer) => answer.questionId !== serverAnswer.questionId), serverAnswer]
       : answersRef.current.filter((answer) => answer.questionId !== currentQuestionRef.current);
@@ -701,14 +729,14 @@ export function OwnerInterviewView({ accessToken }) {
       <section className="hub-interview">
         <div className="hub-interview-boundary">
           <ClipboardList size={18} aria-hidden="true" />
-          <span>{submitted ? 'Submitted evidence' : 'Private draft evidence'} · not Brain truth</span>
+          <span>{submitted ? 'Submitted notes' : 'Private draft notes'} · not Brain truth</span>
         </div>
         <article className="hub-panel hub-interview-review" aria-labelledby="owner-interview-review-title">
           <header className="hub-interview-review-head">
             <div>
-              <p className="hub-interview-kicker">Review exact answers and provenance</p>
-              <h2 id="owner-interview-review-title">Review owner interview</h2>
-              <p>{resolvedCount} of {allQuestions.length} questions have a final disposition.</p>
+              <p className="hub-interview-kicker">Review notes and answer details</p>
+              <h2 id="owner-interview-review-title">Review field interview</h2>
+              <p>{resolvedCount} of {allQuestions.length} prompts have a final disposition.</p>
             </div>
             <ProgressSummary definition={definition} answersByQuestion={answersByQuestion} />
           </header>
@@ -720,7 +748,7 @@ export function OwnerInterviewView({ accessToken }) {
                 {(module.questions || []).map((question) => {
                   const answer = answersByQuestion.get(question.id);
                   const issues = answer?.disposition === 'answered'
-                    ? validateAnswered(question, answerToDraft(answer))
+                    ? validateAnswered(question, answerToDraft(answer, question))
                     : answer?.disposition === 'draft' || !answer
                     ? [{ message: 'Needs an answer, defer, or not-known decision.' }]
                     : [];
@@ -805,15 +833,15 @@ export function OwnerInterviewView({ accessToken }) {
     <section className="hub-interview">
       <div className="hub-interview-boundary">
         <ClipboardList size={18} aria-hidden="true" />
-        <span>Private draft evidence · not Brain truth</span>
+        <span>Private working notes · not Brain truth</span>
       </div>
 
       <form id="owner-interview-form" className="hub-interview-layout" onSubmit={submitAnswered}>
         <aside className="hub-panel hub-interview-rail" aria-label="Interview questions">
           <header>
             <div>
-              <strong>{definition.title || 'Owner interview'}</strong>
-              <span>Definition {definition.version}</span>
+              <strong>{definition.title || 'Field interview'}</strong>
+              <span>{definition.description}</span>
             </div>
             <ProgressSummary definition={definition} answersByQuestion={answersByQuestion} />
           </header>
@@ -879,7 +907,7 @@ export function OwnerInterviewView({ accessToken }) {
             {question.probes?.length > 0 && (
               <details className="hub-interview-probes">
                 <summary>Optional prompts if useful</summary>
-                <p>Start with what comes to mind. These neutral prompts are here only if you want another way in.</p>
+                <p>Use these only if they help you remember the specifics.</p>
                 <ul>
                   {question.probes.map((probe, index) => <li key={`${question.id}-probe-${index}`}>{typeof probe === 'string' ? probe : probe?.prompt || humanize(probe)}</li>)}
                 </ul>
@@ -888,22 +916,22 @@ export function OwnerInterviewView({ accessToken }) {
           </div>
 
           <label className="hub-interview-response" htmlFor={questionFieldId(question.id, 'response')}>
-            <span>Your exact response</span>
+            <span>Your notes</span>
             <textarea
               id={questionFieldId(question.id, 'response')}
               value={draft.responseText}
               onChange={(event) => updateDraft('responseText', event.target.value)}
-              placeholder="Write what you know, including context and exceptions."
+              placeholder="Tell the story in your own words. A rough, specific answer is enough."
               rows={12}
               spellCheck="true"
               aria-describedby={`${questionFieldId(question.id, 'response')}-help`}
             />
-            <small id={`${questionFieldId(question.id, 'response')}-help`}>Plain text is saved exactly as written. Avoid customer names, health details, contact information, or pasted private records.</small>
+            <small id={`${questionFieldId(question.id, 'response')}-help`}>Saved exactly as written. Avoid customer names, health details, contact information, or pasted private records.</small>
           </label>
 
           {validationIssues.length > 0 && (
             <div className="hub-interview-validation" role="alert" tabIndex="-1" ref={validationRegionRef}>
-              <strong>Finish the provenance before continuing.</strong>
+              <strong>Check the answer details before continuing.</strong>
               <ul>{validationIssues.map((issue) => <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>)}</ul>
             </div>
           )}
@@ -939,7 +967,7 @@ export function OwnerInterviewView({ accessToken }) {
               >
                 <ArrowLeft size={15} aria-hidden="true" /> Previous
               </button>
-              <button type="button" onClick={() => saveDisposition('deferred')} disabled={busy}>Defer</button>
+              <button type="button" onClick={() => saveDisposition('deferred')} disabled={busy}>Come back later</button>
               <button type="button" onClick={() => saveDisposition('not_known')} disabled={busy}>Not something I know</button>
             </div>
             <div className="hub-interview-save-actions">
@@ -953,10 +981,13 @@ export function OwnerInterviewView({ accessToken }) {
         </article>
 
         <aside className="hub-panel hub-interview-provenance" aria-label="Provenance and handling">
-          <header>
-            <strong>Provenance</strong>
-            <span>Required to mark answered</span>
-          </header>
+          <details className="hub-interview-provenance-details">
+            <summary>
+              <strong>Answer details</strong>
+              <span>
+                {humanize(draft.knowledgeKind || 'type not set')} · {draft.applicability.map(humanize).join(', ') || 'scope not set'} · {draft.asOfDate || 'date not set'}
+              </span>
+            </summary>
 
           <fieldset id={questionFieldId(question.id, 'knowledge-kind')}>
             <legend>What kind of knowledge is this?</legend>
@@ -1058,6 +1089,7 @@ export function OwnerInterviewView({ accessToken }) {
               </label>
             ))}
           </fieldset>
+          </details>
         </aside>
       </form>
     </section>

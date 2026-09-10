@@ -146,7 +146,7 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && pnpm run build:prerender:copy",
+    "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && npm run build:prerender:copy",
     "studio:dev": "npm --prefix studio run dev",
     "studio:build": "npm --prefix studio run build",
     "studio:deploy": "npm --prefix studio run deploy",
