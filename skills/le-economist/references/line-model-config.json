@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "modelStatus": "working_taxonomy_not_canonical",
   "currency": "USD",
   "founderCompensation": {
@@ -11,10 +11,23 @@
     "note": "Owner-reconfirmed 2026-08-21: $45k each, deferred and effective 2026-04-01. This supersedes the prior $90k/$70k and $65k-each records. PERSONAL transactions dated 2026-04-01 or later count as owner draws against deferred salary."
   },
   "kitchen": {
-    "firstTierHoursPerMonth": 20,
-    "firstTierHourlyRate": 40,
-    "remainingHourlyRate": 35,
-    "monthlyStorage": 200
+    "pricingModel": "flat_monthly",
+    "facility": "Foodist",
+    "facilityNameStatus": "working_name",
+    "effectiveFrom": "2026-10-01",
+    "monthlyFacilityCost": 1800,
+    "includedKitchenHours": "unlimited",
+    "smallEventSpaceIncluded": true,
+    "reserveKitchenTransition": {
+      "facility": "MSP Kitchenery",
+      "location": "Hopkins, Minnesota",
+      "role": "reserve_for_overflow_large_events_and_frozen_pizza_cpg",
+      "september2026ExpectedCost": 350,
+      "temporaryStorageMonthsMin": 1,
+      "temporaryStorageMonthsMax": 2,
+      "futureMonthlyStorageCost": null
+    },
+    "note": "Owner update 2026-09-15. Foodist becomes the primary kitchen in October at a flat $1,800/month. Hopkins remains a reserve kitchen and may carry additional storage cost for one or two months; only the approximately $350 September bill is currently quantified."
   },
   "interimAllocationPolicy": {
     "status": "sanctioned_for_deadline_decisions_only",

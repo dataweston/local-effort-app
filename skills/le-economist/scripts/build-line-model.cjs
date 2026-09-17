@@ -265,12 +265,10 @@ function buildEvidenceRecovery(config, squareLines, vendorEvidence, referenceEvi
   };
 }
 
-function kitchenHourlyCost(hours, policy) {
-  if (!Number.isFinite(hours) || hours < 0) return null;
-  return roundMoney(
-    Math.min(hours, policy.firstTierHoursPerMonth) * policy.firstTierHourlyRate
-      + Math.max(hours - policy.firstTierHoursPerMonth, 0) * policy.remainingHourlyRate
-  );
+function monthlyFacilityCost(policy) {
+  const amount = Number(policy?.monthlyFacilityCost);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return roundMoney(amount);
 }
 
 function buildScenario(config) {
@@ -283,11 +281,12 @@ function buildScenario(config) {
     const inputs = line.scenarioInputs || {};
     return { line, inputs, missingCash: requiredCash.filter((key) => !Number.isFinite(inputs[key])) };
   });
-  const portfolioCashReady = prepared.every((item) => item.missingCash.length === 0);
+  const facilityCost = monthlyFacilityCost(config.kitchen);
+  const portfolioCashReady = facilityCost != null
+    && prepared.every((item) => item.missingCash.length === 0);
   const totalKitchenHours = portfolioCashReady
     ? prepared.reduce((sum, { inputs }) => sum + inputs.monthlyOrders * inputs.kitchenHoursPerOrder, 0)
     : null;
-  const hourlyKitchenCost = portfolioCashReady ? kitchenHourlyCost(totalKitchenHours, config.kitchen) : null;
   const totalMonthlyOrders = portfolioCashReady
     ? prepared.reduce((sum, { inputs }) => sum + inputs.monthlyOrders, 0)
     : null;
@@ -297,31 +296,44 @@ function buildScenario(config) {
   const results = prepared.map(({ line, inputs, missingCash }) => {
     const missingEconomic = ['founderLaborHoursPerOrder', 'founderLaborHourlyRate']
       .filter((key) => !Number.isFinite(inputs[key]));
-    if (missingCash.length) {
-      return { id: line.id, name: line.name, status: 'blocked', missingCashInputs: missingCash, missingEconomicInputs: missingEconomic };
+    if (missingCash.length || facilityCost == null) {
+      return {
+        id: line.id,
+        name: line.name,
+        status: 'blocked',
+        missingCashInputs: facilityCost == null
+          ? [...missingCash, 'kitchen.monthlyFacilityCost']
+          : missingCash,
+        missingEconomicInputs: missingEconomic,
+      };
     }
     const monthlyRevenue = inputs.monthlyOrders * inputs.averageRevenuePerOrder;
     const lineKitchenHours = inputs.monthlyOrders * inputs.kitchenHoursPerOrder;
-    const kitchenAllocations = {
-      modeledKitchenHours: totalKitchenHours > 0 ? hourlyKitchenCost * lineKitchenHours / totalKitchenHours : 0,
-      modeledOrderCount: totalMonthlyOrders > 0 ? hourlyKitchenCost * inputs.monthlyOrders / totalMonthlyOrders : 0,
-      modeledRevenueShare: totalMonthlyRevenue > 0 ? hourlyKitchenCost * monthlyRevenue / totalMonthlyRevenue : 0,
+    const facilityAllocations = {
+      modeledKitchenHours: totalKitchenHours > 0 ? facilityCost * lineKitchenHours / totalKitchenHours : 0,
+      modeledOrderCount: totalMonthlyOrders > 0 ? facilityCost * inputs.monthlyOrders / totalMonthlyOrders : 0,
+      modeledRevenueShare: totalMonthlyRevenue > 0 ? facilityCost * monthlyRevenue / totalMonthlyRevenue : 0,
     };
-    const allocatedHourlyKitchen = kitchenAllocations.modeledKitchenHours;
-    const cashVariableCostsBeforeKitchen = inputs.monthlyOrders * (
+    const allocatedFacility = facilityAllocations.modeledKitchenHours;
+    const cashVariableCostsBeforeFacility = inputs.monthlyOrders * (
       inputs.ingredientCostPerOrder
       + inputs.paidLaborHoursPerOrder * inputs.paidLaborHourlyRate
       + inputs.packagingDeliveryPerOrder
       + inputs.otherVariableCostPerOrder
     );
-    const cashVariableCosts = cashVariableCostsBeforeKitchen + allocatedHourlyKitchen;
-    const cashContribution = monthlyRevenue - cashVariableCosts;
-    const contributionByAllocation = Object.fromEntries(Object.entries(kitchenAllocations)
-      .map(([method, allocation]) => [method, roundMoney(monthlyRevenue - cashVariableCostsBeforeKitchen - allocation)]));
-    const contributionRangeValues = Object.values(contributionByAllocation);
+    const cashContributionBeforeFacility = monthlyRevenue - cashVariableCostsBeforeFacility;
+    const contributionAfterFacilityByAllocation = Object.fromEntries(
+      Object.entries(facilityAllocations)
+        .map(([method, allocation]) => [method, roundMoney(cashContributionBeforeFacility - allocation)])
+    );
+    const contributionRangeValues = Object.values(contributionAfterFacilityByAllocation);
+    const cashContributionAfterAllocatedFacility = cashContributionBeforeFacility - allocatedFacility;
     const founderLaborCost = missingEconomic.length
       ? null
       : inputs.monthlyOrders * inputs.founderLaborHoursPerOrder * inputs.founderLaborHourlyRate;
+    const economicContributionBeforeFacility = founderLaborCost == null
+      ? null
+      : cashContributionBeforeFacility - founderLaborCost;
     return {
       id: line.id,
       name: line.name,
@@ -332,22 +344,32 @@ function buildScenario(config) {
         ? Math.round(inputs.monthlyOrders / inputs.monthlyOrderCapacity * 10000) / 10000 : null,
       monthlyRevenue: roundMoney(monthlyRevenue),
       monthlyKitchenHours: roundMoney(lineKitchenHours),
-      allocatedHourlyKitchenCost: roundMoney(allocatedHourlyKitchen),
-      allocatedKitchenCostByMethod: Object.fromEntries(Object.entries(kitchenAllocations)
-        .map(([method, allocation]) => [method, roundMoney(allocation)])),
-      cashVariableCosts: roundMoney(cashVariableCosts),
-      cashContributionBeforeStorageAndFixedOverhead: roundMoney(cashContribution),
-      cashContributionMargin: monthlyRevenue ? Math.round(cashContribution / monthlyRevenue * 10000) / 10000 : null,
-      cashContributionSensitivity: {
+      allocatedFacilityCost: roundMoney(allocatedFacility),
+      allocatedFacilityCostByMethod: Object.fromEntries(
+        Object.entries(facilityAllocations)
+          .map(([method, allocation]) => [method, roundMoney(allocation)])
+      ),
+      cashVariableCostsBeforeFacility: roundMoney(cashVariableCostsBeforeFacility),
+      cashContributionBeforeFacilityAndOtherFixedOverhead: roundMoney(cashContributionBeforeFacility),
+      cashContributionAfterAllocatedFacility: roundMoney(cashContributionAfterAllocatedFacility),
+      cashContributionMarginAfterAllocatedFacility: monthlyRevenue
+        ? Math.round(cashContributionAfterAllocatedFacility / monthlyRevenue * 10000) / 10000
+        : null,
+      cashContributionAfterFacilitySensitivity: {
         classification: 'modeled_interim_allocation_not_observed',
-        byKitchenAllocationMethod: contributionByAllocation,
+        byFacilityAllocationMethod: contributionAfterFacilityByAllocation,
         range: {
           low: roundMoney(Math.min(...contributionRangeValues)),
           high: roundMoney(Math.max(...contributionRangeValues)),
         },
       },
       founderLaborCost: founderLaborCost == null ? null : roundMoney(founderLaborCost),
-      economicContributionBeforeStorageAndFixedOverhead: founderLaborCost == null ? null : roundMoney(cashContribution - founderLaborCost),
+      economicContributionBeforeFacilityAndOtherFixedOverhead: economicContributionBeforeFacility == null
+        ? null
+        : roundMoney(economicContributionBeforeFacility),
+      economicContributionAfterAllocatedFacility: economicContributionBeforeFacility == null
+        ? null
+        : roundMoney(economicContributionBeforeFacility - allocatedFacility),
       missingEconomicInputs: missingEconomic,
     };
   });
@@ -355,11 +377,15 @@ function buildScenario(config) {
   return {
     status: ready ? 'cash_ready' : 'blocked',
     totalKitchenHours: totalKitchenHours == null ? null : roundMoney(totalKitchenHours),
-    hourlyKitchenCost,
-    monthlyStorageFixedOverhead: config.kitchen.monthlyStorage,
+    facilityPricingModel: config.kitchen.pricingModel,
+    primaryFacility: config.kitchen.facility,
+    facilityEffectiveFrom: config.kitchen.effectiveFrom,
+    monthlyFacilityCost: facilityCost,
+    unallocatedFacilityCost: totalKitchenHours == null ? null : totalKitchenHours === 0 ? facilityCost : 0,
+    reserveKitchenTransition: config.kitchen.reserveKitchenTransition,
     interimAllocationPolicy: config.interimAllocationPolicy,
     lines: results,
-    note: 'Primary kitchen allocation uses modeled kitchen hours. Order-count and revenue-share allocations are required sensitivities. All are modeled, not observed. Storage remains portfolio fixed overhead.',
+    note: 'Foodist is fixed portfolio overhead with zero modeled marginal facility cost inside the included access. Kitchen hours control the primary managerial allocation; order-count and revenue-share allocations are required sensitivities. Temporary Hopkins reserve costs remain separate from the $1,800 steady-state base until observed.',
   };
 }
 
@@ -404,7 +430,7 @@ function buildBlockedFields(scenario, evidenceRecovery) {
     if (line.status === 'blocked') {
       blocked.push({
         lineId: line.id,
-        field: 'scenario.cashContributionBeforeStorageAndFixedOverhead',
+        field: 'scenario.cashContributionAfterAllocatedFacility',
         reason: 'missing_scenario_inputs',
         missingInputs: line.missingCashInputs,
       });
@@ -412,7 +438,7 @@ function buildBlockedFields(scenario, evidenceRecovery) {
     if ((line.missingEconomicInputs || []).length) {
       blocked.push({
         lineId: line.id,
-        field: 'scenario.economicContributionBeforeStorageAndFixedOverhead',
+        field: 'scenario.economicContributionAfterAllocatedFacility',
         reason: 'missing_scenario_inputs',
         missingInputs: line.missingEconomicInputs,
       });
@@ -725,7 +751,7 @@ async function buildLineModel({ repo: repoInput, start: startText, end: endText,
   );
   const scenario = buildScenario(config);
   const result = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     generatedAt: new Date().toISOString(),
     methodVersion: buildMethodVersion(configRawBytes, configHashSource),
     period: { start: startText, end: endText, completeCalendarMonths: months },
@@ -822,7 +848,7 @@ async function main() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-module.exports = { buildLineModel, buildScenario, kitchenHourlyCost, buildBlockedFields, buildMethodVersion };
+module.exports = { buildLineModel, buildScenario, monthlyFacilityCost, buildBlockedFields, buildMethodVersion };
 
 if (require.main === module) {
   main().catch((error) => {

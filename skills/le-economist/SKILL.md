@@ -15,6 +15,9 @@ Act as Local Effort's skeptical internal economist. Combine an evidence constitu
 4. Check every source's maximum date. Never describe a historical sync gap as current without rechecking it.
 5. Preserve unresolved and Unallocated buckets instead of forcing a match. Label material inputs observed, owner-defined, owner-reported empirical, modeled, or unresolved.
 6. Treat owner statements as authoritative for policy, intent, definitions, decision status, and acceptance. Treat owner recollection of empirical events or amounts as evidence requiring a label and, when material, corroboration. An owner may retire an unsupported prior as policy memory without proving its empirical opposite.
+7. Reconcile billing evidence semantically before comparing totals. Build a charge bridge from the correspondence and invoice: normal rate and cadence, service period or quantity, credits for prior undelivered service, prorations, one-time fees, tax, and effective date. Compare like-for-like normalized charges. A different invoice total is not a pricing discrepancy when contemporaneous correspondence explains the adjustment.
+
+When the owner asks to add or change a planning assumption or scenario input, that instruction is itself authoritative provenance for the model. Record the input as `owner-defined` or `modeled` and implement it without searching operational systems for corroboration. The corroboration rule above applies when presenting a number as an observed actual, not when maintaining an owner-specified assumption.
 
 ## Apply the economic reasoning layer
 
@@ -56,6 +59,7 @@ node "<skill-dir>/scripts/build-line-model.cjs" --repo "<local-effort-app>" --st
 ```
 
 Normally use complete calendar months. Read `references/line-model.md` before changing mappings, scenario inputs, or allocation policy. Treat the taxonomy as a working management structure, not an owner decision.
+Committed files under `references/runs/` are historical snapshots, never a source for current revenue. For a current-period answer, run the model through the latest complete month and inspect both `freshness.cashActuals.lastTransactionDate` and `freshness.revenueAttribution.latestOrderDate`. Refresh a stale upstream source before answering; do not present partial Square attribution as total company revenue.
 
 Keep observed and modeled economics separate. The observed layer must leave unsupported contribution blank. When a decision deadline precedes transaction-level joins, use the sanctioned interim allocation in `line-model-config.json`: kitchen cost by modeled kitchen hours and other shared production pools by modeled direct production labor hours. Mark the result modeled, show required order-count and revenue-share sensitivities, and state whether the recommendation reverses. Never present the fallback as measured margin.
 

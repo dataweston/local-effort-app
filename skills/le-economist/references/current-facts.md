@@ -1,8 +1,8 @@
 # Current Local Effort facts
 
-Core evidence is as of 2026-07-23, with an owner update appended 2026-08-18, a
-Local Budget accounting-evidence update appended 2026-09-06, and code-verified
-corrections to the processor-exclusion and Square-reconciliation claims on 2026-09-07.
+Core evidence is as of 2026-07-23, with owner updates appended 2026-08-18 and
+2026-09-15, a Local Budget accounting-evidence update appended 2026-09-06, and
+code-verified processor and Square-reconciliation corrections on 2026-09-07.
 Recheck dated facts with the owner before relying on them for a raise or other
 material work. Recheck live sources before any material decision regardless.
 
@@ -17,7 +17,11 @@ material work. Recheck live sources before any material decision regardless.
 - Founder compensation policy effective 2026-04-01: Weston Smith and Catherine Olsen **each $45,000 annual, deferred**; assessed at month end. Combined policy compensation is **$90,000/year = $7,500/month** and is prorated from April for 2026. In the meantime the company covers the founders' living expenses; those post to Local Budget as **PERSONAL**, and every PERSONAL transaction dated 2026-04-01 or later counts as an owner draw against the deferred salary. Accountant treatment of the draw-vs-accrual offset is still to be finalized. Owner reconfirmed this policy on 2026-08-21; prior $90,000/$70,000 and $65,000-each records are superseded.
 - Fully diluted accepted ownership: Weston 45.5%, Catherine 47.5%, Sarah Olsen 5%, Renee Owens 2%. Renee paid $6,000 for 2% transferred from Weston.
 - Maria Beck is no longer working in the prior regular capacity. She may take occasional jobs. There is no change to her equity status: the unaccepted additional 1% offer remains excluded from the cap table.
-- Current kitchen cash price: $40/hour for the first 20 hours in a month, $35/hour thereafter, plus $200 monthly storage.
+- **Kitchen transition (owner update 2026-09-15):** September is anomalous, not a steady-state zero-cost month. Day-to-day prep is occurring mostly in no-charge spaces while MSP Kitchenery in Hopkins hosts the licensing arrangement; the expected September Hopkins bill is approximately **$350**. Beginning in October, the working-name **Foodist** site becomes the primary kitchen at a flat **$1,800/month**, including unlimited hours and space for small events.
+- **Reserve kitchen:** Hopkins remains available for overflow, larger events, and the frozen-pizza CPG line. Storage expense will linger for an estimated one or two additional months. The amount after September is unresolved and must remain separate from the $1,800 Foodist base until invoices arrive.
+- **Regulatory/channel gate:** Minnesota Department of Agriculture certification is pending, not complete. Grocery sales become available only after certification; do not forecast grocery revenue as committed before issuance and buyer evidence.
+- **Meal prep and dues (owner update 2026-09-15):** one paused meal-prep household is scheduled to resume on 2026-09-27 at an owner-estimated **~$1,424 monthly food total**, approximately $200 above its observed prior $1,224 series. Three current meal-prep households are to pay membership dues separately. The working forecast uses the current $45 monthly tier, or **$135/month total**, until each actual tier and activation are observed; this is not authorization to combine dues with food billing.
+- **Foodist-owner memberships:** the Foodist owners intend to become meal-prep members, but their count, start dates, food plans, and dues tiers are unresolved. Carry no quantified revenue until those inputs exist.
 - Local-first is a loose 75–85% inventory target plus substantial contributions to aesthetics, branding, menu design, and other proprietary details.
 - A Wefunder raise is being planned with an initial $65,000 ask and a working $120,000 high target to open room for additional hires and equipment. Current SEC issuer guidance places offerings of $124,000 or less in a lower financial-statement tier, but that is not an appraisal or platform rule; confirm Wefunder's current requirements, prior-offering treatment, and counsel's view before publication. No accepted financial model or final security terms exist.
 - The managerial business-line taxonomy has not been chosen by the owner. The line model uses a configurable working taxonomy.
@@ -66,7 +70,8 @@ This is owner policy, not an executed or legally validated mechanism. Four items
 - Square Payroll detail is not directly accessible. Supplied paystubs and Local Budget Labor are different evidence sets and do not fully reconcile.
 - Founder labor hours are not time-logged, but the owner supplied per-line labor estimates on 2026-07-23 (see "Owner-reported operating parameters" below) — use those as `owner-reported empirical` inputs, not as measured time.
 - **The Local Budget COGS bucket is cash inventory PURCHASES, not cost-of-goods-sold.** Dividing it by revenue overstates food cost (~38–39% blended Jan–Jun) because it includes inventory building (91 restock trips to Eastside Co-op, 35 to Linden Hills, bulk flour/cheese) and **~$1,680 of misclassified non-food** (a U.S. Post Office money-order line, a Wings Financial credit-union entry). The monthly ratio swings 28% (July, steady) to 53% (May, stock-up). **True food cost is the owner-measured ~25–28% (July actual 28.1%); use ~27% for unit economics and forward margin**, not the trailing purchase ratio. Verified 2026-07-23.
-- **Eastside Food Co-op is a paying customer** (~$600/mo recurring, W9 + Square invoice on file), not only a COGS vendor — its INCOME is operating revenue. The current kitchen is **Neon Collective Kitchens** (Food Corridor, pay-per-hour, expensive); the owner is moving to **MSP Kitchenery, Hopkins** (long-term, cheaper, ~unlimited capacity). The June 2026 $2,110 "investment" inflow was a **Square Capital loan** (11% of daily sales repayment), i.e. debt, not equity — excluded from operating revenue either way.
+- **Eastside Food Co-op is a paying customer** (~$600/mo recurring, W9 + Square invoice on file), not only a COGS vendor — its INCOME is operating revenue.
+- The June 2026 $2,110 "investment" inflow was a **Square Capital loan** (11% of daily sales repayment), i.e. debt, not equity — excluded from operating revenue either way.
 - Current Brain seasonality says October is 2.37 times baseline and August is 0.86 times baseline. Do not use the older assertion that August is a peak.
 - Post Office and Walmart descriptors can be money-order purchase locations for rent. Trust reviewed Local Budget Rent classification over descriptor inference.
 
@@ -82,7 +87,7 @@ Owner-stated; label `owner-reported empirical`. These exist to be corroborated a
 
 **Farmers Market is not a line at this time** (removed from the model config 2026-07-23).
 
-**Pizza is a distributed product, not a standalone Square line.** It is mainly sold to Happy Monday (wholesale), incorporated into events and meal prep, sold at some events directly, and — when capacity allows — sold as **frozen pizzas direct to consumer**. Frozen-pizza DTC is the growth line, to expand to internet and retail as labor is added. Unit cost, owner-stated, for a 12-inch cheese pizza: **$0.75 dough + $0.17 sauce + $1.00 cheese = $1.92 ingredients**; price point **$7–$11**. Corroborate via Local Budget flour costs (existing evidence: Baker's Field ~$1.29–1.50/lb blended, consistent with ~$0.75 dough) and the owner's Gmail about **Grande mozzarella**. Make rate: ~40 pizzas/hour with 2 people (roll, stretch, cook, cool, top, wrap).
+**Pizza is a distributed product, not a standalone Square line.** It is mainly sold to Happy Monday (wholesale), incorporated into events and meal prep, sold at some events directly, and — when capacity allows — sold as **frozen pizzas direct to consumer**. Hopkins is the reserve production site for the frozen-pizza CPG line. Grocery distribution is a contingent growth channel pending Minnesota Department of Agriculture certification; it is not committed revenue yet. Unit cost, owner-stated, for a 12-inch cheese pizza: **$0.75 dough + $0.17 sauce + $1.00 cheese = $1.92 ingredients**; price point **$7–$11**. Corroborate via Local Budget flour costs (existing evidence: Baker's Field ~$1.29–1.50/lb blended, consistent with ~$0.75 dough) and the owner's Gmail about **Grande mozzarella**. Make rate: ~40 pizzas/hour with 2 people (roll, stretch, cook, cool, top, wrap).
 
 **Labor (owner-reported weekly, current client load; almost all owner hours except where noted):**
 - Meal prep core prep + package: ~12 hours/week involving 3 workers, plus some remainder (confirm whether "12 hours" is wall-clock or person-hours before deriving per-order labor).
@@ -91,7 +96,7 @@ Owner-stated; label `owner-reported empirical`. These exist to be corroborated a
 - Maria Beck: occasional jobs only under the current arrangement; no standing weekly labor assumption.
 - Deliveries: mostly the owner. Local Budget's **delivery category** captures Uber + Accell spend (mostly deliveries, some other transportation — not yet split). If Uber exposes trip-level API data, adopt it; otherwise add the distinction in Local Budget later.
 
-**June operating-cost spike is real and somewhat permanent** (resolves the earlier "one-time vs structural" question toward structural — see the Local Budget pricing review). The kitchen is very expensive; the owner's response is to scale up quickly: cut the kitchen hourly by ~$10 and add staff to make production times denser. Model this as a structural cost the current price level must cover, with the hourly reduction and density gains as the offsetting levers.
+**The June operating-cost spike is historical evidence, but its old forward kitchen premise is superseded.** The temporary no-charge prep arrangement must not be extrapolated as a sustainable zero-cost baseline. From October, model Foodist as $1,800 of fixed monthly facility overhead with zero marginal facility cost inside the included unlimited access. Keep temporary Hopkins reserve/storage charges separate and unresolved after the approximately $350 September bill; replace estimates with invoices.
 
 ## Owner-reported capital and cooperative growth direction (2026-08-18)
 
@@ -136,5 +141,8 @@ Never use these as assumptions or downgrade them into estimates:
 - PropCo/OpCo as the current strategy;
 - SBA 504 or C-PACE as current financing assumptions.
 - a single 2023 start date as the business, accounting, or legal perimeter — superseded 2026-09-06 by owner-reported September 2022 brand use plus the 2024-04-10 Delaware and 2026-04-21 Minnesota formation documents, which together define three candidate legal-operator periods rather than one.
+- $40/hour for the first 20 hours, $35/hour thereafter, plus $200 storage as the current forward kitchen baseline;
+- $25/hour plus fixed monthly fees as the current forward kitchen baseline;
+- temporary no-charge prep access as a sustainable zero-cost kitchen baseline.
 
 Retirement is evidentiary, not a prediction that the number must be false. If a future measured, seasonally reconstructed annual revenue figure lands near $120,000, record that as a calibration result: the measured estimate stands on its own method, while the unsupported historical claim remains invalid as a prior input.

@@ -33,9 +33,11 @@ The UI may show a real shared pool on several relevant lines, but it must never 
 
 ## Scenario inputs
 
-Each line requires monthly orders, average revenue per order, ingredient cost per order, paid labor hours and hourly rate, kitchen hours, packaging/delivery cost, other variable cost, founder hours and economic hourly rate, and monthly capacity.
+Each line requires monthly orders, average revenue per order, ingredient cost per order, paid labor hours and hourly rate, kitchen hours, packaging/delivery cost, other variable cost, founder hours and founder economic rate. Missing inputs stay null with provenance rather than being backfilled from an unmarked assumption.
 
-Hourly kitchen cost is calculated at the portfolio level using the current tiered price and allocated by modeled kitchen hours. The $200 storage charge remains fixed portfolio overhead. Do not include either amount again in another overhead input.
+Beginning 2026-10-01, Foodist is a fixed $1,800 monthly facility cost with unlimited included hours and small-event space. Marginal facility cash cost is therefore zero within the included access. For managerial line reporting, the scenario shows contribution before facility cost separately, then allocates the fixed portfolio cost by modeled kitchen hours with order-count and revenue-share sensitivities. Do not describe the allocation as hourly pricing.
+
+Hopkins remains a reserve kitchen for overflow, larger events, and frozen-pizza CPG production. Its approximately $350 September 2026 bill and the unresolved storage charges expected for one or two additional months are transition costs outside the $1,800 steady-state base. Do not silently set the later reserve cost to zero or roll the September estimate forward without an invoice.
 
 Cash contribution can become ready before economic contribution. Economic contribution remains blocked until founder hours and cost are supplied. A raise recommendation remains blocked until line contribution, capacity, target mix, and uses of funds are usable.
 
@@ -43,7 +45,7 @@ Cash contribution can become ready before economic contribution. Economic contri
 
 Observed contribution remains blank until direct joins support it. When a real decision deadline arrives first, the scenario layer may produce a provisional number under the policy in `line-model-config.json`:
 
-1. allocate shared kitchen cash cost by modeled kitchen hours;
+1. allocate the fixed shared facility cost by modeled kitchen hours;
 2. allocate another shared production pool by modeled direct production labor hours only when the pool's eligible lines and period are documented;
 3. keep costs outside that documented pool Unallocated;
 4. label every result `modeled_interim_allocation`, never observed;
