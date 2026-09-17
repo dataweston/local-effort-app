@@ -275,9 +275,10 @@ function ScenarioPanel({ model, draft, setDraft, onRun, onSeed, running, dirty }
         <div className="econ-portfolio-numbers">
           <div><span>Kitchen hours</span><strong>{model.scenario?.totalKitchenHours ?? '—'}</strong></div>
           <div><span>Foodist monthly fixed (Oct+)</span><strong>{money(model.scenario?.monthlyFacilityCost)}</strong></div>
-          <div><span>Hopkins September estimate</span><strong>{money(model.scenario?.reserveKitchenTransition?.september2026ExpectedCost)}</strong></div>
+          <div><span>Hopkins reserve (Oct+)</span><strong>{money(model.scenario?.reserveKitchenTransition?.october2026MonthlyCost)}</strong></div>
+          <div><span>Hopkins Aug 2026 observed</span><strong>{money(model.scenario?.reserveKitchenTransition?.observedAugust2026Cash)}</strong></div>
         </div>
-        <p className="econ-footnote">Foodist is fixed portfolio overhead, not hourly kitchen spend. Modeled kitchen hours control the primary managerial allocation; order-count and revenue-share allocations define the sensitivity range. Hopkins reserve storage remains additional and unresolved after the approximately $350 September bill.</p>
+        <p className="econ-footnote">Foodist is fixed portfolio overhead, not hourly kitchen spend. Modeled kitchen hours control the primary managerial allocation; order-count and revenue-share allocations define the sensitivity range. Hopkins is a reserve at an owner-stated $150/month from October. August 2026 Hopkins cash was $830.90 on SoFi Checking, of which $154.90 is still unclassified in Local Budget, and September is unobserved because the Local Budget source stops at 2026-09-02.</p>
       </section>
     </div>
   );

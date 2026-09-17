@@ -37,7 +37,7 @@ Each line requires monthly orders, average revenue per order, ingredient cost pe
 
 Beginning 2026-10-01, Foodist is a fixed $1,800 monthly facility cost with unlimited included hours and small-event space. Marginal facility cash cost is therefore zero within the included access. For managerial line reporting, the scenario shows contribution before facility cost separately, then allocates the fixed portfolio cost by modeled kitchen hours with order-count and revenue-share sensitivities. Do not describe the allocation as hourly pricing.
 
-Hopkins remains a reserve kitchen for overflow, larger events, and frozen-pizza CPG production. Its approximately $350 September 2026 bill and the unresolved storage charges expected for one or two additional months are transition costs outside the $1,800 steady-state base. Do not silently set the later reserve cost to zero or roll the September estimate forward without an invoice.
+Hopkins remains a reserve kitchen for overflow, larger events, and frozen-pizza CPG production, at an owner-stated $150/month from October 2026. Its cost is observable in Local Budget on the SoFi Checking account: $830.90 in August 2026, of which $154.90 is still unclassified. The approximately $350 September 2026 bill is an estimate only, because the transaction source stops at 2026-09-02. Reserve cost stays a transition cost outside the $1,800 steady-state base; do not silently set it to zero or roll the September estimate forward without an invoice.
 
 Cash contribution can become ready before economic contribution. Economic contribution remains blocked until founder hours and cost are supplied. A raise recommendation remains blocked until line contribution, capacity, target mix, and uses of funds are usable.
 

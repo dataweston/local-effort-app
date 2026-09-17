@@ -249,7 +249,12 @@ function createSmallEventsRouter({ logger } = {}) {
     try {
       const typeRaw = normalizeString(req.query.type, 40);
       const type = EVENT_TYPES.includes(typeRaw) ? typeRaw : null;
-      const where = type ? { type } : {};
+      // Default to the original meaning of this endpoint — dates for events at
+      // the customer's own place. Venue dates are a separate calendar and are
+      // served by /api/venues/:slug/availability, so they must not leak into
+      // /small-events and close a date that is only taken at FIREHOUSE.
+      const venue = normalizeString(req.query.venue, 40) || 'client';
+      const where = type ? { type, venue } : { venue };
       const slots = await prisma.smallEventAvailability.findMany({
         where,
         orderBy: [{ date: 'asc' }, { type: 'asc' }],
@@ -271,6 +276,7 @@ function createSmallEventsRouter({ logger } = {}) {
           id: slot.id,
           date: slot.date,
           type: slot.type,
+          venue: slot.venue,
           status,
           notes: slot.notes || '',
           source: slot.source,
@@ -307,15 +313,16 @@ function createSmallEventsRouter({ logger } = {}) {
       const typeRaw = normalizeString(req.body?.type, 40);
       const selectedType = EVENT_TYPES.includes(typeRaw) ? typeRaw : EVENT_TYPES[0];
       const targetTypes = applyToAllTypes ? EVENT_TYPES : [selectedType];
+      const venue = normalizeString(req.body?.venue, 40) || 'client';
 
       if (!date) return res.status(400).json({ error: 'missing-date' });
 
       const updates = [];
       for (const targetType of targetTypes) {
         const slot = await prisma.smallEventAvailability.upsert({
-          where: { date_type: { date, type: targetType } },
+          where: { date_type_venue: { date, type: targetType, venue } },
           update: { status, notes, source: 'manual' },
-          create: { date, type: targetType, status, notes, source: 'manual' },
+          create: { date, type: targetType, status, notes, source: 'manual', venue },
         });
         updates.push(slot);
       }

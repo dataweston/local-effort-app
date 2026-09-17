@@ -330,6 +330,37 @@
   margin-top: 0.35rem;
 }
 
+/* checkbox group — "which meals?" on the meal prep waitlist slip */
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-checks {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-checks-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 1.1rem;
+  margin-top: 0.2rem;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px; /* same touch floor as .ht-input */
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+:where(.fullpage-demo, .fullpage-demo-scope) .ht-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ht-accent-deep);
+  cursor: pointer;
+}
+
 :where(.fullpage-demo, .fullpage-demo-scope) .ht-error {
   margin: 0;
   font-family: var(--font-body);

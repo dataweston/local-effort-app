@@ -134,6 +134,32 @@ export const PUBLIC_ROUTES = [
     description: 'Order office catering in Minneapolis-St. Paul: sandwich trays, big-bowl salads that feed 8-10, and baked goods by the dozen from Local Effort Cooperative. $150 minimum, 48-hour lead time, $40 delivery - free at $750+. Invoice-friendly.',
     prerender: true,
   },
+  // The two event spaces and the offer page that carries both.
+  //
+  // Prerendered because these are Google Ads landing pages: a client-rendered
+  // landing page is scored on whatever the crawler sees, which is an empty
+  // div. The pages additionally emit noindex from the component while
+  // src/config/venues.json still holds placeholders, so prerendering them now
+  // is safe — the HTML exists for ads, and the index stays clean until the
+  // owner verifies the addresses.
+  {
+    path: '/firehouse',
+    title: 'FIREHOUSE — Private Event Space in Minneapolis | Local Effort Cooperative',
+    description: 'Book FIREHOUSE, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
+    prerender: true,
+  },
+  {
+    path: '/foodist',
+    title: 'FOODIST — Private Event Space in Minneapolis | Local Effort Cooperative',
+    description: 'Book FOODIST, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
+    prerender: true,
+  },
+  {
+    path: '/private-events',
+    title: 'Private Events at Our Place — Two Minneapolis Spaces | Local Effort Cooperative',
+    description: 'Host your private event in one of Local Effort Cooperative’s two Minneapolis spaces. We cook and serve; you pick the room and the night. Seasonal menus from 100% Minnesota-grown ingredients.',
+    prerender: true,
+  },
 ];
 
 // Dynamic routes - slugs resolved from Sanity at build time

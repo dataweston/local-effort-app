@@ -1,0 +1,111 @@
+{
+  "_README": [
+    "Single source of truth for the two event spaces. Imported by the pages, by",
+    "the JSON-LD builder, and required by backend/api/routes/venues.js, so it is",
+    "listed in vercel.json includeFiles to survive the serverless trace.",
+    "",
+    "ORDER IS MEANINGFUL. The array order drives the switch on /private-events,",
+    "and FOODIST is first because it is the primary home (owner, 2026-09-17).",
+    "",
+    "`verified` is a publishing gate, not a comment. While it is false the page",
+    "still renders, but buildVenueJsonLd() refuses to emit Place / PostalAddress",
+    "/ geo, and the page sends noindex. A name-address-phone mismatch against the",
+    "Google Business Profile is worse for ranking than emitting nothing at all.",
+    "Flip it to true only once every TODO below is replaced with the value that",
+    "is actually on the Business Profile.",
+    "",
+    "Accents are NOT free choices. Each traces to a measured value in",
+    "brand-tokens.css:83-85 sampled from the reference set, and each is fenced at",
+    "roughly 4% coverage as a rule or a strike, never a fill. They are also",
+    "CATEGORICAL, not hierarchical: FOODIST being the primary home is expressed",
+    "by order, not by a louder colour. See docs/design/VENUES.md.",
+    "",
+    "NOT IN THIS FILE: the Hopkins facility. It is neither of these spaces — it",
+    "is backup capacity for large events and frozen pizza production, has no",
+    "public booking page, and must not be given one by pattern-matching."
+  ],
+
+  "venues": [
+    {
+      "slug": "foodist",
+      "nickname": "FOODIST",
+      "verified": false,
+
+      "role": "primary-home",
+      "isPrimaryHome": true,
+
+      "name": "TODO — legal/Business Profile name",
+      "kicker": "foodist —",
+      "headline": "TODO — one line, plain, in the register of \"Minnesotan food for Minnesotans\"",
+      "summary": "TODO — two sentences: what the room is, and what we do in it. This is the primary home, so it can say so.",
+
+      "accent": "ochre",
+      "accentToken": "--accent-ochre",
+      "accentRationale": "Avercamp, SK-A-1718 — the ice field. Warm earth for the room the kitchen actually lives in, and separable from poppy at a glance and in greyscale.",
+
+      "address": {
+        "street": "TODO",
+        "locality": "TODO",
+        "region": "MN",
+        "postalCode": "TODO",
+        "country": "US"
+      },
+      "geo": { "lat": null, "lng": null },
+      "phone": null,
+      "googleBusinessProfilePlaceId": null,
+
+      "capacity": { "seated": null, "standing": null },
+      "areaSqFt": null,
+      "amenities": [],
+      "hours": { "earliest": "TODO", "latest": "TODO" },
+
+      "roomFeeCents": null,
+      "eventTypes": ["dinner", "pizza", "holiday"],
+
+      "photos": { "hero": null, "void": null, "galleryTags": ["event", "dinner"] },
+
+      "timezone": "America/Chicago"
+    },
+
+    {
+      "slug": "firehouse",
+      "nickname": "FIREHOUSE",
+      "verified": false,
+
+      "role": "second-space",
+      "isPrimaryHome": false,
+
+      "name": "TODO — legal/Business Profile name",
+      "kicker": "firehouse —",
+      "headline": "TODO — one line, plain",
+      "summary": "TODO — two sentences: what the room is, and what we do in it.",
+
+      "accent": "poppy",
+      "accentToken": "--accent-poppy",
+      "accentRationale": "Henstenburgh, RP-T-1898-A-3500. A firehouse is a red building; the measured poppy gets there without the fire-engine-red tell.",
+
+      "address": {
+        "street": "TODO",
+        "locality": "TODO",
+        "region": "MN",
+        "postalCode": "TODO",
+        "country": "US"
+      },
+      "geo": { "lat": null, "lng": null },
+      "phone": null,
+      "googleBusinessProfilePlaceId": null,
+
+      "capacity": { "seated": null, "standing": null },
+      "areaSqFt": null,
+      "amenities": [],
+      "hours": { "earliest": "TODO", "latest": "TODO" },
+
+      "roomFeeCents": null,
+      "eventTypes": ["dinner", "pizza", "holiday"],
+
+      "photos": { "hero": null, "void": null, "galleryTags": ["event", "dinner"] },
+
+      "timezone": "America/Chicago"
+    }
+  ]
+}

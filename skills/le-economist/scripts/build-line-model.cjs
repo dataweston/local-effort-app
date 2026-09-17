@@ -385,7 +385,7 @@ function buildScenario(config) {
     reserveKitchenTransition: config.kitchen.reserveKitchenTransition,
     interimAllocationPolicy: config.interimAllocationPolicy,
     lines: results,
-    note: 'Foodist is fixed portfolio overhead with zero modeled marginal facility cost inside the included access. Kitchen hours control the primary managerial allocation; order-count and revenue-share allocations are required sensitivities. Temporary Hopkins reserve costs remain separate from the $1,800 steady-state base until observed.',
+    note: 'Foodist is fixed portfolio overhead with zero modeled marginal facility cost inside the included access. Kitchen hours control the primary managerial allocation; order-count and revenue-share allocations are required sensitivities. MSP Kitchenery (Hopkins) reserve cost stays separate from the $1,800 steady-state base: $830.90 observed in August 2026 on SoFi Checking, an owner-stated $150/month from October, and an unobserved September.',
   };
 }
 

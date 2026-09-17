@@ -8,6 +8,8 @@ describe('messages router', () => {
   let sendEmail;
   let upsertContact;
   let getSanityClient;
+  let waitlistInsert;
+  let getSupabase;
 
   const buildApp = () => {
     const brevoService = {
@@ -19,6 +21,7 @@ describe('messages router', () => {
       logger,
       brevoService,
       getSanityClient,
+      getSupabase,
       db: null,
     });
     const app = express();
@@ -41,12 +44,24 @@ describe('messages router', () => {
       createIfNotExists: vi.fn().mockResolvedValue({}),
       patch: mockPatch,
     }));
+    process.env.ADMIN_EMAILS = 'team@localeffortfood.com';
+    waitlistInsert = vi.fn().mockResolvedValue({ error: null });
+    getSupabase = vi.fn(() => ({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: 'user-1', email: 'team@localeffortfood.com' } },
+          error: null,
+        }),
+      },
+      from: vi.fn(() => ({ insert: waitlistInsert })),
+    }));
   });
 
   it('sends outbound messages via Brevo', async () => {
     const app = buildApp();
     const res = await request(app)
       .post('/api/messages/send')
+      .set('Authorization', 'Bearer team-token')
       .send({ to: ['team@example.com'], subject: 'Test', text: 'Hello' });
 
     expect(res.status).toBe(200);
@@ -65,6 +80,7 @@ describe('messages router', () => {
     const app = buildApp();
     const res = await request(app)
       .post('/api/messages/send')
+      .set('Authorization', 'Bearer team-token')
       .send({ to: ['team@example.com'], subject: 'Test', text: 'Hello' });
 
     expect(res.status).toBe(500);
@@ -118,20 +134,50 @@ describe('messages router', () => {
     expect(upsertContact).not.toHaveBeenCalled();
   });
 
-  it('requires structured meal-prep waitlist fields', async () => {
+  it('accepts a meal-prep waitlist signup with only an email', async () => {
+    const app = buildApp();
+    const res = await request(app)
+      .post('/api/messages/submit')
+      .send({ type: 'meal-prep-waitlist', email: 'alex@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    const teamEmail = sendEmail.mock.calls[0][0];
+    expect(teamEmail.htmlContent).toContain('alex@example.com');
+    expect(teamEmail.htmlContent).toContain('Name: (not provided)');
+    // Legacy name/phone columns are NOT NULL on the live table, so an
+    // email-only lead must still produce a stored row.
+    expect(waitlistInsert).toHaveBeenCalledWith([
+      expect.objectContaining({ email: 'alex@example.com', name: '', phone: '', status: 'pending' }),
+    ]);
+  });
+
+  it('rejects a meal-prep waitlist signup without a usable email', async () => {
+    const app = buildApp();
+    const res = await request(app)
+      .post('/api/messages/submit')
+      .send({ type: 'meal-prep-waitlist', name: 'Alex Cook', phone: '555-555-5555' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Waitlist requires a valid email');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('reports only known meal interests to the team inbox', async () => {
     const app = buildApp();
     const res = await request(app)
       .post('/api/messages/submit')
       .send({
         type: 'meal-prep-waitlist',
-        name: 'Alex Cook',
         email: 'alex@example.com',
-        phone: '555-555-5555',
-        message: 'Weekly Meal Prep Waitlist signup',
+        familySize: '2 adults + 1 kid',
+        mealsInterested: ['dinner', 'kids-food', 'lobster'],
       });
 
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Waitlist requires family size, days per week, and meals per day');
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(res.status).toBe(200);
+    const teamEmail = sendEmail.mock.calls[0][0];
+    expect(teamEmail.htmlContent).toContain('Most interested in:</strong> dinner, kids food');
+    expect(teamEmail.htmlContent).not.toContain('lobster');
+    expect(teamEmail.htmlContent).toContain('2 adults + 1 kid');
   });
 });

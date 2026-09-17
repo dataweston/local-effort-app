@@ -99,6 +99,7 @@ const happymondayProcessPaymentHandler = require('../../api-handlers/happymonday
 const happymondayPaymentLinkHandler = require('../../api-handlers/happymonday/payment-link');
 const { createMessagesRouter } = require('./routes/messages');
 const { createSmallEventsRouter } = require('./routes/smallEvents');
+const { createVenuesRouter } = require('./routes/venues');
 const { createPlannerRouter } = require('./routes/planner');
 const { createPublicContextRouter } = require('./routes/publicContext');
 const { createProductFeedsRouter } = require('./routes/productFeeds');
@@ -1082,6 +1083,7 @@ try {
 
 app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger }));
 app.use('/api/small-events', createSmallEventsRouter({ logger }));
+app.use('/api/venues', createVenuesRouter({ logger }));
 app.use('/api/finance', createFinanceRouter({ logger }));
 app.use('/api/sales', createSalesRouter({ logger }));
 app.use('/api/planner', createPlannerRouter());

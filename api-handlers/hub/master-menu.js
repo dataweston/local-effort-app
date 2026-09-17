@@ -32,10 +32,14 @@ const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 const { resolveDishNames, resolveOrCreateDishes } = require('../../backend/api/brain/dishResolver');
 const { parseMealMenu } = require('./_mealMenuParse');
+const {
+  NOTE_SOURCE,
+  menuSourceId,
+  resolveWeekStart,
+  syncMealPrepWeek,
+} = require('../../backend/api/planner/mealPrepProduction');
 
 
-const NOTE_SOURCE = 'drafts';
-const NOTE_TIMEZONE = 'America/Chicago';
 
 // Map a subheading to a canonical meal category. Tolerates singular/plural and
 // "kids meals" / "kids" / "kid". Unknown subheadings → null (lines ignored for
@@ -53,30 +57,6 @@ function mealForSection(sectionName) {
   return hit ? hit.meal : null;
 }
 
-function addDaysIso(iso, days) {
-  const date = new Date(`${iso}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function localToday() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: NOTE_TIMEZONE });
-}
-
-// Snap any date to the Sunday starting its Sun/Mon prep pair; with no date, use
-// the current prep week (rolled forward once its Monday has passed, like the tab).
-function resolveWeekStart(dateIso) {
-  const base = dateIso || localToday();
-  const day = new Date(`${base}T00:00:00`);
-  if (Number.isNaN(day.getTime())) return null;
-  let sunday = addDaysIso(base, -day.getDay());
-  if (!dateIso && base > addDaysIso(sunday, 1)) sunday = addDaysIso(sunday, 7);
-  return sunday;
-}
-
-function menuSourceId(weekStart) {
-  return `weekly-meal-prep:week-${weekStart}`;
-}
 
 async function loadMenuBody(weekStart) {
   const doc = await prisma.hubDocument.findUnique({
@@ -135,6 +115,18 @@ async function handler(req, res) {
       acc[d.meal] = (acc[d.meal] || 0) + 1;
       return acc;
     }, {});
+    const production = commit
+      ? await syncMealPrepWeek({
+        prisma,
+        weekStart,
+        supabaseUid: process.env.HUB_MASTER_SUPABASE_UID || auth.viewer.supabaseUid,
+        apply: true,
+        createdBy: auth.viewer.email || 'staff',
+        // The canonical dishes were created immediately above; resolve them
+        // read-only while promoting the same note into production records.
+        createMissingDishes: false,
+      })
+      : null;
 
     return res.status(200).json({
       ok: true,
@@ -143,10 +135,21 @@ async function handler(req, res) {
       committed: commit,
       dishes,
       summary: { total: dishes.length, resolved, unresolved: dishes.length - resolved, created, byMeal },
+      production: production
+        ? {
+          cycleId: production.cycle.id,
+          batchId: production.batch.id,
+          batchVersion: production.batch.version,
+          batchReused: production.reused,
+          readiness: production.sheet.readiness,
+          plannerDiff: production.plannerDiff,
+          blockers: production.blockers,
+        }
+        : null,
     });
   } catch (err) {
     console.error('[hub/master-menu] error', err);
-    return res.status(500).json({ error: 'Unable to parse menu' });
+    return res.status(500).json({ error: 'Unable to formalize meal-prep menu' });
   }
 }
 

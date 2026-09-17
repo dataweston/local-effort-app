@@ -1,82 +1,29 @@
 /**
- * Hub meal-prep rollup — derive the kitchen's working lists from the week's
- * menu, so nothing gets re-typed between "menu decided" and "bags out".
+ * Hub meal-prep rollup — render packaging, cook, and bag lists from the
+ * canonical production records for a week.
  *
- * SOURCE: the Weekly Meal Prep notepad for the week (HubDocument,
- * source='drafts', sourceId='weekly-meal-prep:week-<sunday>') — the SAME menu
- * Weston writes every Thursday under meal-category subheadings:
- *
- *     #dinners#  #lunches#  #breakfasts#  #kids meals#
- *
- * A dish's MEAL CATEGORY is the subheading it sits under (parsed via the shared
- * _notepadParse). Each dish line resolves to a canonical brain Dish entity so
- * two spellings collapse into one packaging count. From the menu we emit:
- *
- *   1. packaging — group by (dish identity + meal), one per dish line
- *        → "chicken tikka dinner", "nicoise salad lunch"
- *   2. cookLists — group by Chef → Day → Station (see caveat below)
- *   3. bagLists  — group by Client (see caveat below)
- *
- * CAVEAT — menu-bridge stage: the Weekly Meal Prep menu is a FLAT dish list. It
- * has NO per-customer Client, Qty, Diet, Station, Chef, or Day — those are the
- * job of the prep-breakdown stage (prep-breakdown:week-<sunday>), which isn't
- * built yet. Until it is, cookLists/bagLists collapse under "Unassigned" and
- * packaging counts are per menu line (qty 1). `buildLineItems` is the single
- * function that swaps to read the structured breakdown doc once it exists; the
- * three view-builders and the resolver do not change.
- *
- * Do NOT read the Food Inputs sheet here — that is the per-customer notes space,
- * never a menu/prep source. See memory meal-prep-pipeline-surfaces.
+ * Hub notes and planner cards are source evidence. `meal-prep:production`
+ * promotes them into MealPrepMenuCycle / MealPrepCustomerMenu records; chef
+ * assignments live on MealPrepCustomerMenuItem and survive every regeneration.
+ * This endpoint deliberately emits no placeholder "Unassigned" menu rows: an
+ * unassigned dish is a production blocker, not a printable label.
  *
  * Staff-only.
  *
- *   GET /api/hub/meal-prep-rollup?weekStart=YYYY-MM-DD   → { ok, weekStart, lineCount, packaging, cookLists, bagLists, unresolved }
- *     weekStart may be any day in the prep week; it's snapped to the Sun/Mon pair.
+ *   GET /api/hub/meal-prep-rollup?weekStart=YYYY-MM-DD
  */
 
 const { prisma } = require('../_lib/prisma');
 const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
-const { resolveDishNames } = require('../../backend/api/brain/dishResolver');
-const { sectionsFromNotepad } = require('./_notepadParse');
-
-
-const NOTE_SOURCE = 'drafts';
-
-// Map a menu subheading to a canonical meal category (mirrors master-menu.js).
-const MEAL_SECTIONS = [
-  { meal: 'dinner', re: /^dinners?$/i },
-  { meal: 'lunch', re: /^lunch(es)?$/i },
-  { meal: 'breakfast', re: /^breakfasts?$/i },
-  { meal: 'kids', re: /^kids?(\s+meals?)?$/i },
-];
-
-function mealForSection(section) {
-  const name = String(section || '').trim();
-  const hit = MEAL_SECTIONS.find((entry) => entry.re.test(name));
-  return hit ? hit.meal : null;
-}
-
-function addDaysIso(iso, days) {
-  const date = new Date(`${iso}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-// Snap any date to the Sunday that starts its Sun/Mon prep pair.
-function weekStartForDate(dateIso) {
-  const day = new Date(`${dateIso}T00:00:00`);
-  if (Number.isNaN(day.getTime())) return null;
-  return addDaysIso(dateIso, -day.getDay());
-}
-
-function menuSourceId(weekStart) {
-  return `weekly-meal-prep:week-${weekStart}`;
-}
+const {
+  loadCanonicalWeek,
+  resolveWeekStart,
+} = require('../../backend/api/planner/mealPrepProduction');
 
 // Build the human packaging label, e.g. "chicken tikka dinner". Skip the meal
 // suffix when the dish name already carries it ("Chicken Dinner" + dinner). Qty
-// is prefixed only when > 1 (the menu bridge has no per-line qty, so it's 1).
+// is prefixed only when more than one container is assigned.
 function packagingLabel({ name, meal, diet, qty }) {
   const lowerName = name.toLowerCase();
   const includeMeal = meal && meal !== 'other' && !new RegExp(`\\b${meal}\\b`).test(lowerName);
@@ -86,54 +33,37 @@ function packagingLabel({ name, meal, diet, qty }) {
   return parts.join(' ').replace(/\s+/g, ' ');
 }
 
-// Load the week's menu notepad body (Weekly Meal Prep tab).
-async function loadMenuBody(weekStart) {
-  const doc = await prisma.hubDocument.findUnique({
-    where: { source_sourceId: { source: NOTE_SOURCE, sourceId: menuSourceId(weekStart) } },
-  });
-  return doc?.body || '';
+// Build production line items only from explicit per-customer chef assignments.
+// Master-menu entries alone are not quantities and must never become labels.
+function lineItemsFromCycle(cycle) {
+  if (!cycle) return [];
+  return cycle.customerMenus.flatMap((menu) =>
+    menu.items.map((item) => ({
+      id: item.id,
+      customerMenuId: menu.id,
+      menuCycleItemId: item.menuCycleItemId || null,
+      dishText: item.dishName,
+      client: menu.customerName,
+      meal: item.meal,
+      qty: item.quantity,
+      diet: item.diet || '',
+      station: item.station || 'Unassigned',
+      chef: item.chef || 'Unassigned',
+      day: item.prepDay || 'Unassigned',
+      notes: item.notes || '',
+      dishEntityId: item.dishEntityId || item.menuCycleItem?.dishEntityId || null,
+      dishKey: item.dishEntityId || item.menuCycleItem?.dishEntityId || item.dishName.toLowerCase(),
+      canonicalName: item.dishName,
+      matchConfidence: item.dishEntityId || item.menuCycleItem?.dishEntityId ? 1 : 0,
+      matchMethod: item.dishEntityId || item.menuCycleItem?.dishEntityId ? 'canonical' : 'none',
+      candidates: [],
+    })),
+  );
 }
 
-// Turn the menu notepad into dish-resolved line items. Each dish line under a
-// recognized meal subheading (#dinners# etc.) becomes one line, tagged with the
-// meal from its subheading. Client/Qty/Diet/Station/Chef/Day don't exist on the
-// menu yet (prep-breakdown stage) — they default to Unassigned / 1 / ''.
-async function buildLineItems({ body }) {
-  const raw = [];
-  for (const { section, items } of sectionsFromNotepad(body)) {
-    const meal = mealForSection(section);
-    if (!meal) continue; // ignore non-menu subheadings
-    for (const text of items) {
-      raw.push({
-        dishText: text,
-        client: 'Unassigned',
-        meal,
-        qty: 1,
-        diet: '',
-        station: 'Unassigned',
-        chef: 'Unassigned',
-        day: 'Unassigned',
-        notes: '',
-      });
-    }
-  }
-
-  // Resolve every dish name once, in a batch, then attach identity to each line.
-  const resolutions = await resolveDishNames(raw.map((item) => item.dishText), { prisma });
-  return raw.map((item, i) => {
-    const res = resolutions[i] || {};
-    return {
-      ...item,
-      dishEntityId: res.dishEntityId || null,
-      // Stable grouping key: canonical entity id when resolved, else lowercased
-      // text so unresolved-but-identical names still collapse together.
-      dishKey: res.dishEntityId || item.dishText.toLowerCase(),
-      canonicalName: res.name || item.dishText,
-      matchConfidence: res.confidence ?? 0,
-      matchMethod: res.method || 'none',
-      candidates: res.candidates || [],
-    };
-  });
+async function buildLineItems({ weekStart, prismaClient = prisma }) {
+  const { cycle } = await loadCanonicalWeek(prismaClient, weekStart);
+  return lineItemsFromCycle(cycle);
 }
 
 function buildPackaging(items) {
@@ -166,7 +96,7 @@ function buildCookLists(items) {
     const byStation = byDay.get(item.day);
     if (!byStation.has(item.station)) byStation.set(item.station, new Map());
     const dishes = byStation.get(item.station);
-    const key = item.dishKey;
+    const key = `${item.dishKey}|${item.meal}|${item.diet.toLowerCase()}`;
     if (!dishes.has(key)) {
       dishes.set(key, { name: item.canonicalName, meal: item.meal, diet: item.diet, qty: 0 });
     }
@@ -214,20 +144,36 @@ async function handler(req, res) {
   if (denied) return res.status(denied.status).json({ error: denied.error });
 
   const weekParam = cleanString(req.query?.weekStart, 10);
-  const weekStart = weekParam ? weekStartForDate(weekParam) : weekStartForDate(new Date().toISOString().slice(0, 10));
+  const weekStart = resolveWeekStart(weekParam || undefined);
   if (!weekStart) return res.status(400).json({ error: 'Invalid weekStart (expected YYYY-MM-DD)' });
 
   try {
-    const body = await loadMenuBody(weekStart);
-    const items = await buildLineItems({ body });
+    const loaded = await loadCanonicalWeek(prisma, weekStart);
+    const cycle = loaded.cycle;
+    const items = lineItemsFromCycle(cycle);
     const unresolved = items
       .filter((item) => !item.dishEntityId)
-      .map((item) => ({ dishText: item.dishText, candidates: item.candidates, confidence: item.matchConfidence }));
+      .map((item) => ({ dishText: item.dishText, client: item.client }));
+    const latestBatch = cycle?.productionBatches?.[0] || null;
 
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       weekStart,
+      cycleId: cycle?.id || null,
+      status: cycle?.status || 'missing',
+      batch: latestBatch
+        ? { id: latestBatch.id, version: latestBatch.version, status: latestBatch.status, generatedAt: latestBatch.generatedAt }
+        : null,
+      readiness: latestBatch?.operatorSheet?.readiness || {
+        status: 'blocked',
+        blockerCount: 1,
+        commitmentCount: 0,
+        assignedLineCount: 0,
+        plannerCardsExact: false,
+      },
+      blockers: latestBatch?.blockers || [{ code: 'canonical_cycle_missing', message: `Run meal-prep:production for ${weekStart}.` }],
+      plannerDiff: latestBatch?.plannerDiff || null,
       lineCount: items.length,
       packaging: buildPackaging(items),
       cookLists: buildCookLists(items),
@@ -242,6 +188,11 @@ async function handler(req, res) {
 
 module.exports = handler;
 module.exports._internals = {
-  mealForSection, packagingLabel,
-  buildPackaging, buildCookLists, buildBagLists, buildLineItems, weekStartForDate,
+  packagingLabel,
+  buildPackaging,
+  buildCookLists,
+  buildBagLists,
+  lineItemsFromCycle,
+  buildLineItems,
+  weekStartForDate: (dateIso) => resolveWeekStart(dateIso),
 };

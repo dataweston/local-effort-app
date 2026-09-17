@@ -23,11 +23,18 @@
       "location": "Hopkins, Minnesota",
       "role": "reserve_for_overflow_large_events_and_frozen_pizza_cpg",
       "september2026ExpectedCost": 350,
+      "october2026MonthlyCost": 150,
+      "october2026CostBasis": "owner_stated_2026-09-17",
+      "observedAugust2026Cash": 830.9,
+      "observedAugust2026Posted": 676,
+      "observedAugust2026Unclassified": 154.9,
+      "observedSource": "local_budget.transactions join financial_accounts, SoFi Checking, merchant 'Msp Kitchenery'",
+      "observedSourceMaxDate": "2026-09-02",
       "temporaryStorageMonthsMin": 1,
       "temporaryStorageMonthsMax": 2,
       "futureMonthlyStorageCost": null
     },
-    "note": "Owner update 2026-09-15. Foodist becomes the primary kitchen in October at a flat $1,800/month. Hopkins remains a reserve kitchen and may carry additional storage cost for one or two months; only the approximately $350 September bill is currently quantified."
+    "note": "Owner updates 2026-09-15 and 2026-09-17. Foodist becomes the primary kitchen in October at a flat $1,800/month. MSP Kitchenery (Hopkins) stays a reserve at an owner-stated $150/month from October. Observed August 2026 MSP Kitchenery cash on SoFi Checking is $830.90: $676.00 posted to Rent/OPERATING plus $154.90 still unclassified in Local Budget. The Local Budget transaction source maximum date is 2026-09-02, so the approximately $350 September bill remains an estimate, not evidence."
   },
   "interimAllocationPolicy": {
     "status": "sanctioned_for_deadline_decisions_only",

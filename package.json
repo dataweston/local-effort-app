@@ -215,7 +215,8 @@
     "neo4j:brain:sync": "node scripts/brain-neo4j-sync.js",
     "neo4j:brain:sync:reset": "node scripts/brain-neo4j-sync.js --reset",
     "partners:evidence:dry": "node scripts/project-partner-evidence.cjs",
-    "partners:evidence": "node scripts/project-partner-evidence.cjs --apply"
+    "partners:evidence": "node scripts/project-partner-evidence.cjs --apply",
+    "meal-prep:production": "node scripts/meal-prep-production.cjs"
   },
   "browserslist": {
     "production": [

@@ -53,6 +53,9 @@ const ReturnPolicyPage = lazy(() => import('./pages/ReturnPolicyPage'));
 const OfficeCateringPage = lazy(() => import('./pages/OfficeCateringPage'));
 const WeeklyMealsPage = lazy(() => import('./pages/WeeklyMealsPage'));
 const SmallEventsPage = lazy(() => import('./pages/SmallEventsPage'));
+const FirehousePage = lazy(() => import('./pages/FirehousePage'));
+const FoodistPage = lazy(() => import('./pages/FoodistPage'));
+const PrivateEventsPage = lazy(() => import('./pages/PrivateEventsPage'));
 const MemberFundraisePage = lazy(() => import('./pages/MemberFundraisePage'));
 const GiftCardsPage = lazy(() => import('./pages/GiftCardsPage'));
 
@@ -126,6 +129,30 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <SmallEventsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/firehouse"
+                  element={
+                    <AnimatedPage>
+                      <FirehousePage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/foodist"
+                  element={
+                    <AnimatedPage>
+                      <FoodistPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/private-events"
+                  element={
+                    <AnimatedPage>
+                      <PrivateEventsPage />
                     </AnimatedPage>
                   }
                 />

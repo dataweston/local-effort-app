@@ -19,6 +19,9 @@ import ReturnPolicyPage from '../pages/ReturnPolicyPage';
 import OfficeCateringPage from '../pages/OfficeCateringPage';
 import WeeklyMealsPage from '../pages/WeeklyMealsPage';
 import SmallEventsPage from '../pages/SmallEventsPage';
+import FirehousePage from '../pages/FirehousePage';
+import FoodistPage from '../pages/FoodistPage';
+import PrivateEventsPage from '../pages/PrivateEventsPage';
 import LocalistPage from '../pages/LocalistPage';
 import MemberFundraisePage from '../pages/MemberFundraisePage';
 import GiftCardsPage from '../pages/GiftCardsPage';
@@ -50,6 +53,9 @@ export default function StaticApp({ helmetContext }) {
               <Route path="/office-catering" element={<OfficeCateringPage />} />
               <Route path="/weekly-meals" element={<WeeklyMealsPage />} />
               <Route path="/small-events" element={<SmallEventsPage />} />
+              <Route path="/firehouse" element={<FirehousePage />} />
+              <Route path="/foodist" element={<FoodistPage />} />
+              <Route path="/private-events" element={<PrivateEventsPage />} />
               <Route path="/localist" element={<LocalistPage />} />
               <Route path="/308b-member" element={<MemberFundraisePage />} />
             </Routes>

@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import CloudinaryImage from '../components/common/cloudinaryImage';
-import { MealPrepQuickStart } from '../components/services/slipForms';
+import { MealPrepWaitlistForm } from '../components/services/slipForms';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 import '../styles/home-tabs.css';
@@ -59,7 +59,7 @@ const RECENT_MEAL_PREP_MENUS = [
 const FAQ_ITEMS = [
   {
     q: 'How does the first week work?',
-    a: 'You sign up here, we email the intake form, and we talk once — household size, what you like, what you cannot eat, and which day works for delivery. Your first delivery is usually the following week.',
+    a: 'You join the waitlist here — email is all we need. We follow up with the intake form and one conversation: household size, what you like, what you cannot eat, and which day works for delivery. As soon as a kitchen spot opens we confirm your start week.',
   },
   {
     q: 'What does a week actually cost?',
@@ -230,7 +230,11 @@ const WeeklyMealsPage = () => {
             <p className="ht-facts">
               dinners from $18 a person · breakfasts from $13.50 · $10 weekly delivery
             </p>
-            <MealPrepQuickStart source="weekly-meals-page" />
+            <p className="ht-copy">
+              We are taking names for the next open spots. Email is the only thing we need —
+              the rest helps us plan your first week sooner.
+            </p>
+            <MealPrepWaitlistForm source="weekly-meals-page" />
             <div className="ht-side-links">
               <a className="ht-side-link" href="/meal-prep-intake">
                 Prefer to plan every detail? Take the full intake

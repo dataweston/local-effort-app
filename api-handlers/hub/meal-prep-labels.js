@@ -1,10 +1,11 @@
 /**
- * Hub meal-prep labels — turn one week's prep breakdown into Brother QL800 / DK
- * labels, in-repo, so there's no copy-paste into an external Python script.
+ * Hub meal-prep labels — turn explicit canonical customer assignments into
+ * Brother QL800 / DK labels, in-repo, so there is no copy-paste into an
+ * external script.
  *
- * Source: the same per-week prep rows the rollup reads (via meal-prep-rollup's
- * line-item builder). One *package* gets one label — so a row of qty 3 expands
- * into 3 identical labels (each physical container needs its own sticker).
+ * One assigned package gets one label. A quantity of three expands to three
+ * identical stickers. The endpoint fails closed while the production batch is
+ * blocked unless a staff preview explicitly requests `allowPartial=1`.
  *
  * Each label carries: customer · dish (canonical) · meal · diet · day. That's
  * the bag/packout sticker the kitchen sticks on a container.
@@ -26,38 +27,12 @@ const { resolveHubViewer, requireHubAccess } = require('./_auth');
 const { methodNotAllowed, cleanString } = require('./_http');
 // Reuse the rollup's line-item construction so labels and the rollup never drift.
 const rollup = require('./meal-prep-rollup');
+const {
+  loadCanonicalWeek,
+  resolveWeekStart,
+} = require('../../backend/api/planner/mealPrepProduction');
 
 
-const NOTE_SOURCE = 'drafts';
-
-// Brother QL800 with DK-22205 continuous 62mm tape: usable print width ~59mm.
-// Length is variable on continuous tape; we target a compact 3-4 line stub.
-const DK_LABEL = { tapeWidthMm: 62, printWidthMm: 59, defaultLengthMm: 40 };
-
-function addDaysIso(iso, days) {
-  const date = new Date(`${iso}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function weekStartForDate(dateIso) {
-  const day = new Date(`${dateIso}T00:00:00`);
-  if (Number.isNaN(day.getTime())) return null;
-  return addDaysIso(dateIso, -day.getDay());
-}
-
-function menuSourceId(weekStart) {
-  return `weekly-meal-prep:week-${weekStart}`;
-}
-
-// Load the week's menu notepad body (Weekly Meal Prep tab) — same source the
-// rollup reads. NOT the Food Inputs sheet (that's per-customer notes).
-async function loadMenuBody(weekStart) {
-  const doc = await prisma.hubDocument.findUnique({
-    where: { source_sourceId: { source: NOTE_SOURCE, sourceId: menuSourceId(weekStart) } },
-  });
-  return doc?.body || '';
-}
 
 // Expand resolved line items (qty N) into N individual labels.
 function buildLabels(items, weekStart) {
@@ -125,17 +100,34 @@ async function handler(req, res) {
   if (denied) return res.status(denied.status).json({ error: denied.error });
 
   const weekParam = cleanString(req.query?.weekStart, 10);
-  const weekStart = weekParam
-    ? weekStartForDate(weekParam)
-    : weekStartForDate(new Date().toISOString().slice(0, 10));
+  const weekStart = resolveWeekStart(weekParam || undefined);
   if (!weekStart) return res.status(400).json({ error: 'Invalid weekStart (expected YYYY-MM-DD)' });
 
   const format = (cleanString(req.query?.format, 16) || 'structured').toLowerCase();
 
   try {
-    const body = await loadMenuBody(weekStart);
-    // buildLineItems is exported on the rollup's _internals and resolves dishes.
-    const items = await rollup._internals.buildLineItems({ body });
+    const { cycle } = await loadCanonicalWeek(prisma, weekStart);
+    if (!cycle) {
+      return res.status(409).json({
+        error: 'Meal-prep production cycle is missing',
+        weekStart,
+        action: `Run meal-prep:production for ${weekStart}.`,
+      });
+    }
+    const latestBatch = cycle.productionBatches[0] || null;
+    const allowPartial = ['1', 'true'].includes(String(req.query?.allowPartial || '').toLowerCase());
+    if (latestBatch?.status !== 'ready' && !allowPartial) {
+      return res.status(409).json({
+        error: 'Meal-prep production batch is blocked',
+        weekStart,
+        cycleId: cycle.id,
+        batch: latestBatch
+          ? { id: latestBatch.id, version: latestBatch.version, status: latestBatch.status }
+          : null,
+        blockers: latestBatch?.blockers || [{ code: 'production_batch_missing' }],
+      });
+    }
+    const items = rollup._internals.lineItemsFromCycle(cycle);
     const labels = buildLabels(items, weekStart);
 
     if (format === 'text') {
@@ -143,12 +135,20 @@ async function handler(req, res) {
       return res.status(200).send(buildStickerText(labels));
     }
     if (format === 'dk') {
-      return res.status(200).json({ ok: true, weekStart, ...buildDkSpec(labels) });
+      return res.status(200).json({
+        ok: true,
+        weekStart,
+        cycleId: cycle.id,
+        batchVersion: latestBatch?.version || null,
+        ...buildDkSpec(labels),
+      });
     }
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       weekStart,
+      cycleId: cycle.id,
+      batchVersion: latestBatch?.version || null,
       count: labels.length,
       labels,
     });
@@ -159,4 +159,10 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-module.exports._internals = { buildLabels, labelLines, buildStickerText, buildDkSpec, weekStartForDate };
+module.exports._internals = {
+  buildLabels,
+  labelLines,
+  buildStickerText,
+  buildDkSpec,
+  weekStartForDate: (dateIso) => resolveWeekStart(dateIso),
+};

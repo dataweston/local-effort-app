@@ -273,6 +273,27 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
     return res.status(500).json({ error: fallback || 'send-failed' });
   };
 
+  // Waitlist meal interests. The public form offers checkboxes, so only these
+  // values are accepted; anything else a client posts is dropped, not stored.
+  const MEAL_INTEREST_LABELS = {
+    breakfasts: 'breakfasts',
+    lunch: 'lunch',
+    dinner: 'dinner',
+    'kids-food': 'kids food',
+    other: 'other',
+  };
+  const readMealInterests = (value) => {
+    const entries = Array.isArray(value) ? value : String(value || '').split(',');
+    const picked = [];
+    for (const entry of entries) {
+      const slug = String(entry).trim().toLowerCase().replace(/\s+/g, '-');
+      if (MEAL_INTEREST_LABELS[slug] && !picked.includes(slug)) picked.push(slug);
+    }
+    return picked;
+  };
+  const mealInterestText = (slugs) =>
+    slugs.map((slug) => MEAL_INTEREST_LABELS[slug]).join(', ');
+
   router.post('/messages/submit', async (req, res) => {
     try {
       const body = req.body || {};
@@ -281,7 +302,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const email = normalizeEmail(body.email);
       const phone = readTrimmed(body.phone, 80);
       const subject = readTrimmed(body.subject, 240);
-      const message = readTrimmed(body.message, 12000);
+      let message = readTrimmed(body.message, 12000);
       const sendCopy = !!body.sendCopy;
       const honeypot = readTrimmed(body.website, 255);
       const familySize = readTrimmed(body.familySize, 120);
@@ -290,7 +311,12 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const mealsPerDay = readTrimmed(body.mealsPerDay, 120);
       const allergies = readTrimmed(body.allergies, 400);
       const questions = readTrimmed(body.questions, 1200);
-      if (!message) return res.status(400).json({ error: 'Message is required' });
+      const mealsInterested = readMealInterests(body.mealsInterested);
+      // The waitlist asks for email only, so it may legitimately arrive with no
+      // free-text message; one is synthesized from the answers below.
+      if (!message && type !== 'meal-prep-waitlist') {
+        return res.status(400).json({ error: 'Message is required' });
+      }
 
       // Silent success on honeypot hits to reduce bot retries.
       if (honeypot) {
@@ -314,11 +340,20 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       }
 
       if (type === 'meal-prep-waitlist') {
-        if (!name || !email || !phone || !BASIC_EMAIL_REGEX.test(email)) {
-          return res.status(400).json({ error: 'Waitlist requires name, email, and phone' });
+        // Email is the only required answer: the waitlist exists to capture the
+        // lead, and household details can arrive later in conversation.
+        if (!email || !BASIC_EMAIL_REGEX.test(email)) {
+          return res.status(400).json({ error: 'Waitlist requires a valid email' });
         }
-        if (!familySize || !daysPerWeek || !mealsPerDay) {
-          return res.status(400).json({ error: 'Waitlist requires family size, days per week, and meals per day' });
+        if (!message) {
+          message = [
+            'Meal prep waitlist signup.',
+            `Name: ${name || '(not provided)'}`,
+            `Email: ${email}`,
+            `Phone: ${phone || '(not provided)'}`,
+            `Family size: ${familySize || '(not provided)'}`,
+            `Most interested in: ${mealsInterested.length ? mealInterestText(mealsInterested) : '(not provided)'}`,
+          ].join('\n');
         }
       }
 
@@ -357,19 +392,31 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         if (supabase) {
           try {
             const waitlistData = {
-              name,
+              // name and phone are optional on the form. Empty string keeps the
+              // insert valid under both the legacy NOT NULL columns and the
+              // nullable columns the 2026-09-17 migration leaves behind.
+              name: name || '',
               email,
-              phone: phone || null,
+              phone: phone || '',
               family_size: familySize || null,
               children: children || null,
               days_per_week: daysPerWeek || null,
               meals_per_day: mealsPerDay || null,
               allergies: allergies || null,
               questions: questions || null,
+              meals_interested: mealsInterested.length ? mealsInterested : null,
               sanity_message_id: msgDoc?._id || null,
               status: 'pending',
             };
-            const { error } = await supabase.from('meal_prep_waitlist').insert([waitlistData]);
+            let { error } = await supabase.from('meal_prep_waitlist').insert([waitlistData]);
+            if (error && error.code === 'PGRST204' && waitlistData.meals_interested) {
+              // supabase/migrations/20260917_meal_prep_waitlist_meal_interests.sql
+              // is not applied on this project yet. Store the lead rather than
+              // drop it; the interests still ride in the message body and email.
+              const retry = { ...waitlistData };
+              delete retry.meals_interested;
+              ({ error } = await supabase.from('meal_prep_waitlist').insert([retry]));
+            }
             if (error) {
               if (logger) logger.warn({ err: error }, 'failed to store waitlist entry in supabase');
             }
@@ -389,6 +436,8 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         <p>New inquiry from <strong>${escapeHtml(fromDisplay)}</strong></p>
         ${email ? `<p><strong>Email:</strong> ${escapeHtml(email)}</p>` : '<p><strong>Email:</strong> Not provided (anonymous)</p>'}
         ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
+        ${familySize ? `<p><strong>Family size:</strong> ${escapeHtml(familySize)}</p>` : ''}
+        ${mealsInterested.length ? `<p><strong>Most interested in:</strong> ${escapeHtml(mealInterestText(mealsInterested))}</p>` : ''}
         <p><strong>Type:</strong> ${escapeHtml(type)}</p>
         <hr />
         <pre style="white-space:pre-wrap;font-family:inherit">${safeMessage}</pre>

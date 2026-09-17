@@ -7,7 +7,7 @@
 //
 // Material system + tokens: src/styles/home-tabs.css (.ht-* under .ht-scope).
 // Direction: src/components/fullpage/HOME-TABS-DESIGN.md
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { trackEvent } from '../../lib/trackEvent';
 
 export const QUICK_EVENT_OPTIONS = [
@@ -37,17 +37,35 @@ export const todayISO = () => {
 // Minimal event booking: name, email, phone, date (+ type when not fixed).
 // Posts to the existing /api/events/request endpoint (Supabase + team email
 // + ICS attachment + honeypot + rate limiting all live server-side).
-export const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this date' }) => {
+export const QuickEventBookForm = ({
+  fixedType,
+  source,
+  ctaLabel = 'Request this date',
+  // Set by the venue pages when someone picks a night on the calendar, so the
+  // grid and the slip are never telling the customer two different dates.
+  presetDate = '',
+  // Venue nickname (FIREHOUSE / FOODIST). Absent means the original behaviour:
+  // we cook at the customer's own place.
+  venue = null,
+}) => {
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
-    date: '',
+    date: presetDate || '',
     type: fixedType || QUICK_EVENT_OPTIONS[0].value,
     website: '',
   });
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+
+  // The calendar owns the date once a venue page passes one in, but the field
+  // stays editable — someone who opens the date picker and changes it should
+  // not have their choice snapped back.
+  useEffect(() => {
+    if (!presetDate) return;
+    setForm((current) => (current.date === presetDate ? current : { ...current, date: presetDate }));
+  }, [presetDate]);
   const minDate = todayISO();
 
   const update = (field) => (event) =>
@@ -88,13 +106,20 @@ export const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this
           phone: form.phone.trim(),
           eventDate: form.date || undefined,
           eventType: form.type,
-          notes: `Quick booking request (${source}).`,
+          venue: venue || undefined,
+          notes: venue
+            ? `Quick booking request (${source}). Venue: ${venue}.`
+            : `Quick booking request (${source}).`,
           website: form.website,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Unable to send request');
-      trackEvent('contact.completed', { store: 'small-events', leadType: `quick_book_${source}` });
+      trackEvent('contact.completed', {
+        store: 'small-events',
+        leadType: `quick_book_${source}`,
+        ...(venue ? { venue } : {}),
+      });
       setStatus('success');
     } catch (err) {
       setStatus('error');
@@ -209,59 +234,80 @@ export const QuickEventBookForm = ({ fixedType, source, ctaLabel = 'Request this
   );
 };
 
-// Minimal meal-prep start: name, email, phone (optional), start week.
+// Meal prep waitlist: email is the only required answer. Name, phone, family
+// size, and which meals a household wants are all optional, because the list
+// exists to capture the lead — details come later in conversation.
 // Posts to the existing /api/messages/submit endpoint (Brevo contact upsert,
-// Sanity inbox message, team email, honeypot + rate limiting server-side).
-export const MealPrepQuickStart = ({ source = 'weekly-meals' }) => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', startDate: '', website: '' });
+// Sanity inbox message, team email, Supabase meal_prep_waitlist row, honeypot
+// + rate limiting server-side).
+export const MEAL_INTEREST_OPTIONS = [
+  { value: 'breakfasts', label: 'breakfasts' },
+  { value: 'lunch', label: 'lunch' },
+  { value: 'dinner', label: 'dinner' },
+  { value: 'kids-food', label: 'kids food' },
+  { value: 'other', label: 'other' },
+];
+
+export const MealPrepWaitlistForm = ({ source = 'weekly-meals' }) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    familySize: '',
+    website: '',
+  });
+  const [meals, setMeals] = useState([]);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
-  const minDate = todayISO();
 
   const update = (field) => (event) =>
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
 
-  const validationMessage = () => {
-    if (!form.name.trim()) return 'Add your name so we know who we are cooking for.';
-    if (!isValidEmailAddress(form.email)) return 'Add your email — that is where we plan your first week.';
-    return '';
-  };
+  const toggleMeal = (value) => () =>
+    setMeals((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+
+  const mealLabels = () =>
+    MEAL_INTEREST_OPTIONS.filter((option) => meals.includes(option.value))
+      .map((option) => option.label)
+      .join(', ');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (status === 'sending') return;
-    const problem = validationMessage();
-    if (problem) {
+    if (!isValidEmailAddress(form.email)) {
       setStatus('error');
-      setError(problem);
+      setError('Add your email — that is the only thing we actually need.');
       return;
     }
     setStatus('sending');
     setError('');
     try {
       const lines = [
-        `Weekly meal prep quick signup (${source}).`,
-        `Name: ${form.name}`,
-        `Email: ${form.email}`,
+        `Meal prep waitlist signup (${source}).`,
+        `Name: ${form.name.trim() || '(not provided)'}`,
+        `Email: ${form.email.trim()}`,
         `Phone: ${form.phone || '(not provided)'}`,
-        `Preferred start week: ${form.startDate || 'as soon as possible'}`,
+        `Family size: ${form.familySize.trim() || '(not provided)'}`,
+        `Most interested in: ${mealLabels() || '(not provided)'}`,
       ];
       const res = await fetch('/api/messages/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
+          name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone,
-          subject: 'Weekly meal prep signup',
-          type: 'meal-prep-signup',
+          familySize: form.familySize.trim(),
+          mealsInterested: meals,
+          subject: 'Meal prep waitlist signup',
+          type: 'meal-prep-waitlist',
           website: form.website,
           message: lines.join('\n'),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Unable to send request');
-      trackEvent('contact.completed', { store: 'meal-prep', leadType: 'meal_prep_quick_start' });
+      trackEvent('contact.completed', { store: 'meal-prep', leadType: 'meal_prep_waitlist' });
       setStatus('success');
     } catch (err) {
       setStatus('error');
@@ -272,32 +318,21 @@ export const MealPrepQuickStart = ({ source = 'weekly-meals' }) => {
   if (status === 'success') {
     return (
       <div className="ht-success" role="status">
-        <span className="ht-success-lead">you&apos;re in —</span>
-        The intake form is on its way to your inbox. We&apos;ll reach out within
-        one business day to plan your first week: menu, portions, and delivery day.
+        <span className="ht-success-lead">you&apos;re on the list —</span>
+        We&apos;ll email you as soon as a spot opens. Check your inbox for the
+        confirmation; the full intake form is linked inside if you want to plan
+        details now.
       </div>
     );
   }
 
   return (
     <form className="ht-form" onSubmit={handleSubmit} noValidate>
-      <div>
-        <label className="ht-label" htmlFor="mealprep-quick-name">your name</label>
-        <input
-          id="mealprep-quick-name"
-          className="ht-input"
-          value={form.name}
-          onChange={update('name')}
-          autoComplete="name"
-          placeholder="first and last"
-          required
-        />
-      </div>
       <div className="ht-row">
         <div>
-          <label className="ht-label" htmlFor="mealprep-quick-email">email</label>
+          <label className="ht-label" htmlFor="mealprep-waitlist-email">email</label>
           <input
-            id="mealprep-quick-email"
+            id="mealprep-waitlist-email"
             type="email"
             className="ht-input"
             value={form.email}
@@ -308,9 +343,26 @@ export const MealPrepQuickStart = ({ source = 'weekly-meals' }) => {
           />
         </div>
         <div>
-          <label className="ht-label" htmlFor="mealprep-quick-phone">phone <span aria-hidden="true">·</span> optional</label>
+          <label className="ht-label" htmlFor="mealprep-waitlist-name">
+            your name <span aria-hidden="true">·</span> optional
+          </label>
           <input
-            id="mealprep-quick-phone"
+            id="mealprep-waitlist-name"
+            className="ht-input"
+            value={form.name}
+            onChange={update('name')}
+            autoComplete="name"
+            placeholder="first and last"
+          />
+        </div>
+      </div>
+      <div className="ht-row">
+        <div>
+          <label className="ht-label" htmlFor="mealprep-waitlist-phone">
+            phone <span aria-hidden="true">·</span> optional
+          </label>
+          <input
+            id="mealprep-waitlist-phone"
             type="tel"
             className="ht-input"
             value={form.phone}
@@ -321,26 +373,42 @@ export const MealPrepQuickStart = ({ source = 'weekly-meals' }) => {
             placeholder="(612) 555-0123"
           />
         </div>
+        <div>
+          <label className="ht-label" htmlFor="mealprep-waitlist-family">
+            family size <span aria-hidden="true">·</span> optional
+          </label>
+          <input
+            id="mealprep-waitlist-family"
+            className="ht-input"
+            value={form.familySize}
+            onChange={update('familySize')}
+            placeholder="2 adults + 2 kids"
+          />
+        </div>
       </div>
-      <div>
-        <label className="ht-label" htmlFor="mealprep-quick-start">when should the first week land?</label>
-        <input
-          id="mealprep-quick-start"
-          type="date"
-          className="ht-input"
-          min={minDate}
-          value={form.startDate}
-          onChange={update('startDate')}
-        />
-        <p className="ht-footnote ht-footnote--tight">
-          leave it blank for as soon as possible
-        </p>
-      </div>
+      <fieldset className="ht-checks">
+        <legend className="ht-label">
+          most interested in <span aria-hidden="true">·</span> optional
+        </legend>
+        <div className="ht-checks-grid">
+          {MEAL_INTEREST_OPTIONS.map((option) => (
+            <label className="ht-check" key={option.value} htmlFor={`mealprep-waitlist-${option.value}`}>
+              <input
+                id={`mealprep-waitlist-${option.value}`}
+                type="checkbox"
+                checked={meals.includes(option.value)}
+                onChange={toggleMeal(option.value)}
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {/* Honeypot — real users never see or fill this. */}
       <div className="ht-hp" aria-hidden="true">
-        <label htmlFor="mealprep-quick-website">Website</label>
+        <label htmlFor="mealprep-waitlist-website">Website</label>
         <input
-          id="mealprep-quick-website"
+          id="mealprep-waitlist-website"
           type="text"
           tabIndex={-1}
           autoComplete="off"
@@ -350,8 +418,11 @@ export const MealPrepQuickStart = ({ source = 'weekly-meals' }) => {
       </div>
       {status === 'error' && <p className="ht-error" role="alert">{error}</p>}
       <button type="submit" className="ht-submit" disabled={status === 'sending'}>
-        {status === 'sending' ? 'Sending…' : 'Start weekly meals'}
+        {status === 'sending' ? 'Sending…' : 'Join the waitlist'}
       </button>
+      <p className="ht-footnote ht-footnote--tight">
+        Only your email is required — everything else helps us plan sooner.
+      </p>
     </form>
   );
 };

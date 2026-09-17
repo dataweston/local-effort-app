@@ -26,7 +26,7 @@ is what carries a visitor to each offer, which is why its titles are
 differentiated rather than interchangeable (see Header below).
 
 The slip forms are shared, not copied: `src/components/services/slipForms.jsx`
-exports `QuickEventBookForm` and `MealPrepQuickStart`, used by both the
+exports `QuickEventBookForm` and `MealPrepWaitlistForm`, used by both the
 standalone pages and the Local Pizza panel. The standalone pages add a vertical
 document rhythm on top of `.ht-scope` via `src/styles/service-page.css`.
 

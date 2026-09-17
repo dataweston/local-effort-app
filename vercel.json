@@ -15,12 +15,17 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "skills/le-economist/references/**"
+          "skills/le-economist/references/**",
+          "src/config/venues.json"
         ]
       }
     }
   ],
   "crons": [
+    {
+      "path": "/api/venues/sync",
+      "schedule": "0 */2 * * *"
+    },
     {
       "path": "/api/digest/meal-feedback",
       "schedule": "0 2 * * *"
@@ -374,6 +379,18 @@
     {
       "src": "^/office-catering$",
       "dest": "/prerender/office-catering/index.html"
+    },
+    {
+      "src": "^/firehouse$",
+      "dest": "/prerender/firehouse/index.html"
+    },
+    {
+      "src": "^/foodist$",
+      "dest": "/prerender/foodist/index.html"
+    },
+    {
+      "src": "^/private-events$",
+      "dest": "/prerender/private-events/index.html"
     },
     {
       "src": "^/weeklymeals$",

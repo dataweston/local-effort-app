@@ -67,17 +67,67 @@ model SmallEventEstimate {
 }
 
 model SmallEventAvailability {
-  id        String           @id @default(uuid())
-  date      String
-  type      String
-  status    String
-  notes     String?
-  source    String           @default("manual")
+  id     String  @id @default(uuid())
+  date   String
+  type   String
+  status String
+  notes  String?
+  source String  @default("manual")
+
+  // Where the event happens. "client" is the original behaviour — we cook at
+  // the customer's place — and is the default so every pre-existing row keeps
+  // meaning what it meant. The venue pages set this to a slug in
+  // src/config/venues.json, because a date can be open at FIREHOUSE and taken
+  // at FOODIST on the same night.
+  venue String @default("client")
+
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   holds     SmallEventHold[]
 
-  @@unique([date, type])
+  @@unique([date, type, venue])
+}
+
+// An external calendar we subscribe to, so a night booked on Airbnb or blocked
+// on a Google Calendar closes the date here too. Kept in the database rather
+// than in env vars because the owner adds and revokes feeds without a deploy,
+// and a feed URL is a bearer credential that should not sit in the repo.
+model VenueCalendarFeed {
+  id     String  @id @default(uuid())
+  venue  String
+  label  String
+  url    String
+  active Boolean @default(true)
+
+  lastSyncAt     DateTime?
+  lastStatus     String?
+  lastError      String?
+  lastBlockCount Int       @default(0)
+
+  blocks    VenueBlock[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([venue])
+}
+
+// One row per busy day imported from a feed. Sync is delete-then-insert per
+// feed inside a transaction: a cancelled reservation disappears from the feed
+// and must disappear here, and diffing on a UID that half the sources omit
+// buys nothing at this row count.
+model VenueBlock {
+  id      String  @id @default(uuid())
+  venue   String
+  date    String
+  source  String
+  summary String?
+  feedId  String?
+
+  feed      VenueCalendarFeed? @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  createdAt DateTime           @default(now())
+
+  @@index([venue, date])
+  @@index([feedId])
 }
 
 model SmallEventHold {
@@ -338,38 +388,38 @@ model OrderItem {
 // Canonical weekly meal-prep operations. Hub notes and planner cards are source
 // evidence; these records are the regenerable production state.
 model MealPrepMenuCycle {
-  id                 String                    @id @default(uuid())
-  weekStart          String                    @unique
-  status             String                    @default("draft")
-  sourceDocumentId   String?
-  sourceUpdatedAt    DateTime?
-  sourceBodyHash     String?
-  sourceSnapshot     Json
-  lastSyncedAt       DateTime?
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
-  items              MealPrepMenuCycleItem[]
-  customerMenus      MealPrepCustomerMenu[]
-  productionBatches  MealPrepProductionBatch[]
+  id                String                    @id @default(uuid())
+  weekStart         String                    @unique
+  status            String                    @default("draft")
+  sourceDocumentId  String?
+  sourceUpdatedAt   DateTime?
+  sourceBodyHash    String?
+  sourceSnapshot    Json
+  lastSyncedAt      DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  items             MealPrepMenuCycleItem[]
+  customerMenus     MealPrepCustomerMenu[]
+  productionBatches MealPrepProductionBatch[]
 
   @@index([status, weekStart])
 }
 
 model MealPrepMenuCycleItem {
-  id             String                     @id @default(uuid())
-  menuCycleId    String
-  stableKey      String
-  status         String                     @default("active")
-  dishEntityId   String?
-  name           String
-  description    String?
-  meal           String
-  sortOrder      Int                        @default(0)
-  sourceHash     String
-  createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
-  menuCycle      MealPrepMenuCycle          @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
-  customerItems  MealPrepCustomerMenuItem[]
+  id            String                     @id @default(uuid())
+  menuCycleId   String
+  stableKey     String
+  status        String                     @default("active")
+  dishEntityId  String?
+  name          String
+  description   String?
+  meal          String
+  sortOrder     Int                        @default(0)
+  sourceHash    String
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  menuCycle     MealPrepMenuCycle          @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
+  customerItems MealPrepCustomerMenuItem[]
 
   @@unique([menuCycleId, stableKey])
   @@index([menuCycleId, status, sortOrder])
@@ -402,26 +452,26 @@ model MealPrepCustomerMenu {
 }
 
 model MealPrepCustomerMenuItem {
-  id                 String                    @id @default(uuid())
-  customerMenuId     String
-  menuCycleItemId    String?
-  stableKey          String
-  dishEntityId       String?
-  dishName           String
-  meal               String
-  quantity           Int                       @default(1)
-  diet               String?
-  station            String?
-  chef               String?
-  prepDay            String?
-  notes              String?
-  origin             String                    @default("chef")
-  chefEditedAt       DateTime?
-  sourceHash         String?
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
-  customerMenu       MealPrepCustomerMenu      @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
-  menuCycleItem      MealPrepMenuCycleItem?     @relation(fields: [menuCycleItemId], references: [id], onDelete: SetNull)
+  id              String                 @id @default(uuid())
+  customerMenuId  String
+  menuCycleItemId String?
+  stableKey       String
+  dishEntityId    String?
+  dishName        String
+  meal            String
+  quantity        Int                    @default(1)
+  diet            String?
+  station         String?
+  chef            String?
+  prepDay         String?
+  notes           String?
+  origin          String                 @default("chef")
+  chefEditedAt    DateTime?
+  sourceHash      String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  customerMenu    MealPrepCustomerMenu   @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
+  menuCycleItem   MealPrepMenuCycleItem? @relation(fields: [menuCycleItemId], references: [id], onDelete: SetNull)
 
   @@unique([customerMenuId, stableKey])
   @@index([customerMenuId, meal])
@@ -429,36 +479,36 @@ model MealPrepCustomerMenuItem {
 }
 
 model MealPrepChangeRequest {
-  id                String                @id @default(uuid())
-  customerMenuId    String
-  requestKey        String
-  status            String                @default("open")
-  requestedChange   String
-  source            String                @default("operator")
-  sourceReference   String?
-  requestedAt       DateTime              @default(now())
-  resolvedAt        DateTime?
-  resolution        String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  customerMenu      MealPrepCustomerMenu  @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
+  id              String               @id @default(uuid())
+  customerMenuId  String
+  requestKey      String
+  status          String               @default("open")
+  requestedChange String
+  source          String               @default("operator")
+  sourceReference String?
+  requestedAt     DateTime             @default(now())
+  resolvedAt      DateTime?
+  resolution      String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  customerMenu    MealPrepCustomerMenu @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
 
   @@unique([customerMenuId, requestKey])
   @@index([customerMenuId, status, requestedAt])
 }
 
 model MealPrepProductionBatch {
-  id             String                 @id @default(uuid())
-  menuCycleId    String
-  version        Int
-  status         String
-  sourceHash     String
-  operatorSheet  Json
-  blockers       Json
-  plannerDiff    Json
-  generatedAt    DateTime               @default(now())
-  createdAt      DateTime               @default(now())
-  menuCycle      MealPrepMenuCycle      @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
+  id            String            @id @default(uuid())
+  menuCycleId   String
+  version       Int
+  status        String
+  sourceHash    String
+  operatorSheet Json
+  blockers      Json
+  plannerDiff   Json
+  generatedAt   DateTime          @default(now())
+  createdAt     DateTime          @default(now())
+  menuCycle     MealPrepMenuCycle @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
 
   @@unique([menuCycleId, version])
   @@unique([menuCycleId, sourceHash])
@@ -1306,41 +1356,41 @@ model LedgerEvent {
   @@index([occurredAt])
   @@index([tombstonedAt])
 }
+
 // Lossless source corpus. LedgerEvent records that a source event happened;
 // this table preserves the source bytes and searchable text needed to verify
 // every derived claim. Raw bytes are gzip-compressed by the writer and
 // contentHash is always computed over the uncompressed source.
 model BrainSourceDocument {
-  id               String   @id @default(uuid())
-  source           String
-  sourceId         String
-  parentSourceId   String?
-  sourceUrl        String?
-  mediaType        String
-  title            String?
-  headers          Json?
-  textContent      String   @default("")
-  htmlContent      String?
-  attachments      Json?
-  rawContent       Bytes
-  rawEncoding      String   @default("gzip")
-  contentHash      String
-  rawByteLength    Int
-  storedByteLength Int
-  captureStatus    String   @default("complete")
-  extractionStatus String   @default("complete")
-  extractionVersion Int     @default(1)
-  metadata         Json?
-  occurredAt       DateTime
-  capturedAt       DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                String   @id @default(uuid())
+  source            String
+  sourceId          String
+  parentSourceId    String?
+  sourceUrl         String?
+  mediaType         String
+  title             String?
+  headers           Json?
+  textContent       String   @default("")
+  htmlContent       String?
+  attachments       Json?
+  rawContent        Bytes
+  rawEncoding       String   @default("gzip")
+  contentHash       String
+  rawByteLength     Int
+  storedByteLength  Int
+  captureStatus     String   @default("complete")
+  extractionStatus  String   @default("complete")
+  extractionVersion Int      @default(1)
+  metadata          Json?
+  occurredAt        DateTime
+  capturedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@unique([source, sourceId])
   @@index([source, parentSourceId])
   @@index([occurredAt])
   @@index([captureStatus, extractionStatus])
 }
-
 
 // ============================================================================
 // COMPANY BRAIN — Layer 2: Graph
