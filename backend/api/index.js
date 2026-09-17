@@ -626,14 +626,42 @@ registerSearchConsoleRoutes(app, { logger });
 // serverless deployments. To run the Python sidecar extraction locally, use
 // POST /api/brain/sidecar/run or `python brain-sidecar/run.py <job>` directly.
 
-// MCP HTTP bridge removed (mcpTransport not initialized in this process). If needed, reintroduce with proper import.
 // --- MCP STREAMABLE HTTP BRIDGE ---
 // Provides a lightweight HTTP/SSE surface for the MCP server that normally runs via stdio.
 // This allows tools/resources to be accessed over the web for LLM agents or internal tooling.
 try {
-  const { createMcpServer } = require('../mcp/server');
   const { randomUUID } = require('crypto');
-  const mcpServer = createMcpServer();
+  // Build the MCP server lazily and record an init failure instead of letting
+  // it unregister the bridge. Eager construction here meant that one bad
+  // require anywhere in the mcp subtree left /.well-known/mcp answering 404,
+  // which is indistinguishable from a deployment that never had an MCP
+  // surface. Production served nothing that way, with no visible error, from
+  // the day the bridge shipped. The routes now always exist and report why.
+  let mcpServerInstance = null;
+  let mcpServerError = null;
+  const getMcpServer = () => {
+    if (mcpServerInstance || mcpServerError) return mcpServerInstance;
+    try {
+      const { createMcpServer } = require('../mcp/server');
+      mcpServerInstance = createMcpServer();
+      logger.info(
+        { tools: Object.keys(mcpServerInstance?._registeredTools || {}).length },
+        'mcp server initialized'
+      );
+    } catch (err) {
+      mcpServerError = {
+        code: err?.code || 'MCP_INIT_FAILED',
+        message: err?.message || 'unknown-error',
+      };
+      logger.error({ err }, 'mcp server init failed');
+    }
+    return mcpServerInstance;
+  };
+  const mcpServerHealth = () => {
+    const server = getMcpServer();
+    if (server) return { status: 'ok', tools: Object.keys(server._registeredTools || {}).length };
+    return { status: 'degraded', error: mcpServerError };
+  };
   // In-memory session map (ephemeral). Could be replaced with Redis if needed.
   const sessions = new Map();
   const SESSION_TTL_MS = 1000 * 60 * 30; // 30 minutes inactivity
@@ -864,7 +892,11 @@ try {
   app.options('/.well-known/mcp', (req, res) => { mcpHeaders(res); return res.status(204).end(); });
   app.get('/.well-known/mcp.json', (req, res) => {
     mcpHeaders(res);
+    const health = mcpServerHealth();
     res.json({
+      status: health.status,
+      serverError: health.error || null,
+      registeredToolCount: health.tools ?? 0,
       name: 'local-effort-mcp',
       transport: 'streamable-http',
       endpoints: { primary: '/.well-known/mcp' },
@@ -904,6 +936,9 @@ try {
   app.get('/.well-known/mcp', async (req, res) => {
     mcpHeaders(res);
     if (!checkAllowed(req)) return res.status(403).json({ error: 'mcp-forbidden' });
+    if (!getMcpServer()) {
+      return res.status(503).json({ error: 'mcp-unavailable', detail: mcpServerError });
+    }
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
@@ -933,6 +968,9 @@ try {
   app.post('/.well-known/mcp', express.json(), async (req, res) => {
     mcpHeaders(res);
     if (!checkAllowed(req)) return res.status(403).json({ error: 'mcp-forbidden' });
+    if (!getMcpServer()) {
+      return res.status(503).json({ error: 'mcp-unavailable', detail: mcpServerError });
+    }
     let sessionId = req.headers['mcp-session-id'];
     if (!sessionId || !sessions.has(sessionId)) {
       sessionId = issueSession();
@@ -947,7 +985,7 @@ try {
       if (method === 'tool.call') {
         const toolName = params?.name;
         const toolParams = params?.arguments || {};
-        const tool = mcpServer?._registeredTools?.[toolName];
+        const tool = getMcpServer()?._registeredTools?.[toolName];
         if (!tool || tool.enabled === false) return res.status(404).json({ error: 'tool-not-found' });
         let finalToolParams = toolParams;
         const privateScope = privateToolRequiredScope(toolName);
@@ -996,7 +1034,7 @@ try {
         }
 
         // First check exact registered resources (no templates).
-        const directEntries = Object.values(mcpServer?._registeredResources || {});
+        const directEntries = Object.values(getMcpServer()?._registeredResources || {});
         for (const entry of directEntries) {
           const resourceUri = entry?.resource?.uri;
           if (resourceUri === resourceUrl.href && typeof entry?.readCallback === 'function') {
@@ -1009,7 +1047,7 @@ try {
         }
 
         // Then check URI templates.
-        const templateEntries = Object.values(mcpServer?._registeredResourceTemplates || {});
+        const templateEntries = Object.values(getMcpServer()?._registeredResourceTemplates || {});
         for (const entry of templateEntries) {
           const matcher = entry?.resourceTemplate?._uriTemplate;
           const matched = matcher && typeof matcher.match === 'function'
@@ -1037,7 +1075,7 @@ try {
   });
   logger.info('MCP HTTP bridge active');
 } catch (e) {
-  logger.warn({ err: e && e.message }, 'mcp bridge init failed');
+  logger.error({ err: e && e.message }, 'mcp bridge route registration failed; /.well-known/mcp is unavailable');
 }
 
 // --- API ENDPOINTS ---

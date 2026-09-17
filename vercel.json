@@ -12,7 +12,12 @@
     },
     {
       "src": "backend/api/server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "skills/le-economist/references/**"
+        ]
+      }
     }
   ],
   "crons": [
