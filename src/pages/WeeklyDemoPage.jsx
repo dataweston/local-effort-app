@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Brain, Calendar, CalendarCheck2, LayoutGrid, BarChart3, LogIn, LogOut, Inbox, Layers, ListChecks, Users } from 'lucide-react';
+import {
+  Brain,
+  Calendar,
+  CalendarCheck2,
+  LayoutGrid,
+  BarChart3,
+  Landmark,
+  LogIn,
+  LogOut,
+  Inbox,
+  Layers,
+  ListChecks,
+  Users,
+} from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { usePlannerState } from '../components/weeklyplanner/usePlannerState';
 import { usePlannerNav } from '../components/weeklyplanner/usePlannerNav';
@@ -17,7 +30,15 @@ import { BrainPulsePanel } from '../components/brain/BrainPulsePanel';
 import { ForecastPanel } from '../components/weeklyplanner/ForecastPanel';
 import { StaffScheduleView } from '../components/weeklyplanner/StaffScheduleView';
 import { EventsView } from '../components/weeklyplanner/EventsView';
+import { CashflowView } from '../components/weeklyplanner/CashflowView';
 import '../styles/planner.css';
+
+function createCaptureId() {
+  return (
+    globalThis.crypto?.randomUUID?.() ||
+    `planner-capture-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
+}
 
 export default function WeeklyDemoPage() {
   // Prevent search engines from indexing this page
@@ -29,18 +50,27 @@ export default function WeeklyDemoPage() {
       document.head.appendChild(meta);
     }
     meta.setAttribute('content', 'noindex, nofollow');
-    return () => { meta.setAttribute('content', ''); };
+    return () => {
+      meta.setAttribute('content', '');
+    };
   }, []);
 
   const nav = usePlannerNav();
   const {
-    view, setView,
-    weekStart, weekDates,
+    view,
+    setView,
+    weekStart,
+    weekDates,
     selectedDate,
-    selectedYear, selectedMonthNum, selectedMonth,
-    goNextDay, goPrevDay,
-    goNextWeek, goPrevWeek,
-    goNextMonth, goPrevMonth,
+    selectedYear,
+    selectedMonthNum,
+    selectedMonth,
+    goNextDay,
+    goPrevDay,
+    goNextWeek,
+    goPrevWeek,
+    goNextMonth,
+    goPrevMonth,
     selectWeekFromMonth,
     selectDayFromWeek,
   } = nav;
@@ -52,23 +82,39 @@ export default function WeeklyDemoPage() {
 
   const [captureText, setCaptureText] = useState('');
   const [captureActive, setCaptureActive] = useState(false);
+  const [capturePreview, setCapturePreview] = useState(null);
+  const [captureError, setCaptureError] = useState('');
+  const [captureResult, setCaptureResult] = useState('');
+  const [captureId, setCaptureId] = useState(createCaptureId);
   const [brainOpen, setBrainOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem('le:plannerBrainOpen') === '1';
   });
   const toggleBrain = () => {
-    setBrainOpen(prev => {
+    setBrainOpen((prev) => {
       const next = !prev;
-      try { window.localStorage.setItem('le:plannerBrainOpen', next ? '1' : '0'); } catch (_err) { /* preference only */ }
+      try {
+        window.localStorage.setItem('le:plannerBrainOpen', next ? '1' : '0');
+      } catch (_err) {
+        /* preference only */
+      }
       return next;
     });
   };
   const fmtMoney = (n) => `$${Math.round(Number(n) || 0).toLocaleString('en-US')}`;
-  const mode = auth.loading ? null : (auth.user ? 'persisted' : 'demo');
-  const planner = usePlannerState({ mode, accessToken: auth.accessToken, weekStart, selectedMonth });
+  const mode = auth.loading ? null : auth.user ? 'persisted' : 'demo';
+  const planner = usePlannerState({
+    mode,
+    accessToken: auth.accessToken,
+    weekStart,
+    selectedMonth,
+  });
 
   const overheadTotal = planner.overheads.reduce((sum, o) => sum + (o.monthlyCost || 0), 0);
-  const weeklyCogs = planner.weekCogs.reduce((sum, c) => sum + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0);
+  const weeklyCogs = planner.weekCogs.reduce(
+    (sum, c) => sum + (c.amountCents != null ? c.amountCents / 100 : c.amount || 0),
+    0
+  );
 
   // Use monthly totals when on monthly view, otherwise weekly
   const isMonthly = view === 'monthly';
@@ -98,6 +144,77 @@ export default function WeeklyDemoPage() {
       // Auth redirect will happen
     }
   };
+  const submitCapture = async ({ commit = false, force = false } = {}) => {
+    const text = captureText.trim();
+    if (!text || !auth.accessToken) return;
+    setCaptureActive(true);
+    setCaptureError('');
+    setCaptureResult('');
+    try {
+      const response = await fetch('/api/brain/capture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth.accessToken}`,
+        },
+        body: JSON.stringify({
+          text,
+          source: 'planner_quick_capture',
+          captureId,
+          commit,
+          force,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || `Capture request failed (${response.status})`);
+      }
+
+      if (!commit) {
+        setCapturePreview(data);
+        return;
+      }
+
+      if (data.committed) {
+        if (data.applied?.kind === 'event' && data.applied.card) {
+          planner.handlers.handleExternalCardApplied(data.applied.card);
+          setView('events');
+        }
+        setCaptureResult(
+          data.applied?.kind === 'event'
+            ? data.applied.existing
+              ? 'Event was already in the planner.'
+              : 'Event added to the planner.'
+            : `Applied: ${data.preview?.summary || data.intent}`
+        );
+      } else if (data.capturedToInbox) {
+        setCaptureResult(`Sent to Brain inbox for review: ${data.preview?.summary || data.intent}`);
+        await inbox.refetch();
+      } else {
+        throw new Error(
+          data.applyError || 'Brain did not apply the capture. Your text is unchanged.'
+        );
+      }
+      setCaptureText('');
+      setCapturePreview(null);
+      setCaptureId(createCaptureId());
+    } catch (err) {
+      setCaptureError(err instanceof Error ? err.message : 'Capture failed');
+    } finally {
+      setCaptureActive(false);
+    }
+  };
+
+  const captureNeedsRequiredDate = capturePreview?.needsConfirmReason === 'event-date-required';
+  const captureActionLabel = !capturePreview
+    ? 'Preview'
+    : captureNeedsRequiredDate
+      ? 'Add a date first'
+      : capturePreview.needsConfirm
+        ? capturePreview.intent === 'event'
+          ? 'Confirm event'
+          : 'Confirm & apply'
+        : 'Apply';
 
   return (
     <div className="fullpage-demo-scope planner-page min-h-screen">
@@ -116,15 +233,41 @@ export default function WeeklyDemoPage() {
             {/* Scoreboard — Net is the one large figure */}
             <div className="planner-scoreboard" role="status" aria-label="Money summary">
               <dl className="planner-figures">
-                <div><dt>Revenue</dt><dd>{fmtMoney(displayTotals.revenue)}</dd></div>
-                <div><dt>Labor</dt><dd>{fmtMoney(displayTotals.labor)}</dd></div>
-                {displayTotals.facility > 0 && <div><dt>Facility</dt><dd>{fmtMoney(displayTotals.facility)}</dd></div>}
-                {displayTotals.cogs > 0 && <div><dt>COGS</dt><dd>{fmtMoney(displayTotals.cogs)}</dd></div>}
-                {isMonthly && overheadTotal > 0 && <div><dt>Overhead</dt><dd>{fmtMoney(overheadTotal)}</dd></div>}
+                <div>
+                  <dt>Revenue</dt>
+                  <dd>{fmtMoney(displayTotals.revenue)}</dd>
+                </div>
+                <div>
+                  <dt>Labor</dt>
+                  <dd>{fmtMoney(displayTotals.labor)}</dd>
+                </div>
+                {displayTotals.facility > 0 && (
+                  <div>
+                    <dt>Facility</dt>
+                    <dd>{fmtMoney(displayTotals.facility)}</dd>
+                  </div>
+                )}
+                {displayTotals.cogs > 0 && (
+                  <div>
+                    <dt>COGS</dt>
+                    <dd>{fmtMoney(displayTotals.cogs)}</dd>
+                  </div>
+                )}
+                {isMonthly && overheadTotal > 0 && (
+                  <div>
+                    <dt>Overhead</dt>
+                    <dd>{fmtMoney(overheadTotal)}</dd>
+                  </div>
+                )}
               </dl>
-              <div className={`planner-net ${displayTotals.net < 0 ? 'is-negative' : 'is-positive'}`}>
+              <div
+                className={`planner-net ${displayTotals.net < 0 ? 'is-negative' : 'is-positive'}`}
+              >
                 <span>Net · {isMonthly ? 'month' : 'week'}</span>
-                <strong>{displayTotals.net < 0 ? '−' : ''}{fmtMoney(Math.abs(displayTotals.net))}</strong>
+                <strong>
+                  {displayTotals.net < 0 ? '−' : ''}
+                  {fmtMoney(Math.abs(displayTotals.net))}
+                </strong>
               </div>
             </div>
 
@@ -142,7 +285,7 @@ export default function WeeklyDemoPage() {
               )}
               {auth.isAdmin && (
                 <button
-                  onClick={() => setInboxOpen(v => !v)}
+                  onClick={() => setInboxOpen((v) => !v)}
                   className="planner-button touch-target-ios"
                   title="Brain inbox"
                 >
@@ -158,45 +301,114 @@ export default function WeeklyDemoPage() {
                   <span className="hidden sm:inline">Sign out</span>
                 </button>
               ) : (
-                <button onClick={handleSignIn} className="planner-button planner-button-primary touch-target-ios">
+                <button
+                  onClick={handleSignIn}
+                  className="planner-button planner-button-primary touch-target-ios"
+                >
                   <LogIn size={14} />
                   <span className="hidden sm:inline">Sign in to save</span>
                 </button>
               )}
             </div>
           </div>
-
         </div>
 
-        {/* Quick-capture bar — admin only */}
+        {/* Quick capture — preview first, then apply to the operational system. */}
         {auth.isAdmin && (
-          <form
-            onSubmit={async e => {
-              e.preventDefault();
-              const text = captureText.trim();
-              if (!text) return;
-              setCaptureActive(true);
-              try {
-                const id = await inbox.capture({ rawContent: text, source: 'admin_ux' });
-                if (id) setCaptureText('');
-              } finally {
-                setCaptureActive(false);
-              }
-            }}
-            className="planner-capture mx-4 mb-2 mt-1"
+          <div className="mx-4 mb-2 mt-1">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!capturePreview) {
+                  submitCapture();
+                } else if (!captureNeedsRequiredDate) {
+                  submitCapture({ commit: true, force: capturePreview.needsConfirm });
+                }
+              }}
+              className="planner-capture"
+            >
+              <input
+                type="text"
+                value={captureText}
+                onChange={(event) => {
+                  setCaptureText(event.target.value);
+                  setCapturePreview(null);
+                  setCaptureError('');
+                  setCaptureResult('');
+                }}
+                placeholder="event: title | date: 2026-09-12 | time: 8am-4pm | location: Roseville | prep: 2026-09-11 1pm-5pm"
+                className="text-[16px] sm:text-sm"
+                disabled={captureActive}
+              />
+              <button
+                type="submit"
+                disabled={!captureText.trim() || captureActive || captureNeedsRequiredDate}
+              >
+                {captureActive ? 'Working…' : captureActionLabel}
+              </button>
+            </form>
+            {capturePreview && (
+              <div
+                className="mt-2 rounded-lg border px-3 py-2 text-xs"
+                style={{
+                  borderColor: 'var(--color-border-default)',
+                  backgroundColor: 'var(--color-bg-card)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                <strong style={{ color: 'var(--color-text-primary)' }}>
+                  {capturePreview.preview?.summary}
+                </strong>
+                <span className="ml-2">
+                  {Math.round((capturePreview.confidence || 0) * 100)}% via {capturePreview.via}
+                </span>
+                {captureNeedsRequiredDate && (
+                  <p className="mt-1">
+                    Add a service date to the capture before it can become an event.
+                  </p>
+                )}
+                {capturePreview.needsConfirmReason === 'event-always-confirm' && (
+                  <p className="mt-1">
+                    Confirm the service and prep schedule before adding this event.
+                  </p>
+                )}
+              </div>
+            )}
+            {captureError && (
+              <p
+                className="mt-2 text-xs"
+                role="alert"
+                style={{ color: 'var(--color-state-danger)' }}
+              >
+                {captureError} Your text has not been cleared.
+              </p>
+            )}
+            {captureResult && (
+              <p className="mt-2 text-xs" style={{ color: 'var(--color-state-success)' }}>
+                {captureResult}
+              </p>
+            )}
+          </div>
+        )}
+        {planner.saveError && (
+          <div
+            className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs"
+            style={{ borderColor: 'var(--color-state-danger)', color: 'var(--color-state-danger)' }}
           >
-            <input
-              type="text"
-              value={captureText}
-              onChange={e => setCaptureText(e.target.value)}
-              placeholder="Capture a note, task, or vendor to brain inbox…"
-              className="text-[16px] sm:text-sm"
-              disabled={captureActive}
-            />
-            <button type="submit" disabled={!captureText.trim() || captureActive}>
-              {captureActive ? '…' : 'Add'}
+            <span>{planner.saveError}</span>
+            <button type="button" className="planner-button" onClick={planner.handlers.retrySave}>
+              Retry save
             </button>
-          </form>
+          </div>
+        )}
+        {planner.integrationWarning && (
+          <div
+            className="mx-4 mb-2 rounded-lg border px-3 py-2 text-xs"
+            role="alert"
+            style={{ borderColor: '#e6c58f', backgroundColor: '#fff8e8', color: '#704b16' }}
+          >
+            Saved locally. Reconciliation needs attention: {planner.integrationWarning}
+          </div>
         )}
       </div>
 
@@ -217,7 +429,10 @@ export default function WeeklyDemoPage() {
         <Tabs value={view} onValueChange={setView}>
           <TabsList
             className="inline-flex h-10 items-center justify-center rounded-lg p-1 mb-4"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--color-bg-card) 80%, var(--color-border-default))' }}
+            style={{
+              backgroundColor:
+                'color-mix(in srgb, var(--color-bg-card) 80%, var(--color-border-default))',
+            }}
           >
             <TabsTrigger
               value="agenda"
@@ -255,8 +470,21 @@ export default function WeeklyDemoPage() {
               <BarChart3 size={14} />
               <span className="hidden sm:inline">Monthly</span>
             </TabsTrigger>
-            <TabsTrigger value="staff" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm">
-              <Users size={14} /><span className="hidden sm:inline">Staff</span>
+            {auth.isAdmin && (
+              <TabsTrigger
+                value="cashflow"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+              >
+                <Landmark size={14} />
+                <span>Cashflow</span>
+              </TabsTrigger>
+            )}
+            <TabsTrigger
+              value="staff"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all data-[state=active]:shadow-sm"
+            >
+              <Users size={14} />
+              <span className="hidden sm:inline">Staff</span>
             </TabsTrigger>
             {auth.user && (
               <TabsTrigger
@@ -290,7 +518,11 @@ export default function WeeklyDemoPage() {
           </TabsContent>
 
           <TabsContent value="events">
-            <EventsView planner={planner} />
+            <EventsView
+              planner={planner}
+              selectedDate={selectedDate}
+              accessToken={auth.isAdmin ? auth.accessToken : null}
+            />
           </TabsContent>
 
           <TabsContent value="weekly">
@@ -315,8 +547,19 @@ export default function WeeklyDemoPage() {
             />
           </TabsContent>
 
+          {auth.isAdmin && (
+            <TabsContent value="cashflow">
+              <CashflowView accessToken={auth.accessToken} year={selectedYear} />
+            </TabsContent>
+          )}
+
           <TabsContent value="staff">
-            <StaffScheduleView planner={planner} weekDates={weekDates} onNextWeek={goNextWeek} onPrevWeek={goPrevWeek} />
+            <StaffScheduleView
+              planner={planner}
+              weekDates={weekDates}
+              onNextWeek={goNextWeek}
+              onPrevWeek={goPrevWeek}
+            />
           </TabsContent>
 
           <TabsContent value="projects">

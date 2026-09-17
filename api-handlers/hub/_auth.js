@@ -4,6 +4,12 @@ const {
   isReadOnlyMethod,
   findUserByEmail,
 } = require('../weekly-order/_auth');
+const {
+  EMPTY_SCOPE,
+  createMembershipScopeResolver,
+  hasEntitlement,
+} = require('../../backend/api/membership/membershipScope');
+const { ENTITLEMENT } = require('../../backend/api/membership/membershipClasses');
 
 function unique(values) {
   return [...new Set(values.filter(Boolean))];
@@ -50,9 +56,15 @@ function coerceHubAccess(value) {
 function hubAccessFor(auth) {
   const profile = auth?.hubProfile || null;
   const profileIsActive = String(profile?.status || '').trim().toLowerCase() === 'active';
-  const accessLevel = profile
+  const configuredAccess = profile
     ? (profileIsActive ? coerceHubAccess(profile.accessLevel) : null)
     : (auth?.isAdmin ? 'privileged' : null);
+  // A legacy `localist` profile is identity evidence only. Member-area access
+  // requires the organization-scoped membership resolver to prove all four
+  // activation gates and grant the explicit Hub entitlement.
+  const accessLevel = configuredAccess === 'localist'
+    ? (hasEntitlement(auth?.membershipScope, ENTITLEMENT.HUB_MEMBER_AREA) ? 'localist' : null)
+    : configuredAccess;
   return {
     accessLevel,
     hasHubAccess: !!accessLevel,
@@ -63,16 +75,31 @@ function hubAccessFor(auth) {
   };
 }
 
-async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
+async function resolveHubViewer(
+  req,
+  prisma,
+  { requireCustomer = false, includeMembershipScope = false } = {}
+) {
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser?.email) return { error: 'Unauthorized', status: 401 };
 
   const dbUser = await findUserByEmail(prisma, supabaseUser.email, { customer: true, hubProfile: true });
   const isReadOnlyAdmin = isReadOnlyAdminEmail(supabaseUser.email);
   const explicitAdmin = isExplicitHubAdminEmail(supabaseUser.email);
+  const configuredAccess = coerceHubAccess(dbUser?.hubProfile?.accessLevel);
+  const shouldResolveMembership = Boolean(
+    dbUser?.id && (includeMembershipScope || configuredAccess === 'localist')
+  );
+  const membershipScope = shouldResolveMembership
+    ? await createMembershipScopeResolver({ prisma })({
+      id: dbUser.id,
+      email: supabaseUser.email,
+    })
+    : EMPTY_SCOPE;
   const access = hubAccessFor({
     hubProfile: dbUser?.hubProfile || null,
     isAdmin: explicitAdmin && !dbUser?.hubProfile,
+    membershipScope,
   });
   const isAdmin = access.isPrivileged;
   if (isReadOnlyAdmin && !isReadOnlyMethod(req.method)) {
@@ -111,6 +138,7 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
     isAdmin,
     isReadOnlyAdmin,
     ...access,
+    membershipScope,
     roles,
     viewer: {
       supabaseUid: supabaseUser.id,
@@ -123,6 +151,8 @@ async function resolveHubViewer(req, prisma, { requireCustomer = false } = {}) {
       isAdmin,
       isReadOnlyAdmin,
       isPrivileged: access.isPrivileged,
+      membershipOrganizationIds: [...membershipScope.organizationIds],
+      membershipEntitlements: [...membershipScope.entitlements],
     },
   };
 }

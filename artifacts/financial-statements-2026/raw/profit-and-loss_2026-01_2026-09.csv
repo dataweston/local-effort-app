@@ -1,0 +1,51 @@
+Local Effort — Income Statement
+Period: 2026-01 to 2026-09 (monthly)
+Generated: 2026-09-16  |  Currency: USD  |  Basis: cash
+
+Line item,2026-01,2026-02,2026-03,2026-04,2026-05,2026-06,2026-07,2026-08,2026-09,Total
+REVENUE
+  Gross revenue,11346.69,9191.86,7004.70,12246.43,15163.45,12656.78,17350.09,19942.79,92.00,104994.79
+  Less: refunds and returns,-432.00,-732.00,-58.00,-850.00,-67.00,-103.00,-16.00,-51.06,0.00,-2309.06
+NET REVENUE,10914.69,8459.86,6946.70,11396.43,15096.45,12553.78,17334.09,19891.73,92.00,102685.73
+
+COST OF GOODS SOLD
+  Inventory,1690.07,2990.27,2450.01,3487.35,3268.01,3223.05,3852.46,1746.46,0.00,22707.68
+  Materials,125.16,496.12,180.46,296.91,258.96,102.53,459.76,1.63,0.00,1921.53
+Total COGS,1815.23,3486.39,2630.47,3784.26,3526.97,3325.58,4312.22,1748.09,0.00,24629.21
+
+GROSS PROFIT,9099.46,4973.47,4316.23,7612.17,11569.48,9228.20,13021.87,18143.64,92.00,78056.52
+
+OPERATING EXPENSES
+  Amazon,213.59,278.79,579.34,415.90,375.07,812.39,595.80,217.20,0.00,3488.08
+  Car,572.53,0.00,2000.00,0.00,1565.02,287.18,0.00,0.00,0.00,4424.73
+  Debt,252.73,0.00,116.44,0.00,0.00,1090.00,0.00,0.00,0.00,1459.17
+  Delivery,3.00,0.00,143.87,107.54,68.80,83.63,150.40,25.75,0.00,582.99
+  Gas,270.19,109.95,235.26,232.86,283.44,321.77,276.27,358.21,0.00,2087.95
+  Labor,0.00,40.00,0.00,0.00,560.00,2566.00,1279.00,1032.00,0.00,5477.00
+  Licensing and Permits,99.75,94.77,34.25,130.00,119.25,646.50,34.25,0.00,0.00,1158.77
+  Marketing,260.35,171.68,414.25,205.43,213.05,228.01,132.43,125.56,0.00,1750.76
+  Rent,6350.00,1538.00,1889.00,2180.00,1163.33,1525.00,3849.50,676.00,0.00,19170.83
+  Software & Tools,124.16,127.35,304.34,351.20,389.65,140.32,143.23,163.79,0.00,1744.04
+  Uncategorized operating,166.23,194.66,202.18,280.53,129.76,238.07,406.71,302.61,0.00,1920.75
+  Utilities,0.00,0.00,0.00,0.00,300.00,0.00,0.00,0.00,0.00,300.00
+Total operating expenses,8312.53,2555.20,5918.93,3903.46,5167.37,7938.87,6867.59,2901.12,0.00,43565.07
+
+OPERATING INCOME,786.93,2418.27,-1602.70,3708.71,6402.11,1289.33,6154.28,15242.52,92.00,34491.45
+
+OTHER INCOME (non-trading — excluded from net revenue)
+  Reimbursements and refunds received,381.24,85.72,6238.00,3672.50,237.06,103.00,127.09,0.00,0.00,10844.61
+
+NET INCOME,1168.17,2503.99,4635.30,7381.21,6639.17,1392.33,6281.37,15242.52,92.00,45336.06
+
+OWNER AND UNRESOLVED ITEMS (excluded from the business result above)
+  Owner draws / personal,533.54,1201.30,1677.76,3862.46,5007.43,3297.57,1432.52,1362.48,0.00,18375.06
+  Reimbursable expenses (recoverable),0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+  Unclassified — pending review,30.46,30.46,144.02,226.98,568.26,126.03,293.93,9690.45,427.23,11537.82
+
+NET CASH FLOW (after all outflows incl. owner draws),604.17,1272.23,2813.52,3291.77,1063.48,-2031.27,4554.92,4189.59,-335.23,15423.18
+
+NOTES
+1. Cash basis. Figures derive from posted bank and Square activity.
+"2. ""Other income"" is non-trading receipts (reimbursements, tax refunds) and is deliberately excluded from net revenue."
+3. Owner draws are excluded from the business result and shown separately.
+"4. ""Unclassified"" is spend not yet assigned to business or personal; it is excluded from the business result rather than assumed either way."

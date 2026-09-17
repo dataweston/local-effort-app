@@ -35,16 +35,18 @@ function registerTriageRoutes(app, { logger } = {}) {
       if (running) return res.status(409).json({ error: 'triage already running', lastRun });
 
       running = true;
-      const { withJobRun } = require('./jobRuns');
-      withJobRun('triage-run', () => runTriagePass({ logger, limit: parseInt(req.body?.limit) || 30 }))
-        .then((result) => {
-          lastRun = { completedAt: new Date().toISOString(), ...result };
-          logger?.info(lastRun, 'brain/triage: run finished');
-        })
-        .catch((err) => logger?.error({ err }, 'brain/triage: run error'))
-        .finally(() => { running = false; });
-
-      return res.json({ ok: true, status: 'started', lastRun });
+      try {
+        const { withJobRun } = require('./jobRuns');
+        const result = await withJobRun(
+          'triage-run',
+          () => runTriagePass({ logger, limit: parseInt(req.body?.limit, 10) || 30 })
+        );
+        lastRun = { completedAt: new Date().toISOString(), ...result };
+        logger?.info(lastRun, 'brain/triage: run finished');
+        return res.json({ ok: true, status: 'completed', ...result, lastRun });
+      } finally {
+        running = false;
+      }
     } catch (err) {
       logger?.error({ err }, 'brain/triage: trigger error');
       return res.status(500).json({ error: 'internal-error' });

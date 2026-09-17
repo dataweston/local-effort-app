@@ -15,7 +15,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'MENTIONED_IN',
     selfEdge: false,
     promote: 'never',
-    description: 'A source artifact explicitly mentions an entity. This records visibility, not a commercial relationship.',
+    description:
+      'A source artifact explicitly mentions an entity. This records visibility, not a commercial relationship.',
   },
   AVOIDS: {
     src: ['Customer', 'Person'],
@@ -23,7 +24,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'AVOIDED_BY',
     selfEdge: false,
     promote: 'never',
-    description: 'A customer avoids an ingredient, dish, or dietary pattern. metadata.severity: medical | avoid | preference.',
+    description:
+      'A customer avoids an ingredient, dish, or dietary pattern. metadata.severity: medical | avoid | preference.',
   },
   PREFERS: {
     src: ['Customer', 'Person'],
@@ -39,7 +41,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'MEDICAL_CONSTRAINT_OF',
     selfEdge: false,
     promote: 'never',
-    description: 'A medically mandated constraint (allergy/intolerance). Blocks menu broadcast with no override.',
+    description:
+      'A medically mandated constraint (allergy/intolerance). Blocks menu broadcast with no override.',
   },
   ABOUT: {
     src: ['Note'],
@@ -170,6 +173,14 @@ const RELATIONSHIPS = {
     promote: 'when_rich_text',
     eventNodeType: 'Feedback',
     description: 'A customer gave feedback about a dish/menu/offer.',
+  },
+  CLIENT_FOR: {
+    src: ['Customer', 'Person'],
+    dst: ['Event'],
+    inverseLabel: 'HAS_CLIENT',
+    selfEdge: false,
+    promote: 'never',
+    description: 'A named customer or person is the explicit client for an operational event.',
   },
   RSVP_TO: {
     src: ['Person', 'Customer'],
@@ -377,7 +388,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'HAS_DEMAND_SIGNAL',
     selfEdge: false,
     promote: 'never',
-    description: 'Search terms observed on a channel signal customer demand for an entity (rollup edge from the Google graph projector).',
+    description:
+      'Search terms observed on a channel signal customer demand for an entity (rollup edge from the Google graph projector).',
   },
   LISTED_ON: {
     src: ['Dish', 'Product', 'Offer'],
@@ -393,10 +405,21 @@ const RELATIONSHIPS = {
     inverseLabel: 'HAS_SUBSCRIBER',
     selfEdge: false,
     promote: 'never',
-    description: 'A customer opted into an email/SMS marketing list (e.g. Brevo). metadata: email, subscribed, subscribedAt. NOT feedback — distinct from GAVE_FEEDBACK.',
+    description:
+      'A customer opted into an email/SMS marketing list (e.g. Brevo). metadata: email, subscribed, subscribedAt. NOT feedback — distinct from GAVE_FEEDBACK.',
   },
   CONSTRAINED_BY: {
-    src: ['Offer', 'BusinessLine', 'ProcessStep', 'Menu', 'Recipe', 'LedgerTransaction', 'Decision', 'Asset', 'EquityClass'],
+    src: [
+      'Offer',
+      'BusinessLine',
+      'ProcessStep',
+      'Menu',
+      'Recipe',
+      'LedgerTransaction',
+      'Decision',
+      'Asset',
+      'EquityClass',
+    ],
     dst: ['Constraint'],
     inverseLabel: 'CONSTRAINS',
     selfEdge: false,
@@ -467,7 +490,8 @@ const RELATIONSHIPS = {
     selfEdge: false,
     promote: 'usually',
     eventNodeType: 'LedgerTransaction',
-    description: 'A person or entity has an investment relationship with a business or organization.',
+    description:
+      'A person or entity has an investment relationship with a business or organization.',
   },
   OPERATES: {
     src: ['Organization'],
@@ -483,7 +507,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'FOUNDER_OF',
     selfEdge: false,
     promote: 'never',
-    description: 'A person is represented as a founder or cofounder of an organization or business line.',
+    description:
+      'A person is represented as a founder or cofounder of an organization or business line.',
   },
   HAS_EQUITY_CLASS: {
     src: ['Organization'],
@@ -607,7 +632,8 @@ const RELATIONSHIPS = {
     inverseLabel: 'CAPITALIZED_BY',
     selfEdge: false,
     promote: 'never',
-    description: 'A financing transaction contributes capital to a business, organization, or working-capital asset.',
+    description:
+      'A financing transaction contributes capital to a business, organization, or working-capital asset.',
   },
   HAS_STATUS: {
     src: ['Person', 'Customer', 'Vendor', 'Investor', 'LedgerTransaction'],
@@ -624,12 +650,16 @@ const RELATIONSHIPS = {
     selfEdge: false,
     promote: 'when_thread_has_decisions',
     eventNodeType: 'EmailThread',
-    description: 'A person or entity initiated contact with another person, business, or organization.',
+    description:
+      'A person or entity initiated contact with another person, business, or organization.',
   },
 };
 
 function normalizeRelType(relType) {
-  return String(relType || '').trim().toUpperCase().replace(/[^A-Z0-9_]+/g, '_');
+  return String(relType || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_]+/g, '_');
 }
 
 function relationDefinition(relType) {
@@ -647,7 +677,9 @@ function validateRelationship({ relType, srcType, dstType, srcId, dstId }) {
   const errors = [];
 
   if (!def) {
-    warnings.push(`Unknown relType ${normalized}; add it to relationshipDictionary.js before relying on it.`);
+    warnings.push(
+      `Unknown relType ${normalized}; add it to relationshipDictionary.js before relying on it.`
+    );
     return { ok: true, relType: normalized, warnings, errors, definition: null };
   }
 
@@ -658,7 +690,9 @@ function validateRelationship({ relType, srcType, dstType, srcId, dstId }) {
     warnings.push(`${normalized} usually points to ${def.dst.join('|')}, got ${dstType}.`);
   }
   if (srcId && dstId && srcId === dstId && !def.selfEdge) {
-    warnings.push(`${normalized} is not modeled as a self-edge; consider promoting the event to a node.`);
+    warnings.push(
+      `${normalized} is not modeled as a self-edge; consider promoting the event to a node.`
+    );
   }
 
   return { ok: errors.length === 0, relType: normalized, warnings, errors, definition: def };

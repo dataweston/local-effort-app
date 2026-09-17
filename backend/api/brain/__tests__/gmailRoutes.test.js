@@ -13,6 +13,7 @@ function buildApp(overrides = {}) {
       req.headers.authorization === 'Bearer valid-admin-token' ? { id: 'admin-1' } : null,
     getAuthUrl: () =>
       'https://accounts.google.com/o/oauth2/v2/auth?state=signed',
+    withJobRun: async (_jobName, operation) => operation(),
     ...overrides,
   });
   return app;
@@ -105,5 +106,135 @@ describe('Gmail thread sync route', () => {
 
     expect(response.status).toBe(401);
     expect(response.body.authUrl).toBe('/api/brain/gmail/auth');
+  });
+
+  it('lets the Vercel cron refresh recent mail and reserve archive progress', async () => {
+    const syncGmailThreads = vi.fn().mockResolvedValue({
+      complete: false,
+      stoppedBy: 'batchCeiling',
+      batches: 4,
+      processed: 2,
+      skipped: 48,
+      errors: 0,
+      elapsedMs: 400,
+    });
+    const originalTopic = process.env.GMAIL_PUBSUB_TOPIC;
+    delete process.env.GMAIL_PUBSUB_TOPIC;
+
+    try {
+      const response = await request(buildApp({ syncGmailThreads }))
+        .get('/api/brain/gmail/sync')
+        .set('x-vercel-cron', '1');
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).not.toBe('started');
+      expect(response.body.watch).toMatchObject({ configured: false, mode: 'polling' });
+      expect(syncGmailThreads).toHaveBeenCalledWith(expect.objectContaining({
+        refreshRecent: true,
+        recentDays: 30,
+        maxBatches: 4,
+      }));
+    } finally {
+      if (originalTopic === undefined) delete process.env.GMAIL_PUBSUB_TOPIC;
+      else process.env.GMAIL_PUBSUB_TOPIC = originalTopic;
+    }
+  });
+
+  it('surfaces a watch-renewal failure without discarding the polling sync', async () => {
+    const syncGmailThreads = vi.fn().mockResolvedValue({
+      complete: false,
+      batches: 1,
+      processed: 4,
+      skipped: 0,
+      errors: 0,
+    });
+    const renewGmailWatch = vi.fn().mockRejectedValue(new Error('watch topic rejected'));
+    const originalTopic = process.env.GMAIL_PUBSUB_TOPIC;
+    process.env.GMAIL_PUBSUB_TOPIC = 'projects/example/topics/gmail';
+
+    try {
+      const response = await request(buildApp({ syncGmailThreads, renewGmailWatch }))
+        .post('/api/brain/gmail/sync')
+        .set('Authorization', 'Bearer valid-admin-token')
+        .send({ renewWatch: true });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        ok: true,
+        processed: 4,
+        errors: 1,
+        errorCount: 1,
+        watch: {
+          ok: false,
+          configured: true,
+          mode: 'polling-fallback',
+          error: 'watch topic rejected',
+        },
+      });
+    } finally {
+      if (originalTopic === undefined) delete process.env.GMAIL_PUBSUB_TOPIC;
+      else process.env.GMAIL_PUBSUB_TOPIC = originalTopic;
+    }
+  });
+});
+
+describe('Gmail Pub/Sub route', () => {
+  it('rejects a push without a verified OIDC bearer token', async () => {
+    const verifyGmailPubSubRequest = vi.fn().mockRejectedValue(
+      Object.assign(new Error('Pub/Sub bearer token required'), { statusCode: 401 })
+    );
+    const processGmailHistoryNotification = vi.fn();
+
+    const response = await request(buildApp({
+      verifyGmailPubSubRequest,
+      processGmailHistoryNotification,
+    }))
+      .post('/api/brain/gmail/push')
+      .send({});
+
+    expect(response.status).toBe(401);
+    expect(processGmailHistoryNotification).not.toHaveBeenCalled();
+  });
+
+  it('awaits and records history processing before acknowledging Pub/Sub', async () => {
+    const verifyGmailPubSubRequest = vi.fn().mockResolvedValue({
+      serviceAccount: 'gmail-push@example.test',
+    });
+    const processGmailHistoryNotification = vi.fn().mockResolvedValue({
+      mode: 'push',
+      historyChanges: 3,
+      processed: 2,
+      errors: 0,
+    });
+    const withJobRun = vi.fn(async (_jobName, operation) => operation());
+    const data = Buffer.from(JSON.stringify({
+      emailAddress: 'owner@example.test',
+      historyId: '9876543210123456789',
+    })).toString('base64');
+
+    const response = await request(buildApp({
+      verifyGmailPubSubRequest,
+      processGmailHistoryNotification,
+      withJobRun,
+    }))
+      .post('/api/brain/gmail/push')
+      .set('Authorization', 'Bearer signed-google-token')
+      .send({ message: { messageId: 'pubsub-1', data } });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      ok: true,
+      mode: 'push',
+      historyChanges: 3,
+      processed: 2,
+    });
+    expect(withJobRun).toHaveBeenCalledWith('gmail-sync', expect.any(Function));
+    expect(processGmailHistoryNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        historyId: '9876543210123456789',
+        messageId: 'pubsub-1',
+      }),
+      expect.any(Object)
+    );
   });
 });

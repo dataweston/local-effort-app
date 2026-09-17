@@ -36,7 +36,7 @@ const prismaMock = {
 
 globalThis.__localEffortPrisma = prismaMock;
 
-const { storeGmailTokens, loadGmailTokens } = await import('../gmailSync.js');
+const { storeGmailTokens, loadGmailTokens, getGmailAuthHealth } = await import('../gmailSync.js');
 
 describe('Gmail token persistence', () => {
   beforeEach(() => {
@@ -88,5 +88,40 @@ describe('Gmail token persistence', () => {
     const loaded = await loadGmailTokens();
     expect(loaded.access_token).toBe('py-access');
     expect(loaded.scope).toBe('a b');
+  });
+
+  it('force-refreshes an access token rejected by the Gmail API', async () => {
+    const oauthClient = {
+      credentials: {},
+      setCredentials: vi.fn(function setCredentials(credentials) {
+        this.credentials = credentials;
+      }),
+      getAccessToken: vi.fn().mockResolvedValue({ token: 'stale-access' }),
+      refreshAccessToken: vi.fn().mockResolvedValue({
+        credentials: { access_token: 'fresh-access', expiry_date: 1_800_000_000_000 },
+      }),
+    };
+    const rejected = Object.assign(new Error('Login Required.'), {
+      response: { status: 401 },
+    });
+    const probeGmailAccess = vi.fn()
+      .mockRejectedValueOnce(rejected)
+      .mockResolvedValueOnce(undefined);
+    const persistTokens = vi.fn();
+
+    const health = await getGmailAuthHealth({
+      loadGmailTokens: async () => ({ access_token: 'stale-access', refresh_token: 'refresh' }),
+      getOAuthClient: () => oauthClient,
+      storeGmailTokens: persistTokens,
+      probeGmailAccess,
+    });
+
+    expect(health.ok).toBe(true);
+    expect(oauthClient.refreshAccessToken).toHaveBeenCalledOnce();
+    expect(probeGmailAccess).toHaveBeenCalledTimes(2);
+    expect(persistTokens).toHaveBeenCalledWith(expect.objectContaining({
+      access_token: 'fresh-access',
+      refresh_token: 'refresh',
+    }));
   });
 });

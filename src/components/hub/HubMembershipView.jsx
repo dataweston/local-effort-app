@@ -89,13 +89,29 @@ export function MembershipView({ accessToken }) {
     );
   }
 
-  const membership = data?.membership || {};
+  const membership = data?.membership || null;
+  if (!membership) {
+    return (
+      <div className="hub-empty-state">
+        <BadgeCheck size={22} aria-hidden="true" />
+        <p className="hub-empty-hint">
+          No active organization-scoped membership is recorded for this account.
+        </p>
+      </div>
+    );
+  }
+
   const dues = data?.dues || {};
   const billing = data?.billing || {};
   const purchases = data?.purchases || {};
   const credit = data?.credit || {};
   const messages = data?.messages || [];
   const tier = membership.tier || {};
+  const tierPrice = tier.amountCents == null
+    ? ''
+    : tier.amountCents === 0
+      ? '$0'
+      : `${formatCurrency(tier.amountCents)} / ${tier.cadence === 'annual' ? 'year' : 'month'}`;
   const perks = tier.key === 'waived' ? [...PERKS, WAIVED_PERK] : [...PERKS, PAID_CREDIT_PERK];
 
   return (
@@ -107,7 +123,7 @@ export function MembershipView({ accessToken }) {
           <h2>{membership.displayName || membership.email}</h2>
           <p className="hub-membership__meta">
             {tier.label || 'Localist'}
-            {tier.price ? ` · ${tier.price}` : ''}
+            {tierPrice ? ` · ${tierPrice}` : ''}
             {membership.memberSince ? ` · member since ${formatDate(membership.memberSince)}` : ''}
           </p>
         </div>
@@ -130,7 +146,7 @@ export function MembershipView({ accessToken }) {
             </div>
             <div>
               <span className="hub-membership__stat-value">{dues.status || 'unknown'}</span>
-              <span className="hub-membership__stat-label">roster status</span>
+              <span className="hub-membership__stat-label">canonical dues status</span>
             </div>
           </div>
           <p className="hub-membership__hint">
@@ -167,10 +183,10 @@ export function MembershipView({ accessToken }) {
           <div className="hub-membership__credit">
             {credit.eligible ? (
               <>
-                <strong>{formatCurrency(credit.quarterToDateAccruedEstimateCents || 0)}</strong>{' '}
-                estimated 4% credit accrued this quarter ·{' '}
-                {formatCurrency(credit.lifetimeAccruedEstimateCents || 0)} estimated from all tracked
-                paid food purchases.
+                <strong>{formatCurrency(credit.availableBalanceCents || 0)}</strong>{' '}
+                recorded co-op credit balance ·{' '}
+                {formatCurrency(credit.quarterToDateAccruedEstimateCents || 0)} estimated from
+                tracked purchases this quarter.
                 <span className="hub-membership__credit-note">{credit.note}</span>
               </>
             ) : (

@@ -15,7 +15,8 @@ const crypto = require('crypto');
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent, createInboxItem } = require('./ledger');
-const { applyDirect } = require('./ingest/engine');
+const { applyDirect, isValidPlannerDate } = require('./ingest/engine');
+const { plannerUidForUser } = require('../planner/identity');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -39,10 +40,12 @@ async function verifyBrainToken(req, requiredScope = 'brain:write') {
   if (!token.scopes.includes(requiredScope)) return null;
 
   // Update lastUsedAt async
-  prisma.brainApiToken.update({
-    where: { tokenHash },
-    data: { lastUsedAt: new Date() },
-  }).catch(() => {});
+  prisma.brainApiToken
+    .update({
+      where: { tokenHash },
+      data: { lastUsedAt: new Date() },
+    })
+    .catch(() => {});
 
   return token;
 }
@@ -56,6 +59,16 @@ async function verifyInboxAuth(req) {
   if (brainToken) return { type: 'token', identity: brainToken.label };
 
   return null;
+}
+function ledgerEvidenceReference(event) {
+  if (!event) return null;
+  if (event.source === 'gmail') {
+    const gmailId = event.payload?.messageId || event.payload?.threadId;
+    if (gmailId) return `gmail:${gmailId}`;
+  }
+  const invoiceId = event.payload?.invoiceId || event.payload?.invoiceNumber;
+  if (event.source === 'square' && invoiceId) return `square-invoice:${invoiceId}`;
+  return `ledger-event:${event.id}`;
 }
 
 // ── Route handlers ────────────────────────────────────────────────────────────
@@ -123,11 +136,9 @@ function registerInboxRoutes(app, { logger } = {}) {
       });
 
       // Resolve matched entities from triageHint.matchedEntityId
-      const matchedIds = [...new Set(
-        items
-          .map((i) => i.triageHint?.matchedEntityId)
-          .filter(Boolean),
-      )];
+      const matchedIds = [
+        ...new Set(items.map((i) => i.triageHint?.matchedEntityId).filter(Boolean)),
+      ];
       let matchedEntityMap = {};
       if (matchedIds.length) {
         const entities = await prisma.brainEntity.findMany({
@@ -139,18 +150,23 @@ function registerInboxRoutes(app, { logger } = {}) {
             _count: { select: { srcAssertions: true, dstAssertions: true } },
           },
         });
-        matchedEntityMap = Object.fromEntries(entities.map((e) => [e.id, {
-          id: e.id,
-          name: e.name,
-          entityType: e.entityType,
-          assertionCount: (e._count?.srcAssertions || 0) + (e._count?.dstAssertions || 0),
-        }]));
+        matchedEntityMap = Object.fromEntries(
+          entities.map((e) => [
+            e.id,
+            {
+              id: e.id,
+              name: e.name,
+              entityType: e.entityType,
+              assertionCount: (e._count?.srcAssertions || 0) + (e._count?.dstAssertions || 0),
+            },
+          ])
+        );
       }
 
       const enriched = items.map((item) => ({
         ...item,
         matchedEntity: item.triageHint?.matchedEntityId
-          ? (matchedEntityMap[item.triageHint.matchedEntityId] || null)
+          ? matchedEntityMap[item.triageHint.matchedEntityId] || null
           : null,
       }));
 
@@ -190,15 +206,23 @@ function registerInboxRoutes(app, { logger } = {}) {
       let intent = null;
       let fields = null;
       if (action === 'new_entity') {
-        if (!p.entityType || !p.name) return res.status(400).json({ error: 'entityType and name required' });
+        if (!p.entityType || !p.name)
+          return res.status(400).json({ error: 'entityType and name required' });
         intent = 'new_entity';
         fields = { entityType: p.entityType, name: p.name, properties: p.properties || null };
       } else if (action === 'append_entity') {
         if (!p.entityId) return res.status(400).json({ error: 'entityId required' });
-        const target = await prisma.brainEntity.findUnique({ where: { id: p.entityId }, select: { id: true } });
+        const target = await prisma.brainEntity.findUnique({
+          where: { id: p.entityId },
+          select: { id: true },
+        });
         if (!target) return res.status(404).json({ error: 'entity not found' });
-        if (!p.note) { // attach nothing → just mark triaged against the entity
-          await prisma.brainInboxItem.update({ where: { id }, data: { status: 'triaged', processedAt: new Date(), resultEntityId: p.entityId } });
+        if (!p.note) {
+          // attach nothing → just mark triaged against the entity
+          await prisma.brainInboxItem.update({
+            where: { id },
+            data: { status: 'triaged', processedAt: new Date(), resultEntityId: p.entityId },
+          });
           return res.json({ ok: true, action, resultEntityId: p.entityId });
         }
         intent = 'append_note';
@@ -207,11 +231,45 @@ function registerInboxRoutes(app, { logger } = {}) {
         if (!p.title) return res.status(400).json({ error: 'title required' });
         intent = 'task';
         fields = { title: p.title, dueDate: p.dueDate || null, entityId: p.entityId || null };
+      } else if (action === 'new_event') {
+        if (!p.title) return res.status(400).json({ error: 'title required' });
+        if (!isValidPlannerDate(p.date))
+          return res.status(400).json({ error: 'valid event date required' });
+        intent = 'event';
+        fields = {
+          title: p.title,
+          date: p.date,
+          startTime: p.startTime || null,
+          endTime: p.endTime || null,
+          location: p.location || null,
+          guestEstimate: p.guestEstimate ?? null,
+          menuSummary: p.menuSummary || null,
+          prepDate: p.prepDate || null,
+          prepStartTime: p.prepStartTime || null,
+          prepEndTime: p.prepEndTime || null,
+          status: p.status || 'inquiry',
+          note: p.note || item.rawContent,
+        };
       } else {
         return res.status(400).json({ error: `unknown action: ${action}` });
       }
+      let evidenceRefs = [];
+      const sourceLedgerEventId = item.triageHint?.ledgerEventId;
+      if (intent === 'event' && sourceLedgerEventId) {
+        const sourceLedgerEvent = await prisma.ledgerEvent.findUnique({
+          where: { id: sourceLedgerEventId },
+        });
+        const evidenceRef = ledgerEvidenceReference(sourceLedgerEvent);
+        if (evidenceRef) evidenceRefs = [evidenceRef];
+      }
 
-      const { applied } = await applyDirect(intent, fields, { source: 'admin_ux', actor: 'founder' });
+      const { applied } = await applyDirect(intent, fields, {
+        source: 'admin_ux',
+        actor: 'founder',
+        plannerUid: plannerUidForUser(admin),
+        captureId: `brain-inbox:${id}`,
+        evidenceRefs,
+      });
       if (applied?.error) return res.status(422).json({ error: applied.error });
       const resultEntityId = applied.entityId || applied.taskId || applied.noteId || null;
 
@@ -220,7 +278,7 @@ function registerInboxRoutes(app, { logger } = {}) {
         data: { status: 'triaged', processedAt: new Date(), resultEntityId },
       });
 
-      return res.json({ ok: true, action, resultEntityId });
+      return res.json({ ok: true, action, resultEntityId, applied });
     } catch (err) {
       logger?.error({ err }, 'brain: triage error');
       return res.status(500).json({ error: 'internal-error' });

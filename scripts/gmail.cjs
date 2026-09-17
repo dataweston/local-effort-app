@@ -3,7 +3,7 @@
  * Gmail CLI — read-only search plus the resumable thread-ingestion drain.
  *
  *   node scripts/gmail.cjs status
- *   node scripts/gmail.cjs sync [--batch 100] [--max-batches 500] [--restart] [--days 730]
+ *   node scripts/gmail.cjs sync [--batch 100] [--max-batches 500] [--refresh-recent] [--recent-days 30]
  *   node scripts/gmail.cjs search "rad pizza" [--max 8] [--chars 2000]
  *   node scripts/gmail.cjs thread <threadId>
  *   node scripts/gmail.cjs auth-url
@@ -21,6 +21,8 @@ const {
   syncGmailThreads,
   getThreadSyncStatus,
 } = require('../backend/api/brain/gmailSync.js');
+const { businessMemoryCoverage } = require('../backend/api/brain/businessMemory.js');
+const { prisma } = require('../backend/api/utils/prisma');
 
 const RECONNECT = [
   'Reconnect Gmail:',
@@ -110,9 +112,9 @@ async function cmdStatus() {
     });
     const total = await prisma.ledgerEvent.count({ where: { source: 'gmail' } });
     if (newest) {
-      const ageDays = Math.floor((Date.now() - new Date(newest.occurredAt).getTime()) / 86400000);
-      console.log(`Brain gmail index: ${total} threads, newest ${newest.occurredAt.toISOString().slice(0, 10)} (${ageDays}d old)`);
-      if (ageDays > 14) console.log('  NOTE: index is stale — run: node scripts/gmail.cjs sync');
+      const ageDays = Math.floor((Date.now() - new Date(newest.occurredAt).getTime()) / 86_400_000);
+      console.log(`Brain gmail index: ${total} messages, newest ${new Date(newest.occurredAt).toISOString().slice(0, 10)} (${ageDays}d old)`);
+      if (ageDays > 2) console.log('  NOTE: index is stale — run: node scripts/gmail.cjs sync --refresh-recent');
     } else {
       console.log('Brain gmail index: empty');
     }
@@ -126,9 +128,26 @@ async function cmdStatus() {
       const pending = stream.pending ? ', mid-stream' : '';
       console.log(`Thread stream ${stream.stream}: ${stream.status} (${stream.processed} listed, ${stream.errors} errors${pending})`);
     }
+    console.log(`Delivery mode: ${status.mode}; recent backlog ${status.backlog.recentPending}, archive backlog ${status.backlog.archivePending}`);
     if (!status.streams.length) console.log('Thread streams: not started');
   } catch (err) {
     console.log(`Thread streams: unavailable (${err.message})`);
+  }
+
+  try {
+    const coverage = await businessMemoryCoverage();
+    const gmail = coverage.sources.find((source) => source.source === 'gmail');
+    if (gmail) {
+      console.log(
+        `Exact gmail corpus: ${gmail.documents} messages; `
+        + `${gmail.incompleteCaptures} capture gaps; `
+        + `${gmail.incompleteExtractions} extraction gaps`
+      );
+    } else {
+      console.log('Exact gmail corpus: empty');
+    }
+  } catch (err) {
+    console.log(`Exact gmail corpus: unavailable (${err.message})`);
   }
 
   if (health.testingModeGrant) console.log(`\n${TESTING_MODE_WARNING}`);
@@ -189,8 +208,8 @@ function cmdAuthUrl() {
 async function cmdSync() {
   const batchSize = Number(arg('--batch', 100));
   const maxBatches = Number(arg('--max-batches', 500));
-  const daysBack = Number(arg('--days', 730));
-  const restart = process.argv.includes('--restart');
+  const recentDays = Number(arg('--recent-days', 30));
+  const refreshRecent = process.argv.includes('--refresh-recent');
 
   const health = await getGmailAuthHealth();
   if (!health.ok) {
@@ -212,8 +231,8 @@ async function cmdSync() {
   const result = await syncGmailThreads({
     batchSize,
     maxBatches,
-    daysBack,
-    restart,
+    recentDays,
+    refreshRecent,
     timeBudgetMs: Infinity,
     logger,
   });
@@ -243,7 +262,16 @@ async function main() {
   process.exitCode = 1;
 }
 
-main().catch((err) => {
-  console.error(`ERROR: ${err.message}`);
-  process.exitCode = 1;
-});
+main()
+  .catch((err) => {
+    console.error(`ERROR: ${err.message}`);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    try {
+      await prisma?.$disconnect();
+    } catch (err) {
+      console.error(`ERROR: database shutdown failed: ${err.message}`);
+      process.exitCode = 1;
+    }
+  });

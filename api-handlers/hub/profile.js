@@ -5,11 +5,17 @@ const {
   isReadOnlyAdminEmail,
 } = require('../weekly-order/_auth');
 const { methodNotAllowed, asIso, cleanString, safePrisma } = require('./_http');
-const { coerceHubAccess, isExplicitHubAdminEmail } = require('./_auth');
+const {
+  coerceHubAccess,
+  hubAccessFor,
+  isExplicitHubAdminEmail,
+  resolveHubViewer,
+} = require('./_auth');
 
 
-function publicProfile(profile, user) {
+function publicProfile(profile, membershipScope = null) {
   if (!profile) return null;
+  const access = hubAccessFor({ hubProfile: profile, membershipScope });
   return {
     id: profile.id,
     userId: profile.userId,
@@ -19,9 +25,16 @@ function publicProfile(profile, user) {
     title: profile.title || null,
     phone: profile.phone || null,
     status: profile.status,
-    isPrivileged: profile.accessLevel === 'privileged',
-    isLocalist: profile.accessLevel === 'localist',
-    isCustomer: profile.accessLevel === 'customer',
+    hasHubAccess: access.hasHubAccess,
+    isPrivileged: access.isPrivileged,
+    isLocalist: access.isLocalist,
+    isCustomer: access.isCustomer,
+    membershipScope: {
+      active: Boolean(membershipScope?.authenticated),
+      reason: membershipScope?.reason || 'not-resolved',
+      organizationIds: [...(membershipScope?.organizationIds || [])],
+      entitlements: [...(membershipScope?.entitlements || [])],
+    },
     createdAt: asIso(profile.createdAt),
     updatedAt: asIso(profile.updatedAt),
   };
@@ -55,21 +68,24 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: true, invite: publicInvite(invite) });
   }
 
+  if (req.method === 'GET') {
+    const auth = await resolveHubViewer(req, prisma, { includeMembershipScope: true });
+    if (auth.error) return res.status(auth.status).json({ error: auth.error });
+    const user = auth.dbUser;
+    return res.status(200).json({
+      ok: true,
+      user: user ? { id: user.id, email: user.email, role: user.role } : null,
+      profile: publicProfile(user?.hubProfile || null, auth.membershipScope),
+    });
+  }
+
   const supabaseUser = await verifySupabaseToken(req);
   if (!supabaseUser?.email) return res.status(401).json({ error: 'Unauthorized' });
-  if (isReadOnlyAdminEmail(supabaseUser.email) && req.method !== 'GET') {
+  if (isReadOnlyAdminEmail(supabaseUser.email)) {
     return res.status(403).json({ error: 'Read-only admin access' });
   }
 
   try {
-    if (req.method === 'GET') {
-      const user = await findUserByEmail(prisma, supabaseUser.email, { hubProfile: true });
-      return res.status(200).json({
-        ok: true,
-        user: user ? { id: user.id, email: user.email, role: user.role } : null,
-        profile: publicProfile(user?.hubProfile || null, user),
-      });
-    }
 
     const inviteToken = cleanString(req.body?.inviteToken, 240);
     const displayName = cleanString(req.body?.displayName, 120);
@@ -134,7 +150,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    return res.status(200).json({ ok: true, user: { id: user.id, email: user.email, role: user.role }, profile: publicProfile(profile, user) });
+    return res.status(200).json({ ok: true, user: { id: user.id, email: user.email, role: user.role }, profile: publicProfile(profile) });
   } catch (err) {
     console.error('[hub/profile] error', err);
     return res.status(500).json({ error: 'Unable to save hub profile' });

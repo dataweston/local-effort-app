@@ -14,6 +14,11 @@ import { age, api, formatDate, formatTime, todayIso, HubAvatar, Panel, MarkdownP
 import { EmptyState } from './HubIllustrations';
 
 export const HOME_NOTEPAD_TEMPLATE = '#in season#\n- \n\n#events#\n- \n\n#important updates#\n- \n';
+function createCaptureId() {
+  return globalThis.crypto?.randomUUID?.()
+    || `hub-capture-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 
 
 export function HomeNotepad({ accessToken }) {
@@ -302,6 +307,7 @@ export function QuickCapturePanel({ accessToken }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(null);
+  const [captureId, setCaptureId] = useState(createCaptureId);
 
   // Customer search (optional — picking one removes the hardest parse: "who?")
   useEffect(() => {
@@ -317,14 +323,27 @@ export function QuickCapturePanel({ accessToken }) {
     return () => { cancelled = true; clearTimeout(t); };
   }, [custQuery, accessToken]);
 
-  function reset() { setText(''); setPreview(null); setError(''); setDone(null); }
+  function reset() {
+    setText('');
+    setPreview(null);
+    setError('');
+    setDone(null);
+    setCaptureId(createCaptureId());
+  }
 
   async function runPreview() {
     setBusy(true); setError(''); setDone(null);
     try {
       const data = await api('/api/brain/capture', accessToken, {
         method: 'POST',
-        body: JSON.stringify({ text, customerId: customer?.id || null, commit: false }),
+        body: JSON.stringify({
+          text,
+          customerId: customer?.id || null,
+          customerName: customer?.name || null,
+          source: 'hub_quick_capture',
+          captureId,
+          commit: false,
+        }),
       });
       setPreview(data);
     } catch (e) { setError(e.message || 'Could not parse'); }
@@ -336,17 +355,36 @@ export function QuickCapturePanel({ accessToken }) {
     try {
       const data = await api('/api/brain/capture', accessToken, {
         method: 'POST',
-        body: JSON.stringify({ text, customerId: customer?.id || null, commit: true, force }),
+        body: JSON.stringify({
+          text,
+          customerId: customer?.id || null,
+          customerName: customer?.name || null,
+          source: 'hub_quick_capture',
+          captureId,
+          commit: true,
+          force,
+        }),
       });
-      if (data.committed) setDone({ kind: 'applied', detail: data.applied, preview: data.preview });
-      else if (data.capturedToInbox) setDone({ kind: 'inbox', preview: data.preview });
-      else setDone({ kind: 'other' });
-      setText(''); setPreview(null);
+      if (data.committed) {
+        setDone({ kind: 'applied', detail: data.applied, preview: data.preview });
+      } else if (data.capturedToInbox) {
+        setDone({ kind: 'inbox', preview: data.preview });
+      } else {
+        throw new Error(data.applyError || 'Brain did not apply the capture. Your text is unchanged.');
+      }
+      setText('');
+      setPreview(null);
+      setCaptureId(createCaptureId());
     } catch (e) { setError(e.message || 'Could not apply'); }
     finally { setBusy(false); }
   }
 
   const medical = preview?.fields?.corrections?.some((c) => c.severity === 'medical');
+  const eventDateRequired = preview?.needsConfirmReason === 'event-date-required';
+  const plannerUnavailable = preview?.needsConfirmReason === 'planner-unavailable';
+  const forceBlocked = (preview?.needsConfirmReason === 'customer-unresolved' && !customer)
+    || eventDateRequired
+    || plannerUnavailable;
 
   return (
     <Panel title="Quick Capture" icon={Sparkles}>
@@ -378,9 +416,9 @@ export function QuickCapturePanel({ accessToken }) {
         className="hub-wordpad"
         style={{ minHeight: 56 }}
         rows={2}
-        placeholder='e.g. "no legumes this month" · "price: carrots $1.20/lb from CPW" · "task: call flour vendor"'
+        placeholder='e.g. "event: Anniversary party | date: 2026-09-12 | time: 8am-4pm | prep: 2026-09-11 1pm-5pm"'
         value={text}
-        onChange={(e) => { setText(e.target.value); setPreview(null); setDone(null); }}
+        onChange={(e) => { setText(e.target.value); setPreview(null); setError(''); setDone(null); }}
       />
 
       <div className="hub-button-row" style={{ marginTop: 6 }}>
@@ -403,13 +441,16 @@ export function QuickCapturePanel({ accessToken }) {
           {preview.needsConfirm && (
             <>
               <p className="hub-empty">
-                {medical ? '⚠ Medical/allergy — confirm carefully.'
+                {medical ? 'Medical or allergy change — confirm carefully.'
+                  : eventDateRequired ? 'Add a service date before this can become a planner event.'
+                  : plannerUnavailable ? 'Planner access is unavailable. The capture cannot be applied.'
+                  : preview.needsConfirmReason === 'event-always-confirm' ? 'Confirm the service and prep schedule before adding this event.'
                   : preview.needsConfirmReason === 'customer-unresolved' ? 'Customer not matched — pick one above or confirm anyway.'
                   : 'Lower confidence — confirm to apply.'}
               </p>
               <div className="hub-button-row">
-                <button onClick={() => commit({ force: true })} disabled={busy || (preview.needsConfirmReason === 'customer-unresolved' && !customer)}>
-                  Confirm & apply
+                <button onClick={() => commit({ force: true })} disabled={busy || forceBlocked}>
+                  {preview.intent === 'event' ? 'Confirm event' : 'Confirm & apply'}
                 </button>
               </div>
             </>

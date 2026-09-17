@@ -1,0 +1,962 @@
+{
+  "postingRowCount": 2699,
+  "distinctTxIds": 2684,
+  "months": {
+    "2026-01": {
+      "revenue": 11346.69,
+      "refunds": 432,
+      "cogs": 1815.23,
+      "paidLabor": 0,
+      "operatingExLabor": 8312.53,
+      "personalFounderDraws": 533.54,
+      "reimbursementIncome": 381.24,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 30.46,
+      "transfer": 13897.32,
+      "rows": 164
+    },
+    "2026-02": {
+      "revenue": 9191.86,
+      "refunds": 732,
+      "cogs": 3486.39,
+      "paidLabor": 40,
+      "operatingExLabor": 2515.2,
+      "personalFounderDraws": 1201.3,
+      "reimbursementIncome": 85.72,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 30.46,
+      "transfer": 13365.18,
+      "rows": 191
+    },
+    "2026-03": {
+      "revenue": 7004.7,
+      "refunds": 58,
+      "cogs": 2630.47,
+      "paidLabor": 0,
+      "operatingExLabor": 5918.93,
+      "personalFounderDraws": 1677.76,
+      "reimbursementIncome": 6238,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 144.02,
+      "transfer": 27498.6,
+      "rows": 237
+    },
+    "2026-04": {
+      "revenue": 12246.43,
+      "refunds": 850,
+      "cogs": 3784.26,
+      "paidLabor": 0,
+      "operatingExLabor": 3903.46,
+      "personalFounderDraws": 3862.46,
+      "reimbursementIncome": 3672.5,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 226.98,
+      "transfer": 34465.19,
+      "rows": 290
+    },
+    "2026-05": {
+      "revenue": 15163.45,
+      "refunds": 67,
+      "cogs": 3526.97,
+      "paidLabor": 560,
+      "operatingExLabor": 4607.37,
+      "personalFounderDraws": 5007.43,
+      "reimbursementIncome": 237.06,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 568.26,
+      "transfer": 67817.05,
+      "rows": 413
+    },
+    "2026-06": {
+      "revenue": 12656.78,
+      "refunds": 103,
+      "cogs": 3325.58,
+      "paidLabor": 2566,
+      "operatingExLabor": 5372.87,
+      "personalFounderDraws": 3297.57,
+      "reimbursementIncome": 103,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 126.03,
+      "transfer": 32262.99,
+      "rows": 404
+    },
+    "2026-07": {
+      "revenue": 17350.09,
+      "refunds": 16,
+      "cogs": 4312.22,
+      "paidLabor": 1279,
+      "operatingExLabor": 5588.59,
+      "personalFounderDraws": 1432.52,
+      "reimbursementIncome": 127.09,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 293.93,
+      "transfer": 47562.51,
+      "rows": 527
+    },
+    "2026-08": {
+      "revenue": 19942.79,
+      "refunds": 51.06,
+      "cogs": 1748.09,
+      "paidLabor": 1032,
+      "operatingExLabor": 1869.12,
+      "personalFounderDraws": 1362.48,
+      "reimbursementIncome": 0,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 9690.45,
+      "transfer": 24126.71,
+      "rows": 468
+    },
+    "2026-09": {
+      "revenue": 92,
+      "refunds": 0,
+      "cogs": 0,
+      "paidLabor": 0,
+      "operatingExLabor": 0,
+      "personalFounderDraws": 0,
+      "reimbursementIncome": 0,
+      "reimbursableExpense": 0,
+      "excludedOrUnresolvedIncome": 0,
+      "unknownOrUnresolved": 427.23,
+      "transfer": 0,
+      "rows": 5
+    }
+  },
+  "categoriesByMonth": {
+    "2026-01": {
+      "operatingExLabor": {
+        "Software & Tools": 124.16,
+        "Uncategorized": 166.23,
+        "Gas": 270.19,
+        "Rent": 6350,
+        "Marketing": 260.35,
+        "Amazon": 213.59,
+        "Debt": 252.73,
+        "Car": 572.53,
+        "Delivery": 3,
+        "Licensing and Permits": 99.75
+      },
+      "personalFounderDraws": {
+        "Dining Out": 255.09,
+        "Software & Tools": 40.3,
+        "Shopping": 147,
+        "Healthcare": 68.19,
+        "Transportation": 22.96
+      },
+      "revenue": {
+        "Uncategorized": 4982.7,
+        "Investments": 5550,
+        "Eastside": 653.98,
+        "Income": 160.01
+      },
+      "transfer": {
+        "Uncategorized": 4721.48,
+        "Transfer": 9175.84
+      },
+      "cogs": {
+        "Inventory": 1690.07,
+        "Materials": 125.16
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 381.24
+      },
+      "refunds": {
+        "Uncategorized": 432
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 30.46
+      }
+    },
+    "2026-02": {
+      "revenue": {
+        "Income": 820.03,
+        "Uncategorized": 6703.6,
+        "Eastside": 588.23,
+        "Investments": 1080
+      },
+      "personalFounderDraws": {
+        "Dining Out": 327.13,
+        "Shopping": 487.44,
+        "Transportation": 63.23,
+        "Childcare": 240,
+        "cash spending": 83.5
+      },
+      "operatingExLabor": {
+        "Uncategorized": 194.66,
+        "Gas": 109.95,
+        "Marketing": 171.68,
+        "Licensing and Permits": 94.77,
+        "Amazon": 278.79,
+        "Software & Tools": 127.35,
+        "Rent": 1538
+      },
+      "transfer": {
+        "Uncategorized": 7127.67,
+        "Transfer": 6237.51
+      },
+      "cogs": {
+        "Inventory": 2990.27,
+        "Materials": 496.12
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 30.46
+      },
+      "refunds": {
+        "Uncategorized": 732
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 85.72
+      },
+      "paidLabor": {
+        "Labor": 40
+      }
+    },
+    "2026-03": {
+      "cogs": {
+        "Inventory": 2450.01,
+        "Materials": 180.46
+      },
+      "operatingExLabor": {
+        "Amazon": 579.34,
+        "Rent": 1889,
+        "Uncategorized": 202.18,
+        "Gas": 235.26,
+        "Software & Tools": 304.34,
+        "Delivery": 143.87,
+        "Marketing": 414.25,
+        "Debt": 116.44,
+        "Car": 2000,
+        "Licensing and Permits": 34.25
+      },
+      "personalFounderDraws": {
+        "cash spending": 47,
+        "Shopping": 221.89,
+        "Dining Out": 598.15,
+        "Transportation": 135.97,
+        "Childcare": 540,
+        "Healthcare": 121.71,
+        "Software & Tools": 13.04
+      },
+      "revenue": {
+        "Eastside": 548.21,
+        "Income": 384.04,
+        "Uncategorized": 6072.45
+      },
+      "transfer": {
+        "Transfer": 22165.25,
+        "Uncategorized": 5333.35
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 144.02
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 6238
+      },
+      "refunds": {
+        "Uncategorized": 58
+      }
+    },
+    "2026-04": {
+      "cogs": {
+        "Inventory": 3487.35,
+        "Materials": 296.91
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 226.98
+      },
+      "revenue": {
+        "Uncategorized": 9287.6,
+        "Eastside": 569.23,
+        "Income": 2389.6
+      },
+      "operatingExLabor": {
+        "Uncategorized": 280.53,
+        "Amazon": 415.9,
+        "Gas": 232.86,
+        "Software & Tools": 351.2,
+        "Licensing and Permits": 130,
+        "Delivery": 107.54,
+        "Rent": 2180,
+        "Marketing": 205.43
+      },
+      "transfer": {
+        "Uncategorized": 9857.07,
+        "Transfer": 24608.12
+      },
+      "personalFounderDraws": {
+        "Dining Out": 409.85,
+        "Shopping": 1339.95,
+        "Transportation": 347.48,
+        "Childcare": 550,
+        "Healthcare": 172.19,
+        "cash spending": 42.99,
+        "Debt": 1000
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 3672.5
+      },
+      "refunds": {
+        "Uncategorized": 850
+      }
+    },
+    "2026-05": {
+      "operatingExLabor": {
+        "Marketing": 213.05,
+        "Gas": 283.44,
+        "Software & Tools": 389.65,
+        "Delivery": 68.8,
+        "Rent": 1163.33,
+        "Amazon": 375.07,
+        "Uncategorized": 129.76,
+        "Licensing and Permits": 119.25,
+        "Utilities": 300,
+        "Car": 1565.02
+      },
+      "transfer": {
+        "Transfer": 56378.96,
+        "Uncategorized": 4714.09,
+        "Investments": 6724
+      },
+      "personalFounderDraws": {
+        "Dining Out": 781.26,
+        "Transportation": 279.42,
+        "Groceries": 128.83,
+        "Shopping": 511.39,
+        "cash spending": 565.94,
+        "Healthcare": 150.59,
+        "Debt": 2000,
+        "Childcare": 590
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 568.26
+      },
+      "cogs": {
+        "Inventory": 3268.01,
+        "Materials": 258.96
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 237.06
+      },
+      "revenue": {
+        "Income": 1181.22,
+        "Uncategorized": 4736.85,
+        "Investments": 9000,
+        "Eastside": 245.38
+      },
+      "refunds": {
+        "Uncategorized": 67
+      },
+      "paidLabor": {
+        "Labor": 560
+      }
+    },
+    "2026-06": {
+      "personalFounderDraws": {
+        "Transportation": 318.52,
+        "Dining Out": 517.56,
+        "Software & Tools": 13.04,
+        "Childcare": 710,
+        "Shopping": 610.46,
+        "Legal": 85,
+        "cash spending": 42.99,
+        "Debt": 1000
+      },
+      "operatingExLabor": {
+        "Delivery": 83.63,
+        "Car": 287.18,
+        "Gas": 321.77,
+        "Marketing": 228.01,
+        "Amazon": 812.39,
+        "Uncategorized": 238.07,
+        "Licensing and Permits": 646.5,
+        "Software & Tools": 140.32,
+        "Rent": 1525,
+        "Debt": 1090
+      },
+      "transfer": {
+        "Transfer": 25319.17,
+        "Uncategorized": 6943.82
+      },
+      "cogs": {
+        "Inventory": 3223.05,
+        "Materials": 102.53
+      },
+      "revenue": {
+        "Income": 2754.86,
+        "Uncategorized": 7083.63,
+        "Eastside": 708.29,
+        "Investments": 2110
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 126.03
+      },
+      "paidLabor": {
+        "Labor": 2566
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 103
+      },
+      "refunds": {
+        "Uncategorized": 103
+      }
+    },
+    "2026-07": {
+      "transfer": {
+        "Transfer": 37148.37,
+        "Uncategorized": 10414.14
+      },
+      "cogs": {
+        "Inventory": 3852.46,
+        "Materials": 459.76
+      },
+      "revenue": {
+        "Income": 5293.37,
+        "Uncategorized": 12056.72
+      },
+      "operatingExLabor": {
+        "Gas": 276.27,
+        "Uncategorized": 406.71,
+        "Delivery": 150.4,
+        "Amazon": 595.8,
+        "Marketing": 132.43,
+        "Software & Tools": 143.23,
+        "Rent": 3849.5,
+        "Licensing and Permits": 34.25
+      },
+      "personalFounderDraws": {
+        "Shopping": 137.98,
+        "Software & Tools": 13.04,
+        "Dining Out": 308,
+        "cash spending": 62.99,
+        "Childcare": 590,
+        "Transportation": 159.16,
+        "Healthcare": 161.35
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 293.93
+      },
+      "refunds": {
+        "Uncategorized": 16
+      },
+      "paidLabor": {
+        "Labor": 1279
+      },
+      "reimbursementIncome": {
+        "Reimbursed": 127.09
+      }
+    },
+    "2026-08": {
+      "transfer": {
+        "Transfer": 16381.51,
+        "Uncategorized": 7745.2
+      },
+      "cogs": {
+        "Inventory": 1746.46,
+        "Materials": 1.63
+      },
+      "personalFounderDraws": {
+        "Dining Out": 232.84,
+        "Groceries": 50,
+        "Shopping": 309.98,
+        "Transportation": 125.36,
+        "Software & Tools": 3.26,
+        "Debt": 600,
+        "Entertainment": 41.04
+      },
+      "revenue": {
+        "Income": 1487.18,
+        "Uncategorized": 15723.34,
+        "Investments": 2732.27
+      },
+      "operatingExLabor": {
+        "Gas": 358.21,
+        "Uncategorized": 302.61,
+        "Rent": 676,
+        "Software & Tools": 163.79,
+        "Delivery": 25.75,
+        "Marketing": 125.56,
+        "Amazon": 217.2
+      },
+      "refunds": {
+        "Uncategorized": 38,
+        "Eastside": 13.06
+      },
+      "paidLabor": {
+        "Labor": 1032
+      },
+      "unknownOrUnresolved": {
+        "Uncategorized": 9690.45
+      }
+    },
+    "2026-09": {
+      "unknownOrUnresolved": {
+        "Uncategorized": 427.23
+      },
+      "revenue": {
+        "Uncategorized": 92
+      }
+    }
+  },
+  "revenueByCustody": {
+    "2026-01": {
+      "PROCESSOR/squareLinkedAcct": 4982.7,
+      "PERSONAL/nonSquareAcct": 6203.98,
+      "SHARED/nonSquareAcct": 160.01
+    },
+    "2026-02": {
+      "BUSINESS/nonSquareAcct": 1080,
+      "PROCESSOR/squareLinkedAcct": 6703.6,
+      "SHARED/nonSquareAcct": 820.03,
+      "PERSONAL/nonSquareAcct": 588.23
+    },
+    "2026-03": {
+      "PERSONAL/nonSquareAcct": 548.21,
+      "SHARED/nonSquareAcct": 384.04,
+      "PROCESSOR/squareLinkedAcct": 6072.45
+    },
+    "2026-04": {
+      "PROCESSOR/squareLinkedAcct": 9287.6,
+      "PERSONAL/nonSquareAcct": 649.23,
+      "SHARED/nonSquareAcct": 2309.6
+    },
+    "2026-05": {
+      "SHARED/nonSquareAcct": 1181.22,
+      "PROCESSOR/squareLinkedAcct": 4736.85,
+      "PERSONAL/nonSquareAcct": 9245.38
+    },
+    "2026-06": {
+      "SHARED/nonSquareAcct": 2534.86,
+      "PROCESSOR/squareLinkedAcct": 7082.3,
+      "PERSONAL/nonSquareAcct": 929.62,
+      "BUSINESS/nonSquareAcct": 2110
+    },
+    "2026-07": {
+      "BUSINESS/nonSquareAcct": 2417.35,
+      "PROCESSOR/squareLinkedAcct": 12056.72,
+      "SHARED/nonSquareAcct": 2876.02
+    },
+    "2026-08": {
+      "SHARED/nonSquareAcct": 2628.77,
+      "PROCESSOR/squareLinkedAcct": 8938.75,
+      "BUSINESS/nonSquareAcct": 6999.27,
+      "PERSONAL/nonSquareAcct": 1376
+    },
+    "2026-09": {
+      "BUSINESS/nonSquareAcct": 92
+    }
+  },
+  "freshness": {
+    "lastPosted": "2026-09-01T00:00:00.000Z",
+    "sept": {
+      "last_posted_sept": "2026-09-01T00:00:00.000Z",
+      "n": 5
+    },
+    "statusMix": [
+      {
+        "status": "PENDING",
+        "n": 24,
+        "total": "1550.42"
+      },
+      {
+        "status": "POSTED",
+        "n": 2779,
+        "total": "528389.33"
+      },
+      {
+        "status": "REMOVED",
+        "n": 18,
+        "total": "517.56"
+      }
+    ]
+  },
+  "brainIncomeStream": [
+    {
+      "month": "2026-01",
+      "n": 32,
+      "total": "15619.1"
+    },
+    {
+      "month": "2026-02",
+      "n": 33,
+      "total": "10840.72"
+    },
+    {
+      "month": "2026-03",
+      "n": 50,
+      "total": "21479.91"
+    },
+    {
+      "month": "2026-04",
+      "n": 57,
+      "total": "25017.61"
+    },
+    {
+      "month": "2026-05",
+      "n": 126,
+      "total": "48679.03"
+    },
+    {
+      "month": "2026-06",
+      "n": 118,
+      "total": "25316.73"
+    },
+    {
+      "month": "2026-07",
+      "n": 183,
+      "total": "31038.5"
+    },
+    {
+      "month": "2026-08",
+      "n": 159,
+      "total": "25272.18"
+    },
+    {
+      "month": "2026-09",
+      "n": 1,
+      "total": "92"
+    }
+  ],
+  "brainCaptureStream": [
+    {
+      "month": "2026-01",
+      "n": 6,
+      "total": "4982.7"
+    },
+    {
+      "month": "2026-02",
+      "n": 10,
+      "total": "6703.6"
+    },
+    {
+      "month": "2026-03",
+      "n": 6,
+      "total": "6072.45"
+    },
+    {
+      "month": "2026-04",
+      "n": 8,
+      "total": "9287.6"
+    },
+    {
+      "month": "2026-05",
+      "n": 6,
+      "total": "4736.85"
+    },
+    {
+      "month": "2026-06",
+      "n": 18,
+      "total": "7082.3"
+    },
+    {
+      "month": "2026-07",
+      "n": 31,
+      "total": "12086.65"
+    },
+    {
+      "month": "2026-08",
+      "n": 27,
+      "total": "8938.75"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "cmk7p4w3b0003qitvgkvs6903",
+      "name": "TOTAL CHECKING",
+      "type": "CHECKING",
+      "custody": "PERSONAL",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 2077,
+      "income_rows": 274
+    },
+    {
+      "id": "cmk4ma62e0003uaxyqm3qeo5h",
+      "name": "SoFi Checking",
+      "type": "CHECKING",
+      "custody": "SHARED",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 1899,
+      "income_rows": 654
+    },
+    {
+      "id": "cmk5s0q7d0007vgim7q1bpvvi",
+      "name": "Local Pizza",
+      "type": "CHECKING",
+      "custody": "BUSINESS",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 1569,
+      "income_rows": 512
+    },
+    {
+      "id": "cmsubl8uk0001105uaiq75zuy",
+      "name": "Square",
+      "type": "OTHER",
+      "custody": "PROCESSOR",
+      "square_linked": true,
+      "isInternal": true,
+      "tx_rows": 742,
+      "income_rows": 251
+    },
+    {
+      "id": "cmllid9s80001c2t9tdbd0vku",
+      "name": "Venmo Wallet",
+      "type": "OTHER",
+      "custody": "PERSONAL",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 472,
+      "income_rows": 139
+    },
+    {
+      "id": "cmk4ma65t0007uaxybacjgcvd",
+      "name": "SoFi Savings",
+      "type": "SAVINGS",
+      "custody": "SHARED",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 94,
+      "income_rows": 25
+    },
+    {
+      "id": "cmtkicrby0005fc051dzqakml",
+      "name": "Stripe",
+      "type": "OTHER",
+      "custody": "PROCESSOR",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 0,
+      "income_rows": 0
+    },
+    {
+      "id": "cmk5s0q370003vgimsz4m5033",
+      "name": "General savings",
+      "type": "SAVINGS",
+      "custody": "PERSONAL",
+      "square_linked": false,
+      "isInternal": true,
+      "tx_rows": 0,
+      "income_rows": 0
+    }
+  ],
+  "brainIncomeByClassification": [
+    {
+      "month": "2026-01",
+      "classification": "INCOME",
+      "status": "PENDING",
+      "n": 1,
+      "total": "353.69"
+    },
+    {
+      "month": "2026-01",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 13,
+      "total": "10704.23"
+    },
+    {
+      "month": "2026-01",
+      "classification": "PERSONAL",
+      "status": "POSTED",
+      "n": 1,
+      "total": "16.34"
+    },
+    {
+      "month": "2026-01",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 17,
+      "total": "4544.84"
+    },
+    {
+      "month": "2026-02",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 18,
+      "total": "7893.49"
+    },
+    {
+      "month": "2026-02",
+      "classification": "REIMBURSEMENT",
+      "status": "POSTED",
+      "n": 2,
+      "total": "85.72"
+    },
+    {
+      "month": "2026-02",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 13,
+      "total": "2861.51"
+    },
+    {
+      "month": "2026-03",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 15,
+      "total": "6207.6"
+    },
+    {
+      "month": "2026-03",
+      "classification": "REIMBURSEMENT",
+      "status": "POSTED",
+      "n": 1,
+      "total": "6238"
+    },
+    {
+      "month": "2026-03",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 34,
+      "total": "9034.31"
+    },
+    {
+      "month": "2026-04",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 17,
+      "total": "11115.9"
+    },
+    {
+      "month": "2026-04",
+      "classification": "REIMBURSEMENT",
+      "status": "POSTED",
+      "n": 4,
+      "total": "3672.5"
+    },
+    {
+      "month": "2026-04",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 36,
+      "total": "10229.21"
+    },
+    {
+      "month": "2026-05",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 16,
+      "total": "15033.69"
+    },
+    {
+      "month": "2026-05",
+      "classification": "REIMBURSEMENT",
+      "status": "POSTED",
+      "n": 3,
+      "total": "118.86"
+    },
+    {
+      "month": "2026-05",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 107,
+      "total": "33526.48"
+    },
+    {
+      "month": "2026-06",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 28,
+      "total": "12396.09"
+    },
+    {
+      "month": "2026-06",
+      "classification": "NULL",
+      "status": "POSTED",
+      "n": 1,
+      "total": "1.33"
+    },
+    {
+      "month": "2026-06",
+      "classification": "OPERATING",
+      "status": "POSTED",
+      "n": 2,
+      "total": "37.03"
+    },
+    {
+      "month": "2026-06",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 87,
+      "total": "12882.28"
+    },
+    {
+      "month": "2026-07",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 46,
+      "total": "13211.14"
+    },
+    {
+      "month": "2026-07",
+      "classification": "OPERATING",
+      "status": "POSTED",
+      "n": 1,
+      "total": "13.05"
+    },
+    {
+      "month": "2026-07",
+      "classification": "REIMBURSEMENT",
+      "status": "POSTED",
+      "n": 2,
+      "total": "32.14"
+    },
+    {
+      "month": "2026-07",
+      "classification": "TRANSFER",
+      "status": "PENDING",
+      "n": 2,
+      "total": "150"
+    },
+    {
+      "month": "2026-07",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 132,
+      "total": "17632.17"
+    },
+    {
+      "month": "2026-08",
+      "classification": "INCOME",
+      "status": "POSTED",
+      "n": 17,
+      "total": "8362.12"
+    },
+    {
+      "month": "2026-08",
+      "classification": "NULL",
+      "status": "POSTED",
+      "n": 69,
+      "total": "10337.39"
+    },
+    {
+      "month": "2026-08",
+      "classification": "PERSONAL",
+      "status": "REMOVED",
+      "n": 1,
+      "total": "0.43"
+    },
+    {
+      "month": "2026-08",
+      "classification": "TRANSFER",
+      "status": "POSTED",
+      "n": 72,
+      "total": "6572.24"
+    },
+    {
+      "month": "2026-09",
+      "classification": "NULL",
+      "status": "POSTED",
+      "n": 1,
+      "total": "92"
+    }
+  ]
+}

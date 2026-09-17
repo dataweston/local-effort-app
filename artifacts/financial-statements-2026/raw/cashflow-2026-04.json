@@ -1,0 +1,55 @@
+{
+  "artifact": "local-budget-month-snapshot",
+  "contractVersion": 2,
+  "methodVersion": "cashflow-actuals-v2.1",
+  "currency": "USD",
+  "timezone": "America/Chicago",
+  "generatedAt": "2026-09-16T03:33:20.728Z",
+  "month": "2026-04",
+  "isCompleteMonth": true,
+  "sourceMaxDate": "2026-09-01",
+  "latestBankSyncAt": "2026-09-02T20:41:50.821Z",
+  "totals": {
+    "incomeCents": 1563840,
+    "inventoryCents": 378426,
+    "operatingCents": 362293,
+    "laborCents": 0,
+    "reimbursableCents": 0,
+    "personalExcludedCents": 386246,
+    "transferExcludedCents": 2460812,
+    "unclassifiedCents": 22698,
+    "transactionCount": 272,
+    "splitLineCount": 0
+  },
+  "founderDraws": {
+    "totalCents": 386246,
+    "byFounder": {
+      "Weston Smith": 100000
+    },
+    "unattributedCents": 286246
+  },
+  "quality": {
+    "pendingTransactionCount": 0,
+    "unclassifiedTransactionCount": 10,
+    "splitMismatchCount": 0
+  },
+  "sanitization": "Aggregates only, integer cents. No transaction rows, customer identities, or account/bank descriptors.",
+  "omittedFields": [
+    {
+      "field": "transactions",
+      "reason": "row-level data is never published"
+    },
+    {
+      "field": "customers",
+      "reason": "names, emails, and Square customer IDs are never published"
+    },
+    {
+      "field": "accounts",
+      "reason": "account numbers and bank descriptors are never published"
+    },
+    {
+      "field": "vendorBreakdown",
+      "reason": "per-vendor spend stays behind the authenticated /v1/vendors API"
+    }
+  ]
+}

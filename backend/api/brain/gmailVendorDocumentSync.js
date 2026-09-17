@@ -9,6 +9,7 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { writeLedgerEvent } = require('./ledger');
+const { parseGmailFullMessage, plainText, parseMailbox } = require('./gmailMime');
 const { getAuthorizedGmailClient } = require('./gmailSync');
 
 const SOURCE = 'gmail_vendor_documents';
@@ -53,56 +54,6 @@ function buildVendorDocumentWindows(now = new Date(), monthsBack = 36) {
   return windows;
 }
 
-function decodeBase64Url(value) {
-  if (!value) return '';
-  try { return Buffer.from(value, 'base64url').toString('utf8'); } catch { return ''; }
-}
-
-function plainText(html) {
-  return String(html || '')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&#39;/gi, "'")
-    .replace(/&quot;/gi, '"')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function collectParts(part, result = { text: [], attachments: [] }) {
-  if (!part) return result;
-  const mimeType = String(part.mimeType || '').toLowerCase();
-  const filename = String(part.filename || '').trim();
-  if (filename || part.body?.attachmentId) {
-    result.attachments.push({
-      filename: filename || 'attachment',
-      mimeType: mimeType || 'application/octet-stream',
-      size: Number(part.body?.size || 0),
-      attachmentId: part.body?.attachmentId || null,
-    });
-  }
-  if (part.body?.data && (mimeType === 'text/plain' || mimeType === 'text/html')) {
-    const decoded = decodeBase64Url(part.body.data);
-    result.text.push(mimeType === 'text/html' ? plainText(decoded) : decoded);
-  }
-  for (const child of (part.parts || [])) collectParts(child, result);
-  return result;
-}
-
-function headerMap(headers) {
-  return Object.fromEntries((headers || []).map((h) => [String(h.name || '').toLowerCase(), String(h.value || '')]));
-}
-
-function parseMailbox(value) {
-  const raw = String(value || '');
-  const address = (raw.match(/<([^>]+)>/)?.[1] || raw.match(/[\w.+-]+@[\w.-]+/)?.[0] || '').toLowerCase();
-  const name = raw.replace(/<[^>]+>/g, '').replace(address, '').replace(/^['"]|['"]$/g, '').trim();
-  return { name: name || null, address: address || null, domain: address.split('@')[1] || null };
-}
 
 function firstMatch(text, patterns) {
   for (const pattern of patterns) {
@@ -113,10 +64,10 @@ function firstMatch(text, patterns) {
 }
 
 function extractDocument(message) {
-  const headers = headerMap(message.payload?.headers);
+  const parsed = parseGmailFullMessage(message);
+  const headers = parsed.headerMap;
   const sender = parseMailbox(headers.from);
-  const parts = collectParts(message.payload);
-  const body = plainText(parts.text.join('\n'));
+  const body = parsed.textContent;
   const searchable = `${headers.subject || ''}\n${message.snippet || ''}\n${body}`.slice(0, 50000);
   const amount = firstMatch(searchable, [
     /(?:amount due|invoice total|order total|grand total|total)\s*[:\-]?\s*\$?([0-9,]+(?:\.\d{2})?)/i,
@@ -143,7 +94,7 @@ function extractDocument(message) {
     amountCents: amount ? Math.round(Number(amount.replace(/,/g, '')) * 100) : null,
     currency: amount ? 'USD' : null,
     excerpt: plainText(body || message.snippet || '').slice(0, 1200),
-    attachments: parts.attachments.slice(0, 20).map(({ attachmentId, ...safe }) => ({
+    attachments: parsed.attachments.slice(0, 20).map(({ attachmentId, ...safe }) => ({
       ...safe,
       availableForExtraction: Boolean(attachmentId),
     })),

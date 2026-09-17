@@ -1,6 +1,6 @@
 # CURRENT_WORK.md — Local Effort execution checkpoint
 
-**Updated:** 2026-08-18
+**Updated:** 2026-09-13
 **Scope:** Aug–Oct 2026 capital, revenue, founder-platform, speaking, RFP, and execution work.  
 **Read first:** `AGENTS.md`, then this file.
 
@@ -187,7 +187,19 @@ Goal: paid/nominal-fee engagements about local ingredients, small food business,
 
 A prior branch, `agent/aug-oct-operating-plan`, contains an **unmerged, unapplied seed script**. It did **not** prove that production Planner cards were created. Do not infer Planner state from that branch.
 
-The current plan should be represented as persistent Planner projects/cards with stable IDs and idempotent seeding. Before apply:
+**2026-09-13 — planner operations spine built on `min`, uncommitted in the worktree.** Planner events now project into durable operational and financial records instead of living only in card metadata:
+
+- Schema: `PlannerWorkBlock`, `FinanceCostObligation`, `FinanceCostPayment` (migration `prisma/migrations/20260910000100_planner_operations_ledger`). Work blocks keep `plannerCardId` as a soft source key (no FK) so cancellation/deletion stays synchronized after a card is removed.
+- Backend (`backend/api/planner/`): `workBlocks` (fingerprinted service/prep reconciliation), `commercialLedger` + `billingSchedule` (orders, invoices, COGS, recurring cadence), `evidenceReconciliation` (ledger events, client identity, Gmail/Square evidence refs), `googleCalendarSync` (608 Smith calendar, verified idempotent upserts), `ledgerView` (receivables/payables/cash), `lifecycle` (single entry point the routes call).
+- UI: Planner **Events** view reports confirmed/expected-revenue/needs-attention counts, capacity provenance from recorded work windows, and calendar sync state; new `CashflowView` renders `/api/planner/ledger`.
+- Operator CLI: `node scripts/reconcile-planner-operations.cjs [--uid=…] [--from=…] [--to=…] [--calendar]` — dry run until `--apply`. The one-off `sync-planner-calendar-2026-09-10.cjs` was deleted once its logic moved into `googleCalendarSync.js`; `reconcile-planner-events-2026-09-10.cjs` stays as the audit trail for the seven owner-confirmed Sept/Oct commitments.
+- Verification: 20/20 vitest across `backend/api/planner/__tests__/operations.test.js`, `backend/api/routes/__tests__/planner.test.js`, `backend/api/brain/__tests__/ingestEvent.test.js`, `tests/plannerOperations.test.js`; `pnpm build` passes; Planner UI smoke-tested at `/planner` (create → save → work blocks + capacity + calendar state). Changed `src/` files are ESLint-clean; repo-wide `pnpm lint` still fails on 113 pre-existing errors in untouched files.
+
+### Branch targeting and PR #143
+
+`min` is the only working branch and is in sync with `origin/min`; the planner work above is still uncommitted. PR #143 (`min` → `main`) shows merge state DIRTY for a structural reason, not because of this work: `min` is 1,288 commits ahead of `main` while `main` carries 986 commits `min` never had, and `git merge-tree origin/min origin/main` reports 188 conflicts — 149 add/add (both branches independently created `.gitignore`, `README.md`, `api/**`), 33 rename/delete, 4 rename/rename, 2 content. Resolving it is a repo-history decision (rebase or replace `main`), not a planner task; planner changes keep landing on `min`.
+
+Seeding rules still apply to any apply run:
 1. inspect existing production Planner cards/projects;
 2. match equivalent existing tasks rather than duplicate them;
 3. preserve `done` status;

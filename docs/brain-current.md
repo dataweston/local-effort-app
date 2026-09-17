@@ -1,6 +1,7 @@
 # Company Brain — Current State
 
-> Last updated: 2026-06-12. This supersedes `company-brain.md` and
+> Core architecture last audited: 2026-06-12. Exact source-corpus and Gmail
+> status updated: 2026-09-17. This supersedes `company-brain.md` and
 > `company-brain-spec-v3.md` (root) as the description of what actually
 > exists. Those documents are the original architecture vision; large parts
 > were built differently or not at all. The data audit that motivated the
@@ -35,6 +36,7 @@ A four-layer knowledge system for the business, in Postgres via Prisma
 
 | Cron (UTC) | Path | What |
 |---|---|---|
+| 02:20 daily | `/api/brain/gmail/sync` | Resumable recent/archive Gmail thread sync → exact `BrainSourceDocument` corpus + searchable ledger projection (`gmailSync.js`) |
 | 02:30 daily | `/api/brain/square-orders/sync` | Square COMPLETED orders → `order.placed` ledger events (`squareOrdersSync.js`) |
 | 02:52 daily | `/api/brain/local-budget/items-sync` | Local Budget `/integration/v1/items` → `line_item.recorded` (`localBudgetItemsSync.js`): per-unit price + quantity for purchased receipt lines (Vendor resolved by LB vendor id) and sold Square lines (Dish/Product matched, never minted) |
 | 03:00 daily | `/api/brain/inference/run` | PREFERS/AVOIDS/CHURNING/REPEAT_CUSTOMER/PRICE_DRIFT + CHANNEL_TRAFFIC_TREND/WEB_CONVERSION (web-funnel) pass. PRICE_DRIFT prefers per-unit line-item evidence and falls back to average payment size |
@@ -52,6 +54,33 @@ Recurring jobs accept Vercel-cron GETs, admin JWT, or `x-brain-admin-key`.
 `ANTHROPIC_API_KEY` (primary) or `OPENAI_API_KEY` (fallback). Optional
 `BRAIN_OPENAI_MODEL` overrides the OpenAI model and `BRAIN_LLM_TIMEOUT_MS`
 controls the per-provider timeout.
+
+## Exact source corpus and Gmail
+
+`BrainSourceDocument` is the canonical private source layer. It stores exact
+source bytes as gzip, a SHA-256 hash of the uncompressed bytes, searchable
+text/HTML derivatives, attachment metadata, capture/extraction status, and
+provenance. Search and MCP return metadata and derived text by default; an
+explicit source read can return raw bytes and verifies the hash while
+decompressing them.
+
+Gmail requests `format=raw`, commits the source document and ledger projection
+atomically, and advances resumable recent/archive cursors only after every
+message in a page settles. Run `node scripts/gmail.cjs status` for auth,
+freshness, cursor, and corpus coverage; run `node scripts/gmail.cjs sync` to
+drain it manually.
+
+On 2026-09-17 all four sent/yum recent/archive streams completed with zero
+remaining backlog: 5,015 unique exact messages, newest 2026-09-16, and zero
+capture gaps. The 1,048 partial extraction statuses are explicit attachment
+work, not lost email bytes: all are messages with binary attachments, totaling
+2,491 unextracted attachments. The raw messages remain replayable. The largest
+classes are JPEG/PNG images and PDFs; extract them only through a bounded,
+provenance-preserving attachment pass rather than weakening capture status.
+
+The shared Google OAuth client is still in Testing mode. Publish its consent
+screen before the seven-day refresh-token lifetime elapses; reconnect through
+Brain → Partners if the grant expires.
 
 ## Dietary constraints
 

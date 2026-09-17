@@ -1,0 +1,51 @@
+
+== transactions (rows=6853)
+   id:text, accountId:text, amount:numeric, type:TransactionType, status:TransactionStatus, date:timestamp, description:text, merchantName:text, categoryId:text, classification:ClassificationType, payerId:text, incurredById:text, externalId:text, checkNumber:text, userDescription:text, notes:text, isReviewed:bool, isReconciled:bool, metadata:jsonb, createdAt:timestamp, updatedAt:timestamp, squareCustomerId:text, vendorId:text, reconciliationStatus:ReconciliationStatus, reconciliationMethod:ReconciliationMethod, reconciledAt:timestamp, removedAt:timestamp
+
+== financial_accounts (rows=8)
+   id:text, userId:text, entityId:text, name:text, type:AccountType, institution:text, accountNumber:text, currentBalance:numeric, availableBalance:numeric, currency:text, isActive:bool, plaidAccountId:text, plaidItemId:text, lastSyncedAt:timestamp, squareConnectionId:text, providerData:jsonb, createdAt:timestamp, updatedAt:timestamp, isInternal:bool, openingBalance:numeric, openingBalanceDate:timestamp, custodyRole:CustodyRole
+
+== financial_account_owners (rows=10)
+   id:text, accountId:text, entityId:text, role:AccountOwnershipRole, effectiveFrom:timestamp, effectiveTo:timestamp, sourceRef:text, confirmedAt:timestamp, createdAt:timestamp, updatedAt:timestamp
+
+== categories (rows=30)
+   id:text, userId:text, name:text, icon:text, color:text, parentId:text, defaultClassification:ClassificationType, isSystem:bool, sortOrder:int4, createdAt:timestamp, updatedAt:timestamp
+
+== chart_accounts (rows=0)
+   id:text, userId:text, code:text, name:text, type:ChartAccountType, isActive:bool, createdAt:timestamp, updatedAt:timestamp
+
+== journal_entries (rows=0)
+   id:text, userId:text, periodId:text, status:JournalEntryStatus, entryDate:timestamp, description:text, sourceEventId:text, reversalOfId:text, postedAt:timestamp, createdAt:timestamp, updatedAt:timestamp
+
+== journal_lines (rows=0)
+   id:text, journalEntryId:text, chartAccountId:text, description:text, debitAmount:numeric, creditAmount:numeric, legalOwnerId:text, custodyAccountId:text, taxCode:text, createdAt:timestamp
+
+== entities (rows=4)
+   id:text, userId:text, type:EntityType, name:text, description:text, isDefault:bool, metadata:jsonb, createdAt:timestamp, updatedAt:timestamp
+
+== vendors (rows=611)
+   id:text, name:text, normalizedName:text, aliases:_text, defaultCategoryId:text, metadata:jsonb, createdAt:timestamp, updatedAt:timestamp, defaultClassification:ClassificationType
+
+== line_items (rows=200)
+   id:text, transactionId:text, receiptId:text, vendorId:text, itemId:text, description:text, quantity:numeric, unitPrice:numeric, totalPrice:numeric, categoryId:text, classification:ClassificationType, createdAt:timestamp, updatedAt:timestamp, lineType:LineItemType, sourceUid:text
+
+== transaction_splits (rows=128)
+   id:text, transactionId:text, amount:numeric, categoryId:text, classification:ClassificationType, incurredById:text, description:text, createdAt:timestamp
+
+== accounting_periods (rows=0)
+   id:text, userId:text, name:text, startsAt:timestamp, endsAt:timestamp, status:AccountingPeriodStatus, closedAt:timestamp, closedById:text, createdAt:timestamp, updatedAt:timestamp
+
+== account_balance_snapshots (rows=70)
+   id:text, accountId:text, balance:numeric, availableBalance:numeric, currency:text, effectiveAt:timestamp, source:text, externalSnapshotId:text, createdAt:timestamp
+
+== processor_settlements (rows=279)
+   id:text, accountId:text, transactionId:text, provider:text, externalId:text, status:text, amount:numeric, currency:text, effectiveAt:timestamp, arrivalDate:timestamp, reconciliationStatus:ReconciliationStatus, reconciledAt:timestamp, metadata:jsonb, createdAt:timestamp, updatedAt:timestamp
+
+== source_events (rows=224)
+   id:text, userId:text, sourceSystem:text, sourceNamespace:text, externalId:text, eventType:text, eventVersion:text, occurredAt:timestamp, settledAt:timestamp, receivedAt:timestamp, payloadHash:text, payload:jsonb, payloadUri:text, signatureStatus:text, parserVersion:text, status:SourceEventStatus, processingError:text, createdAt:timestamp, updatedAt:timestamp
+
+== transaction_links (rows=180)
+   id:text, fromId:text, toId:text, linkType:text, amount:numeric, notes:text, createdAt:timestamp
+
+== close_runs (rows=0)
+   id:text, periodId:text, status:CloseRunStatus, preparedById:text, reviewedById:text, metrics:jsonb, blockers:jsonb, snapshotHash:text, reviewedAt:timestamp, completedAt:timestamp, createdAt:timestamp, updatedAt:timestamp

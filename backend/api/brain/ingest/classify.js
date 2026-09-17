@@ -9,7 +9,7 @@
  * the shared LLM fallback is asked with the union schema. No provider plus a
  * deterministic miss => needs_human.
  *
- * Intents: constraint_correction | vendor_price | task | new_entity |
+ * Intents: constraint_correction | vendor_price | event | task | new_entity |
  *          append_note | trash | needs_human
  */
 
@@ -19,11 +19,144 @@ const { llmJson, hasLlm } = require('../llmJson');
 const LLM_FALLBACK_THRESHOLD = 0.6;
 
 // ── tag detection (optional, sharpen only) ─────────────────────────────────────
-const TAG_RE = /^\s*(diet|constraint|price|cost|task|todo|vendor|supplier|contact|note)\s*[:#]\s*/i;
+const TAG_RE = /^\s*(diet|constraint|price|cost|event|booking|task|todo|vendor|supplier|contact|note)\s*[:#]\s*/i;
 function stripTag(text) {
   const m = text.match(TAG_RE);
   if (!m) return { tag: null, body: text };
   return { tag: m[1].toLowerCase(), body: text.slice(m[0].length).trim() };
+}
+const MONTH_NUMBERS = {
+  jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3,
+  apr: 4, april: 4, may: 5, jun: 6, june: 6, jul: 7, july: 7,
+  aug: 8, august: 8, sep: 9, sept: 9, september: 9, oct: 10,
+  october: 10, nov: 11, november: 11, dec: 12, december: 12,
+};
+
+function normalizeDate(year, month, day) {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year
+    || date.getUTCMonth() !== month - 1
+    || date.getUTCDate() !== day
+  ) return null;
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function inferredYear(month, day, ctx) {
+  const todayString = /^\d{4}-\d{2}-\d{2}$/.test(ctx?.today || '')
+    ? ctx.today
+    : new Date().toISOString().slice(0, 10);
+  const currentYear = Number(todayString.slice(0, 4));
+  const candidate = normalizeDate(currentYear, month, day);
+  return candidate && candidate >= todayString ? currentYear : currentYear + 1;
+}
+
+function parseEventDate(text, ctx) {
+  let match = text.match(/\b(20\d{2})-(\d{1,2})-(\d{1,2})\b/);
+  if (match) {
+    return { date: normalizeDate(Number(match[1]), Number(match[2]), Number(match[3])), raw: match[0], index: match.index };
+  }
+
+  match = text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+  if (match) {
+    const month = Number(match[1]);
+    const day = Number(match[2]);
+    let year = match[3] ? Number(match[3]) : inferredYear(month, day, ctx);
+    if (year < 100) year += 2000;
+    return { date: normalizeDate(year, month, day), raw: match[0], index: match.index };
+  }
+
+  match = text.match(/\b(january|february|march|april|may|june|july|august|september|sept|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})(?:,\s*(20\d{2}))?\b/i);
+  if (!match) return { date: null, raw: null, index: -1 };
+  const month = MONTH_NUMBERS[match[1].toLowerCase()];
+  const day = Number(match[2]);
+  const year = match[3] ? Number(match[3]) : inferredYear(month, day, ctx);
+  return { date: normalizeDate(year, month, day), raw: match[0], index: match.index };
+}
+
+function clockTime(hourValue, minuteValue, meridiem) {
+  let hour = Number(hourValue);
+  if (hour < 1 || hour > 12) return null;
+  if (meridiem.toLowerCase() === 'am') {
+    if (hour === 12) hour = 0;
+  } else if (hour !== 12) {
+    hour += 12;
+  }
+  return `${String(hour).padStart(2, '0')}:${minuteValue || '00'}`;
+}
+
+function parseEventTime(text) {
+  const range = text.match(/\b(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\s*(?:-|–|—|to)\s*(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
+  if (range) {
+    return {
+      startTime: clockTime(range[1], range[2], range[3]),
+      endTime: clockTime(range[4], range[5], range[6]),
+      raw: range[0],
+    };
+  }
+  const single = text.match(/\b(?:at\s+)?(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
+  if (!single) return { startTime: null, endTime: null, raw: null };
+  return { startTime: clockTime(single[1], single[2], single[3]), endTime: null, raw: single[0] };
+}
+
+function labeledValue(text, label) {
+  const match = text.match(new RegExp(`(?:^|[|;])\\s*${label}\\s*:\\s*([^|;]+)`, 'i'));
+  return match ? match[1].trim() : null;
+}
+
+function matchEvent(text, ctx) {
+  const { tag, body } = stripTag(text);
+  const tagged = tag === 'event' || tag === 'booking';
+  const hasEventNoun = /\b(event|booking|wedding|baby shower|anniversary|private dinner|catering|party|reception)\b/i.test(body);
+  if (!tagged && !hasEventNoun) return null;
+
+  const prepMarker = body.match(/(?:^|[|;])\s*prep\s*:\s*/i);
+  const serviceText = prepMarker ? body.slice(0, prepMarker.index) : body;
+  const prepText = prepMarker ? body.slice(prepMarker.index + prepMarker[0].length) : '';
+  const serviceDate = parseEventDate(serviceText, ctx);
+  const serviceTime = parseEventTime(serviceText);
+  const prepDate = parseEventDate(prepText, ctx);
+  const prepTime = parseEventTime(prepText);
+  const guestsMatch = serviceText.match(/\b(\d+)\s+guests?\b/i)
+    || serviceText.match(/(?:^|[|;])\s*guests?\s*:\s*(\d+)\b/i);
+  const explicitTitle = labeledValue(body, 'title');
+  const titleCandidates = serviceText
+    .split('|')
+    .map((section) => section.trim())
+    .filter((section) => section && !/^(?:date|time|location|guests?|menu)\s*:/i.test(section));
+  const cleanedTitleCandidates = titleCandidates.map((candidate) => {
+    let cleaned = candidate;
+    if (serviceDate.raw) cleaned = cleaned.replace(serviceDate.raw, ' ');
+    if (serviceTime.raw) cleaned = cleaned.replace(serviceTime.raw, ' ');
+    return cleaned
+      .replace(/^\s*(?:title\s*:|on\s+)/i, '')
+      .replace(/^\s*(?:sun(?:day)?|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?)\b[\s,]*/i, '')
+      .replace(/^[\s,;|:-]+|[\s,;|:-]+$/g, '')
+      .trim();
+  });
+  const title = (explicitTitle || cleanedTitleCandidates.find((candidate) => candidate && !/^event$/i.test(candidate)) || 'Untitled event')
+    .slice(0, 160);
+
+  const status = /\b(booked|confirmed)\b/i.test(serviceText) ? 'confirmed' : 'inquiry';
+  const confidence = tagged ? 0.9 : (serviceDate.date ? 0.68 : 0.45);
+  return {
+    intent: 'event',
+    confidence,
+    fields: {
+      title: title.slice(0, 160),
+      date: serviceDate.date,
+      startTime: serviceTime.startTime,
+      endTime: serviceTime.endTime,
+      location: labeledValue(body, 'location'),
+      guestEstimate: guestsMatch ? Number(guestsMatch[1]) : null,
+      menuSummary: labeledValue(body, 'menu'),
+      prepDate: prepDate.date,
+      prepStartTime: prepTime.startTime,
+      prepEndTime: prepTime.endTime,
+      status,
+      note: body,
+    },
+  };
 }
 
 // ── deterministic matchers ─────────────────────────────────────────────────────
@@ -124,7 +257,7 @@ function matchNote(text) {
   return null;
 }
 
-const MATCHERS = [matchConstraint, matchVendorPrice, matchNewEntity, matchTask, matchNote];
+const MATCHERS = [matchConstraint, matchVendorPrice, matchNewEntity, matchEvent, matchTask, matchNote];
 
 function classifyDeterministic(text, ctx) {
   let best = null;
@@ -140,7 +273,7 @@ function classifyDeterministic(text, ctx) {
 const UNION_SCHEMA = {
   type: 'object',
   properties: {
-    intent: { type: 'string', enum: ['constraint_correction', 'vendor_price', 'task', 'new_entity', 'append_note', 'trash', 'needs_human'] },
+    intent: { type: 'string', enum: ['constraint_correction', 'vendor_price', 'event', 'task', 'new_entity', 'append_note', 'trash', 'needs_human'] },
     customerRef: { type: ['string', 'null'], description: 'Customer name/email for constraint_correction' },
     corrections: {
       type: ['array', 'null'],
@@ -163,7 +296,17 @@ const UNION_SCHEMA = {
     vendorRef: { type: ['string', 'null'] },
     entityType: { type: ['string', 'null'] },
     name: { type: ['string', 'null'] },
-    title: { type: ['string', 'null'], description: 'task title' },
+    title: { type: ['string', 'null'], description: 'event or task title' },
+    date: { type: ['string', 'null'], description: 'event service date as YYYY-MM-DD' },
+    startTime: { type: ['string', 'null'], description: 'event service start as HH:mm' },
+    endTime: { type: ['string', 'null'], description: 'event service end as HH:mm' },
+    location: { type: ['string', 'null'] },
+    guestEstimate: { type: ['number', 'null'] },
+    menuSummary: { type: ['string', 'null'] },
+    prepDate: { type: ['string', 'null'], description: 'prep date as YYYY-MM-DD' },
+    prepStartTime: { type: ['string', 'null'], description: 'prep start as HH:mm' },
+    prepEndTime: { type: ['string', 'null'], description: 'prep end as HH:mm' },
+    status: { type: ['string', 'null'], enum: ['inquiry', 'tentative', 'confirmed', 'scheduled', null] },
     note: { type: ['string', 'null'] },
     confidence: { type: 'number' },
     rationale: { type: 'string' },
@@ -182,6 +325,7 @@ INTENTS:
 - constraint_correction: a customer's dietary change (avoid/prefer/allergy). Fill customerRef + corrections[]. severity: medical=allergy/intolerance, avoid=firm no, preference=mild. validUntil if time-boxed ("this month").
 - vendor_price: an ingredient price from a vendor. Fill item, unit, priceCents, vendorRef.
 - task: a to-do/reminder. Fill title.
+- event: a catering/private-chef booking with a service date. Fill title, date, service start/end, location, guestEstimate, menuSummary, prep date/start/end, and status. Leave unknown fields null; never invent dates or times.
 - new_entity: a vendor/customer/contact to remember. Fill entityType + name.
 - append_note: a freeform note. Fill note.
 - trash: noise/irrelevant.
@@ -224,4 +368,4 @@ async function classify(text, ctx = {}) {
   return { intent: 'needs_human', confidence: 0.2, fields: {}, via: 'no-llm' };
 }
 
-module.exports = { classify, classifyDeterministic, LLM_FALLBACK_THRESHOLD };
+module.exports = { classify, classifyDeterministic, matchEvent, parseEventDate, parseEventTime, LLM_FALLBACK_THRESHOLD };

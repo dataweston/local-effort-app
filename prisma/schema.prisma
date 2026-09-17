@@ -117,96 +117,96 @@ enum UserRole {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  email      String    @unique
-  role       UserRole  @default(member)
-  customerId String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  overrides  UserPriceOverride[]
-  orders     Order[]
-  feedback   DishFeedback[]
-  chefNotes  ChefNote[]
-  hubProfile HubProfile?
-  hubInvitesSent HubInvite[] @relation("hubInviteSentBy")
-  hubInvitesAccepted HubInvite[] @relation("hubInviteAcceptedBy")
-  hubDocuments HubDocument[] @relation("hubDocumentCreatedBy")
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  role               UserRole            @default(member)
+  customerId         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  customer           Customer?           @relation(fields: [customerId], references: [id])
+  overrides          UserPriceOverride[]
+  orders             Order[]
+  feedback           DishFeedback[]
+  chefNotes          ChefNote[]
+  hubProfile         HubProfile?
+  hubInvitesSent     HubInvite[]         @relation("hubInviteSentBy")
+  hubInvitesAccepted HubInvite[]         @relation("hubInviteAcceptedBy")
+  hubDocuments       HubDocument[]       @relation("hubDocumentCreatedBy")
 }
 
 model Customer {
-  id               String                  @id @default(uuid())
-  slug             String                  @unique
-  name             String?
-  planRulesJson    Json?
-  priceTierDefault PriceTier?
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-  users            User[]
-  orders           Order[]
-  overrides        CustomerPriceOverride[]
-  visibility       DishVisibility[]
-  plans            CustomerPlan[]
-  profile          CustomerProfile?
-  commercialAgreements CommercialAgreement[]
+  id                      String                   @id @default(uuid())
+  slug                    String                   @unique
+  name                    String?
+  planRulesJson           Json?
+  priceTierDefault        PriceTier?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  users                   User[]
+  orders                  Order[]
+  overrides               CustomerPriceOverride[]
+  visibility              DishVisibility[]
+  plans                   CustomerPlan[]
+  profile                 CustomerProfile?
+  commercialAgreements    CommercialAgreement[]
   commercialSubscriptions CommercialSubscription[]
-  commercialOrders CommercialOrder[]
+  commercialOrders        CommercialOrder[]
 }
 
 model Dish {
-  id          String                  @id @default(uuid())
-  title       String
-  description String?
-  tags        String[]                @default([])
-  categories  String[]                @default([])
-  allergens   String[]                @default([])
-  status      String                  @default("draft")
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  menuItems   MenuWeekItem[]
-  prices      DishPrice[]
-  overrides   CustomerPriceOverride[]
+  id            String                  @id @default(uuid())
+  title         String
+  description   String?
+  tags          String[]                @default([])
+  categories    String[]                @default([])
+  allergens     String[]                @default([])
+  status        String                  @default("draft")
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  menuItems     MenuWeekItem[]
+  prices        DishPrice[]
+  overrides     CustomerPriceOverride[]
   userOverrides UserPriceOverride[]
-  visibility  DishVisibility[]
-  sourceLinks DishSourceLink[]
-  orderItems  OrderItem[]
-  drafts      DishDraft[]
-  feedback    DishFeedback[]
+  visibility    DishVisibility[]
+  sourceLinks   DishSourceLink[]
+  orderItems    OrderItem[]
+  drafts        DishDraft[]
+  feedback      DishFeedback[]
 }
 
 model MenuWeek {
-  id         String                  @id @default(uuid())
-  weekStart  DateTime
-  cutoffAt   DateTime
-  status     String                  @default("draft")
-  createdAt  DateTime                @default(now())
-  updatedAt  DateTime                @updatedAt
-  items      MenuWeekItem[]
-  sections   MenuWeekSection[]
-  prices     DishPrice[]
-  overrides  CustomerPriceOverride[]
-  visibility DishVisibility[]
-  orders     Order[]
-  plans      CustomerPlan[]
+  id            String                  @id @default(uuid())
+  weekStart     DateTime
+  cutoffAt      DateTime
+  status        String                  @default("draft")
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  items         MenuWeekItem[]
+  sections      MenuWeekSection[]
+  prices        DishPrice[]
+  overrides     CustomerPriceOverride[]
+  visibility    DishVisibility[]
+  orders        Order[]
+  plans         CustomerPlan[]
   userOverrides UserPriceOverride[]
-  feedback   DishFeedback[]
+  feedback      DishFeedback[]
 }
 
 model MenuWeekItem {
-  id            String   @id @default(uuid())
-  menuWeekId    String
-  dishId        String
-  sectionId     String?
-  isVisible     Boolean  @default(true)
-  isAddon       Boolean  @default(false)
-  includedInPlan Boolean @default(false)
-  sortOrder     Int      @default(0)
-  capacityLimit Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  menuWeek      MenuWeek @relation(fields: [menuWeekId], references: [id])
-  dish          Dish     @relation(fields: [dishId], references: [id])
-  section       MenuWeekSection? @relation(fields: [sectionId], references: [id])
+  id             String           @id @default(uuid())
+  menuWeekId     String
+  dishId         String
+  sectionId      String?
+  isVisible      Boolean          @default(true)
+  isAddon        Boolean          @default(false)
+  includedInPlan Boolean          @default(false)
+  sortOrder      Int              @default(0)
+  capacityLimit  Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  menuWeek       MenuWeek         @relation(fields: [menuWeekId], references: [id])
+  dish           Dish             @relation(fields: [dishId], references: [id])
+  section        MenuWeekSection? @relation(fields: [sectionId], references: [id])
 
   @@unique([menuWeekId, dishId])
 }
@@ -271,54 +271,54 @@ model UserPriceOverride {
 }
 
 model MenuWeekSection {
-  id         String       @id @default(uuid())
+  id         String         @id @default(uuid())
   menuWeekId String
   title      String
   slug       String
-  sortOrder  Int          @default(0)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  menuWeek   MenuWeek     @relation(fields: [menuWeekId], references: [id])
+  sortOrder  Int            @default(0)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  menuWeek   MenuWeek       @relation(fields: [menuWeekId], references: [id])
   items      MenuWeekItem[]
 
   @@unique([menuWeekId, slug])
 }
 
 model CustomerPlan {
-  id               String    @id @default(uuid())
+  id               String   @id @default(uuid())
   customerId       String
   menuWeekId       String
   basePriceCents   Int
-  deliveryFeeCents Int       @default(0)
+  deliveryFeeCents Int      @default(0)
   notes            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  customer         Customer  @relation(fields: [customerId], references: [id])
-  menuWeek         MenuWeek  @relation(fields: [menuWeekId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  customer         Customer @relation(fields: [customerId], references: [id])
+  menuWeek         MenuWeek @relation(fields: [menuWeekId], references: [id])
 
   @@unique([customerId, menuWeekId])
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  menuWeekId      String
-  customerId      String
-  userId          String?
-  submittedAt     DateTime?
-  status          String      @default("draft")
-  squarePaymentId String?
-  totalsCents     Int?
-  basePriceCents  Int?
+  id               String                  @id @default(uuid())
+  menuWeekId       String
+  customerId       String
+  userId           String?
+  submittedAt      DateTime?
+  status           String                  @default("draft")
+  squarePaymentId  String?
+  totalsCents      Int?
+  basePriceCents   Int?
   deliveryFeeCents Int?
-  notes           String?
-  tier            PriceTier?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  menuWeek        MenuWeek    @relation(fields: [menuWeekId], references: [id])
-  customer        Customer    @relation(fields: [customerId], references: [id])
-  user            User?       @relation(fields: [userId], references: [id])
-  items           OrderItem[]
-  paymentAttempts FinancePaymentAttempt[]
+  notes            String?
+  tier             PriceTier?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  menuWeek         MenuWeek                @relation(fields: [menuWeekId], references: [id])
+  customer         Customer                @relation(fields: [customerId], references: [id])
+  user             User?                   @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+  paymentAttempts  FinancePaymentAttempt[]
 }
 
 model OrderItem {
@@ -333,6 +333,136 @@ model OrderItem {
   updatedAt      DateTime @updatedAt
   order          Order    @relation(fields: [orderId], references: [id])
   dish           Dish     @relation(fields: [dishId], references: [id])
+}
+
+// Canonical weekly meal-prep operations. Hub notes and planner cards are source
+// evidence; these records are the regenerable production state.
+model MealPrepMenuCycle {
+  id                 String                    @id @default(uuid())
+  weekStart          String                    @unique
+  status             String                    @default("draft")
+  sourceDocumentId   String?
+  sourceUpdatedAt    DateTime?
+  sourceBodyHash     String?
+  sourceSnapshot     Json
+  lastSyncedAt       DateTime?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  items              MealPrepMenuCycleItem[]
+  customerMenus      MealPrepCustomerMenu[]
+  productionBatches  MealPrepProductionBatch[]
+
+  @@index([status, weekStart])
+}
+
+model MealPrepMenuCycleItem {
+  id             String                     @id @default(uuid())
+  menuCycleId    String
+  stableKey      String
+  status         String                     @default("active")
+  dishEntityId   String?
+  name           String
+  description    String?
+  meal           String
+  sortOrder      Int                        @default(0)
+  sourceHash     String
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  menuCycle      MealPrepMenuCycle          @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
+  customerItems  MealPrepCustomerMenuItem[]
+
+  @@unique([menuCycleId, stableKey])
+  @@index([menuCycleId, status, sortOrder])
+}
+
+model MealPrepCustomerMenu {
+  id                    String                     @id @default(uuid())
+  menuCycleId           String
+  sourcePlannerCardId   String                     @unique
+  customerId            String?
+  brainCustomerEntityId String?
+  customerName          String
+  serviceDate           String
+  status                String                     @default("planned")
+  revenueCents          Int                        @default(0)
+  planSnapshot          Json?
+  requirements          Json
+  sourceSnapshot        Json
+  sourceHash            String
+  lastSyncedAt          DateTime?
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  menuCycle             MealPrepMenuCycle          @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
+  items                 MealPrepCustomerMenuItem[]
+  changeRequests        MealPrepChangeRequest[]
+
+  @@index([menuCycleId, status, serviceDate])
+  @@index([customerId])
+  @@index([brainCustomerEntityId])
+}
+
+model MealPrepCustomerMenuItem {
+  id                 String                    @id @default(uuid())
+  customerMenuId     String
+  menuCycleItemId    String?
+  stableKey          String
+  dishEntityId       String?
+  dishName           String
+  meal               String
+  quantity           Int                       @default(1)
+  diet               String?
+  station            String?
+  chef               String?
+  prepDay            String?
+  notes              String?
+  origin             String                    @default("chef")
+  chefEditedAt       DateTime?
+  sourceHash         String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  customerMenu       MealPrepCustomerMenu      @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
+  menuCycleItem      MealPrepMenuCycleItem?     @relation(fields: [menuCycleItemId], references: [id], onDelete: SetNull)
+
+  @@unique([customerMenuId, stableKey])
+  @@index([customerMenuId, meal])
+  @@index([dishEntityId])
+}
+
+model MealPrepChangeRequest {
+  id                String                @id @default(uuid())
+  customerMenuId    String
+  requestKey        String
+  status            String                @default("open")
+  requestedChange   String
+  source            String                @default("operator")
+  sourceReference   String?
+  requestedAt       DateTime              @default(now())
+  resolvedAt        DateTime?
+  resolution        String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  customerMenu      MealPrepCustomerMenu  @relation(fields: [customerMenuId], references: [id], onDelete: Cascade)
+
+  @@unique([customerMenuId, requestKey])
+  @@index([customerMenuId, status, requestedAt])
+}
+
+model MealPrepProductionBatch {
+  id             String                 @id @default(uuid())
+  menuCycleId    String
+  version        Int
+  status         String
+  sourceHash     String
+  operatorSheet  Json
+  blockers       Json
+  plannerDiff    Json
+  generatedAt    DateTime               @default(now())
+  createdAt      DateTime               @default(now())
+  menuCycle      MealPrepMenuCycle      @relation(fields: [menuCycleId], references: [id], onDelete: Cascade)
+
+  @@unique([menuCycleId, version])
+  @@unique([menuCycleId, sourceHash])
+  @@index([menuCycleId, generatedAt])
 }
 
 // ============================================================================
@@ -404,7 +534,7 @@ model CommercialSubscription {
 }
 
 model CommercialOrder {
-  id              String                   @id @default(uuid())
+  id              String                     @id @default(uuid())
   agreementId     String?
   subscriptionId  String?
   customerId      String?
@@ -412,8 +542,8 @@ model CommercialOrder {
   customerEmail   String?
   channel         String
   businessLineKey String?
-  status          String                   @default("draft")
-  currency        String                   @default("USD")
+  status          String                     @default("draft")
+  currency        String                     @default("USD")
   subtotalCents   Int?
   totalCents      Int
   bookedAt        DateTime?
@@ -423,15 +553,16 @@ model CommercialOrder {
   sourceSystem    String
   sourceId        String
   metadata        Json?
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  agreement       CommercialAgreement?     @relation(fields: [agreementId], references: [id])
-  subscription    CommercialSubscription?  @relation(fields: [subscriptionId], references: [id])
-  customer        Customer?                @relation(fields: [customerId], references: [id])
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  agreement       CommercialAgreement?       @relation(fields: [agreementId], references: [id])
+  subscription    CommercialSubscription?    @relation(fields: [subscriptionId], references: [id])
+  customer        Customer?                  @relation(fields: [customerId], references: [id])
   lines           CommercialOrderLine[]
   invoices        CommercialInvoice[]
   paymentAttempts FinancePaymentAttempt[]
   allocations     FinancePaymentAllocation[]
+  costObligations FinanceCostObligation[]
 
   @@unique([sourceSystem, sourceId])
   @@index([customerId, status])
@@ -560,6 +691,54 @@ model FinancePaymentAllocation {
   @@index([orderId])
 }
 
+model FinanceCostObligation {
+  id                String               @id @default(uuid())
+  commercialOrderId String?
+  plannerCardId     String?
+  obligationType    String               @default("event_cost")
+  status            String               @default("planned")
+  counterpartyName  String?
+  description       String
+  currency          String               @default("USD")
+  amountCents       Int
+  outstandingCents  Int
+  committedAt       DateTime?
+  serviceAt         DateTime?
+  dueAt             DateTime?
+  sourceSystem      String
+  sourceId          String
+  metadata          Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  commercialOrder   CommercialOrder?     @relation(fields: [commercialOrderId], references: [id])
+  payments          FinanceCostPayment[]
+
+  @@unique([sourceSystem, sourceId])
+  @@index([commercialOrderId, status])
+  @@index([plannerCardId])
+  @@index([status, dueAt])
+  @@index([serviceAt])
+}
+
+model FinanceCostPayment {
+  id                String                @id @default(uuid())
+  obligationId      String
+  provider          String
+  externalPaymentId String
+  status            String                @default("completed")
+  currency          String                @default("USD")
+  amountCents       Int
+  occurredAt        DateTime
+  metadata          Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  obligation        FinanceCostObligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, externalPaymentId])
+  @@index([obligationId])
+  @@index([occurredAt])
+}
+
 model RecipeIngest {
   id             String      @id @default(uuid())
   source         String
@@ -601,45 +780,72 @@ model DishSourceLink {
 }
 
 model PlannerCard {
-  id           String   @id @default(uuid())
-  supabaseUid  String
-  templateId   String?
-  title        String
-  date         String
-  dayOfWeek    String
-  zone         String   @default("timed")
-  objectType   String?
-  people       String[] @default([])
-  startTime    String?
-  endTime      String?
-  revenue      Int      @default(0)
-  revenueCents Int?
-  cashReceivedCents Int @default(0)
-  cost         Int      @default(0)
-  costCents    Int?
-  costPerHour  Int?
-  costPerHourCents Int?
-  financialStatus String?
-  financialSource String?
+  id                String   @id @default(uuid())
+  supabaseUid       String
+  templateId        String?
+  title             String
+  date              String
+  dayOfWeek         String
+  zone              String   @default("timed")
+  objectType        String?
+  people            String[] @default([])
+  startTime         String?
+  endTime           String?
+  revenue           Int      @default(0)
+  revenueCents      Int?
+  cashReceivedCents Int      @default(0)
+  cost              Int      @default(0)
+  costCents         Int?
+  costPerHour       Int?
+  costPerHourCents  Int?
+  financialStatus   String?
+  financialSource   String?
   financialMetadata Json?
-  notes         String?
-  optional     Boolean  @default(false)
-  enabled      Boolean  @default(true)
-  effectTarget String?
-  effectType   String?
-  sortOrder    Float    @default(0)
-  status       String   @default("todo")
-  projectId    String?
-  assigneeId   String?
-  priority     Int      @default(0)
-  dueDate      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  notes             String?
+  optional          Boolean  @default(false)
+  enabled           Boolean  @default(true)
+  effectTarget      String?
+  effectType        String?
+  sortOrder         Float    @default(0)
+  status            String   @default("todo")
+  projectId         String?
+  assigneeId        String?
+  priority          Int      @default(0)
+  dueDate           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([supabaseUid])
   @@index([supabaseUid, date])
   @@index([supabaseUid, templateId])
   @@index([supabaseUid, projectId])
+}
+
+model PlannerWorkBlock {
+  id                String    @id @default(uuid())
+  plannerCardId     String
+  supabaseUid       String
+  blockType         String
+  title             String
+  date              String?
+  startTime         String?
+  endTime           String?
+  status            String    @default("needs_schedule")
+  location          String?
+  sourceFingerprint String
+  googleCalendarId  String?
+  googleEventId     String?
+  googleEtag        String?
+  syncStatus        String    @default("pending")
+  syncError         String?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([plannerCardId, blockType])
+  @@unique([googleCalendarId, googleEventId])
+  @@index([supabaseUid, date])
+  @@index([supabaseUid, syncStatus])
 }
 
 model PlannerProject {
@@ -699,16 +905,16 @@ model GoogleCalendarToken {
 }
 
 model CustomerProfile {
-  id               String   @id @default(uuid())
-  customerId       String   @unique
-  householdSize    String?
-  phone            String?
-  address          String?
-  deliveryNotes    String?
-  intakeSurvey     Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  customer         Customer @relation(fields: [customerId], references: [id])
+  id            String   @id @default(uuid())
+  customerId    String   @unique
+  householdSize String?
+  phone         String?
+  address       String?
+  deliveryNotes String?
+  intakeSurvey  Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  customer      Customer @relation(fields: [customerId], references: [id])
 }
 
 model DishFeedback {
@@ -737,11 +943,11 @@ model ChefNote {
 }
 
 model HubOrganization {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  slug      String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug      String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   spaces    HubSpace[]
 
   memberships       Membership[]
@@ -761,7 +967,7 @@ model HubProfile {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user              User                         @relation(fields: [userId], references: [id])
   memberships       Membership[]
   relationshipRoles MembershipRelationshipRole[]
 
@@ -770,19 +976,19 @@ model HubProfile {
 }
 
 model HubInvite {
-  id              String    @id @default(uuid())
-  token           String    @unique
-  email           String
-  accessLevel     String    @default("staff")
-  displayNameHint String?
-  invitedByUserId String?
+  id               String    @id @default(uuid())
+  token            String    @unique
+  email            String
+  accessLevel      String    @default("staff")
+  displayNameHint  String?
+  invitedByUserId  String?
   acceptedByUserId String?
-  acceptedAt      DateTime?
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  acceptedAt       DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  invitedBy User? @relation("hubInviteSentBy", fields: [invitedByUserId], references: [id])
+  invitedBy  User? @relation("hubInviteSentBy", fields: [invitedByUserId], references: [id])
   acceptedBy User? @relation("hubInviteAcceptedBy", fields: [acceptedByUserId], references: [id])
 
   @@index([email])
@@ -790,16 +996,16 @@ model HubInvite {
 }
 
 model HubLocalistWindow {
-  id             String    @id @default(uuid())
-  token          String    @unique
-  active         Boolean   @default(true)
-  expiresAt      DateTime
+  id              String    @id @default(uuid())
+  token           String    @unique
+  active          Boolean   @default(true)
+  expiresAt       DateTime
   createdByUserId String?
-  smsCampaignId  Int?
-  smsSentAt      DateTime?
-  smsMessage     String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  smsCampaignId   Int?
+  smsSentAt       DateTime?
+  smsMessage      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([active, expiresAt])
   @@index([createdAt])
@@ -841,26 +1047,26 @@ model HubLocalistOrder {
 }
 
 model HubDocument {
-  id          String   @id @default(uuid())
-  title       String
-  body        String
-  summary     String?
-  visibility  String   @default("staff")
-  category    String   @default("general")
-  tags        String[] @default([])
-  source      String   @default("manual")
-  sourceId    String?
+  id              String   @id @default(uuid())
+  title           String
+  body            String
+  summary         String?
+  visibility      String   @default("staff")
+  category        String   @default("general")
+  tags            String[] @default([])
+  source          String   @default("manual")
+  sourceId        String?
   createdByUserId String?
-  status      String   @default("published")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status          String   @default("published")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   createdBy User? @relation("hubDocumentCreatedBy", fields: [createdByUserId], references: [id])
 
+  @@unique([source, sourceId])
   @@index([visibility])
   @@index([category])
   @@index([status])
-  @@unique([source, sourceId])
 }
 
 model HubShiftClaim {
@@ -907,7 +1113,7 @@ model HubSpace {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization HubOrganization @relation(fields: [organizationId], references: [id])
+  organization HubOrganization      @relation(fields: [organizationId], references: [id])
   memberships  HubSpaceMembership[]
 
   @@unique([organizationId, key])
@@ -965,15 +1171,15 @@ model HubPublicRateLimitBucket {
 }
 
 model ObjectThreadMessage {
-  id         String    @id @default(uuid())
-  threadId   String
-  senderId   String?
-  senderRole String?
-  body       String
+  id          String    @id @default(uuid())
+  threadId    String
+  senderId    String?
+  senderRole  String?
+  body        String
   attachments Json?
-  createdAt  DateTime  @default(now())
-  editedAt   DateTime?
-  deletedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  editedAt    DateTime?
+  deletedAt   DateTime?
 
   thread ObjectThread @relation(fields: [threadId], references: [id])
 
@@ -982,27 +1188,27 @@ model ObjectThreadMessage {
 }
 
 model HubCapture {
-  id              String   @id @default(uuid())
-  organizationId  String?
-  spaceId         String?
-  objectId        String?
-  objectType      String?
-  visibility      String?
-  source          String
-  sourceId        String?
-  actorId         String?
-  actorRole       String?
-  occurredAt      DateTime @default(now())
-  rawContent      String
-  attachments     Json?
-  clientCreatedAt DateTime?
-  offlineQueueId  String?
-  captureIntent   String
-  ledgerEventId   String?
-  status          String   @default("captured")
+  id                 String    @id @default(uuid())
+  organizationId     String?
+  spaceId            String?
+  objectId           String?
+  objectType         String?
+  visibility         String?
+  source             String
+  sourceId           String?
+  actorId            String?
+  actorRole          String?
+  occurredAt         DateTime  @default(now())
+  rawContent         String
+  attachments        Json?
+  clientCreatedAt    DateTime?
+  offlineQueueId     String?
+  captureIntent      String
+  ledgerEventId      String?
+  status             String    @default("captured")
   routingSuggestions Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([source, sourceId])
   @@index([organizationId, spaceId])
@@ -1100,21 +1306,56 @@ model LedgerEvent {
   @@index([occurredAt])
   @@index([tombstonedAt])
 }
+// Lossless source corpus. LedgerEvent records that a source event happened;
+// this table preserves the source bytes and searchable text needed to verify
+// every derived claim. Raw bytes are gzip-compressed by the writer and
+// contentHash is always computed over the uncompressed source.
+model BrainSourceDocument {
+  id               String   @id @default(uuid())
+  source           String
+  sourceId         String
+  parentSourceId   String?
+  sourceUrl        String?
+  mediaType        String
+  title            String?
+  headers          Json?
+  textContent      String   @default("")
+  htmlContent      String?
+  attachments      Json?
+  rawContent       Bytes
+  rawEncoding      String   @default("gzip")
+  contentHash      String
+  rawByteLength    Int
+  storedByteLength Int
+  captureStatus    String   @default("complete")
+  extractionStatus String   @default("complete")
+  extractionVersion Int     @default(1)
+  metadata         Json?
+  occurredAt       DateTime
+  capturedAt       DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([source, sourceId])
+  @@index([source, parentSourceId])
+  @@index([occurredAt])
+  @@index([captureStatus, extractionStatus])
+}
+
 
 // ============================================================================
 // COMPANY BRAIN — Layer 2: Graph
 // ============================================================================
 
 model BrainEntity {
-  id          String    @id @default(uuid())
-  entityType  String
-  name        String
+  id            String    @id @default(uuid())
+  entityType    String
+  name          String
   canonicalName String?
-  properties  Json?
-  status      String    @default("active")
-  snoozeUntil DateTime?
-  visibility  String    @default("private")
-  shareToken  String?   @unique
+  properties    Json?
+  status        String    @default("active")
+  snoozeUntil   DateTime?
+  visibility    String    @default("private")
+  shareToken    String?   @unique
 
   tombstonedAt    DateTime?
   tombstoneReason String?
@@ -1145,11 +1386,11 @@ model BrainEntity {
 }
 
 model BrainEntityAlias {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   entityId  String
   alias     String
   source    String
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   entity BrainEntity @relation(fields: [entityId], references: [id])
 
@@ -1158,10 +1399,10 @@ model BrainEntityAlias {
 }
 
 model BrainAssertion {
-  id       String @id @default(uuid())
-  srcId    String
-  dstId    String
-  relType  String
+  id      String @id @default(uuid())
+  srcId   String
+  dstId   String
+  relType String
 
   metadata Json?
 
@@ -1170,10 +1411,10 @@ model BrainAssertion {
   knownFrom  DateTime  @default(now())
   knownUntil DateTime?
 
-  confidence  Float   @default(1.0)
-  sourceType  String
-  sourceId    String?
-  createdBy   String
+  confidence Float   @default(1.0)
+  sourceType String
+  sourceId   String?
+  createdBy  String
 
   supersededBy     String?
   supersededAt     DateTime?
@@ -1237,27 +1478,27 @@ model BrainInference {
 }
 
 model BrainSyncCursor {
-  id              String   @id @default(uuid())
-  source          String
-  stream          String
-  windowStart     DateTime
-  windowEnd       DateTime
-  pageToken       String?
-  status          String   @default("pending")
-  processedCount  Int      @default(0)
-  errorCount      Int      @default(0)
-  retryAfter      DateTime?
-  lastObservedAt  DateTime?
-  metadata        Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String    @id @default(uuid())
+  source         String
+  stream         String
+  windowStart    DateTime
+  windowEnd      DateTime
+  pageToken      String?
+  status         String    @default("pending")
+  processedCount Int       @default(0)
+  errorCount     Int       @default(0)
+  retryAfter     DateTime?
+  lastObservedAt DateTime?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([source, stream, windowStart, windowEnd])
   @@index([source, stream, status, windowEnd])
 }
 
 model PartnerReviewDecision {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   vendorEntityId  String
   taskType        String
   fieldName       String?
@@ -1271,29 +1512,29 @@ model PartnerReviewDecision {
   reviewer        String
   supersedesId    String?
   revertedAt      DateTime?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
 
   @@index([vendorEntityId, taskType, createdAt])
   @@index([taskType, fieldName, action])
 }
 
 model PartnerLearnedRule {
-  id              String   @id @default(uuid())
-  taskType        String
-  scopeType       String
-  scopeKey        String
-  conditions      Json
-  outcome         Json
-  supportCount    Int      @default(1)
-  successCount    Int      @default(1)
-  failureCount    Int      @default(0)
-  confidence      Float    @default(1)
-  enabled         Boolean  @default(true)
-  createdBy       String
-  lastAppliedAt   DateTime?
-  disabledAt      DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String    @id @default(uuid())
+  taskType      String
+  scopeType     String
+  scopeKey      String
+  conditions    Json
+  outcome       Json
+  supportCount  Int       @default(1)
+  successCount  Int       @default(1)
+  failureCount  Int       @default(0)
+  confidence    Float     @default(1)
+  enabled       Boolean   @default(true)
+  createdBy     String
+  lastAppliedAt DateTime?
+  disabledAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([taskType, scopeType, scopeKey])
   @@index([taskType, enabled, confidence])
@@ -1304,12 +1545,12 @@ model PartnerLearnedRule {
 // ============================================================================
 
 model BrainInboxItem {
-  id             String      @id @default(uuid())
+  id             String    @id @default(uuid())
   rawContent     String
   source         String
   attachments    Json?
-  capturedAt     DateTime    @default(now())
-  status         String      @default("pending")
+  capturedAt     DateTime  @default(now())
+  status         String    @default("pending")
   processedAt    DateTime?
   resultEntityId String?
   triageHint     Json?
@@ -1332,19 +1573,19 @@ model BrainApiToken {
 // Owner-authored interview evidence is intentionally separate from the ledger,
 // graph, inbox, inference, and operational system-of-record models.
 model BrainOwnerInterviewSession {
-  id                  String   @id @default(uuid())
-  interviewKey        String
-  definitionVersion   Int
-  definitionSnapshot  Json
-  respondentUserId    String
-  respondentEmail     String
-  status              String   @default("in_progress")
-  currentQuestionId   String
-  revision            Int      @default(0)
-  startedAt           DateTime @default(now())
-  submittedAt         DateTime?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String    @id @default(uuid())
+  interviewKey       String
+  definitionVersion  Int
+  definitionSnapshot Json
+  respondentUserId   String
+  respondentEmail    String
+  status             String    @default("in_progress")
+  currentQuestionId  String
+  revision           Int       @default(0)
+  startedAt          DateTime  @default(now())
+  submittedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   answers BrainOwnerInterviewAnswer[]
 
@@ -1353,26 +1594,26 @@ model BrainOwnerInterviewSession {
 }
 
 model BrainOwnerInterviewAnswer {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   sessionId       String
   questionId      String
   revision        Int
   responseText    String
   knowledgeKind   String?
   confidence      String?
-  applicability   String[] @default([])
+  applicability   String[]  @default([])
   asOfDate        DateTime?
   sourceReference String?
   caveats         String?
-  sensitivity     String   @default("confidential_business")
-  disposition     String   @default("draft")
-  supersedesId    String?  @unique
+  sensitivity     String    @default("confidential_business")
+  disposition     String    @default("draft")
+  supersedesId    String?   @unique
   supersededAt    DateTime?
   submittedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  session      BrainOwnerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  session      BrainOwnerInterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Restrict)
   supersedes   BrainOwnerInterviewAnswer?  @relation("BrainOwnerInterviewAnswerRevision", fields: [supersedesId], references: [id], onDelete: Restrict)
   supersededBy BrainOwnerInterviewAnswer[] @relation("BrainOwnerInterviewAnswerRevision")
 
@@ -1401,14 +1642,14 @@ model BrainSeedReview {
 model BrainJobRun {
   id                    String    @id @default(uuid())
   jobName               String
-  status                String    // 'success' | 'error' | 'partial'
+  status                String // 'success' | 'error' | 'partial'
   startedAt             DateTime  @default(now())
   finishedAt            DateTime?
   durationMs            Int?
   itemsProcessed        Int?
   itemsWritten          Int?
   errorCount            Int       @default(0)
-  expectedIntervalHours Int?      // SLA: flag stale if no success within this window
+  expectedIntervalHours Int? // SLA: flag stale if no success within this window
   detail                Json?
   createdAt             DateTime  @default(now())
 
@@ -1426,28 +1667,29 @@ model BrainJobRun {
 // owner-confirmed tier constants; class rows are seeded from those constants and
 // are never invented here.
 //
-// Nothing reads these tables yet. The migration that creates them is additive so
-// existing membership reads (api-handlers/hub/membership.js) keep working.
+// Hub authorization and the membership page read these tables through the
+// fail-closed membership scope resolver. The legacy roster is import evidence,
+// never an authorization fallback.
 // ---------------------------------------------------------------------------
 
 // A membership tier. `entitlementSet` is the persisted fallback for classes that
 // are not one of the seeded owner-confirmed codes; for seeded codes the code
 // constants are authoritative so a stale row cannot widen access.
 model MembershipClass {
-  id                        String   @id @default(uuid())
-  code                      String   @unique
-  label                     String
-  duesCadence               String
-  duesCents                 Int
-  entitlementSet            String[] @default([])
-  waivedEligible            Boolean  @default(false)
-  accruesCoopCredit         Boolean  @default(false)
-  coopCreditBasisPoints     Int      @default(0)
-  coopCreditCadence         String?
-  coopCreditNonExpiring     Boolean  @default(false)
-  active                    Boolean  @default(true)
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  id                    String   @id @default(uuid())
+  code                  String   @unique
+  label                 String
+  duesCadence           String
+  duesCents             Int
+  entitlementSet        String[] @default([])
+  waivedEligible        Boolean  @default(false)
+  accruesCoopCredit     Boolean  @default(false)
+  coopCreditBasisPoints Int      @default(0)
+  coopCreditCadence     String?
+  coopCreditNonExpiring Boolean  @default(false)
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   memberships Membership[]
 
@@ -1458,23 +1700,23 @@ model MembershipClass {
 // records which system is authoritative for dues; Square remains current
 // authority until an explicit owner-approved provider migration.
 model Membership {
-  id                   String    @id @default(uuid())
-  profileId            String
-  organizationId       String
-  classId              String
-  status               String    @default("pending")
-  billingAuthority     String    @default("square")
-  activatedAt          DateTime?
-  deactivatedAt        DateTime?
-  agreementAcceptedAt  DateTime?
-  agreementVersion     String?
-  externalRosterId     String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                  String    @id @default(uuid())
+  profileId           String
+  organizationId      String
+  classId             String
+  status              String    @default("pending")
+  billingAuthority    String    @default("square")
+  activatedAt         DateTime?
+  deactivatedAt       DateTime?
+  agreementAcceptedAt DateTime?
+  agreementVersion    String?
+  externalRosterId    String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  profile      HubProfile      @relation(fields: [profileId], references: [id])
-  organization HubOrganization @relation(fields: [organizationId], references: [id])
-  class        MembershipClass @relation(fields: [classId], references: [id])
+  profile      HubProfile                   @relation(fields: [profileId], references: [id])
+  organization HubOrganization              @relation(fields: [organizationId], references: [id])
+  class        MembershipClass              @relation(fields: [classId], references: [id])
   duesPlans    MembershipDuesPlan[]
   grants       MembershipEntitlementGrant[]
 
@@ -1510,20 +1752,20 @@ model MembershipRelationshipRole {
 // subscription id while Square is billing authority. Co-op credit balance is
 // carried in cents and is non-expiring for the paid tiers.
 model MembershipDuesPlan {
-  id                       String    @id @default(uuid())
-  membershipId             String
-  cadence                  String
-  amountCents              Int
-  status                   String    @default("pending")
-  billingAuthority         String    @default("square")
-  externalSubscriptionRef  String?
-  externalCustomerRef      String?
-  coopCreditBalanceCents   Int       @default(0)
-  coopCreditNonExpiring    Boolean   @default(true)
-  currentPeriodStart       DateTime?
-  currentPeriodEnd         DateTime?
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  id                      String    @id @default(uuid())
+  membershipId            String
+  cadence                 String
+  amountCents             Int
+  status                  String    @default("pending")
+  billingAuthority        String    @default("square")
+  externalSubscriptionRef String?
+  externalCustomerRef     String?
+  coopCreditBalanceCents  Int       @default(0)
+  coopCreditNonExpiring   Boolean   @default(true)
+  currentPeriodStart      DateTime?
+  currentPeriodEnd        DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   membership Membership @relation(fields: [membershipId], references: [id])
 

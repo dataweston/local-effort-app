@@ -7,8 +7,8 @@
  * run; `jobFreshness` reports, per job, when it last succeeded and whether that
  * is within its expected cadence.
  *
- * Wrap a job body with `withJobRun(name, expectedIntervalHours, fn)` — it times
- * the run, captures counts/errors from the returned summary, and records status.
+ * Wrap a job body with `withJobRun(name, fn)` — it times the run, captures
+ * counts/errors from the returned summary, and records status.
  */
 
 const { getPrisma } = require('../utils/prisma');
@@ -27,12 +27,19 @@ const JOB_SLA = {
   'local-budget-sync': 24,
   'cogs-rollup': 24,
   'square-reconcile': 24,
-  'gmail-vendor-sync': 24,
+  'gmail-sync': 24,
   'vendor-payment-reconcile': 24,
   'inference-run': 24,
   'hypothesis-run': 24,
   'triage-run': 24, // runs twice daily; 24h window tolerates one miss
 };
+
+function reportedErrorCount(summary = {}, error = null) {
+  if (Array.isArray(summary.errors)) return summary.errors.length;
+  const value = summary.errorCount ?? summary.errors;
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, value);
+  return error ? 1 : 0;
+}
 
 async function recordJobRun(prisma, { jobName, status, startedAt, summary = {}, error = null }) {
   const finishedAt = new Date();
@@ -52,7 +59,7 @@ async function recordJobRun(prisma, { jobName, status, startedAt, summary = {}, 
           ?? summary.lineItemsSeen
         ),
         itemsWritten: numberOrNull(summary.itemsWritten ?? summary.eventsWritten ?? summary.written ?? summary.edgesWritten),
-        errorCount: Array.isArray(summary.errors) ? summary.errors.length : (error ? 1 : 0),
+        errorCount: reportedErrorCount(summary, error),
         expectedIntervalHours: JOB_SLA[jobName] ?? null,
         detail: clampDetail({ ...summary, ...(error ? { error: String(error).slice(0, 500) } : {}) }),
       },
@@ -80,14 +87,15 @@ function clampDetail(obj) {
 /**
  * Wrap a job function so every invocation is recorded.
  * @param {string} jobName
- * @param {() => Promise<object>} fn — returns a summary object (errors[], counts...)
+ * @param {() => Promise<object>} fn — returns a summary object (errors/counts)
+ * @param {{prismaClient?: object}} options
  */
-async function withJobRun(jobName, fn) {
-  const prisma = getPrisma();
+async function withJobRun(jobName, fn, { prismaClient = null } = {}) {
+  const prisma = prismaClient || getPrisma();
   const startedAt = new Date();
   try {
     const summary = (await fn()) || {};
-    const hasErrors = Array.isArray(summary.errors) && summary.errors.length > 0;
+    const hasErrors = reportedErrorCount(summary) > 0;
     // A job that reports ok:false failed even if it threw nothing — a config
     // no-op (e.g. missing env var) must not count as a success for the SLA.
     const status = summary.ok === false ? 'error' : (hasErrors ? 'partial' : 'success');

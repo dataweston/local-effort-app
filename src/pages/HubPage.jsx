@@ -140,9 +140,12 @@ export default function HubPage() {
   useEffect(() => { loadProfile().catch(() => setProfileLoaded(true)); }, [loadProfile]);
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
 
-  // Real access from the profile (the source of truth for what's permitted).
+  // Real access from the profile and, for Localists, the fail-closed membership
+  // scope returned by the profile endpoint.
+  const membershipEntitlements = profile?.membershipScope?.entitlements || [];
+  const hasMemberArea = membershipEntitlements.includes('hub_member_area');
   const actualIsPrivileged = profileIsActive && (profile.accessLevel === 'privileged' || profile.isPrivileged);
-  const isLocalist = profileIsActive && profile.accessLevel === 'localist';
+  const isLocalist = profileIsActive && profile.isLocalist && hasMemberArea;
   const actualIsCustomer = profileIsActive && profile.accessLevel === 'customer';
 
   // Effective role used to RENDER the Hub. A privileged user can preview the Hub
@@ -159,10 +162,15 @@ export default function HubPage() {
   const securityTab = { id: 'security', label: 'Security at Neon', icon: ShieldCheck };
   // Customer-visible tabs are intentionally limited to their own household data.
   // Chat and People remain staff-only so customers cannot enumerate member names.
-  // Membership is self-scoped (GET /api/hub/membership resolves the viewer's own
-  // email), so both customers and localists get it.
+  // Membership appears only when canonical membership scope grants member-area
+  // access; a customer profile alone does not imply membership.
   const todayTab = tabs[0];
-  const customerTabs = [todayTab, mealPrepTab, foodInputsTab, membershipTab];
+  const customerTabs = [
+    todayTab,
+    mealPrepTab,
+    foodInputsTab,
+    ...(hasMemberArea ? [membershipTab] : []),
+  ];
   const navTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
@@ -259,7 +267,7 @@ export default function HubPage() {
       </>
     );
   }
-  if (!profileIsActive) {
+  if (!profileIsActive || profile.hasHubAccess === false) {
     return (
       <>
         <HubAccessRequired auth={auth} />

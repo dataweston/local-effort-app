@@ -1,0 +1,376 @@
+{
+  "generatedAt": "2026-09-13T21:47:55.426Z",
+  "pages": 4,
+  "payoutTotal": 311,
+  "earliest": "2025-09-19T13:08:37Z",
+  "latest": "2026-09-13T15:03:10Z",
+  "prePayoutCount": 183,
+  "preEntries": [
+    {
+      "entry_id": "poe_PzUz7K6MzGhz420Vtgoz4yck7Uc",
+      "payout_id": "po_96117555-39dd-48a2-a5dd-2cdc6280e24f",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-17T20:28:55Z",
+      "gross": {
+        "amount": -529,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -529,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_69URbI4JAEk1GpZN9tecUMGkMrU",
+      "payout_id": "po_1d9977a0-50e0-4ed8-83c6-00e68eb50468",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-18T00:27:28Z",
+      "gross": {
+        "amount": -352,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -352,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_jD9MXajg1ALWvj-tcR71l1WSpKU",
+      "payout_id": "po_1eb3c512-b819-4c8a-ae3d-6fc6cdff3714",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-18T15:16:03Z",
+      "gross": {
+        "amount": -529,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -529,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_fVJzZDmE5WBLKrqF-NdC7WBCYpU",
+      "payout_id": "po_b6336c65-a8e6-47e1-85ed-0bcd7e6bc7c2",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-19T22:31:57Z",
+      "gross": {
+        "amount": -176,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -176,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_Ts7DGzb_gePgaBJXYMvkjjPJnQs",
+      "payout_id": "po_4c731fb9-1381-4396-8756-ca38fcc4262f",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-20T20:18:23Z",
+      "gross": {
+        "amount": -2232,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -2232,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_rwVh9xXQWQBC_Ftwmq9csBosHqo",
+      "payout_id": "po_2e98bb40-9135-4877-ab64-26ad04bde6ba",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-24T15:03:40Z",
+      "gross": {
+        "amount": -5076,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -5076,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_zbuUHCeWpOiFMcTq_F-EjiCGI6U",
+      "payout_id": "po_24f1104e-29fd-4da8-9108-c54d77311f87",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-11-29T22:56:48Z",
+      "gross": {
+        "amount": -17625,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -17625,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_wnUgiMrFcbpx5BxvCBdfTmn7rAw",
+      "payout_id": "po_1561636e-03e5-445b-99ae-cb6dd695d379",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-01T20:22:11Z",
+      "gross": {
+        "amount": -5076,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -5076,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_4MuvvfuMzB6TqHcw0B_O5BL2LYw",
+      "payout_id": "po_045601c2-e6d6-4db0-8966-4945bc0bd676",
+      "type": "SQUARE_CAPITAL_REVERSED_PAYMENT",
+      "effective_at": "2025-12-01T20:58:31Z",
+      "gross": {
+        "amount": 5076,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": 5076,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_W2ajY6e4vfUjZ8IpQ6tLtF-QVqA",
+      "payout_id": "po_a3dd4e90-7195-4ede-9d88-027ecdd399a5",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-11T03:08:07Z",
+      "gross": {
+        "amount": -1939,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -1939,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_ozFjEfVvq3p0AsgTuXKwXcFRBIg",
+      "payout_id": "po_e7c4e162-a2ad-4600-abca-f43a3a744b3a",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-12T00:02:27Z",
+      "gross": {
+        "amount": -352,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -352,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_SM2oA5IgJ2GBwH2xv8wOu7VDPB0",
+      "payout_id": "po_db8af99f-0e0f-4010-8e38-8af22c5b5012",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-13T19:17:31Z",
+      "gross": {
+        "amount": -9059,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -9059,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_2fpoSySaA6tL7WpBdbcwWMxfOLo",
+      "payout_id": "po_85a43dc7-0d84-425f-a5e0-3ab6189177e9",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-19T05:51:03Z",
+      "gross": {
+        "amount": -17625,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -17625,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_uEflRKxpbx2akIl8ytpJdia5esk",
+      "payout_id": "po_96b03b14-65cb-47e9-88c0-cf0097a02782",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2025-12-25T01:54:28Z",
+      "gross": {
+        "amount": -18286,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -18286,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_iyt-Q4DKxwd9J_r9QljMoJDTXpI",
+      "payout_id": "po_fa4aa8ef-4782-47df-9185-9f2038ef81bc",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-01-01T20:22:10Z",
+      "gross": {
+        "amount": -5076,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -5076,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_0fk7JtkAsKPGcbgoWAXpuGghlL8",
+      "payout_id": "po_9c73241c-31bc-46d9-bf49-659aebc7a7ad",
+      "type": "SQUARE_CAPITAL_REVERSED_PAYMENT",
+      "effective_at": "2026-01-02T00:22:57Z",
+      "gross": {
+        "amount": 5076,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": 5076,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_mLPsNTV0yyismuVKrkjGE6l7jrc",
+      "payout_id": "po_676033e4-4b57-4aad-abad-995593219f04",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-01-02T22:30:30Z",
+      "gross": {
+        "amount": -5510,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -5510,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_d9raH1UENToYhLwevaz1TFjkOFA",
+      "payout_id": "po_645cf1ce-df3f-4d10-870d-68a5901ed961",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-01-04T16:38:28Z",
+      "gross": {
+        "amount": -7755,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -7755,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_ObHEnCnDBFw5bKk87fOrDadLOIk",
+      "payout_id": "po_bb210043-00fe-47f2-9e4c-36c2e454316c",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-01-05T22:51:29Z",
+      "gross": {
+        "amount": -12079,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -12079,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_fn6OYoeTRRbKqMYuHS3nlel0M0w",
+      "payout_id": "po_f9ccbdac-f92b-4c6d-939f-b3ffef45d0b2",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-01-16T16:49:02Z",
+      "gross": {
+        "amount": -17203,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -17203,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_tvsfE-Gw9T_eibUx7mnCopmk2_k",
+      "payout_id": "po_a5315614-a18b-4345-92f5-e41a149f20b3",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-02-18T16:58:04Z",
+      "gross": {
+        "amount": -11395,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -11395,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_Na8g8MGDmty5iQ55NQNEhNlSHrA",
+      "payout_id": "po_05bf6ab8-e0ce-488a-a193-79c43fde152b",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-02-20T05:45:54Z",
+      "gross": {
+        "amount": -12733,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -12733,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_fpZ8Ke0hs1C2JApFuXRdVdJP5fQ",
+      "payout_id": "po_fa12840f-2c68-4a57-93f0-3b4f14f11153",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-02-28T18:47:20Z",
+      "gross": {
+        "amount": -15399,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -15399,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_QgqnQWsMduMsDuofOBysz_hSzgw",
+      "payout_id": "po_f39fb096-a7aa-4fac-bdc3-36f4b705962d",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-03-02T17:17:02Z",
+      "gross": {
+        "amount": -20926,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -20926,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe_eRuuIVtQDt2GUQ7EmVVvFRqR6GA",
+      "payout_id": "po_8fc29a21-e89e-4931-b7d3-6c37f9371d84",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-03-03T17:25:56Z",
+      "gross": {
+        "amount": -18336,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -18336,
+        "currency_code": "USD"
+      }
+    },
+    {
+      "entry_id": "poe__coELDuQ0d9zhERqwMwJ5h5IRDA",
+      "payout_id": "po_0cbef231-d24b-4016-8c86-460d32e8c091",
+      "type": "SQUARE_CAPITAL_PAYMENT",
+      "effective_at": "2026-03-17T17:01:30Z",
+      "gross": {
+        "amount": -20230,
+        "currency_code": "USD"
+      },
+      "net": {
+        "amount": -20230,
+        "currency_code": "USD"
+      }
+    }
+  ],
+  "preTypeCensus": {},
+  "calls": 187
+}

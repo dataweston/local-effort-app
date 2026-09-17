@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw, Sparkles, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Trash2, Plus, Link2, CheckSquare, ChevronDown, ChevronUp, Inbox, Database, Search, RefreshCw, Sparkles, CheckCircle2, Send } from 'lucide-react';
 import { useBrainEntities } from '../../hooks/useBrainEntities';
 import { API_BASE } from '../../lib/apiBase';
 
@@ -115,6 +115,7 @@ function InboxPanel({ items, triage, loading, onClose, accessToken }) {
   const [cursor, setCursor] = useState(0);
   const [triaging, setTriaging] = useState(null);
   const [hubStatus, setHubStatus] = useState({}); // itemId → 'sending' | 'sent' | 'failed'
+  const [triageError, setTriageError] = useState('');
 
   async function sendToHub(item) {
     if (!accessToken || hubStatus[item.id] === 'sending') return;
@@ -155,8 +156,16 @@ function InboxPanel({ items, triage, loading, onClose, accessToken }) {
 
   async function handleTriage(id, action, payload = {}) {
     setTriaging(id);
-    await triage(id, action, payload);
-    setTriaging(null);
+    setTriageError('');
+    try {
+      const succeeded = await triage(id, action, payload);
+      if (!succeeded) setTriageError('Brain could not apply that inbox action. The item is still pending.');
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'Brain could not apply that inbox action.';
+      setTriageError(`${detail} The item is still pending.`);
+    } finally {
+      setTriaging(null);
+    }
   }
 
   return (
@@ -169,6 +178,11 @@ function InboxPanel({ items, triage, loading, onClose, accessToken }) {
           j/k navigate · t trash · esc close
         </span>
       </div>
+      {triageError && (
+        <div className="px-4 py-2 text-xs border-b" role="alert" style={{ borderColor: 'var(--brand-rose, #b00)', color: 'var(--brand-rose, #b00)' }}>
+          {triageError}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto">
         {loading && items.length === 0 && (
@@ -214,31 +228,61 @@ function InboxItem({ item, active, triaging, hubStatus, onClick, onTriage, onSen
   // Strip old-style text annotations from rawContent
   const displayContent = (item.rawContent || '').replace(/\n\n\[AI suggestion:[^\]]+\]/g, '').trim();
 
-  // Derive pre-filled action payloads from AI hint
-  const hintAction = hint?.action;
+  // Normalize both legacy triage hints and unified-ingest hints.
+  const hintFields = hint?.fields || {};
+  const intentAction = {
+    event: hintFields.date ? 'new_event' : 'needs_human',
+    task: 'new_task',
+    new_entity: 'new_entity',
+    trash: 'trash',
+    needs_human: 'needs_human',
+  }[hint?.intent];
+  const hintAction = hint?.action || intentAction || 'needs_human';
+  const hintEntityType = hint?.entityType || hintFields.entityType || 'Vendor';
+  const hintEntityName = hint?.entityName || hintFields.name || '';
+  const hintTaskTitle = hint?.taskTitle || hintFields.title || '';
+  const hintMatchedEntityId = hint?.matchedEntityId || hintFields.entityId || item.matchedEntity?.id || null;
+  const eventPayload = {
+    title: hintFields.title || displayContent.slice(0, 80),
+    date: hintFields.date || null,
+    startTime: hintFields.startTime || null,
+    endTime: hintFields.endTime || null,
+    location: hintFields.location || null,
+    guestEstimate: hintFields.guestEstimate ?? null,
+    menuSummary: hintFields.menuSummary || null,
+    prepDate: hintFields.prepDate || null,
+    prepStartTime: hintFields.prepStartTime || null,
+    prepEndTime: hintFields.prepEndTime || null,
+    status: hintFields.status || 'inquiry',
+    note: hintFields.note || displayContent,
+  };
   const acceptPayload = hintAction === 'new_entity'
-    ? { entityType: hint.entityType || 'Vendor', name: hint.entityName || displayContent.slice(0, 60) }
+    ? { entityType: hintEntityType, name: hintEntityName || displayContent.slice(0, 60) }
     : hintAction === 'append_entity'
-      ? { entityId: hint.matchedEntityId || null, note: hint.note || displayContent }
+      ? { entityId: hintMatchedEntityId, note: hint?.note || hintFields.note || displayContent }
       : hintAction === 'new_task'
-        ? { title: hint.taskTitle || displayContent.slice(0, 80) }
-        : null;
+        ? { title: hintTaskTitle || displayContent.slice(0, 80) }
+        : hintAction === 'new_event'
+          ? eventPayload
+          : null;
 
   const HINT_COLORS = {
     new_entity:    { bg: '#edf1fb', text: '#3b5bdb', border: '#c5d0fa' },
     append_entity: { bg: '#f0f4ec', text: '#4a6741', border: '#c5d8b5' },
     new_task:      { bg: '#f3eefb', text: '#7048e8', border: '#d3bff5' },
+    new_event:     { bg: '#fff0e6', text: '#b45100', border: '#ffc999' },
     trash:         { bg: '#fce8e8', text: '#c0392b', border: '#f5c0c0' },
     needs_human:   { bg: '#fef3e2', text: '#b07d3a', border: '#f5dfa0' },
   };
-  const hintColor = hint ? (HINT_COLORS[hint.action] || HINT_COLORS.needs_human) : null;
+  const hintColor = hint ? (HINT_COLORS[hintAction] || HINT_COLORS.needs_human) : null;
   const hintLabel = {
-    new_entity:    `New ${hint?.entityType || 'entity'}: ${hint?.entityName || '—'}`,
-    append_entity: `Append to ${hint?.entityName || 'entity'}`,
-    new_task:      `Task: ${hint?.taskTitle || '—'}`,
+    new_entity:    `New ${hintEntityType}: ${hintEntityName || '—'}`,
+    append_entity: `Append to ${hint?.entityName || item.matchedEntity?.name || 'entity'}`,
+    new_task:      `Task: ${hintTaskTitle || '—'}`,
+    new_event:     `Event: ${hintFields.title || '—'}`,
     trash:         'Trash',
-    needs_human:   'Needs review',
-  }[hint?.action] ?? null;
+    needs_human:   hint?.reason === 'event-date-required' ? 'Event needs a service date' : 'Needs review',
+  }[hintAction] ?? null;
 
   return (
     <div
@@ -268,15 +312,15 @@ function InboxItem({ item, active, triaging, hubStatus, onClick, onTriage, onSen
               <span className="opacity-60 ml-0.5">{Math.round((hint.confidence || 0) * 100)}%</span>
               {hintExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             </button>
-            {hint.matchedEntity && (
+            {item.matchedEntity && (
               <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                · {hint.matchedEntity.assertionCount ?? '?'} signals
+                · {item.matchedEntity.assertionCount ?? '?'} signals
               </span>
             )}
           </div>
-          {hintExpanded && hint.rationale && (
+          {hintExpanded && (hint.rationale || hint.reason || hint.preview?.summary) && (
             <p className="text-xs mt-1 ml-4 leading-snug italic" style={{ color: 'var(--color-text-muted)' }}>
-              {hint.rationale}
+              {hint.rationale || hint.preview?.summary || hint.reason}
             </p>
           )}
         </div>
@@ -331,34 +375,34 @@ function InboxItem({ item, active, triaging, hubStatus, onClick, onTriage, onSen
       {active && (
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
           {/* Accept AI suggestion — primary if hint exists */}
-          {hint && acceptPayload && hint.action !== 'needs_human' && (
+          {hint && acceptPayload && hintAction !== 'needs_human' && (
             <ActionButton
               icon={<CheckCircle2 size={12} />}
-              label={`Accept: ${hint.action === 'trash' ? 'trash' : hintLabel}`}
+              label={`Accept: ${hintAction === 'trash' ? 'trash' : hintLabel}`}
               shortcut="y"
               primary
-              onClick={e => { e.stopPropagation(); onTriage(hint.action, acceptPayload); }}
+              onClick={e => { e.stopPropagation(); onTriage(hintAction, acceptPayload); }}
             />
           )}
           <ActionButton icon={<Trash2 size={12} />} label="Trash" shortcut="t" danger
             onClick={e => { e.stopPropagation(); onTriage('trash'); }} />
           <ActionButton
             icon={<Plus size={12} />}
-            label={hint?.action === 'new_entity' && hint.entityName ? `New ${hint.entityType}: ${hint.entityName.slice(0, 20)}` : 'New entity'}
+            label={hintAction === 'new_entity' && hintEntityName ? `New ${hintEntityType}: ${hintEntityName.slice(0, 20)}` : 'New entity'}
             shortcut="n"
-            onClick={e => { e.stopPropagation(); onTriage('new_entity', { entityType: hint?.entityType || 'Vendor', name: hint?.entityName || displayContent.slice(0, 60) }); }}
+            onClick={e => { e.stopPropagation(); onTriage('new_entity', { entityType: hintEntityType, name: hintEntityName || displayContent.slice(0, 60) }); }}
           />
           <ActionButton
             icon={<Link2 size={12} />}
-            label={hint?.action === 'append_entity' && hint.entityName ? `Append → ${hint.entityName.slice(0, 20)}` : 'Append'}
+            label={hintAction === 'append_entity' && (hint?.entityName || item.matchedEntity?.name) ? `Append → ${(hint?.entityName || item.matchedEntity.name).slice(0, 20)}` : 'Append'}
             shortcut="a"
-            onClick={e => { e.stopPropagation(); onTriage('append_entity', { entityId: hint?.matchedEntityId || null, note: hint?.note || displayContent }); }}
+            onClick={e => { e.stopPropagation(); onTriage('append_entity', { entityId: hintMatchedEntityId, note: hint?.note || hintFields.note || displayContent }); }}
           />
           <ActionButton
             icon={<CheckSquare size={12} />}
-            label={hint?.action === 'new_task' && hint.taskTitle ? `Task: ${hint.taskTitle.slice(0, 20)}` : 'Task'}
+            label={hintAction === 'new_task' && hintTaskTitle ? `Task: ${hintTaskTitle.slice(0, 20)}` : 'Task'}
             shortcut="k"
-            onClick={e => { e.stopPropagation(); onTriage('new_task', { title: hint?.taskTitle || displayContent.slice(0, 80) }); }}
+            onClick={e => { e.stopPropagation(); onTriage('new_task', { title: hintTaskTitle || displayContent.slice(0, 80) }); }}
           />
           <ActionButton
             icon={hubStatus === 'sent' ? <CheckCircle2 size={12} /> : <Send size={12} />}

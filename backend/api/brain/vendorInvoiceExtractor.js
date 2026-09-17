@@ -39,15 +39,21 @@ const BLOCKED_DOMAINS = /intuit\.com|turbotax|quickbooks|stripe\.com|squareup\.c
 const INVOICE = /\b(invoice|receipt|statement|amount due|order confirmation|bill)\b/i;
 
 function senderDomain(payload) {
-  const from = (payload && payload.from) || '';
-  const m = String(from).match(/@([\w.-]+)/);
-  return m ? m[1].toLowerCase() : null;
+  const from = payload?.from;
+  const candidates = Array.isArray(from)
+    ? from.map((entry) => entry?.address || entry)
+    : [from || ''];
+  for (const candidate of candidates) {
+    const match = String(candidate || '').match(/@([\w.-]+)/);
+    if (match) return match[1].toLowerCase();
+  }
+  return null;
 }
 
 /** @returns {null | { domain, vendorName, subject }} */
-function parseInvoice(event) {
+function parseInvoice(event, sourceDocument = null) {
   const pl = event.payload || {};
-  const text = `${pl.subject || ''} ${pl.snippet || ''}`;
+  const text = `${pl.subject || ''} ${pl.snippet || ''} ${sourceDocument?.textContent || ''}`;
   if (!INVOICE.test(text)) return null;
 
   const domain = senderDomain(pl);
@@ -85,16 +91,24 @@ async function resolveBusinessContact(prisma) {
 async function extractVendorInvoices({ apply = false, logger } = {}) {
   const prisma = getPrisma();
   const events = await prisma.ledgerEvent.findMany({
-    where: { eventType: 'email.thread', source: 'gmail', tombstonedAt: null },
+    where: { eventType: 'email.message', source: 'gmail', tombstonedAt: null },
     select: { id: true, payload: true, occurredAt: true },
   });
+  const documentIds = events.map((event) => event.payload?.sourceDocumentId).filter(Boolean);
+  const documents = documentIds.length
+    ? await prisma.brainSourceDocument.findMany({
+      where: { id: { in: documentIds } },
+      select: { id: true, textContent: true },
+    })
+    : [];
+  const documentById = new Map(documents.map((document) => [document.id, document]));
 
   const contact = await resolveBusinessContact(prisma);
   const results = [];
   let written = 0, unresolved = 0;
 
   for (const ev of events) {
-    const inv = parseInvoice(ev);
+    const inv = parseInvoice(ev, documentById.get(ev.payload?.sourceDocumentId));
     if (!inv) continue;
 
     const vendor = await resolveVendor(prisma, inv.vendorName);

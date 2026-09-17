@@ -21,7 +21,7 @@ async function main() {
     console.log(`${flag} ${r.domain.padEnd(20)} ${(r.vendor ? r.vendor.name : r.vendorName).padEnd(18)} ${r.subject.slice(0, 50)}`);
   }
 
-  console.log(`\n── scanned ${scanned} email.thread · ${invoices} allowlisted invoices · ${invoices - unresolved} resolvable · ${unresolved} unresolved`);
+  console.log(`\n── scanned ${scanned} email.message · ${invoices} allowlisted invoices · ${invoices - unresolved} resolvable · ${unresolved} unresolved`);
   if (apply) console.log(`Wrote ${written} provisional vendor-contact assertions. Review on /brain.`);
   else console.log('Dry run. Re-run with --apply to write.');
 }

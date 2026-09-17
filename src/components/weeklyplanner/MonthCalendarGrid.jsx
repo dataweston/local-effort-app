@@ -1,134 +1,217 @@
-import React from 'react';
-import { getMonthDates, getWeekStart, isToday, getDayOfWeek, formatDateShort } from './dateUtils';
+import React, { useMemo } from 'react';
+import { getMonthDates, getWeekStart, isToday } from './dateUtils';
 import { dayTotalsWithActual, money } from './financials';
+import { ACTIVE_BLOCK_STATUSES, displayWorkBlocks } from './plannerOperations';
 
 const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export function MonthCalendarGrid({ year, month, cards, actualsByDate = {}, onUpsertRevenueActual, onSelectWeek }) {
-  const allDates = getMonthDates(year, month);
-  // Group into weeks (rows of 7)
-  const weeks = [];
-  for (let i = 0; i < allDates.length; i += 7) {
-    weeks.push(allDates.slice(i, i + 7));
-  }
+function keyboardSelect(event, onSelect) {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  onSelect();
+}
+
+export function MonthCalendarGrid({
+  year,
+  month,
+  cards,
+  workBlocks = [],
+  actualsByDate = {},
+  onUpsertRevenueActual,
+  onSelectWeek,
+}) {
+  const allDates = useMemo(() => getMonthDates(year, month), [year, month]);
+  const weeks = useMemo(() => {
+    const rows = [];
+    for (let index = 0; index < allDates.length; index += 7)
+      rows.push(allDates.slice(index, index + 7));
+    return rows;
+  }, [allDates]);
+  const operationalBlocks = useMemo(
+    () => displayWorkBlocks(cards, workBlocks),
+    [cards, workBlocks]
+  );
+  const blocksByDate = useMemo(() => {
+    const grouped = new Map();
+    for (const block of operationalBlocks) {
+      if (!block.date || block.status === 'cancelled') continue;
+      if (!grouped.has(block.date)) grouped.set(block.date, []);
+      grouped.get(block.date).push(block);
+    }
+    return grouped;
+  }, [operationalBlocks]);
+  const eventsByDate = useMemo(() => {
+    const grouped = new Map();
+    for (const card of cards) {
+      if (card.objectType !== 'event' || !card.date || card.enabled === false) continue;
+      if (!grouped.has(card.date)) grouped.set(card.date, []);
+      grouped.get(card.date).push(card);
+    }
+    return grouped;
+  }, [cards]);
 
   return (
-    <div
-      className="rounded-xl border overflow-hidden"
-      style={{
-        backgroundColor: 'var(--color-bg-card)',
-        borderColor: 'var(--color-border-default)',
-      }}
-    >
-      {/* Day headers */}
-      <div
-        className="grid grid-cols-7"
-        style={{ borderBottom: '1px solid var(--color-border-default)' }}
-      >
-        {DAY_HEADERS.map((d) => (
-          <div
-            key={d}
-            className="text-center text-[10px] uppercase tracking-wider font-medium py-2"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {d}
-          </div>
-        ))}
+    <section className="planner-month-calendar" aria-label="Monthly operations calendar">
+      <div className="planner-month-calendar__legend" aria-label="Work block legend">
+        <span>
+          <i data-type="prep" />
+          Prep
+        </span>
+        <span>
+          <i data-type="service" />
+          Service
+        </span>
+        <span>
+          <i data-type="error" />
+          Needs attention
+        </span>
+        <small>Select any day to open its week.</small>
       </div>
+      <div className="planner-month-calendar__scroll">
+        <div className="planner-month-calendar__grid">
+          <div className="planner-month-calendar__headers">
+            {DAY_HEADERS.map((day) => (
+              <div key={day}>{day}</div>
+            ))}
+          </div>
 
-      {/* Week rows */}
-      {weeks.map((week, wi) => {
-        const weekStart = getWeekStart(week[0]);
-        return (
-          <div
-            key={wi}
-            className="grid grid-cols-7 cursor-pointer transition-colors group"
-            style={{
-              borderBottom: wi < weeks.length - 1 ? '1px solid var(--color-border-default)' : undefined,
-            }}
-            onClick={() => onSelectWeek(weekStart)}
-          >
-            {week.map((date) => {
-              const dateMonth = parseInt(date.split('-')[1], 10);
-              const isCurrentMonth = dateMonth === month;
-              const today = isToday(date);
-              const dateNum = parseInt(date.split('-')[2], 10);
-              const t = dayTotalsWithActual(cards, date, actualsByDate);
-              const eventCount = cards.filter((card) => card.date === date && card.objectType === 'event').length;
-              const actual = actualsByDate[date];
+          {weeks.map((week) => (
+            <div key={week[0]} className="planner-month-calendar__week">
+              {week.map((date) => {
+                const isCurrentMonth = Number(date.slice(5, 7)) === month;
+                const today = isToday(date);
+                const dateNum = Number(date.slice(8, 10));
+                const totals = dayTotalsWithActual(cards, date, actualsByDate);
+                const actual = actualsByDate[date];
+                const dateBlocks = blocksByDate.get(date) || [];
+                const eventCards = eventsByDate.get(date) || [];
+                const prepOnly = dateBlocks.filter(
+                  (block) =>
+                    block.blockType === 'prep' &&
+                    !eventCards.some((card) => String(card.id) === block.plannerCardId)
+                );
+                const labels = [
+                  ...eventCards.map((card) => ({
+                    id: `event:${card.id}`,
+                    kind: 'service',
+                    title: card.title,
+                  })),
+                  ...prepOnly.map((block) => ({
+                    id: `prep:${block.id}`,
+                    kind: 'prep',
+                    title: block.title,
+                  })),
+                ];
+                const selectWeek = () => onSelectWeek?.(getWeekStart(date));
 
-              return (
-                <div
-                  key={date}
-                  className="relative p-1.5 min-h-[52px] group-hover:bg-[color-mix(in_srgb,var(--color-action-primary-bg)_5%,transparent)]"
-                  style={{
-                    opacity: isCurrentMonth ? 1 : 0.35,
-                  }}
-                >
+                return (
                   <div
-                    className="text-xs font-medium text-center"
-                    style={{
-                      color: today ? 'var(--color-action-primary-bg)' : 'var(--color-text-primary)',
-                      fontWeight: today ? 700 : 500,
+                    key={date}
+                    role="button"
+                    tabIndex={isCurrentMonth ? 0 : -1}
+                    className="planner-month-day"
+                    data-current-month={isCurrentMonth ? 'true' : 'false'}
+                    data-today={today ? 'true' : 'false'}
+                    onClick={(event) => {
+                      if (!event.target.closest?.('.planner-month-day__actual')) selectWeek();
                     }}
+                    onKeyDown={(event) => {
+                      if (!event.target.closest?.('.planner-month-day__actual'))
+                        keyboardSelect(event, selectWeek);
+                    }}
+                    aria-label={`Open week containing ${date}`}
                   >
-                    {today ? (
+                    <div className="planner-month-edge-markers" aria-hidden="true">
+                      {dateBlocks.slice(0, 4).map((block) => (
+                        <i
+                          key={block.id}
+                          data-type={
+                            block.syncStatus === 'error' || block.status === 'needs_schedule'
+                              ? 'error'
+                              : block.blockType
+                          }
+                          title={`${block.blockType}: ${block.title}`}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="planner-month-day__number">
+                      <span>{dateNum}</span>
+                    </div>
+                    {isCurrentMonth && labels.length > 0 && (
+                      <div className="planner-month-day__events">
+                        {labels.slice(0, 2).map((item) => (
+                          <span key={item.id} data-kind={item.kind} title={item.title}>
+                            <i />
+                            {item.kind === 'prep' ? 'Prep · ' : ''}
+                            {item.title}
+                          </span>
+                        ))}
+                        {labels.length > 2 && <small>+{labels.length - 2} more</small>}
+                      </div>
+                    )}
+
+                    {isCurrentMonth &&
+                      (totals.revenue > 0 || totals.plannedRevenue > 0 || totals.cost > 0) && (
+                        <div className="planner-month-day__money">
+                          {totals.hasActual ? (
+                            <>
+                              {totals.plannedRevenue > 0 && (
+                                <span>Plan {money(totals.plannedRevenue)}</span>
+                              )}
+                              <strong>Actual {money(totals.actualRevenue)}</strong>
+                            </>
+                          ) : totals.revenue > 0 ? (
+                            <strong>+{money(totals.revenue)}</strong>
+                          ) : null}
+                          {totals.cost > 0 && <em>−{money(totals.cost)}</em>}
+                        </div>
+                      )}
+
+                    {isCurrentMonth && onUpsertRevenueActual && (
+                      <details className="planner-month-day__actual">
+                        <summary>{actual ? 'Edit actual' : 'Add actual'}</summary>
+                        <input
+                          aria-label={`Actual revenue for ${date}`}
+                          type="number"
+                          min="0"
+                          placeholder="Revenue $"
+                          value={
+                            actual
+                              ? actual.revenueCents != null
+                                ? actual.revenueCents / 100
+                                : actual.revenue
+                              : ''
+                          }
+                          step="0.01"
+                          onChange={(event) =>
+                            onUpsertRevenueActual(
+                              date,
+                              event.target.value,
+                              actual?.title === 'Actual revenue' ? '' : actual?.title || ''
+                            )
+                          }
+                        />
+                      </details>
+                    )}
+                    {dateBlocks.some(
+                      (block) =>
+                        ACTIVE_BLOCK_STATUSES.has(block.status) && block.syncStatus === 'synced'
+                    ) && (
                       <span
-                        className="inline-flex items-center justify-center w-6 h-6 rounded-full"
-                        style={{ backgroundColor: 'var(--color-action-primary-bg)', color: 'var(--color-action-primary-text)' }}
+                        className="planner-month-day__synced"
+                        title="At least one work block is on Google Calendar"
                       >
-                        {dateNum}
+                        G
                       </span>
-                    ) : (
-                      dateNum
                     )}
                   </div>
-
-                  {/* Mini financial summary */}
-                  {(t.revenue > 0 || t.plannedRevenue > 0 || t.cost > 0) && isCurrentMonth && (
-                    <div className="mt-0.5 flex items-center justify-center gap-1">
-                      {t.hasActual ? (
-                        <>
-                          {t.plannedRevenue > 0 && <span className="text-[8px]" style={{ color: 'var(--color-text-muted)' }}>P {money(t.plannedRevenue)}</span>}
-                          <span className="text-[8px] font-semibold" style={{ color: 'var(--color-state-success)' }}>A {money(t.actualRevenue)}</span>
-                        </>
-                      ) : t.revenue > 0 && (
-                        <span className="text-[8px] font-medium" style={{ color: 'var(--color-state-success)' }}>
-                          +{money(t.revenue)}
-                        </span>
-                      )}
-                      {t.cost > 0 && (
-                        <span className="text-[8px] font-medium" style={{ color: 'var(--color-state-danger)' }}>
-                          −{money(t.cost)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {eventCount > 0 && isCurrentMonth && (
-                    <div className="mt-0.5 text-center text-[8px] font-semibold" style={{ color: 'var(--color-action-primary-bg)' }}>
-                      • {eventCount} event{eventCount === 1 ? '' : 's'}
-                    </div>
-                  )}
-                  {isCurrentMonth && onUpsertRevenueActual && (
-                    <input
-                      aria-label={`Actual revenue for ${date}`}
-                      type="number"
-                      min="0"
-                      placeholder="Actual $"
-                      value={actual ? (actual.revenueCents != null ? actual.revenueCents / 100 : actual.revenue) : ''}
-                      step="0.01"
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={(event) => onUpsertRevenueActual(date, event.target.value, actual?.title === 'Actual revenue' ? '' : (actual?.title || ''))}
-                      className="mt-1 w-full rounded border px-1 py-0.5 text-[10px] text-center outline-none"
-                      style={{ backgroundColor: 'var(--color-bg-page)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-primary)' }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

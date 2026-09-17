@@ -1,19 +1,33 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { generateCardsForRange } from './defaultSchedule';
-import { getWeekDates, getWeekStart, getToday, getDayOfWeek, addWeeks, getMonthWeeks } from './dateUtils';
+import {
+  getWeekDates,
+  getWeekStart,
+  getToday,
+  getDayOfWeek,
+  addWeeks,
+  getMonthWeeks,
+} from './dateUtils';
 import { weekTotalsWithActual, monthTotals as computeMonthTotals } from './financials';
 
-let _nextCardId = 5000;
+function createPlannerId(prefix) {
+  const uniquePart =
+    globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${uniquePart}`;
+}
 
 export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, selectedMonth }) {
   const [cards, setCards] = useState([]);
+  const [workBlocks, setWorkBlocks] = useState([]);
   const [editingCard, setEditingCard] = useState(null);
   const [activeId, setActiveId] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [overheads, setOverheads] = useState([]);
   const [cogs, setCogs] = useState([]);
   const [pendingChange, setPendingChange] = useState(null);
+  const [saveError, setSaveError] = useState(null);
+  const [integrationWarning, setIntegrationWarning] = useState(null);
   const saveTimer = useRef(null);
   const initRef = useRef(false);
 
@@ -26,6 +40,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     if (mode === 'demo' && !initRef.current) {
       initRef.current = true;
       setCards([]);
+      setWorkBlocks([]);
       setLoaded(true);
     }
   }, [mode]);
@@ -53,6 +68,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       .then((data) => {
         if (cancelled) return;
         setCards(data.cards || []);
+        setWorkBlocks(data.workBlocks || []);
         setLoaded(true);
       })
       .catch((err) => {
@@ -60,10 +76,13 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         // Keep the schedule usable without manufacturing a large speculative calendar.
         console.error('Failed to load planner cards.', err);
         setCards([]);
+        setWorkBlocks([]);
         setLoaded(true);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [mode, accessToken]);
 
   // Load overheads in persisted mode
@@ -78,7 +97,9 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         if (!cancelled && data.items) setOverheads(data.items);
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [mode, accessToken]);
 
   // Load ALL COGS in persisted mode (full set in memory, filtered by view)
@@ -93,7 +114,9 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         if (!cancelled && data.items) setCogs(data.items);
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [mode, accessToken]);
 
   // Cards for the current week
@@ -125,7 +148,10 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     return cogs.filter((c) => c.weekStart === effectiveWeekStart);
   }, [cogs, effectiveWeekStart]);
 
-  const totals = useMemo(() => weekTotalsWithActual(weekCards, actualsByDate), [weekCards, actualsByDate]);
+  const totals = useMemo(
+    () => weekTotalsWithActual(weekCards, actualsByDate),
+    [weekCards, actualsByDate]
+  );
 
   // Month-level cards and totals (for monthly view top bar)
   const monthCards = useMemo(() => {
@@ -153,53 +179,115 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     [monthCards, overheads, monthCogs, actualsByDate]
   );
 
-  // Track save state for flush-on-unload
   const latestCardsRef = useRef(cards);
   latestCardsRef.current = cards;
+  const pendingUpsertsRef = useRef(new Map());
+  const pendingDeleteIdsRef = useRef(new Set());
   const dirtyRef = useRef(false);
   const savingRef = useRef(false);
+  const flushChangesRef = useRef(null);
 
-  // Core save function (no debounce) — used by both debounced path and flush
-  const doSaveNow = useCallback(
-    (cardsToSave) => {
-      if (mode !== 'persisted' || !accessToken) return Promise.resolve();
+  const scheduleSave = useCallback((delay = 800) => {
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveTimer.current = null;
+      flushChangesRef.current?.();
+    }, delay);
+  }, []);
+
+  const flushChangesNow = useCallback(async () => {
+    if (mode !== 'persisted' || !accessToken || savingRef.current) return;
+
+    const upserts = [...pendingUpsertsRef.current.values()];
+    const deleteIds = [...pendingDeleteIdsRef.current];
+    if (upserts.length === 0 && deleteIds.length === 0) {
       dirtyRef.current = false;
-      savingRef.current = true;
-      return fetch('/api/planner/cards', {
+      return;
+    }
+
+    pendingUpsertsRef.current.clear();
+    pendingDeleteIdsRef.current.clear();
+    dirtyRef.current = false;
+    savingRef.current = true;
+    let failed = false;
+
+    try {
+      const response = await fetch('/api/planner/cards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ action: 'save-all', cards: cardsToSave }),
-      })
-        .then((r) => {
-          savingRef.current = false;
-          if (!r.ok) console.error('Save failed:', r.status);
-        })
-        .catch((err) => {
-          savingRef.current = false;
-          console.error('Save error:', err);
-        });
-    },
-    [mode, accessToken]
-  );
+        body: JSON.stringify({ action: 'apply-changes', upserts, deleteIds }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const details = data.error || JSON.stringify(data);
+        throw new Error(`Planner save failed (${response.status}) ${details.slice(0, 160)}`);
+      }
+      const changedIds = new Set([...upserts.map((card) => card.id), ...deleteIds]);
+      const deletedIds = new Set(deleteIds);
+      setWorkBlocks((current) => [
+        ...current.filter((block) => !changedIds.has(block.plannerCardId)),
+        ...(data.workBlocks || []).filter((block) => !deletedIds.has(block.plannerCardId)),
+      ]);
+      if (data.lifecycle?.ok === false) {
+        const failures = Object.entries(data.lifecycle.integrations || {})
+          .filter(([, result]) => result?.ok === false)
+          .map(([name, result]) => `${name}: ${result.error || 'reconciliation failed'}`);
+        setIntegrationWarning(failures.join(' · ') || 'A planner integration needs attention.');
+      } else {
+        setIntegrationWarning(null);
+      }
+      setSaveError(null);
+    } catch (err) {
+      failed = true;
+      for (const card of upserts) {
+        if (!pendingDeleteIdsRef.current.has(card.id) && !pendingUpsertsRef.current.has(card.id)) {
+          pendingUpsertsRef.current.set(card.id, card);
+        }
+      }
+      for (const id of deleteIds) {
+        if (!pendingUpsertsRef.current.has(id)) pendingDeleteIdsRef.current.add(id);
+      }
+      setSaveError('Planner changes could not be saved. Your edits are queued locally.');
+      console.error('Planner save error:', err);
+    } finally {
+      savingRef.current = false;
+      dirtyRef.current = pendingUpsertsRef.current.size > 0 || pendingDeleteIdsRef.current.size > 0;
+      if (!failed && dirtyRef.current) scheduleSave(100);
+    }
+  }, [mode, accessToken, scheduleSave]);
 
-  // Debounced save
-  const persistCards = useCallback(
-    (nextCards) => {
+  flushChangesRef.current = flushChangesNow;
+
+  const queueCardChanges = useCallback(
+    (previousCards, nextCards) => {
       if (mode !== 'persisted' || !accessToken) return;
-      dirtyRef.current = true;
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
-        saveTimer.current = null;
-        doSaveNow(nextCards);
-      }, 800);
+
+      const previousById = new Map(previousCards.map((card) => [card.id, card]));
+      const nextIds = new Set(nextCards.map((card) => card.id));
+
+      for (const previous of previousCards) {
+        if (!nextIds.has(previous.id)) {
+          pendingUpsertsRef.current.delete(previous.id);
+          pendingDeleteIdsRef.current.add(previous.id);
+        }
+      }
+
+      for (const card of nextCards) {
+        if (previousById.get(card.id) !== card) {
+          pendingDeleteIdsRef.current.delete(card.id);
+          pendingUpsertsRef.current.set(card.id, card);
+        }
+      }
+
+      dirtyRef.current = pendingUpsertsRef.current.size > 0 || pendingDeleteIdsRef.current.size > 0;
+      if (dirtyRef.current) scheduleSave();
     },
-    [mode, accessToken, doSaveNow]
+    [mode, accessToken, scheduleSave]
   );
 
-  // Flush pending save on page unload — synchronous XHR as last resort
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (!dirtyRef.current || mode !== 'persisted' || !accessToken) return;
@@ -207,15 +295,20 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         clearTimeout(saveTimer.current);
         saveTimer.current = null;
       }
-      // Use synchronous XMLHttpRequest — the only reliable way to save on unload
       try {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/planner/cards', false); // synchronous
+        xhr.open('POST', '/api/planner/cards', false);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
-        xhr.send(JSON.stringify({ action: 'save-all', cards: latestCardsRef.current }));
-      } catch (e) {
-        // Best effort — page is unloading
+        xhr.send(
+          JSON.stringify({
+            action: 'apply-changes',
+            upserts: [...pendingUpsertsRef.current.values()],
+            deleteIds: [...pendingDeleteIdsRef.current],
+          })
+        );
+      } catch (_err) {
+        // Best effort while the page is unloading.
       }
       dirtyRef.current = false;
     };
@@ -225,26 +318,29 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
 
   const updateCards = useCallback(
     (updater) => {
-      setCards((prev) => {
-        const next = typeof updater === 'function' ? updater(prev) : updater;
-        persistCards(next);
+      setCards((previous) => {
+        const next = typeof updater === 'function' ? updater(previous) : updater;
+        queueCardChanges(previous, next);
         return next;
       });
     },
-    [persistCards]
+    [queueCardChanges]
   );
 
   const handleToggle = useCallback(
     (cardId) => {
-      updateCards((prev) =>
-        prev.map((c) => (c.id === cardId ? { ...c, enabled: !c.enabled } : c))
-      );
+      updateCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, enabled: !c.enabled } : c)));
     },
     [updateCards]
   );
 
   const handleCardClick = useCallback((card) => {
     setEditingCard(card);
+  }, []);
+  const handleExternalCardApplied = useCallback((card) => {
+    if (!card?.id) return;
+    const normalized = { ...card, order: card.order ?? card.sortOrder ?? 0 };
+    setCards((prev) => [...prev.filter((item) => item.id !== normalized.id), normalized]);
   }, []);
 
   const handleSave = useCallback(
@@ -267,11 +363,19 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         const lastWeek = getWeekStart(endDate);
         while (ws <= lastWeek) {
           const weekDts = getWeekDates(ws);
-          const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(baseCard.dayOfWeek);
+          const dayIndex = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ].indexOf(baseCard.dayOfWeek);
           if (dayIndex >= 0 && weekDts[dayIndex]) {
             copies.push({
               ...baseCard,
-              id: String(++_nextCardId),
+              id: createPlannerId('card'),
               date: weekDts[dayIndex],
             });
           }
@@ -292,9 +396,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       } else {
         const clean = { ...updatedCard };
         delete clean._repeatWeekly;
-        updateCards((prev) =>
-          prev.map((c) => (c.id === clean.id ? clean : c))
-        );
+        updateCards((prev) => prev.map((c) => (c.id === clean.id ? clean : c)));
         setEditingCard(null);
       }
     },
@@ -321,9 +423,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       if (pendingChange.type === 'save') {
         const { card } = pendingChange;
         if (changeMode === 'single') {
-          updateCards((prev) =>
-            prev.map((c) => (c.id === card.id ? card : c))
-          );
+          updateCards((prev) => prev.map((c) => (c.id === card.id ? card : c)));
         } else {
           updateCards((prev) =>
             prev.map((c) => {
@@ -355,17 +455,6 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
               return c;
             })
           );
-
-          if (mode === 'persisted' && accessToken) {
-            fetch('/api/planner/cards', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({ action: 'update-recurring', card, mode: 'future' }),
-            }).catch(() => {});
-          }
         }
         setEditingCard(null);
       }
@@ -378,24 +467,13 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
           updateCards((prev) =>
             prev.filter((c) => !(c.templateId === templateId && c.date >= date))
           );
-
-          if (mode === 'persisted' && accessToken) {
-            fetch('/api/planner/cards', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({ action: 'delete-recurring', templateId, date, mode: 'future' }),
-            }).catch(() => {});
-          }
         }
         setEditingCard(null);
       }
 
       setPendingChange(null);
     },
-    [pendingChange, updateCards, mode, accessToken]
+    [pendingChange, updateCards]
   );
 
   const cancelChange = useCallback(() => {
@@ -403,15 +481,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   }, []);
 
   const handleAddCard = useCallback(
-    (date) => {
+    (date, objectType = 'shift') => {
+      const isEvent = objectType === 'event';
       const newCard = {
-        id: String(++_nextCardId),
+        id: createPlannerId('card'),
         templateId: null,
-        title: 'New card',
+        title: isEvent ? 'New event' : objectType === 'prep_task' ? 'New prep task' : 'New shift',
         date,
         dayOfWeek: getDayOfWeek(date),
-        zone: 'timed',
-        objectType: 'shift',
+        zone: objectType === 'prep_task' ? 'untimed' : 'timed',
+        objectType,
         people: [],
         startTime: null,
         endTime: null,
@@ -423,14 +502,19 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         costPerHour: null,
         costPerHourCents: null,
         financialStatus: 'planned',
-        financialSource: 'weeklydemo',
-        financialMetadata: null,
+        financialSource: 'planner_manual',
+        financialMetadata: isEvent ? { prepSchedulingStatus: 'needs_schedule' } : null,
         notes: null,
         optional: false,
         enabled: true,
         effectTarget: null,
         effectType: null,
         order: 99,
+        status: isEvent ? 'inquiry' : 'todo',
+        projectId: null,
+        assigneeId: null,
+        priority: 0,
+        dueDate: null,
       };
       updateCards((prev) => [...prev, newCard]);
       setEditingCard(newCard);
@@ -438,22 +522,50 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     [updateCards]
   );
 
-  const handleUpsertRevenueActual = useCallback((date, value, note = '') => {
-    const amountCents = value === '' || value == null ? null : Math.max(0, Math.round(Number(value) * 100));
-    updateCards((prev) => {
-      const without = prev.filter((card) => !(card.objectType === 'revenue' && card.date === date));
-      if (amountCents == null || Number.isNaN(amountCents)) return without;
-      return [...without, {
-        id: String(++_nextCardId), templateId: null, title: note.trim() || 'Actual revenue',
-        date, dayOfWeek: getDayOfWeek(date), zone: 'untimed', objectType: 'revenue', people: [],
-        startTime: null, endTime: null, revenue: Math.round(amountCents / 100), revenueCents: amountCents,
-        cashReceivedCents: amountCents, cost: 0, costCents: 0, costPerHour: null, costPerHourCents: null,
-        financialStatus: 'actual', financialSource: 'owner_entry', financialMetadata: null,
-        notes: note.trim() || null,
-        optional: false, enabled: true, effectTarget: null, effectType: null, order: 0,
-      }];
-    });
-  }, [updateCards]);
+  const handleUpsertRevenueActual = useCallback(
+    (date, value, note = '') => {
+      const amountCents =
+        value === '' || value == null ? null : Math.max(0, Math.round(Number(value) * 100));
+      updateCards((prev) => {
+        const without = prev.filter(
+          (card) => !(card.objectType === 'revenue' && card.date === date)
+        );
+        if (amountCents == null || Number.isNaN(amountCents)) return without;
+        return [
+          ...without,
+          {
+            id: createPlannerId('revenue'),
+            templateId: null,
+            title: note.trim() || 'Actual revenue',
+            date,
+            dayOfWeek: getDayOfWeek(date),
+            zone: 'untimed',
+            objectType: 'revenue',
+            people: [],
+            startTime: null,
+            endTime: null,
+            revenue: Math.round(amountCents / 100),
+            revenueCents: amountCents,
+            cashReceivedCents: amountCents,
+            cost: 0,
+            costCents: 0,
+            costPerHour: null,
+            costPerHourCents: null,
+            financialStatus: 'actual',
+            financialSource: 'owner_entry',
+            financialMetadata: null,
+            notes: note.trim() || null,
+            optional: false,
+            enabled: true,
+            effectTarget: null,
+            effectType: null,
+            order: 0,
+          },
+        ];
+      });
+    },
+    [updateCards]
+  );
 
   const handleReset = useCallback(() => {
     if (mode === 'demo') {
@@ -470,7 +582,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   // Overhead handlers
   const handleAddOverhead = useCallback(
     (item) => {
-      const newItem = { ...item, id: item.id || String(++_nextCardId) };
+      const newItem = { ...item, id: item.id || createPlannerId('overhead') };
       setOverheads((prev) => [...prev, newItem]);
       if (mode === 'persisted' && accessToken) {
         fetch('/api/planner/overhead', {
@@ -500,7 +612,11 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   // COGS handlers
   const handleAddCOGS = useCallback(
     (item) => {
-      const newItem = { ...item, id: item.id || String(++_nextCardId), weekStart: effectiveWeekStart };
+      const newItem = {
+        ...item,
+        id: item.id || createPlannerId('cogs'),
+        weekStart: effectiveWeekStart,
+      };
       setCogs((prev) => [...prev, newItem]);
       if (mode === 'persisted' && accessToken) {
         fetch('/api/planner/cogs', {
@@ -532,8 +648,16 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     ({ title, dayOfWeek, costPerHour, startTime, endTime }) => {
       const today = getToday();
       const ws = getWeekStart(today);
-      const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(dayOfWeek);
-      const templateKey = `whatif-${++_nextCardId}`;
+      const dayIndex = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ].indexOf(dayOfWeek);
+      const templateKey = createPlannerId('whatif');
 
       const year = parseInt(today.split('-')[0], 10);
       const endDate = `${year}-12-31`;
@@ -545,7 +669,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
         const dates = getWeekDates(currWs);
         if (dayIndex >= 0 && dates[dayIndex]) {
           copies.push({
-            id: String(++_nextCardId),
+            id: createPlannerId('card'),
             templateId: templateKey,
             title,
             date: dates[dayIndex],
@@ -598,9 +722,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
   const handleApplyWhatIf = useCallback(
     (cardId) => {
       updateCards((prev) =>
-        prev.map((c) =>
-          c.id === cardId ? { ...c, optional: false, enabled: true } : c
-        )
+        prev.map((c) => (c.id === cardId ? { ...c, optional: false, enabled: true } : c))
       );
     },
     [updateCards]
@@ -639,12 +761,18 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       }
 
       if (!targetContainer) return;
-      if (activeCard.date === targetContainer.date && activeCard.zone === targetContainer.zone) return;
+      if (activeCard.date === targetContainer.date && activeCard.zone === targetContainer.zone)
+        return;
 
-      setCards((prev) =>
+      updateCards((prev) =>
         prev.map((c) =>
           c.id === active.id
-            ? { ...c, date: targetContainer.date, zone: targetContainer.zone, dayOfWeek: getDayOfWeek(targetContainer.date) }
+            ? {
+                ...c,
+                date: targetContainer.date,
+                zone: targetContainer.zone,
+                dayOfWeek: getDayOfWeek(targetContainer.date),
+              }
             : c
         )
       );
@@ -657,11 +785,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       const { active, over } = event;
       setActiveId(null);
 
-      if (!over || active.id === over.id) {
-        // Persist the current state (drag-over may have changed date/zone)
-        persistCards(latestCardsRef.current);
-        return;
-      }
+      if (!over || active.id === over.id) return;
 
       const currentCards = latestCardsRef.current;
       const activeCard = currentCards.find((c) => c.id === active.id);
@@ -689,17 +813,36 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
             orderMap[c.id] = i;
           });
 
-          return prev.map((c) =>
-            orderMap[c.id] != null ? { ...c, order: orderMap[c.id] } : c
-          );
+          return prev.map((c) => (orderMap[c.id] != null ? { ...c, order: orderMap[c.id] } : c));
         });
-      } else {
-        // Card was dragged to a different container — persist current state
-        persistCards(latestCardsRef.current);
       }
     },
-    [updateCards, persistCards]
+    [updateCards]
   );
+
+  const handleCalendarSyncResult = useCallback((result) => {
+    const updates = new Map((result?.results || []).map((entry) => [entry.blockId, entry]));
+    const errors = new Map((result?.errors || []).map((entry) => [entry.blockId, entry]));
+    setWorkBlocks((current) =>
+      current.map((block) => {
+        const failure = errors.get(block.id);
+        if (failure) return { ...block, syncStatus: 'error', syncError: failure.error };
+        const update = updates.get(block.id);
+        if (!update) return block;
+        return {
+          ...block,
+          syncStatus: update.syncStatus,
+          syncError: null,
+          googleEventId:
+            update.googleEventId || (update.action === 'delete' ? null : block.googleEventId),
+          lastSyncedAt: new Date().toISOString(),
+        };
+      })
+    );
+    setIntegrationWarning(
+      result?.errors?.length ? `Google Calendar: ${result.errors[0].error}` : null
+    );
+  }, []);
 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
 
@@ -709,6 +852,7 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     weekCards,
     monthCards,
     cardsByDate,
+    workBlocks,
     totals,
     monthlyTotals,
     actualsByDate,
@@ -716,14 +860,17 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
     activeId,
     activeCard,
     loaded,
+    saveError,
     overheads,
     cogs,
     weekCogs,
+    integrationWarning,
     monthCogs,
     pendingChange,
     handlers: {
       handleToggle,
       handleCardClick,
+      handleExternalCardApplied,
       handleSave,
       handleDelete,
       handleAddCard,
@@ -734,7 +881,9 @@ export function usePlannerState({ mode = 'demo', accessToken = null, weekStart, 
       handleDragEnd,
       setEditingCard,
       confirmChange,
+      handleCalendarSyncResult,
       cancelChange,
+      retrySave: flushChangesNow,
       handleAddOverhead,
       handleDeleteOverhead,
       handleAddCOGS,

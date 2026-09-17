@@ -1,0 +1,54 @@
+ACCOUNTS (8)
+General savings | SAVINGS | Square | PERSONAL | cur=127.29 | avail=127.29 | open=null | active=true | internal=true | sqLinked=false | plaid=true | lastSync=2026-09-02T20:41:50 | entity=Personal/PERSON | id=cmk5s0q370003vgimsz4m5033 | created=2026-01-08
+Local Pizza | CHECKING | Square | BUSINESS | cur=7.22 | avail=0.42 | open=null | active=true | internal=true | sqLinked=false | plaid=true | lastSync=2026-09-02T20:41:50 | entity=Local Effort/BUSINESS | id=cmk5s0q7d0007vgim7q1bpvvi | created=2026-01-08
+SoFi Checking | CHECKING | SoFi | SHARED | cur=3.19 | avail=3.19 | open=null | active=true | internal=true | sqLinked=false | plaid=true | lastSync=2026-09-02T20:41:50 | entity=Personal/PERSON | id=cmk4ma62e0003uaxyqm3qeo5h | created=2026-01-07
+SoFi Savings | SAVINGS | SoFi | SHARED | cur=0.04 | avail=0.04 | open=null | active=true | internal=true | sqLinked=false | plaid=true | lastSync=2026-09-02T20:41:50 | entity=Personal/PERSON | id=cmk4ma65t0007uaxybacjgcvd | created=2026-01-07
+Square | OTHER | Square | PROCESSOR | cur=5742.77 | avail=null | open=null | active=true | internal=true | sqLinked=true | plaid=false | lastSync=2026-09-02T20:43:48 | entity=Local Effort/BUSINESS | id=cmsubl8uk0001105uaiq75zuy | created=2026-08-15
+Stripe | OTHER | Stripe | PROCESSOR | cur=0 | avail=null | open=null | active=true | internal=true | sqLinked=false | plaid=false | lastSync=null | entity=Weston Smith/PERSON | id=cmtkicrby0005fc051dzqakml | created=2026-09-02
+TOTAL CHECKING | CHECKING | Chase | PERSONAL | cur=276.4 | avail=208.27 | open=null | active=true | internal=true | sqLinked=false | plaid=true | lastSync=2026-09-02T20:41:50 | entity=Personal/PERSON | id=cmk7p4w3b0003qitvgkvs6903 | created=2026-01-10
+Venmo Wallet | OTHER | Venmo | PERSONAL | cur=0 | avail=null | open=null | active=true | internal=true | sqLinked=false | plaid=false | lastSync=null | entity=null/null | id=cmllid9s80001c2t9tdbd0vku | created=2026-02-13
+
+OWNERSHIP RECORDS (10)
+General savings | custody=PERSONAL | owner=Weston Smith/PERSON | role=SOLE_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+Local Pizza | custody=BUSINESS | owner=Weston Smith/PERSON | role=SOLE_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+SoFi Checking | custody=SHARED | owner=Weston Smith/PERSON | role=JOINT_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+SoFi Checking | custody=SHARED | owner=Catherine Olsen/PERSON | role=JOINT_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+SoFi Savings | custody=SHARED | owner=Weston Smith/PERSON | role=JOINT_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+SoFi Savings | custody=SHARED | owner=Catherine Olsen/PERSON | role=JOINT_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+Square | custody=PROCESSOR | owner=Weston Smith/PERSON | role=SOLE_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+Stripe | custody=PROCESSOR | owner=Weston Smith/PERSON | role=SOLE_OWNER | from=2024-01-01 | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+TOTAL CHECKING | custody=PERSONAL | owner=Catherine Olsen/PERSON | role=SOLE_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+Venmo Wallet | custody=PERSONAL | owner=Catherine Olsen/PERSON | role=SOLE_OWNER | from=null | to=open | srcRef=2026-09-03.v2 | confirmed=2026-08-23T05:00:00
+
+TX TOTALS: [{"n":6853,"min_date":"2024-01-11T00:00:00.000Z","max_date":"2026-09-02T00:00:00.000Z"}]  POSTED: [{"n":6811,"min_date":"2024-01-11T00:00:00.000Z","max_date":"2026-09-01T00:00:00.000Z"}]
+
+SIGN BY TYPE/STATUS
+  EXPENSE | PENDING | n=21 | min=2.99 | max=432 | neg=0
+  EXPENSE | POSTED | n=4416 | min=0.05 | max=6000 | neg=0
+  EXPENSE | REMOVED | n=17 | min=0.43 | max=161.35 | neg=0
+  INCOME | PENDING | n=3 | min=50 | max=353.69 | neg=0
+  INCOME | POSTED | n=1851 | min=0 | max=6509 | neg=0
+  INCOME | REMOVED | n=1 | min=0.43 | max=0.43 | neg=0
+  TRANSFER | POSTED | n=544 | min=0.71 | max=2249.23 | neg=0
+
+BALANCE SNAPSHOTS: latest 3 per account
+  General savings (n=14)
+      eff=2026-09-02T20:41:50 bal=127.29 avail=127.29 src=PLAID_SYNC extId=null
+      eff=2026-09-02T05:11:10 bal=134.29 avail=134.29 src=PLAID_SYNC extId=null
+      eff=2026-09-02T04:51:07 bal=134.29 avail=134.29 src=PLAID_SYNC extId=null
+  Local Pizza (n=14)
+      eff=2026-09-02T20:41:50 bal=7.22 avail=0.42 src=PLAID_SYNC extId=null
+      eff=2026-09-02T05:11:10 bal=5.21 avail=5.21 src=PLAID_SYNC extId=null
+      eff=2026-09-02T04:51:07 bal=5.21 avail=5.21 src=PLAID_SYNC extId=null
+  SoFi Checking (n=14)
+      eff=2026-09-02T20:41:50 bal=3.19 avail=3.19 src=PLAID_SYNC extId=null
+      eff=2026-09-02T05:11:10 bal=3.19 avail=3.19 src=PLAID_SYNC extId=null
+      eff=2026-09-02T04:51:00 bal=3.19 avail=3.19 src=PLAID_SYNC extId=null
+  SoFi Savings (n=14)
+      eff=2026-09-02T20:41:50 bal=0.04 avail=0.04 src=PLAID_SYNC extId=null
+      eff=2026-09-02T05:11:10 bal=0.04 avail=0.04 src=PLAID_SYNC extId=null
+      eff=2026-09-02T04:51:01 bal=0.04 avail=0.04 src=PLAID_SYNC extId=null
+  TOTAL CHECKING (n=14)
+      eff=2026-09-02T20:41:50 bal=276.4 avail=208.27 src=PLAID_SYNC extId=null
+      eff=2026-09-02T05:11:08 bal=334.69 avail=248.26 src=PLAID_SYNC extId=null
+      eff=2026-09-02T04:50:59 bal=334.69 avail=248.26 src=PLAID_SYNC extId=null

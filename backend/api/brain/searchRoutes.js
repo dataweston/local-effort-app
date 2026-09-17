@@ -1,139 +1,26 @@
+'use strict';
+
 /**
- * Hybrid semantic search over brain entities + inbox items.
- *
- * POST /api/brain/search  — admin only
- *   body: { query: string, limit?: number, table?: 'entity'|'assertion'|'inbox' }
- *   returns: { ok, results: [{ id, table, text, score, metadata }] }
- *
- * Delegates to Python sidecar for vector search (LanceDB + Voyage AI).
- * Falls back to Postgres ILIKE keyword search if sidecar unavailable.
+ * Private Company Brain retrieval routes. All surfaces use businessMemory.js so
+ * API clients and MCP agents receive the same evidence, provenance, and
+ * reconciliation behavior.
  */
 
-const { spawn } = require('child_process');
-const path = require('path');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { getPrisma } = require('../utils/prisma');
+const {
+  searchBusinessMemory,
+  buildBusinessContext,
+  getBusinessMemorySource,
+  businessMemoryCoverage,
+} = require('./businessMemory');
+const { jobFreshness } = require('./jobRuns');
+const { getThreadSyncStatus } = require('./gmailSync');
 
 const verifyAdminRequest = createAdminVerifier();
-const SIDECAR_DIR = path.resolve(__dirname, '../../../brain-sidecar');
 
-function brainPythonBin() {
-  return process.env.BRAIN_PYTHON_BIN
-    || process.env.PYTHON_BIN
-    || (process.platform === 'win32'
-      ? 'C:/Users/user/AppData/Local/Programs/Python/Python310/python.exe'
-      : 'python3');
-}
-
-async function vectorSearch(query, { limit = 8, table } = {}) {
-  return new Promise((resolve, reject) => {
-    const pythonBin = brainPythonBin();
-    const args = ['-c', `
-import sys, json, os
-sys.path.insert(0, r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}')
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=os.path.join(r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}', '..', '.env'))
-from vector_store import VectorStore
-vs = VectorStore()
-results = vs.search(${JSON.stringify(query)}, limit=${limit}${table ? `, table_filter=${JSON.stringify(table)}` : ''})
-print(json.dumps(results))
-`];
-
-    const child = spawn(pythonBin, args, {
-      env: { ...process.env },
-      cwd: SIDECAR_DIR,
-    });
-
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', d => { stdout += d; });
-    child.stderr.on('data', d => { stderr += d; });
-
-    child.on('close', code => {
-      if (code !== 0) return reject(new Error(stderr.slice(0, 200) || 'sidecar exited ' + code));
-      try {
-        resolve(JSON.parse(stdout.trim()));
-      } catch {
-        reject(new Error('sidecar returned invalid JSON'));
-      }
-    });
-
-    setTimeout(() => { child.kill(); reject(new Error('sidecar timeout')); }, 10_000);
-  });
-}
-
-async function keywordFallback(prisma, query, { limit = 8, table } = {}) {
-  const results = [];
-  const pattern = `%${query}%`;
-
-  if (!table || table === 'entity') {
-    const entities = await prisma.brainEntity.findMany({
-      where: {
-        tombstonedAt: null,
-        name: { contains: query, mode: 'insensitive' },
-      },
-      take: limit,
-      select: { id: true, entityType: true, name: true },
-    });
-    for (const e of entities) {
-      results.push({
-        id: `entity:${e.id}`,
-        table: 'entity',
-        text: `${e.entityType}: ${e.name}`,
-        score: null,
-        metadata: { entityId: e.id, entityType: e.entityType, name: e.name },
-      });
-    }
-  }
-
-  if (!table || table === 'assertion') {
-    const assertions = await prisma.brainAssertion.findMany({
-      where: {
-        retractedAt: null,
-        OR: [
-          { relType: { contains: query, mode: 'insensitive' } },
-          { src: { name: { contains: query, mode: 'insensitive' } } },
-          { dst: { name: { contains: query, mode: 'insensitive' } } },
-        ],
-      },
-      take: limit,
-      include: {
-        src: { select: { id: true, entityType: true, name: true } },
-        dst: { select: { id: true, entityType: true, name: true } },
-      },
-    });
-    for (const a of assertions) {
-      results.push({
-        id: `assertion:${a.id}`,
-        table: 'assertion',
-        text: `${a.src?.entityType}: ${a.src?.name} ${a.relType} ${a.dst?.entityType}: ${a.dst?.name}`,
-        score: null,
-        metadata: { assertionId: a.id, relType: a.relType, src: a.src, dst: a.dst },
-      });
-    }
-  }
-
-  if (!table || table === 'inbox') {
-    const items = await prisma.brainInboxItem.findMany({
-      where: {
-        status: 'pending',
-        rawContent: { contains: query, mode: 'insensitive' },
-      },
-      take: limit,
-      select: { id: true, rawContent: true, source: true, status: true },
-    });
-    for (const item of items) {
-      results.push({
-        id: `inbox:${item.id}`,
-        table: 'inbox',
-        text: item.rawContent.slice(0, 200),
-        score: null,
-        metadata: { inboxId: item.id, source: item.source, status: item.status },
-      });
-    }
-  }
-
-  return results.slice(0, limit);
+function requestErrorStatus(error) {
+  return /required|500 characters|unknown memory kind/i.test(error?.message || '') ? 400 : 500;
 }
 
 function registerSearchRoutes(app, { logger } = {}) {
@@ -143,27 +30,70 @@ function registerSearchRoutes(app, { logger } = {}) {
     try {
       const admin = await verifyAdminRequest(req);
       if (!admin) return res.status(403).json({ error: 'admin only' });
+      const { query, limit = 8, table, kinds } = req.body || {};
+      const result = await searchBusinessMemory(query, {
+        limit,
+        table,
+        kinds,
+        prismaClient: prisma,
+      });
+      return res.json({ ok: true, ...result });
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/search error');
+      return res.status(requestErrorStatus(error)).json({ error: error?.message || 'internal-error' });
+    }
+  });
 
-      const { query, limit = 8, table } = req.body || {};
-      if (!query || typeof query !== 'string' || !query.trim()) {
-        return res.status(400).json({ error: 'query required' });
-      }
+  app.post('/api/brain/context', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+      const { query, limit = 12, kinds, synthesize = true } = req.body || {};
+      const result = await buildBusinessContext(query, {
+        limit,
+        kinds,
+        synthesize: synthesize !== false,
+        prismaClient: prisma,
+      });
+      return res.json({ ok: true, ...result });
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/context error');
+      return res.status(requestErrorStatus(error)).json({ error: error?.message || 'internal-error' });
+    }
+  });
 
-      let results;
-      let method = 'vector';
+  app.get('/api/brain/source/:id', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+      const document = await getBusinessMemorySource(
+        { id: req.params.id },
+        {
+          includeRaw: req.query.includeRaw === 'true',
+          prismaClient: prisma,
+        }
+      );
+      if (!document) return res.status(404).json({ error: 'source document not found' });
+      return res.json({ ok: true, document });
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/source error');
+      return res.status(requestErrorStatus(error)).json({ error: error?.message || 'internal-error' });
+    }
+  });
 
-      try {
-        results = await vectorSearch(query.trim(), { limit, table });
-      } catch (err) {
-        logger?.warn({ err }, 'brain/search: vector search failed, falling back to keyword');
-        method = 'keyword';
-        results = await keywordFallback(prisma, query.trim(), { limit, table });
-      }
-
-      return res.json({ ok: true, query, method, results });
-    } catch (err) {
-      logger?.error({ err }, 'brain/search error');
-      return res.status(500).json({ error: 'internal-error' });
+  app.get('/api/brain/coverage', async (req, res) => {
+    try {
+      const admin = await verifyAdminRequest(req);
+      if (!admin) return res.status(403).json({ error: 'admin only' });
+      const [corpus, jobs, gmail] = await Promise.all([
+        businessMemoryCoverage(prisma),
+        jobFreshness(prisma),
+        getThreadSyncStatus(prisma),
+      ]);
+      return res.json({ ok: true, corpus, jobs, gmail });
+    } catch (error) {
+      logger?.error({ err: error }, 'brain/coverage error');
+      return res.status(500).json({ error: error?.message || 'internal-error' });
     }
   });
 }

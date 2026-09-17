@@ -10,6 +10,20 @@ The production website and operations tooling for **Local Effort Cooperative** (
 2. **Be maximally legible to search engines and AI agents** — agents shopping or researching on behalf of customers should be able to find services, pricing, and booking paths without executing JS (see "Agent-facing surfaces" below).
 3. **Internal tools** (planner, hub, brain) support daily operations and must never leak into the public index.
 
+## Service-first execution
+
+Optimize for the user's completed outcome, not for the amount of investigation performed. Correctness and safety still control, but repository exploration is a cost.
+
+- **Define the narrow contract first.** Identify the requested result, owner-supplied inputs, authoritative source, direct consumers, and smallest acceptance check. Do not invent adjacent goals, audits, or cleanup.
+- **Trust owner intent.** Owner-provided decisions, corrections, desired assumptions, and acceptance criteria are inputs, not hypotheses to reconfirm. When asked to encode a forecast or scenario, label the supplied figures as owner-defined/model inputs and implement them. Corroborate only when the requested deliverable makes a claim about observed actuals or the owner explicitly asks for an audit.
+- **Use progressive discovery.** Read the applicable skill or workflow first, then named files or the likely source of truth and its direct consumers. Search narrow paths and read the smallest complete ranges. Broaden only for a specific unresolved dependency. Never inspect Planner, Brain, billing, history, or production systems “just in case.”
+- **Make every lookup earn its context.** Before a read or search, know which implementation or verification decision its result will change. Reuse prior results; do not repeat searches, reread unchanged files, or reread a successful edit merely for reassurance. Avoid large repo-root output.
+- **Move to implementation promptly.** A small scoped request should normally reach its first edit within two focused discovery waves and finish in roughly 10–15 tool calls. These are diagnostic targets, not permission to skip a needed safety check; exceed them only for a named blocker or dependency, not curiosity.
+- **Choose for the user.** Follow established conventions and take the smallest safe, reversible path when ambiguity is immaterial. Ask only when alternatives produce materially different business outcomes. Do not make the user manage the agent's process.
+- **Keep side effects explicit.** Do not read or mutate production data, contact people, invoke external services, or begin a broad audit unless the requested outcome requires it and the action is authorized. Prefer available dry runs.
+- **Verify once, proportionately.** Use the minimum check that exercises the changed contract: parse plus a targeted model run for data/config; focused test, lint, or smoke path for code; the changed browser path for UI. Use a full build only for build/deploy or cross-cutting integration risk. Do not stack redundant checks without a failure-driven reason.
+- **Stop when done.** Once the acceptance criteria pass, deliver immediately. Report the result, changed files, exact verification, and only material caveats. Do not append a self-audit, speculative follow-up work, or unrelated improvements.
+
 ## Repo map (what matters)
 
 ```
@@ -83,6 +97,8 @@ pnpm test:e2e           # Playwright
 node scripts/gmail.cjs status                    # auth health + index freshness + how to fix
 node scripts/gmail.cjs search "rad pizza" --max 5
 node scripts/gmail.cjs thread <threadId>
+node scripts/gmail.cjs sync --refresh-recent --recent-days 45
+node scripts/audit-square-recurring-invoices.cjs --query "Tyler"  # search live Square invoices by customer/title
 
 node scripts/planner.cjs list --from 2026-09-01 --to 2026-09-30
 node scripts/planner.cjs add --date fri --title "Rad — pizza dinner" --type event
@@ -94,12 +110,17 @@ derives `dayOfWeek` and a deterministic id, prints same-day cards as a capacity
 check, and is a **dry run until `--apply`**. For multi-card batches with COGS and
 recurring series, `scripts/upsert-planner-week.cjs --data <file.json>` still applies.
 
-**Gmail keeps breaking?** Run `scripts/gmail.cjs status` first — it distinguishes
-"never connected" from "grant expired" and detects the real root cause: while the
-Google Cloud OAuth client sits in **Testing** publishing status, Google expires
-refresh tokens every 7 days. Publish the consent screen to stop the bleeding.
-Reconnect via the Brain UI → Partners → **Connect Gmail** (that POST signs the
-OAuth state server-side; a locally generated URL can fail state verification).
+**Gmail keeps breaking?** Run `scripts/gmail.cjs status` first. It probes the
+Gmail API—not just token expiry—and force-refreshes one rejected access token
+before reporting a reconnect requirement. The sync archives exact RFC 2822
+bytes before deriving searchable text, refreshes recent business mail daily,
+and drains the historical lane in bounded batches. `GMAIL_PUBSUB_TOPIC` plus
+`GMAIL_PUBSUB_SERVICE_ACCOUNT` enables authenticated push refresh; without both,
+daily polling remains the explicit fallback. An index older than two days is
+stale. If `testingModeGrant` is reported, publish the Google Cloud OAuth consent
+screen because Testing grants expire weekly. Reconnect via the Brain UI →
+Partners → **Connect Gmail**; that POST signs OAuth state server-side, while a
+locally generated URL can fail state verification.
 
 ## Conventions
 

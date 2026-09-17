@@ -16,14 +16,64 @@ function loadEnv(filePath) {
   }
 }
 
+function argValue(name) {
+  const index = process.argv.indexOf(`--${name}`);
+  return index >= 0 ? process.argv[index + 1] || '' : '';
+}
+
 function invoiceDate(invoice) {
   return String(invoice.paymentRequests?.find((request) => request?.dueDate)?.dueDate || invoice.saleOrServiceDate || invoice.createdAt || '').slice(0, 10);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRateLimit(error) {
+  return Number(error?.statusCode || error?.response?.statusCode || error?.response?.status || 0) === 429
+    || /\b429\b/.test(String(error?.message || ''));
+}
+
+async function squareCall(operation) {
+  let lastError;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isRateLimit(error) || attempt === 4) throw error;
+      await sleep(Math.min(8000, 500 * (2 ** attempt)));
+    }
+  }
+  throw lastError;
+}
+
 async function amountCents(client, invoice) {
-  if (!invoice.orderId) return Number(invoice.nextPaymentAmountMoney?.amount || 0);
-  const response = await client.ordersApi.retrieveOrder(invoice.orderId);
+  const nextAmount = Number(invoice.nextPaymentAmountMoney?.amount || 0);
+  if (nextAmount > 0) return nextAmount;
+  if (!invoice.orderId) return 0;
+  const response = await squareCall(() => client.ordersApi.retrieveOrder(invoice.orderId));
   return Number(response.result?.order?.totalMoney?.amount || 0);
+}
+
+async function recipientLabel(client, invoice, cache) {
+  const recipient = invoice.primaryRecipient || {};
+  const direct = [recipient.companyName, recipient.emailAddress].filter(Boolean);
+  if (!recipient.customerId || !client.customersApi) {
+    return direct.join(' | ') || recipient.customerId || 'unknown';
+  }
+  if (!cache.has(recipient.customerId)) {
+    const response = await squareCall(() => client.customersApi.retrieveCustomer(recipient.customerId));
+    const customer = response.result?.customer || {};
+    const name = [customer.givenName, customer.familyName].filter(Boolean).join(' ');
+    cache.set(
+      recipient.customerId,
+      [name, customer.companyName, customer.emailAddress].filter(Boolean),
+    );
+  }
+  return [...direct, ...cache.get(recipient.customerId)].filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(' | ');
 }
 
 function median(values) {
@@ -41,24 +91,38 @@ async function main() {
   const invoices = [];
   let cursor;
   do {
-    const response = await client.invoicesApi.listInvoices(locationId, cursor, 200);
+    const response = await squareCall(() => client.invoicesApi.listInvoices(locationId, cursor, 200));
     invoices.push(...(response.result.invoices || []));
     cursor = response.result.cursor;
   } while (cursor);
 
-  const rows = await Promise.all(invoices.map(async (invoice) => ({
-    date: invoiceDate(invoice),
-    status: invoice.status,
-    amountCents: await amountCents(client, invoice),
-    recipient: invoice.primaryRecipient?.customerId || invoice.primaryRecipient?.emailAddress || invoice.primaryRecipient?.companyName || 'unknown',
-    title: String(invoice.title || '').trim().toLowerCase(),
-    happyMonday: [invoice.title, invoice.description, invoice.primaryRecipient?.companyName, invoice.primaryRecipient?.emailAddress]
-      .filter(Boolean).join(' ').toLowerCase().includes('happy monday'),
-  })));
+  const query = argValue('query').trim().toLowerCase();
+  const customerCache = new Map();
+  const rows = [];
+  for (const invoice of invoices) {
+    const recipient = await recipientLabel(client, invoice, customerCache);
+    const title = String(invoice.title || '').trim();
+    const description = String(invoice.description || '').trim();
+    const searchable = [recipient, title, description, invoice.id].join(' ').toLowerCase();
+    if (query && !searchable.includes(query)) continue;
+    const amount = await amountCents(client, invoice);
+    rows.push({
+      invoiceId: invoice.id,
+      subscriptionId: invoice.subscriptionId || null,
+      date: invoiceDate(invoice),
+      status: invoice.status,
+      amountCents: amount,
+      recipient,
+      title,
+      description,
+      happyMonday: [title, description, recipient].join(' ').toLowerCase().includes('happy monday'),
+    });
+    await sleep(75);
+  }
 
   const grouped = new Map();
   for (const row of rows.filter((item) => item.date && item.amountCents > 0 && item.status !== 'CANCELED')) {
-    const key = `${row.recipient}|${row.title}`;
+    const key = row.subscriptionId || `${row.recipient}|${row.title.toLowerCase()}|${row.amountCents}`;
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key).push(row);
   }
@@ -70,6 +134,8 @@ async function main() {
     const recent = sorted.at(-1);
     return {
       seriesId: crypto.createHash('sha256').update(key).digest('hex').slice(0, 10),
+      recipient: recent.recipient,
+      title: recent.title,
       invoiceCount: sorted.length,
       cadenceDays,
       firstDate: sorted[0].date,
@@ -81,12 +147,18 @@ async function main() {
     };
   }).sort((a, b) => b.latestAmountCents - a.latestAmountCents);
 
-  const monthly = series.filter((item) => item.monthlyCandidate);
+  const activeCutoff = new Date(Date.now() - 45 * 86_400_000).toISOString().slice(0, 10);
+  const monthly = series.filter((item) => item.monthlyCandidate && item.lastDate >= activeCutoff);
+  const historicalMonthly = series.filter((item) => item.monthlyCandidate && item.lastDate < activeCutoff);
   console.log(JSON.stringify({
+    query: query || null,
     invoiceCount: invoices.length,
+    matchedInvoiceCount: rows.length,
+    matchedInvoices: query ? rows : undefined,
     monthlyRecurringCents: monthly.reduce((sum, item) => sum + item.latestAmountCents, 0),
     monthlySeriesCount: monthly.length,
     monthlySeries: monthly,
+    historicalMonthlySeries: historicalMonthly,
     nonMonthlySeries: series.filter((item) => !item.monthlyCandidate),
   }, null, 2));
 }

@@ -90,10 +90,10 @@ function resolveActiveClass(classRow) {
  * Gate 3. A dues-bearing class needs an active, matching plan under the same
  * billing authority. Square plans also need their external subscription id.
  */
-function hasSatisfiedPayment(membership, classDefinition, now) {
-  if (classDefinition.duesCents === 0) return true;
+function satisfiedPaymentPlan(membership, classDefinition, now) {
+  if (classDefinition.duesCents === 0) return null;
   const plans = Array.isArray(membership.duesPlans) ? membership.duesPlans : [];
-  return plans.some((plan) => {
+  return plans.find((plan) => {
     if (!plan || plan.status !== DUES_PLAN_STATUS.ACTIVE) return false;
     if (plan.cadence !== classDefinition.duesCadence) return false;
     if (plan.amountCents !== classDefinition.duesCents) return false;
@@ -105,11 +105,11 @@ function hasSatisfiedPayment(membership, classDefinition, now) {
 
     const periodEnd = asTime(plan.currentPeriodEnd);
     return periodEnd === null || periodEnd > now;
-  });
+  }) || null;
 }
 
 /** Gates 2-4 for one membership row. Gate 1 is checked once, on the profile. */
-function isActivated(membership, classDefinition, entitlements, now) {
+function isActivated(membership, classDefinition, entitlements, paymentPlan, now) {
   if (!membership || membership.status !== MEMBERSHIP_STATUS.ACTIVE) return false;
   if (!classDefinition) return false;
 
@@ -120,18 +120,15 @@ function isActivated(membership, classDefinition, entitlements, now) {
   if (deactivatedAt !== null && deactivatedAt <= now) return false;
 
   if (asTime(membership.agreementAcceptedAt) === null) return false;
-  if (!hasSatisfiedPayment(membership, classDefinition, now)) return false;
+  if (classDefinition.duesCents > 0 && !paymentPlan) return false;
 
   return entitlements.length > 0;
 }
 
-function coopCreditForMembership(membership, classDefinition) {
-  if (!classDefinition.accruesCoopCredit) return 0;
-  const plans = Array.isArray(membership.duesPlans) ? membership.duesPlans : [];
-  return plans.reduce((sum, plan) => {
-    const cents = Number(plan?.coopCreditBalanceCents);
-    return Number.isSafeInteger(cents) && cents > 0 ? sum + cents : sum;
-  }, 0);
+function coopCreditForMembership(paymentPlan, classDefinition) {
+  if (!classDefinition.accruesCoopCredit || !paymentPlan) return 0;
+  const cents = Number(paymentPlan.coopCreditBalanceCents);
+  return Number.isSafeInteger(cents) && cents > 0 ? cents : 0;
 }
 
 /**
@@ -183,7 +180,11 @@ function createMembershipScopeResolver({ prisma, now = () => new Date() } = {}) 
       for (const row of Array.isArray(membershipRows) ? membershipRows : []) {
         const classDefinition = resolveActiveClass(row?.class);
         const codes = resolveEntitlementCodes(classDefinition?.code);
-        if (!isActivated(row, classDefinition, codes, at)) continue;
+        const paymentPlan = classDefinition
+          ? satisfiedPaymentPlan(row, classDefinition, at)
+          : null;
+        if (!isActivated(row, classDefinition, codes, paymentPlan, at)) continue;
+        const membershipCreditCents = coopCreditForMembership(paymentPlan, classDefinition);
 
         memberships.push(Object.freeze({
           id: row.id,
@@ -194,7 +195,19 @@ function createMembershipScopeResolver({ prisma, now = () => new Date() } = {}) 
           duesCents: classDefinition.duesCents,
           waived: classDefinition.duesCents === 0,
           accruesCoopCredit: classDefinition.accruesCoopCredit,
+          coopCreditBasisPoints: classDefinition.coopCreditBasisPoints,
+          coopCreditNonExpiring: classDefinition.coopCreditNonExpiring,
+          coopCreditBalanceCents: membershipCreditCents,
           billingAuthority: row.billingAuthority,
+          duesPlan: paymentPlan ? Object.freeze({
+            status: paymentPlan.status,
+            cadence: paymentPlan.cadence,
+            amountCents: paymentPlan.amountCents,
+            billingAuthority: paymentPlan.billingAuthority,
+            externalSubscriptionRef: paymentPlan.externalSubscriptionRef,
+            currentPeriodStart: paymentPlan.currentPeriodStart || null,
+            currentPeriodEnd: paymentPlan.currentPeriodEnd || null,
+          }) : null,
           activatedAt: row.activatedAt,
           agreementAcceptedAt: row.agreementAcceptedAt,
           entitlements: Object.freeze(codes),
@@ -208,7 +221,7 @@ function createMembershipScopeResolver({ prisma, now = () => new Date() } = {}) 
           }));
         }
         for (const code of codes) entitlements.add(code);
-        coopCreditBalanceCents += coopCreditForMembership(row, classDefinition);
+        coopCreditBalanceCents += membershipCreditCents;
       }
 
       if (memberships.length === 0) return closedScope('no-active-membership');

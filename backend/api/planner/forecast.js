@@ -1,5 +1,6 @@
 const { getSupabase } = require('../supabaseClient');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
+const { addBillingInterval } = require('./billingSchedule');
 
 const DAY_MS = 86_400_000;
 
@@ -445,26 +446,6 @@ function cardRevenueCents(card) {
     : Math.round(Number(card.revenue || 0) * 100);
 }
 
-function addBillingInterval(dateString, cadence) {
-  const [year, month, day] = dateString.split('-').map(Number);
-  const current = new Date(Date.UTC(year, month - 1, day));
-  if (String(cadence).startsWith('weekly')) {
-    current.setUTCDate(current.getUTCDate() + 7);
-    return isoDate(current);
-  }
-  if (cadence === 'every_4_weeks') {
-    current.setUTCDate(current.getUTCDate() + 28);
-    return isoDate(current);
-  }
-  const nextMonthStart = new Date(Date.UTC(year, month, 1));
-  const finalDay = new Date(Date.UTC(nextMonthStart.getUTCFullYear(), nextMonthStart.getUTCMonth() + 1, 0)).getUTCDate();
-  if (cadence === 'monthly_month_end') {
-    nextMonthStart.setUTCDate(finalDay);
-    return isoDate(nextMonthStart);
-  }
-  nextMonthStart.setUTCDate(Math.min(day, finalDay));
-  return isoDate(nextMonthStart);
-}
 
 function summarizePlannerCards(cards, keys, today) {
   const laborByMonth = Object.fromEntries(keys.map((key) => [key, 0]));

@@ -20,7 +20,10 @@ function canonicalName(name) {
 function stableStringify(v) {
   if (v === null || typeof v !== 'object') return JSON.stringify(v);
   if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
-  return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(v[k])}`).join(',')}}`;
+  return `{${Object.keys(v)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${stableStringify(v[k])}`)
+    .join(',')}}`;
 }
 
 /**
@@ -37,11 +40,12 @@ async function writeLedgerEvent({
   actorId = null,
   payload,
   updatePayload = false, // when an event already exists, merge `payload` into it
-                         // instead of skipping. Used by enrichment backfills that
-                         // add new fields (e.g. identitySignals, customerEntityId)
-                         // to events written by an earlier sync. New keys win.
+  // instead of skipping. Used by enrichment backfills that
+  // add new fields (e.g. identitySignals, customerEntityId)
+  // to events written by an earlier sync. New keys win.
+  prismaClient = null,
 }) {
-  const prisma = getPrisma();
+  const prisma = prismaClient || getPrisma();
   if (sourceId) {
     const existing = await prisma.ledgerEvent.findFirst({
       where: {
@@ -116,7 +120,12 @@ async function findOrCreateEntity({ entityType, name, properties = null, status 
         ],
       },
     });
-    return { entity: existingSelf || null, created: false, blocked: true, blockReason: self.reason };
+    return {
+      entity: existingSelf || null,
+      created: false,
+      blocked: true,
+      blockReason: self.reason,
+    };
   }
 
   const normalized = canonicalName(name);
@@ -158,22 +167,30 @@ async function findVendorByName(merchantName) {
     .replace(/\b(pos|debit|purchase|recurring|payment|invoice|online|store|marketplace)\b/g, ' ')
     .replace(/\b(llc|inc|corp|corporation|company|cooperative|coop|co)\b/g, ' ')
     .replace(/\b\d{3,}\b/g, ' ')
-    .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   // Founder-confirmed descriptor rules are checked before fuzzy aliases.
   const learnedRule = await prisma.partnerLearnedRule.findFirst({
     where: {
-      taskType: 'vendor_identity', enabled: true,
+      taskType: 'vendor_identity',
+      enabled: true,
       OR: [
         { scopeType: 'merchant_descriptor', scopeKey: descriptor },
-        ...(normalized.startsWith('facebk ') ? [{ scopeType: 'merchant_prefix', scopeKey: 'facebk' }] : []),
+        ...(normalized.startsWith('facebk ')
+          ? [{ scopeType: 'merchant_prefix', scopeKey: 'facebk' }]
+          : []),
       ],
     },
     orderBy: { confidence: 'desc' },
   });
   const learnedVendorId = learnedRule?.outcome?.vendorEntityId;
   if (learnedVendorId) {
-    const learnedVendor = await prisma.brainEntity.findFirst({ where: { id: learnedVendorId, entityType: 'Vendor', tombstonedAt: null }, select: { id: true } });
+    const learnedVendor = await prisma.brainEntity.findFirst({
+      where: { id: learnedVendorId, entityType: 'Vendor', tombstonedAt: null },
+      select: { id: true },
+    });
     if (learnedVendor) return learnedVendor.id;
   }
 
@@ -213,17 +230,30 @@ async function findVendorByName(merchantName) {
  * Upsert a BrainInboxItem from a ledger event.
  * Used when an event needs human triage rather than automatic graph update.
  */
-async function createInboxItem({ rawContent, source, attachments = null, ledgerEventId = null }) {
-  const prisma = getPrisma();
+async function createInboxItem({
+  rawContent,
+  source,
+  attachments = null,
+  ledgerEventId = null,
+  prismaClient = null,
+}) {
+  const prisma = prismaClient || getPrisma();
   return prisma.brainInboxItem.create({
     data: {
       rawContent,
       source,
       attachments: attachments ?? undefined,
+      triageHint: ledgerEventId ? { ledgerEventId } : undefined,
       capturedAt: new Date(),
       status: 'pending',
     },
   });
 }
 
-module.exports = { writeLedgerEvent, findVendorByName, createInboxItem, findOrCreateEntity, canonicalName };
+module.exports = {
+  writeLedgerEvent,
+  findVendorByName,
+  createInboxItem,
+  findOrCreateEntity,
+  canonicalName,
+};

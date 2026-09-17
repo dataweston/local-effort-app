@@ -49,26 +49,22 @@ export function useBrainInbox({ accessToken, enabled = true }) {
   }, [accessToken, fetchInbox]);
 
   const triage = useCallback(async (id, action, payload = {}) => {
-    if (!accessToken) return false;
-    try {
-      const res = await fetch(`${API_BASE}/api/brain/inbox/${id}/triage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ action, payload }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setItems(prev => prev.filter(item => item.id !== id));
-        setTotal(prev => Math.max(0, prev - 1));
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
+    if (!accessToken) throw new Error('Sign in before applying an inbox action.');
+    const res = await fetch(`${API_BASE}/api/brain/inbox/${id}/triage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ action, payload }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `Brain inbox action failed (${res.status})`);
     }
+    setItems(prev => prev.filter(item => item.id !== id));
+    setTotal(prev => Math.max(0, prev - 1));
+    return true;
   }, [accessToken]);
 
   useEffect(() => {

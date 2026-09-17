@@ -256,10 +256,18 @@ function hasBrainAdminHeader(req) {
 let running = false;
 let lastRun = null;
 
-function registerSquareOrdersRoutes(app, { logger } = {}) {
+function registerSquareOrdersRoutes(
+  app,
+  {
+    logger,
+    verifyAdminRequest: verifyAdmin = verifyAdminRequest,
+    runSquareOrdersSync: runSync = runSquareOrdersSync,
+    withJobRun: runWithJob,
+  } = {}
+) {
   const runHandler = async (req, res) => {
     try {
-      const admin = await verifyAdminRequest(req);
+      const admin = await verifyAdmin(req);
       const isCron = req.headers['x-vercel-cron'] === '1'
         || String(req.headers['user-agent'] || '').startsWith('vercel-cron');
       if (!admin && !isCron && !hasBrainAdminHeader(req)) {
@@ -270,16 +278,18 @@ function registerSquareOrdersRoutes(app, { logger } = {}) {
 
       const daysBack = Math.min(Math.max(parseInt(req.body?.daysBack || req.query?.daysBack) || 7, 1), 730);
       running = true;
-      const { withJobRun } = require('./jobRuns');
-      withJobRun('square-orders-sync', () => runSquareOrdersSync({ logger, daysBack }))
-        .then((result) => {
-          lastRun = { completedAt: new Date().toISOString(), daysBack, ...result };
-          logger?.info(lastRun, 'brain/square-orders: run finished');
-        })
-        .catch((err) => logger?.error({ err }, 'brain/square-orders: run error'))
-        .finally(() => { running = false; });
-
-      return res.json({ ok: true, status: 'started', daysBack, lastRun });
+      try {
+        const executeWithJob = runWithJob || require('./jobRuns').withJobRun;
+        const result = await executeWithJob(
+          'square-orders-sync',
+          () => runSync({ logger, daysBack }),
+        );
+        lastRun = { completedAt: new Date().toISOString(), daysBack, ...result };
+        logger?.info(lastRun, 'brain/square-orders: run finished');
+        return res.json({ ok: true, status: 'completed', ...lastRun });
+      } finally {
+        running = false;
+      }
     } catch (err) {
       logger?.error({ err }, 'brain/square-orders: trigger error');
       return res.status(500).json({ error: 'internal-error' });

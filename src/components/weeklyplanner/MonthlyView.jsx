@@ -17,8 +17,18 @@ import { OverheadSection } from './OverheadSection';
 import { WhatIfPanel } from './WhatIfPanel';
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function SummaryCard({ label, value, type }) {
@@ -56,14 +66,7 @@ function SummaryCard({ label, value, type }) {
   );
 }
 
-export function MonthlyView({
-  planner,
-  year,
-  month,
-  onNextMonth,
-  onPrevMonth,
-  onSelectWeek,
-}) {
+export function MonthlyView({ planner, year, month, onNextMonth, onPrevMonth, onSelectWeek }) {
   const weekStarts = useMemo(() => getMonthWeeks(year, month), [year, month]);
 
   // Collect all cards for weeks that overlap this month
@@ -80,7 +83,15 @@ export function MonthlyView({
   // Daily data for bar chart (aggregate by day of week across the month)
   const dailyData = useMemo(() => {
     const dayMap = {};
-    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const daysOfWeek = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
     for (const dow of daysOfWeek) {
       dayMap[dow] = { Revenue: 0, Labor: 0, count: 0 };
     }
@@ -108,8 +119,22 @@ export function MonthlyView({
   }, [monthCards]);
 
   const totals = useMemo(
-    () => monthTotals(weekCards, planner.overheads, planner.monthCogs || planner.cogs, weekStarts.length, planner.actualsByDate),
-    [weekCards, planner.overheads, planner.monthCogs, planner.cogs, planner.actualsByDate, weekStarts.length]
+    () =>
+      monthTotals(
+        weekCards,
+        planner.overheads,
+        planner.monthCogs || planner.cogs,
+        weekStarts.length,
+        planner.actualsByDate
+      ),
+    [
+      weekCards,
+      planner.overheads,
+      planner.monthCogs,
+      planner.cogs,
+      planner.actualsByDate,
+      weekStarts.length,
+    ]
   );
 
   const brandSuccess = '#7A846E';
@@ -117,7 +142,7 @@ export function MonthlyView({
   const brandInk = '#3A2E3F';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Month navigation */}
       <div className="flex items-center justify-center gap-4">
         <button
@@ -147,6 +172,7 @@ export function MonthlyView({
         year={year}
         month={month}
         cards={planner.cards}
+        workBlocks={planner.workBlocks}
         actualsByDate={planner.actualsByDate}
         onUpsertRevenueActual={planner.handlers.handleUpsertRevenueActual}
         onSelectWeek={onSelectWeek}
@@ -154,9 +180,15 @@ export function MonthlyView({
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <SummaryCard label={totals.hasActual ? 'Effective Revenue' : 'Planned Revenue'} value={totals.revenue} type="revenue" />
+        <SummaryCard
+          label={totals.hasActual ? 'Effective Revenue' : 'Planned Revenue'}
+          value={totals.revenue}
+          type="revenue"
+        />
         <SummaryCard label="Monthly Labor" value={totals.labor} type="labor" />
-        {totals.facility > 0 && <SummaryCard label="Monthly Facility" value={totals.facility} type="facility" />}
+        {totals.facility > 0 && (
+          <SummaryCard label="Monthly Facility" value={totals.facility} type="facility" />
+        )}
         <SummaryCard label="Monthly COGS" value={totals.cogs} type="cogs" />
         <SummaryCard label="Monthly Overhead" value={totals.overhead} type="overhead" />
         <SummaryCard label="Monthly Net" value={totals.net} type="net" />
@@ -164,14 +196,19 @@ export function MonthlyView({
 
       {totals.hasActual && (
         <div className="text-xs px-1" style={{ color: 'var(--color-text-muted)' }}>
-          Effective revenue uses owner-entered actuals on dates where available. Planned revenue remains visible in the calendar comparison.
+          Effective revenue uses owner-entered actuals on dates where available. Planned revenue
+          remains visible in the calendar comparison.
         </div>
       )}
 
       {/* Projected note */}
-      <div className="flex items-center gap-2 text-xs px-1" style={{ color: 'var(--color-text-muted)' }}>
+      <div
+        className="flex items-center gap-2 text-xs px-1"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
         <TrendingUp size={14} />
-        Based on {weekStarts.length} weeks in {MONTH_NAMES[month - 1]}. Avg daily Revenue vs Labor shown below.
+        Based on {weekStarts.length} weeks in {MONTH_NAMES[month - 1]}. Avg daily Revenue vs Labor
+        shown below.
       </div>
 
       {/* Revenue vs Labor bar chart */}
@@ -242,9 +279,17 @@ export function MonthlyView({
           <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
             Total cost of goods across all weeks this month.
           </p>
-          <div className="text-lg font-bold flex items-center gap-1" style={{ color: 'var(--color-state-danger)' }}>
+          <div
+            className="text-lg font-bold flex items-center gap-1"
+            style={{ color: 'var(--color-state-danger)' }}
+          >
             <DollarSign size={16} />
-            {(planner.monthCogs || planner.cogs).reduce((s, c) => s + (c.amountCents != null ? c.amountCents / 100 : (c.amount || 0)), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {(planner.monthCogs || planner.cogs)
+              .reduce(
+                (s, c) => s + (c.amountCents != null ? c.amountCents / 100 : c.amount || 0),
+                0
+              )
+              .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ const auth = require('../../../../api-handlers/hub/_auth');
 const { allowedVisibility } = require('../../../../api-handlers/hub/threads');
 const { fallbackSpaces, canViewSpace } = require('../../../../api-handlers/hub/spaces');
 const { objectThreadWhere } = require('../../../../api-handlers/hub/today');
+const { ENTITLEMENT } = require('../../membership/membershipClasses');
 
 const originalAdminEmails = process.env.ADMIN_EMAILS;
 
@@ -15,13 +16,34 @@ afterEach(() => {
 });
 
 describe('Hub access policy', () => {
-  it('treats localist as a first-class non-staff access level', () => {
+  it('denies a legacy localist profile without canonical member-area entitlement', () => {
     const access = auth.hubAccessFor({
       hubProfile: { status: 'active', accessLevel: 'localist' },
       isAdmin: false,
     });
 
     expect(auth.coerceHubAccess('localist')).toBe('localist');
+    expect(access).toMatchObject({
+      accessLevel: null,
+      hasHubAccess: false,
+      isLocalist: false,
+      isStaff: false,
+    });
+    expect(auth.requireHubAccess(access, {
+      allowedAccess: ['localist', 'customer', 'staff', 'privileged'],
+    })).toMatchObject({ status: 403 });
+  });
+
+  it('grants non-staff Localist access from canonical member-area entitlement', () => {
+    const access = auth.hubAccessFor({
+      hubProfile: { status: 'active', accessLevel: 'localist' },
+      isAdmin: false,
+      membershipScope: {
+        authenticated: true,
+        entitlements: [ENTITLEMENT.HUB_MEMBER_AREA],
+      },
+    });
+
     expect(access).toMatchObject({
       accessLevel: 'localist',
       hasHubAccess: true,

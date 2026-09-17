@@ -30,6 +30,15 @@ const { z } = require('zod');
 const { getPrisma } = require('../api/utils/prisma');
 const { writeLedgerEvent, canonicalName } = require('../api/brain/ledger');
 const { RELATIONSHIPS, normalizeRelType, validateRelationship } = require('../api/brain/relationshipDictionary');
+const {
+  MEMORY_KINDS,
+  searchBusinessMemory,
+  buildBusinessContext,
+  getBusinessMemorySource,
+  businessMemoryCoverage,
+} = require('../api/brain/businessMemory');
+const { jobFreshness } = require('../api/brain/jobRuns');
+const { getThreadSyncStatus } = require('../api/brain/gmailSync');
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -470,13 +479,6 @@ function registerBrainReadTools(server) {
 
 const FORBIDDEN_REL_TYPES = ['MEDICAL_CONSTRAINT'];
 
-function brainPythonBin() {
-  return process.env.BRAIN_PYTHON_BIN
-    || process.env.PYTHON_BIN
-    || (process.platform === 'win32'
-      ? 'C:/Users/user/AppData/Local/Programs/Python/Python310/python.exe'
-      : 'python3');
-}
 
 function registerBrainWriteTools(server) {
   const prisma = getPrisma();
@@ -956,109 +958,87 @@ function registerBrainHypothesisTools(server) {
   );
 }
 
-// ── Semantic search tool ──────────────────────────────────────────────────────
+// ── Shared Company Brain retrieval tools ─────────────────────────────────────
 
 function registerBrainSearchTools(server) {
-  const { spawn } = require('child_process');
-  const path = require('path');
   const prisma = getPrisma();
-
-  const SIDECAR_DIR = path.resolve(__dirname, '../../brain-sidecar');
-
-  async function vectorSearch(query, { limit = 8, table } = {}) {
-    return new Promise((resolve, reject) => {
-      const pythonBin = brainPythonBin();
-      const script = `
-import sys, json
-sys.path.insert(0, r'${SIDECAR_DIR.replace(/\\/g, '\\\\')}')
-from dotenv import load_dotenv; load_dotenv()
-from vector_store import VectorStore
-vs = VectorStore()
-results = vs.search(${JSON.stringify(query)}, limit=${limit}${table ? `, table_filter=${JSON.stringify(table)}` : ''})
-print(json.dumps(results))
-`;
-      const child = spawn(pythonBin, ['-c', script], { env: { ...process.env }, cwd: SIDECAR_DIR });
-      let out = ''; let err = '';
-      child.stdout.on('data', d => { out += d; });
-      child.stderr.on('data', d => { err += d; });
-      child.on('close', code => {
-        if (code !== 0) return reject(new Error(err.slice(0, 200) || `exit ${code}`));
-        try { resolve(JSON.parse(out.trim())); } catch { reject(new Error('invalid JSON from sidecar')); }
-      });
-      setTimeout(() => { child.kill(); reject(new Error('sidecar timeout')); }, 10_000);
-    });
-  }
+  const memoryKind = z.enum(MEMORY_KINDS);
 
   server.registerTool(
     'brain.search',
     {
-      title: 'Semantic search',
-      description: 'Vector search across all brain entities and inbox items. Use this to find vendors, customers, ingredients, or inbox content by meaning — not just exact name match. Falls back to keyword search if embeddings are unavailable.',
+      title: 'Search Company Brain evidence',
+      description: 'Search the lossless source corpus, ledger, semantic graph, inferences, inbox, and owner-authored evidence through one provenance-preserving retrieval service.',
       inputSchema: z.object({
-        query: z.string().min(1).describe('Natural language search query'),
-        limit: z.number().int().min(1).max(20).optional().describe('Max results (default 8)'),
-        table: z.enum(['entity', 'assertion', 'inbox']).optional().describe('Restrict to entity, assertion, or inbox results'),
+        query: z.string().min(1).max(500).describe('Natural-language or exact-text query'),
+        limit: z.number().int().min(1).max(50).optional().describe('Max results (default 8)'),
+        kinds: z.array(memoryKind).min(1).optional().describe('Optional evidence kinds to search'),
       }),
     },
-    async ({ query, limit = 8, table }) => {
-      let results;
-      let method = 'vector';
+    async ({ query, limit = 8, kinds }) => json(await searchBusinessMemory(query, {
+      limit,
+      kinds,
+      prismaClient: prisma,
+    }))
+  );
 
-      try {
-        results = await vectorSearch(query, { limit, table });
-      } catch {
-        method = 'keyword';
-        results = [];
-        if (!table || table === 'entity') {
-          const entities = await prisma.brainEntity.findMany({
-            where: { tombstonedAt: null, name: { contains: query, mode: 'insensitive' } },
-            take: limit,
-            select: { id: true, entityType: true, name: true },
-          });
-          results.push(...entities.map(e => ({
-            id: `entity:${e.id}`, table: 'entity',
-            text: `${e.entityType}: ${e.name}`, score: null,
-            metadata: { entityId: e.id, entityType: e.entityType, name: e.name },
-          })));
-        }
-        if (!table || table === 'assertion') {
-          const assertions = await prisma.brainAssertion.findMany({
-            where: {
-              retractedAt: null,
-              OR: [
-                { relType: { contains: query, mode: 'insensitive' } },
-                { src: { name: { contains: query, mode: 'insensitive' } } },
-                { dst: { name: { contains: query, mode: 'insensitive' } } },
-              ],
-            },
-            take: limit,
-            include: {
-              src: { select: { id: true, entityType: true, name: true } },
-              dst: { select: { id: true, entityType: true, name: true } },
-            },
-          });
-          results.push(...assertions.map(a => ({
-            id: `assertion:${a.id}`, table: 'assertion',
-            text: `${a.src?.entityType}: ${a.src?.name} ${a.relType} ${a.dst?.entityType}: ${a.dst?.name}`,
-            score: null,
-            metadata: { assertionId: a.id, relType: a.relType, src: a.src, dst: a.dst },
-          })));
-        }
-        if (!table || table === 'inbox') {
-          const items = await prisma.brainInboxItem.findMany({
-            where: { status: 'pending', rawContent: { contains: query, mode: 'insensitive' } },
-            take: limit,
-            select: { id: true, rawContent: true, source: true },
-          });
-          results.push(...items.map(i => ({
-            id: `inbox:${i.id}`, table: 'inbox',
-            text: i.rawContent.slice(0, 200), score: null,
-            metadata: { inboxId: i.id, source: i.source },
-          })));
-        }
-      }
+  server.registerTool(
+    'brain.context',
+    {
+      title: 'Build evidence-backed business context',
+      description: 'Retrieve Company Brain evidence and reconcile it into qualified claims with exact source quotations. Billing comparisons normalize cadence, service period, credits, prorations, one-time fees, tax, and effective dates before identifying conflicts.',
+      inputSchema: z.object({
+        query: z.string().min(1).max(500),
+        limit: z.number().int().min(1).max(50).optional().describe('Max evidence records (default 12)'),
+        kinds: z.array(memoryKind).min(1).optional(),
+        synthesize: z.boolean().optional().describe('Use the configured LLM reconciliation layer; evidence is always returned'),
+      }),
+    },
+    async ({ query, limit = 12, kinds, synthesize = true }) => json(await buildBusinessContext(query, {
+      limit,
+      kinds,
+      synthesize,
+      prismaClient: prisma,
+    }))
+  );
 
-      return json({ query, method, results, count: results.length });
+  server.registerTool(
+    'brain.source.get',
+    {
+      title: 'Get exact Company Brain source',
+      description: 'Return one lossless source document and its provenance. includeRaw verifies the SHA-256 hash before returning original bytes as base64.',
+      inputSchema: z.object({
+        id: z.string().min(1).optional(),
+        source: z.string().min(1).optional(),
+        sourceId: z.string().min(1).optional(),
+        includeRaw: z.boolean().optional(),
+      }),
+    },
+    async ({ id, source, sourceId, includeRaw = false }) => {
+      if (!id && !(source && sourceId)) throw new Error('id or source + sourceId required');
+      const document = await getBusinessMemorySource(
+        { id, source, sourceId },
+        { includeRaw, prismaClient: prisma }
+      );
+      if (!document) throw new Error('source document not found');
+      return json({ document });
+    }
+  );
+
+  server.registerTool(
+    'brain.coverage',
+    {
+      title: 'Inspect Company Brain coverage and freshness',
+      description: 'Report capture/extraction gaps, latest source timestamps, recurring-job SLA freshness, and Gmail cursor progress.',
+      inputSchema: z.object({}),
+    },
+    async () => {
+      const [corpus, jobs, gmail] = await Promise.all([
+        businessMemoryCoverage(prisma),
+        jobFreshness(prisma),
+        getThreadSyncStatus(prisma),
+      ]);
+      return json({ corpus, jobs, gmail });
     }
   );
 }

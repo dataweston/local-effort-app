@@ -19,12 +19,20 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
 
 const { prisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { BUSINESS_LINES } = require('../finance/businessLines');
 
 const verifyAdminRequest = createAdminVerifier();
+
+function hasAdminKeyHeader(req) {
+  const provided = String(req.headers['x-brain-admin-key'] || '');
+  const expected = String(process.env.BRAIN_ADMIN_KEY || '');
+  if (!provided || !expected || provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+}
 
 const DAY_MS = 86_400_000;
 const DEFAULT_WINDOWS = [7, 30, 90];
@@ -67,7 +75,9 @@ function createSalesRouter({ logger = null } = {}) {
   const router = express.Router();
 
   const guarded = (handler) => async (req, res) => {
-    const admin = await verifyAdminRequest(req);
+    const admin = req.method === 'GET' && hasAdminKeyHeader(req)
+      ? { service: 'brain-admin-key' }
+      : await verifyAdminRequest(req);
     if (!admin) return res.status(403).json({ error: 'admin only' });
     if (!prisma) return res.status(503).json({ error: 'database unavailable' });
     try {

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import membershipClassesModule from '../membershipClasses';
 import membershipEntitlementsModule from '../membershipEntitlements';
 import membershipScopeModule from '../membershipScope';
+import membershipSeedModule from '../membershipSeed';
 
 const {
   BILLING_AUTHORITY,
@@ -13,6 +14,7 @@ const {
 } = membershipClassesModule;
 const { createMembershipEntitlementGrantWriter } = membershipEntitlementsModule;
 const { createMembershipScopeResolver } = membershipScopeModule;
+const { persistedClass, seedMembershipClasses } = membershipSeedModule;
 
 const NOW = new Date('2026-09-06T12:00:00.000Z');
 const IDENTITY = { id: 'user-1', email: 'Member@Example.com' };
@@ -140,6 +142,12 @@ describe('organization-scoped membership', () => {
       duesCadence: 'monthly',
       duesCents: 4500,
       waived: false,
+      coopCreditBasisPoints: 400,
+      coopCreditBalanceCents: 225,
+      duesPlan: {
+        status: 'active',
+        externalSubscriptionRef: 'square-localist_monthly',
+      },
     });
   });
 
@@ -221,5 +229,46 @@ describe('organization-scoped membership', () => {
       periodKey: NON_PERIODIC_PERIOD_KEY,
       grantedAt: NOW,
     });
+  });
+});
+
+describe('membership class seeding', () => {
+  it('reports exact drift in dry-run and atomically upserts all confirmed classes on apply', async () => {
+    const monthly = persistedClass(MEMBERSHIP_CLASSES[MEMBERSHIP_CLASS_CODE.LOCALIST_MONTHLY]);
+    const annual = persistedClass(MEMBERSHIP_CLASSES[MEMBERSHIP_CLASS_CODE.LOCALIST_ANNUAL]);
+    const upsert = vi.fn().mockResolvedValue({});
+    const transaction = vi.fn(async (callback) => callback({
+      membershipClass: { upsert },
+    }));
+    const prisma = {
+      membershipClass: {
+        findMany: vi.fn().mockResolvedValue([
+          monthly,
+          { ...annual, duesCents: 1 },
+        ]),
+      },
+      $transaction: transaction,
+    };
+
+    const dryRun = await seedMembershipClasses({ prisma });
+
+    expect(dryRun).toMatchObject({
+      applied: false,
+      classCount: 3,
+      createCount: 1,
+      updateCount: 1,
+      unchangedCount: 1,
+    });
+    expect(transaction).not.toHaveBeenCalled();
+
+    const applied = await seedMembershipClasses({ prisma, apply: true });
+
+    expect(applied.applied).toBe(true);
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(upsert).toHaveBeenCalledTimes(3);
+    expect(upsert).toHaveBeenCalledWith(expect.objectContaining({
+      where: { code: MEMBERSHIP_CLASS_CODE.LOCALIST_ANNUAL },
+      update: expect.objectContaining({ duesCents: 37500 }),
+    }));
   });
 });
