@@ -36,3 +36,6 @@ prerender/
 # skills/le-economist/references/decisions-log.md (then remove this block or
 # move runs to a private data repo).
 skills/le-economist/references/runs/
+
+# Private capital record; keep the canonical copy outside this public repository.
+artifacts/local_effort_capital_master_record_v2_4.docx
