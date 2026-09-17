@@ -15,6 +15,7 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useSearchParams } from 'react-router-dom';
 import PhotoGrid from '../common/PhotoGrid';
 import { QuickEventBookForm } from '../services/slipForms';
 import { useSpecimenReveal } from '../../hooks/useSpecimenReveal';
@@ -58,8 +59,31 @@ Plate.propTypes = {
 };
 Plate.defaultProps = { src: null, eager: false };
 
+/**
+ * The date a visitor arrived with, if it is usable.
+ *
+ * buildVenueJsonLd advertises `/<slug>?date={date}` as the ReserveAction entry
+ * point, so a Google surface, an ad or a shared link can land someone on a
+ * specific night — and that promise is only real if the page reads the
+ * parameter back. Validated rather than trusted: it lands in a form field and
+ * in a request to the team, so a malformed or past date is dropped instead of
+ * preselected.
+ */
+const usableDateParam = (raw) => {
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const today = new Date().toISOString().slice(0, 10);
+  if (raw < today) return null;
+  // Reject a real-looking string that is not a real day (2026-02-31).
+  const parsed = new Date(`${raw}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== raw) return null;
+  return raw;
+};
+
 export default function VenueSheet({ venue, headingLevel }) {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [searchParams] = useSearchParams();
+  const [selectedDate, setSelectedDate] = useState(() =>
+    usableDateParam(searchParams.get('date')),
+  );
   const ledger = useSpecimenReveal();
   const voidBand = useSpecimenReveal();
 

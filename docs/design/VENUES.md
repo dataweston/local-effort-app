@@ -198,9 +198,24 @@ surfaces and for Ads. Three of those four are built; one is not ours to build.
   a `WebPage` carrying a `ReserveAction` whose `EntryPoint` accepts a date, so
   a booking partner or a Maps surface has a documented way in.
 - **Calendar interop.** `GET /api/venues/:slug/calendar.ics` is a subscribable
-  busy feed for Airbnb, Google Calendar, Vrbo and Lodgify; feeds pointed the
-  other way are imported on a two-hour cron, matching Lodgify's own iCal
-  refresh cadence.
+  busy feed for Airbnb, Google Calendar, Vrbo and Lodgify. The feed advertises
+  `REFRESH-INTERVAL: PT2H`, which governs how often *subscribers* poll us and is
+  the right number for them.
+
+  Inbound import runs on a **daily** cron (`0 7 * * *`), not the two-hourly one
+  this was first written with. That is a platform constraint, not a preference:
+  a sub-daily cron failed the Vercel deploy outright, and every other cron in
+  `vercel.json` is daily for the same reason. Read the uniformity there as a
+  limit, not a style.
+
+  The trade-off is real and worth stating. A newly booked night on Airbnb can
+  take up to a day to close here, which is a genuine double-booking window. It
+  is narrowed by the fact that `/availability` fails closed and that a stale
+  block stays blocked — the failure mode that survives a missed sync is a date
+  we wrongly *hold*, not one we wrongly sell. If the window needs to shrink, the
+  fix is an opportunistic refresh on the availability path when the newest
+  `lastSyncAt` is stale, bounded to one feed per request; that was left out
+  deliberately rather than putting an outbound fetch on the critical path.
 - **Reserve with Google cannot be self-integrated.** It requires a booking
   *partner* with a contractual merchant relationship and sub-second availability
   responses. The 2026 expansion to 500+ partners works by reading the booking

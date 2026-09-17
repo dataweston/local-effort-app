@@ -58,7 +58,19 @@ export default function VenueCalendar({
     return { year: now.getUTCFullYear(), month: now.getUTCMonth() };
   }, []);
 
-  const [cursor, setCursor] = useState(start);
+  // Open on the month of a date the visitor arrived with (the ReserveAction
+  // entry point, `?date=`), not on today — otherwise a December link lands on
+  // a September grid with the selection off-screen. Clamped to the navigable
+  // range so a far-future date cannot strand the nav past its own end stop.
+  const [cursor, setCursor] = useState(() => {
+    if (!selectedDate) return start;
+    const [year, month] = selectedDate.split('-').map(Number);
+    const target = { year, month: month - 1 };
+    const last = addMonths(start.year, start.month, monthsAhead);
+    const asIndex = (m) => m.year * 12 + m.month;
+    if (asIndex(target) < asIndex(start) || asIndex(target) > asIndex(last)) return start;
+    return target;
+  });
   const [dayStates, setDayStates] = useState(null); // null = not loaded yet
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
