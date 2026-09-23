@@ -153,10 +153,10 @@
     {
       "slug": "firehouse",
       "nickname": "FIREHOUSE",
-      "verified": false,
+      "verified": true,
       "role": "second-space",
       "isPrimaryHome": false,
-      "name": "TODO — legal/Business Profile name",
+      "name": "FIREHOUSE",
       "kicker": "firehouse —",
       "headline": "We’re cooking in a firehouse in St. Paul",
       "summary": "Host your event in a deeply cared for retired firehouse, across the street from the State Fair. Immaculate decor and seasonal food, relaxed or black tie. Let us know if you need to stay the night.",
@@ -164,15 +164,15 @@
       "accentToken": "--accent-poppy",
       "accentRationale": "Henstenburgh, RP-T-1898-A-3500. A firehouse is a red building; the measured poppy gets there without the fire-engine-red tell. The exterior photograph confirms it after the fact — the building is red brick.",
       "address": {
-        "street": "1290 Snelling",
+        "street": "1290 Snelling Ave N",
         "locality": "St. Paul",
         "region": "MN",
-        "postalCode": "TODO — postcode for 1290 Snelling, St. Paul",
+        "postalCode": "55108",
         "country": "US"
       },
       "geo": {
-        "lat": null,
-        "lng": null
+        "lat": 44.97988,
+        "lng": -93.166588
       },
       "phone": null,
       "googleBusinessProfilePlaceId": null,
@@ -187,8 +187,8 @@
         "street-level bay door"
       ],
       "hours": {
-        "earliest": "TODO",
-        "latest": "TODO"
+        "earliest": null,
+        "latest": null
       },
       "roomFeeCents": 75000,
       "eventTypes": [

@@ -144,7 +144,7 @@ export const PUBLIC_ROUTES = [
   // owner verifies the addresses.
   {
     path: '/firehouse',
-    title: 'FIREHOUSE — Private Event Space in Minneapolis | Local Effort Cooperative',
+    title: 'FIREHOUSE — Private Event Space in St. Paul | Local Effort Cooperative',
     description: 'Book FIREHOUSE, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
     prerender: true,
   },

@@ -80,7 +80,13 @@ const Plate = ({ src, alt, eager }) => {
   }
   return (
     <div className="venue-hero__plate">
-      <img src={src} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+      <img
+        src={src}
+        alt={alt}
+        loading={eager ? 'eager' : 'lazy'}
+        {...(eager ? { fetchpriority: 'high' } : {})}
+        decoding="async"
+      />
     </div>
   );
 };
@@ -105,7 +111,7 @@ Plate.defaultProps = { src: null, eager: false };
  * `tile` is a span in a six-column grid, set as custom properties so the CSS
  * can reuse the same two numbers for the mobile aspect ratio.
  */
-const GalleryTile = ({ item }) => {
+const GalleryTile = ({ item, slot }) => {
   const cols = item.tile?.cols || 2;
   const rows = item.tile?.rows || 2;
 
@@ -115,6 +121,7 @@ const GalleryTile = ({ item }) => {
       // Below six columns a tile is either half the row or all of it, and a
       // custom property cannot be selected on. Three columns or more is "wide".
       data-wide={cols >= 3 ? 'true' : 'false'}
+      data-slot={slot || undefined}
       style={{ '--tile-cols': cols, '--tile-rows': rows }}
     >
       {item.publicId ? (
@@ -147,7 +154,20 @@ GalleryTile.propTypes = {
     alt: PropTypes.string.isRequired,
     tile: PropTypes.shape({ cols: PropTypes.number, rows: PropTypes.number }),
   }).isRequired,
+  slot: PropTypes.string,
 };
+
+GalleryTile.defaultProps = { slot: null };
+
+const FIREHOUSE_GALLERY_SLOTS = [
+  'building',
+  'kitchen',
+  'food-tomato',
+  'food-melon',
+  'food-corn',
+  'food-pizza',
+  'food-harvest',
+];
 
 /**
  * The date a visitor arrived with, if it is usable.
@@ -196,7 +216,7 @@ export default function VenueSheet({ venue, headingLevel }) {
   const gallery = [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || [])];
 
   return (
-    <div className={`venue-scope venue-scope--${venue.accent}`}>
+    <div className={`venue-scope venue-scope--${venue.accent} venue-scope--${venue.slug}`}>
       {/* Build-time nag, development only. These pages are Google-facing and a
           placeholder that ships is a placeholder that gets indexed. */}
       {import.meta.env?.DEV && gaps.length > 0 && (
@@ -221,6 +241,7 @@ export default function VenueSheet({ venue, headingLevel }) {
         </p>
       )}
 
+      <div className="venue-layout">
       {/* ── 1. The room, on the sheet ── */}
       <section className="venue-hero">
         <Plate
@@ -228,22 +249,24 @@ export default function VenueSheet({ venue, headingLevel }) {
           alt={`${venue.nickname} — event space by Local Effort Cooperative`}
           eager={headingLevel === 1}
         />
-        <div className="venue-hero__caption">
-          <p className="ht-kicker">{venue.kicker}</p>
-          {capacity && <p className="ht-facts">{capacity}</p>}
-        </div>
-        <Heading className="venue-hero__name">
-          {isReal(venue.headline) ? venue.headline : venue.nickname}
-        </Heading>
-        {isReal(venue.summary) && <p className="venue-hero__lede">{venue.summary}</p>}
+        <div className="venue-hero__copy">
+          <div className="venue-hero__caption">
+            <p className="ht-kicker">{venue.kicker}</p>
+            {capacity && <p className="ht-facts">{capacity}</p>}
+          </div>
+          <Heading className="venue-hero__name">
+            {isReal(venue.headline) ? venue.headline : venue.nickname}
+          </Heading>
+          {isReal(venue.summary) && <p className="venue-hero__lede">{venue.summary}</p>}
 
-        {/* The other customer: someone already staying in the building who
-            wants a chef rather than the room. Kept to a footnote so it cannot
-            compete with the page's one climax. Only rendered where we can name
-            the address — an unnamed "already a guest here?" means nothing. */}
-        {isReal(venue.address?.street) && (
-          <GuestChefPrompt addressLabel={venue.address.street} />
-        )}
+          {/* The other customer: someone already staying in the building who
+              wants a chef rather than the room. Kept to a footnote so it cannot
+              compete with the page's one climax. Only rendered where we can name
+              the address — an unnamed "already a guest here?" means nothing. */}
+          {isReal(venue.address?.street) && (
+            <GuestChefPrompt addressLabel={venue.address.street} />
+          )}
+        </div>
       </section>
 
       {/* ── 2. The ledger ── */}
@@ -354,8 +377,12 @@ export default function VenueSheet({ venue, headingLevel }) {
           aria-label={`${venue.nickname} and our food`}
         >
           <div className="venue-gallery__grid">
-            {gallery.map((item) => (
-              <GalleryTile key={item.publicId || item.src} item={item} />
+            {gallery.map((item, index) => (
+              <GalleryTile
+                key={item.publicId || item.src}
+                item={item}
+                slot={venue.slug === 'firehouse' ? FIREHOUSE_GALLERY_SLOTS[index] : null}
+              />
             ))}
           </div>
         </section>
@@ -390,6 +417,7 @@ export default function VenueSheet({ venue, headingLevel }) {
           </p>
         </div>
       </section>
+      </div>
     </div>
   );
 }

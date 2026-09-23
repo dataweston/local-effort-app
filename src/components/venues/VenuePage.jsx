@@ -33,7 +33,11 @@ export default function VenuePage({ slug, path }) {
 
   if (!venue) return null;
 
-  const title = `${venue.nickname} — private events in Minneapolis | ${SITE_NAME}`;
+  const locality =
+    venue.address?.locality && !String(venue.address.locality).startsWith('TODO')
+      ? venue.address.locality
+      : 'Minneapolis–St. Paul';
+  const title = `${venue.nickname} — private events in ${locality} | ${SITE_NAME}`;
   const description =
     venue.summary && !String(venue.summary).startsWith('TODO')
       ? venue.summary
@@ -45,6 +49,9 @@ export default function VenuePage({ slug, path }) {
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={`${SITE_URL}${path}`} />
+        {venue.photos?.hero && (
+          <meta property="og:image" content={`${SITE_URL}${venue.photos.hero}`} />
+        )}
         {/* Subscribers and crawlers can discover the feed without reading the
             page body. */}
         <link

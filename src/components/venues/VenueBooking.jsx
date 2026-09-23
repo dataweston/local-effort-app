@@ -224,6 +224,8 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       </fieldset>
 
       {/* ── the service ── ruled rows, never three cards ── */}
+      {selectedDate && (
+        <div className="venue-book__details">
       <fieldset className="venue-book__field">
         <legend className="venue-book__legend">How it’s served</legend>
         <div className="venue-book__styles">
@@ -382,6 +384,8 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
           ? 'Card step is handled by Square. The night is held for 24 hours while you pay, and released if you don’t.'
           : 'No card, and nothing held — this one comes back to you by email.'}
       </p>
+        </div>
+      )}
     </form>
   );
 }

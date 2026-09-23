@@ -29,6 +29,7 @@ export const VENUE_SLUGS = VENUES.map((venue) => venue.slug);
 export const isPublishable = (venue) => {
   if (!venue || venue.verified !== true) return false;
   const { address, geo, capacity } = venue;
+  if (!venue.name || String(venue.name).startsWith('TODO')) return false;
   if (!address || Object.values(address).some((value) => !value || String(value).startsWith('TODO'))) {
     return false;
   }
@@ -51,8 +52,6 @@ export const missingFacts = (venue) => {
   flag('address.postalCode', venue.address?.postalCode);
   flag('geo.lat', venue.geo?.lat);
   flag('geo.lng', venue.geo?.lng);
-  flag('hours.earliest', venue.hours?.earliest);
-  flag('hours.latest', venue.hours?.latest);
   if (venue.capacity?.seated == null && venue.capacity?.standing == null) missing.push('capacity');
   if (!venue.photos?.hero) missing.push('photos.hero');
   if (!venue.photos?.void) missing.push('photos.void');
@@ -80,6 +79,9 @@ const maxCapacity = (venue) =>
 export function buildVenueJsonLd(venue, { siteUrl, path }) {
   const pageUrl = `${siteUrl}${path}`;
   const publishable = isPublishable(venue);
+  const primaryImageUrl = venue.photos?.hero
+    ? `${siteUrl}${venue.photos.hero.startsWith('/') ? '' : '/'}${venue.photos.hero}`
+    : null;
   const graph = [];
 
   if (publishable) {
@@ -88,6 +90,7 @@ export function buildVenueJsonLd(venue, { siteUrl, path }) {
       '@id': `${pageUrl}#venue`,
       name: venue.name,
       url: pageUrl,
+      ...(primaryImageUrl ? { image: primaryImageUrl } : {}),
       address: {
         '@type': 'PostalAddress',
         streetAddress: venue.address.street,
@@ -136,6 +139,7 @@ export function buildVenueJsonLd(venue, { siteUrl, path }) {
     serviceType: 'Private event catering at our venue',
     url: pageUrl,
     provider: { '@id': `${siteUrl}#business` },
+    ...(primaryImageUrl ? { image: primaryImageUrl } : {}),
     ...(publishable
       ? {
           areaServed: {
@@ -165,6 +169,14 @@ export function buildVenueJsonLd(venue, { siteUrl, path }) {
     name: `${venue.nickname} — private events | Local Effort Cooperative`,
     isPartOf: { '@id': `${siteUrl}#website` },
     about: { '@id': `${pageUrl}#service` },
+    ...(primaryImageUrl
+      ? {
+          primaryImageOfPage: {
+            '@type': 'ImageObject',
+            contentUrl: primaryImageUrl,
+          },
+        }
+      : {}),
     // The booking entry point. A ReserveAction is what a booking partner and
     // Google's crawlers look for to find where a date is actually held; the
     // urlTemplate accepts a preselected date so an ad or a Maps link can land
