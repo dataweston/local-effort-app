@@ -523,3 +523,97 @@ Worth remembering as a general rule for this codebase: **any CSS that hides
 content until JavaScript says otherwise is invisible to Google on a prerendered
 route.** Check `data-*` state attributes in `prerender/<route>/index.html`, not
 just in the browser.
+
+---
+
+# Addendum 3 — the reorganisation (2026-09-22, owner pass)
+
+Owner feedback: "weird gaps all over the place, the photos are all spread out in
+ways that don't make sense." That was fair, and the cause was structural rather
+than cosmetic.
+
+## What was wrong
+
+Photographs had been added one at a time, each into its own section, each
+inside the full `--service-rhythm`: a 34rem plate mounted under the ledger, a
+second plate pushed to the opposite margin after the void, and a separately
+titled wall of food at the bottom. Three sections, three different alignments,
+three vertical gaps, for what a visitor reads as one thing — *what does this
+place look like*.
+
+The space/food split was the deeper error. It made the page argue with itself:
+someone booking a venue from a caterer is buying the room and the cooking in one
+decision, and sorting the evidence into two labelled bins asks them to evaluate
+the halves separately.
+
+## The beats now
+
+1. the room, on the sheet
+2. the ledger — what you get
+3. the ask — calendar and deposit, side by side
+4. **the gallery** — rooms and food, one grid
+5. the void — a dark band, the quote, the feed
+
+Beats 4 and 5 swapped, and the gallery absorbed all three scattered photo
+sections. Captions and folios are gone: the catalogue mount earns its keep on a
+single plate with something to say about it, and repeated seven times it is
+furniture.
+
+**The grid closes, which is the whole point.** Six columns, spans set per image
+in `venues.json`, arranged so each band sums to exactly six — `3+3`, `2+2+2`,
+`4+2`. Order in that file is therefore a composition, not a list. Height comes
+from `aspect-ratio` on the tile rather than row spans, because a percentage in
+`grid-auto-rows` resolves against block size, not width, and the first attempt
+at a square row unit was silently wrong. `dense` is insurance: add a photograph
+without re-balancing and the grid backfills instead of tearing a hole. Two
+columns below 64rem, one below 40rem, wide tiles taking the full row.
+
+## Copy and facts
+
+New hero, owner-supplied. The lede carries three things the page had never
+said: the State Fair is across the street, the register runs from relaxed to
+black tie, and **you can stay the night** — which is what the guest-chef
+footnote and the Airbnb feed import were always implying without ever saying.
+
+**The $750 is a venue fee for an estimated four hours, not a day rate.** It was
+printed as "per event day", which oversold it. `venueFeeHours` in `venues.json`,
+shown in the ledger and again in the booking panel's own ledger.
+
+**The city is St. Paul.** Recorded in `address.locality`; postcode and geo are
+still TODO and the spelling still has to match the Business Profile, so
+`verified` stays false.
+
+## One form, not two
+
+The page used to fall back to `QuickEventBookForm` for a night we had not
+opened, and that form opens by asking "what kind of party?" with chips —
+a different question in a different vocabulary. Someone who has already chosen
+buffet or coursed and watched a price move should not be handed a fresh
+questionnaire because their night happens to be unpublished.
+
+`VenueBooking` now covers both. Identical selection either way; only the last
+step differs. An opened night gets a Square link; anything else posts to
+`/api/events/request` carrying the same service style, guest count and estimate
+— `eventType` gets the service-style label, since that endpoint prints it
+straight into the summary line a human reads.
+
+Three states, not two: *nothing picked yet* takes the deposit copy, because it
+describes the normal path. Only an actually-unpublished night says so.
+
+## October to December are open
+
+`scripts/open-venue-dates.cjs` opens a run of nights, idempotently, on the
+`(date, type, venue)` key. 92 nights opened at FIREHOUSE for 2026-10-01 →
+2026-12-31, verified back through `loadVenueCalendar` — 92 days, all `open`.
+
+Two notes for whoever runs it next. It re-opens a date an admin had *closed*,
+so prefer a narrow range to a blanket re-run; holds and imported feed blocks are
+untouched and still outrank an open row. And the type is `dinner` for every row:
+the page no longer asks what kind of party it is, so one row per night is
+enough, and `dinner` is what the existing admin tooling understands.
+
+**That change immediately exposed a bug.** The calendar opened on the current
+month, which was September — where nothing was open. A visitor landed on a grid
+of greyed-out squares with no reason to think pressing the arrow would help.
+`VenueCalendar` now opens on the first month that has an open night, unless the
+visitor arrived with a date of their own.

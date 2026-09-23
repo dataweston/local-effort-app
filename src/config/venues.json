@@ -32,7 +32,10 @@
   "_sharedPhotosREADME": [
     "The food is the same whichever room it is served in — that is the whole",
     "thesis of these pages — so these plates are shared rather than copied onto",
-    "each venue. Venue-specific photographs stay under the venue.",
+    "each venue. Venue photographs stay under the venue, and the page interleaves",
+    "the two into one grid: a visitor is buying the room and the cooking at once,",
+    "so splitting them into a \"space\" section and a \"food\" section made the page",
+    "argue with itself.",
     "",
     "Cloudinary public_ids, NOT display names. The owner names assets by their",
     "camera filename (IMG_6479, and four UUIDs); Cloudinary stores those as",
@@ -40,58 +43,55 @@
     "needs. Resolved 2026-09-22 through the Admin search API. If a plate 404s,",
     "search display_name rather than assuming the id was mistyped.",
     "",
-    "`pole` is the reference set’s own split (brand-tokens.css:60-72): `paper`",
-    "means the subject floats on a pale ground, `panel` means it sits in a dark",
-    "void under one raking light. These photographs fall on both sides of that",
-    "line by themselves, which is why the wall is laid out by pole and not by a",
-    "uniform grid."
+    "`tile` spans a six-column grid. See the note on venue plates above: the",
+    "spans in each band sum to 6 so the grid never leaves a hole."
   ],
   "sharedPhotos": {
     "food": [
       {
         "publicId": "up7viumzxihlylto4rae",
         "displayName": "CD4702A3-4D4E-4524-9B75-DA0DB465BF68",
-        "folio": "tomato",
-        "pole": "paper",
-        "aspect": "3 / 4",
         "alt": "A thick slice of heirloom tomato on a speckled ceramic plate, dressed with olive oil, basil, oregano and chive blossoms.",
-        "caption": "One tomato, in August, on a plate."
+        "tile": {
+          "cols": 2,
+          "rows": 3
+        }
       },
       {
         "publicId": "dnb8q02jykgbrbxvdxpq",
         "displayName": "A990A759-155F-49D7-907A-199F9F2204C9",
-        "folio": "melon",
-        "pole": "panel",
-        "aspect": "3 / 4",
         "alt": "A cantaloupe cut open with one wedge laid beside it on a pale green plate, on dark wood, lit from one side.",
-        "caption": "Cut, plated, and then left alone."
+        "tile": {
+          "cols": 2,
+          "rows": 3
+        }
       },
       {
         "publicId": "kmvajqemwphmqcewgejl",
         "displayName": "5BF2AE1E-E01B-4C6B-9661-7B42F56058BB",
-        "folio": "sweet corn",
-        "pole": "panel",
-        "aspect": "3 / 4",
         "alt": "An ear of sweet corn charred over fire, its husk blackened and splayed back, on a speckled plate on a wooden table.",
-        "caption": "Burnt on purpose."
+        "tile": {
+          "cols": 2,
+          "rows": 3
+        }
       },
       {
         "publicId": "auto_uploads/food/2025/08/img2742-b5ad489c",
         "displayName": "img2742-b5ad489c",
-        "folio": "service",
-        "pole": "panel",
-        "aspect": "3 / 2",
         "alt": "A pepperoni pizza with a blistered, charred crust carried out on a silver tray.",
-        "caption": "Pizza, carried out on a tray."
+        "tile": {
+          "cols": 4,
+          "rows": 2
+        }
       },
       {
         "publicId": "youugloqqac4f2xjsive",
         "displayName": "IMG_6479",
-        "folio": "the haul",
-        "pole": "paper",
-        "aspect": "3 / 4",
         "alt": "A table covered with red and green heirloom tomatoes, tomatillos, garlic, hot peppers and husks, beside a notepad.",
-        "caption": "One dinner’s shopping, before anybody cooked it."
+        "tile": {
+          "cols": 2,
+          "rows": 2
+        }
       }
     ]
   },
@@ -147,7 +147,8 @@
           "dinner"
         ]
       },
-      "timezone": "America/Chicago"
+      "timezone": "America/Chicago",
+      "venueFeeHours": 4
     },
     {
       "slug": "firehouse",
@@ -157,16 +158,16 @@
       "isPrimaryHome": false,
       "name": "TODO — legal/Business Profile name",
       "kicker": "firehouse —",
-      "headline": "A fire hall with a kitchen in it.",
-      "summary": "Brick apparatus bay at street level, a steel mezzanine over a double-height hall, and a working kitchen along one wall. We cook in it, and you can have it for the night.",
+      "headline": "We’re cooking in a firehouse in St. Paul",
+      "summary": "Host your event in a deeply cared for retired firehouse, across the street from the State Fair. Immaculate decor and seasonal food, relaxed or black tie. Let us know if you need to stay the night.",
       "accent": "poppy",
       "accentToken": "--accent-poppy",
       "accentRationale": "Henstenburgh, RP-T-1898-A-3500. A firehouse is a red building; the measured poppy gets there without the fire-engine-red tell. The exterior photograph confirms it after the fact — the building is red brick.",
       "address": {
         "street": "1290 Snelling",
-        "locality": "TODO — city for 1290 Snelling; owner said the street only",
+        "locality": "St. Paul",
         "region": "MN",
-        "postalCode": "TODO",
+        "postalCode": "TODO — postcode for 1290 Snelling, St. Paul",
         "country": "US"
       },
       "geo": {
@@ -202,14 +203,18 @@
           {
             "src": "/images/venues/firehouse/building.webp",
             "alt": "The FIREHOUSE from the street: red brick, the original apparatus bay glazed over, a carved stone cartouche above the upper window.",
-            "folio": "the building",
-            "caption": "The bay door still opens on the street."
+            "tile": {
+              "cols": 3,
+              "rows": 2
+            }
           },
           {
             "src": "/images/venues/firehouse/kitchen.webp",
             "alt": "The FIREHOUSE kitchen: a long island with a gas range, double ovens, and open shelving along the back wall.",
-            "folio": "the kitchen",
-            "caption": "Where your chef works. Gas range, double ovens, one long pass."
+            "tile": {
+              "cols": 3,
+              "rows": 2
+            }
           }
         ],
         "galleryTags": [
@@ -217,7 +222,8 @@
           "dinner"
         ]
       },
-      "timezone": "America/Chicago"
+      "timezone": "America/Chicago",
+      "venueFeeHours": 4
     }
   ]
 }

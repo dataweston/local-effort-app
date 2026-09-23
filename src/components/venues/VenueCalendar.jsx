@@ -125,6 +125,39 @@ export default function VenueCalendar({
   );
 
   /**
+   * Open on the first month that has something to sell.
+   *
+   * Availability is published in runs — the first was October to December,
+   * opened well inside September — so "start on the current month" meant a
+   * visitor landed on a grid where every square was greyed out and had to
+   * guess that pressing the arrow would help. Nothing about an empty month
+   * tells you a later one is full.
+   *
+   * Only when the visitor did not arrive with a date of their own, and only
+   * ever forwards: if this month has open nights it is left alone.
+   */
+  const jumpedRef = useRef(false);
+  useEffect(() => {
+    if (!dayStates || selectedDate || jumpedRef.current) return;
+    jumpedRef.current = true;
+
+    const today = todayIso();
+    const openDates = [...dayStates.values()]
+      .filter((day) => day.status === 'open' && day.date >= today)
+      .map((day) => day.date)
+      .sort();
+    if (!openDates.length) return;
+
+    const first = openDates[0];
+    const [year, month] = first.split('-').map(Number);
+    setCursor((current) =>
+      current.year === year && current.month === month - 1
+        ? current
+        : { year, month: month - 1 },
+    );
+  }, [dayStates, selectedDate]);
+
+  /**
    * Resolve a date the visitor arrived with, once the calendar knows anything.
    *
    * buildVenueJsonLd advertises `/<slug>?date={date}` as the ReserveAction

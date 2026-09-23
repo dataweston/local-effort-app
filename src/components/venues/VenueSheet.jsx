@@ -6,8 +6,8 @@
 //   1. the room, on the sheet      a plate with a cast shadow, name beneath
 //   2. the ledger                  what the room is, ruled
 //   3. the ask                     calendar + deposit, side by side
-//   4. the void                    the room at night — one dark band, the climax
-//   5. release                     the kitchen, photographs, and the feed
+//   4. the gallery                 rooms and food, one grid
+//   5. the void                    a dark band, the quote, the feed
 //
 // This differs from the service pages, which open on the order slip. A dinner
 // party needs no introduction; a room does. That is the one deliberate
@@ -17,13 +17,18 @@
 // to reply. It now takes a 20% deposit through Square and holds the night on
 // the spot, because the journey this page is built for — someone who came to
 // book a chef, saw the room, and wants the date — dies in the gap between an
-// enquiry and an answer. The enquiry form is still there, but only for the
-// dates we have not opened, which are the only dates we cannot honestly sell.
+// enquiry and an answer. A night we have not published still cannot be paid
+// for, but it is the same panel and the same vocabulary — it sends an enquiry
+// instead of minting a payment link, rather than handing the visitor a second
+// form that opens by asking what kind of party they are having.
+//
+// Beats 4 and 5 swapped in the same pass. Photographs used to be scattered
+// down the page one at a time, each alone inside its own vertical rhythm, with
+// a titled wall of food at the very bottom; they are now a single grid.
 
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
-import { QuickEventBookForm } from '../services/slipForms';
 import { useSpecimenReveal } from '../../hooks/useSpecimenReveal';
 import VenueCalendar from './VenueCalendar';
 import VenueBooking from './VenueBooking';
@@ -88,72 +93,59 @@ Plate.propTypes = {
 Plate.defaultProps = { src: null, eager: false };
 
 /**
- * A secondary plate: a photograph mounted with a folio and a caption, the way
- * every sheet in the reference set is catalogued. Narrower than the hero on
- * purpose — the hero is the room, these are its particulars.
+ * One tile in the gallery grid.
+ *
+ * Rooms and food, same treatment, no captions and no folio. The plates used to
+ * be mounted individually — a 34rem sheet here, another one aligned to the
+ * opposite margin there, a separate captioned wall of food further down — and
+ * the result was a column of photographs with unexplained space around each
+ * one. A visitor is buying the room and the cooking together, so they are shown
+ * together, in one grid that closes.
+ *
+ * `tile` is a span in a six-column grid, set as custom properties so the CSS
+ * can reuse the same two numbers for the mobile aspect ratio.
  */
-const CaptionedPlate = ({ plate }) => (
-  <figure className="venue-plate specimen-figure">
-    <div className="venue-plate__frame specimen-frame">
-      <img src={plate.src} alt={plate.alt} loading="lazy" decoding="async" />
-      {plate.folio && <span className="specimen-frame__folio">{plate.folio}</span>}
-    </div>
-    {plate.caption && <figcaption className="venue-plate__caption">{plate.caption}</figcaption>}
-  </figure>
-);
+const GalleryTile = ({ item }) => {
+  const cols = item.tile?.cols || 2;
+  const rows = item.tile?.rows || 2;
 
-CaptionedPlate.propTypes = {
-  plate: PropTypes.shape({
-    src: PropTypes.string.isRequired,
-    alt: PropTypes.string.isRequired,
-    folio: PropTypes.string,
-    caption: PropTypes.string,
-  }).isRequired,
+  return (
+    <div
+      className="venue-gallery__tile"
+      // Below six columns a tile is either half the row or all of it, and a
+      // custom property cannot be selected on. Three columns or more is "wide".
+      data-wide={cols >= 3 ? 'true' : 'false'}
+      style={{ '--tile-cols': cols, '--tile-rows': rows }}
+    >
+      {item.publicId ? (
+        <img
+          className="venue-gallery__img"
+          src={cloudinarySrc(item.publicId, 900)}
+          srcSet={CLOUD_WIDTHS.map((w) => `${cloudinarySrc(item.publicId, w)} ${w}w`).join(', ')}
+          sizes="(max-width: 40rem) 92vw, (max-width: 64rem) 46vw, 31vw"
+          alt={item.alt}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <img
+          className="venue-gallery__img"
+          src={item.src}
+          alt={item.alt}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+    </div>
+  );
 };
 
-/**
- * One food plate on the wall.
- *
- * Same mount as the venue plates — ruled frame, folio, caption on the board —
- * because these photographs are specimens whether or not anyone meant them to
- * be. The melon is Coorte's composition with a cantaloupe in it: dark ground,
- * one subject, raking light. The tomato is a botanical sheet. The set falls on
- * both sides of the paper/panel split the palette was measured against
- * (brand-tokens.css:60-72), so `pole` carries that through to the mount: a
- * paper plate sits on the sheet, a panel plate sits on the mount board.
- */
-const FoodPlate = ({ plate }) => (
-  <figure
-    className="venue-food__plate specimen-figure"
-    data-pole={plate.pole}
-    // The wall is laid out by the shape the photograph already has. Derived
-    // here into a token rather than matched in CSS off the inline style, which
-    // would depend on exactly how React serialises a custom property.
-    data-shape={String(plate.aspect || '').startsWith('3 / 2') ? 'landscape' : 'portrait'}
-  >
-    <div className="venue-plate__frame specimen-frame" style={{ '--plate-aspect': plate.aspect }}>
-      <img
-        src={cloudinarySrc(plate.publicId, 900)}
-        srcSet={CLOUD_WIDTHS.map((w) => `${cloudinarySrc(plate.publicId, w)} ${w}w`).join(', ')}
-        sizes="(max-width: 48rem) 92vw, (max-width: 64rem) 44vw, 30vw"
-        alt={plate.alt}
-        loading="lazy"
-        decoding="async"
-      />
-      {plate.folio && <span className="specimen-frame__folio">{plate.folio}</span>}
-    </div>
-    {plate.caption && <figcaption className="venue-plate__caption">{plate.caption}</figcaption>}
-  </figure>
-);
-
-FoodPlate.propTypes = {
-  plate: PropTypes.shape({
-    publicId: PropTypes.string.isRequired,
+GalleryTile.propTypes = {
+  item: PropTypes.shape({
+    src: PropTypes.string,
+    publicId: PropTypes.string,
     alt: PropTypes.string.isRequired,
-    aspect: PropTypes.string,
-    folio: PropTypes.string,
-    caption: PropTypes.string,
-    pole: PropTypes.string,
+    tile: PropTypes.shape({ cols: PropTypes.number, rows: PropTypes.number }),
   }).isRequired,
 };
 
@@ -187,7 +179,7 @@ export default function VenueSheet({ venue, headingLevel }) {
   const [selectedState, setSelectedState] = useState(null);
   const ledger = useSpecimenReveal();
   const voidBand = useSpecimenReveal();
-  const foodWall = useSpecimenReveal();
+  const galleryBand = useSpecimenReveal();
 
   // Square sends the payer back here after the card step.
   const paidHold = searchParams.get('deposit') === 'success' ? searchParams.get('hold') : null;
@@ -199,8 +191,9 @@ export default function VenueSheet({ venue, headingLevel }) {
   const capacity = capacityLine(venue.capacity);
   const roomFee = usd(venue.roomFeeCents);
   const gaps = missingFacts(venue);
-  const plates = venue.photos?.plates || [];
-  const food = SHARED_PHOTOS.food || [];
+  // Rooms first, then food. Order is the composition: see the note on
+  // `tile` in venues.json — each band of spans sums to six.
+  const gallery = [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || [])];
 
   return (
     <div className={`venue-scope venue-scope--${venue.accent}`}>
@@ -280,8 +273,11 @@ export default function VenueSheet({ venue, headingLevel }) {
           )}
           {roomFee && (
             <div className="venue-ledger__row">
-              <dt className="venue-ledger__term">room</dt>
-              <dd className="venue-ledger__value">{roomFee} per event day</dd>
+              <dt className="venue-ledger__term">venue fee</dt>
+              <dd className="venue-ledger__value">
+                {roomFee}
+                {venue.venueFeeHours ? ` · est. ${venue.venueFeeHours} hours` : ''}
+              </dd>
             </div>
           )}
           <div className="venue-ledger__row">
@@ -297,8 +293,6 @@ export default function VenueSheet({ venue, headingLevel }) {
             </div>
           )}
         </dl>
-
-        {plates[0] && <CaptionedPlate plate={plates[0]} />}
       </section>
 
       {/* ── 3. The ask ── */}
@@ -327,38 +321,45 @@ export default function VenueSheet({ venue, headingLevel }) {
               />
             </div>
 
+            {/* One panel, whatever the night's status. An unopened night
+                still cannot be paid for, but it is the same selection and the
+                same vocabulary — VenueBooking just sends an enquiry instead of
+                minting a payment link. */}
             <div className="venue-ask__panel">
-              {/* An unmanaged night has no row and promises nothing, so it
-                  cannot be sold on the spot — it goes to the people who can
-                  check it. */}
-              {selectedDate && selectedState === 'unmanaged' ? (
-                <>
-                  <p className="venue-book__basis">
-                    We haven’t opened {selectedDate} yet, so we won’t take your money for it. Send
-                    it over and we’ll confirm by hand — usually the same day.
-                  </p>
-                  <QuickEventBookForm
-                    source={`venue-${venue.slug}`}
-                    venue={venue.nickname}
-                    presetDate={selectedDate}
-                    ctaLabel="Ask about this date"
-                  />
-                </>
-              ) : (
-                <VenueBooking
-                  venue={venue}
-                  selectedDate={selectedDate}
-                  selectedState={selectedState}
-                  onClearDate={() => {
-                    setSelectedDate(null);
-                    setSelectedState(null);
-                  }}
-                />
-              )}
+              <VenueBooking
+                venue={venue}
+                selectedDate={selectedDate}
+                selectedState={selectedState}
+                onClearDate={() => {
+                  setSelectedDate(null);
+                  setSelectedState(null);
+                }}
+              />
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── 4. The gallery ──
+          Every photograph below the fold, rooms and food together, in one grid
+          that closes. It replaces three separate things: a plate under the
+          ledger, a plate aligned to the opposite margin after the void, and a
+          titled wall of food at the bottom. Each of those sat alone inside its
+          own vertical rhythm, which is where the gaps came from. */}
+      {gallery.length > 0 && (
+        <section
+          className="venue-gallery specimen-reveal"
+          ref={galleryBand.ref}
+          data-finish={galleryBand.finish}
+          aria-label={`${venue.nickname} and our food`}
+        >
+          <div className="venue-gallery__grid">
+            {gallery.map((item) => (
+              <GalleryTile key={item.publicId || item.src} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── 4. The void: the room at night ──
           One dark surface per page. .specimen is applied here and nowhere else
@@ -389,35 +390,6 @@ export default function VenueSheet({ venue, headingLevel }) {
           </p>
         </div>
       </section>
-
-      {/* ── 5. Release ── the kitchen, then what comes out of it.
-          This used to be a PhotoGrid pulling nine images by Cloudinary tag. It
-          is now a named set, because a page that has just asked for $420 should
-          not close on whatever the tag happened to return that morning — and
-          because these five photographs are specimens in the sense the whole
-          site means it, which a masonry grid would have flattened. */}
-      {plates[1] && (
-        <section className="venue-release">
-          <CaptionedPlate plate={plates[1]} />
-        </section>
-      )}
-
-      {food.length > 0 && (
-        <section
-          id="the-food"
-          className="venue-food specimen-reveal"
-          ref={foodWall.ref}
-          data-finish={foodWall.finish}
-        >
-          <p className="ht-kicker">the food —</p>
-          <h2>What comes out of it</h2>
-          <div className="venue-food__wall">
-            {food.map((plate) => (
-              <FoodPlate key={plate.publicId} plate={plate} />
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="service-close">
         <p className="ht-footnote">

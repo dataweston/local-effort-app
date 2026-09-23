@@ -527,50 +527,6 @@
   }
 }
 
-/* ── Secondary plates ────────────────────────────────────────────────────
-   The hero is the room. These are its particulars — the building from the
-   street, the kitchen — and they are mounted the way the reference set mounts
-   a sheet: inside a ruled frame with a hairline inside it, a folio top right,
-   and the caption set on the board beneath. .specimen-frame already draws
-   exactly that (specimen.css:96-119), so nothing new is invented here; the
-   plate only supplies the width and the photograph.
-
-   Narrower than the hero on purpose. If a particular is as large as the
-   subject, the page stops having a subject. */
-
-.venue-plate {
-  margin: var(--service-rhythm) 0 0;
-  max-width: 34rem;
-}
-
-.venue-plate__frame {
-  background-color: var(--brand-mount);
-}
-
-.venue-plate__frame img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.venue-plate__caption {
-  margin-top: 0.7rem;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: var(--color-text-secondary);
-}
-
-.venue-release {
-  margin-top: var(--service-rhythm);
-}
-
-/* The release plate sits opposite the ledger plate, so the page does not read
-   as a left-aligned column of identical rectangles. */
-.venue-release .venue-plate {
-  margin-left: auto;
-}
-
 /* ── The guest note ──────────────────────────────────────────────────────
    For the visitor who is already inside the building and wants a cook, not a
    room. It is a footnote, not a banner: this page has one climax and it is the
@@ -992,89 +948,89 @@
   font-variant-ligatures: none;
 }
 
-/* The folio sits 0.55rem from the top of the frame, and .specimen-frame pads
-   by clamp(0.9rem, 2.2vw, 1.6rem) — so on a narrow window the padding shrinks
-   under the folio and the label lands on the photograph instead of the mount.
-   Fine on the apple sheet, where the frame holds type; not fine over a sky.
-   The plate therefore reserves its own top margin for the label. */
-.venue-plate__frame {
-  padding-top: 1.9rem;
-}
+/* ── The gallery ─────────────────────────────────────────────────────────
+   Every photograph below the fold, rooms and food in one grid.
 
-/* ── The food wall ───────────────────────────────────────────────────────
-   Beat 5. Five photographs of the cooking, mounted as specimens.
+   What it replaces: a 34rem plate mounted under the ledger, a second plate
+   pushed to the opposite margin further down, and a separately titled wall of
+   food at the bottom. Each sat alone inside the section rhythm, so the page
+   read as a column of photographs with unexplained space around each one — and
+   the space/food split made the page argue with itself, since a visitor is
+   buying the room and the cooking at once.
 
-   Not a gallery grid, and the distinction is load-bearing: a uniform row of
-   equal tiles would say "here are some more pictures", and these are not that.
-   Four of the five are single subjects on a plate under a raking side light,
-   which is the composition of most of the reference set — the melon is Coorte
-   with a cantaloupe in it. So they get the catalogue mount the venue plates
-   already use, and the wall is laid out by the SHAPE the photographs already
-   have rather than by a column count chosen in advance:
+   No captions and no folio. The catalogue mount earns its keep on a single
+   plate with something to say about it; repeated seven times across a grid it
+   is furniture, and these photographs carry themselves.
 
-     a portrait plate (3/4) spans 2 of 6      three to a row
-     a landscape plate (3/2) spans 3 of 6     two to a row
+   The grid CLOSES, which is the part that matters. Six columns, and spans set
+   in venues.json so each band sums to exactly six:
 
-   With five plates that resolves to a row of three and a row of two, which is
-   the asymmetry a catalogue page has and a bento grid does not. Nothing here
-   needs a rule about "featured" items; the images sort themselves. */
+     3 + 3        the building, the kitchen
+     2 + 2 + 2    tomato, melon, corn
+     4 + 2        the tray, the haul
 
-.venue-food {
+   That is why the order in that file is meaningful. Height comes from
+   `aspect-ratio` on the tile rather than from row spans: a row is then sized by
+   its own contents, tiles in a band that disagree by a gutter's worth of pixels
+   simply stretch, and there is no percentage in `grid-auto-rows` pretending to
+   resolve against a width. `dense` is insurance — add a photograph without
+   re-balancing the bands and the grid backfills instead of tearing a hole. */
+
+.venue-gallery {
   margin-top: var(--service-rhythm);
 }
 
-.venue-food__wall {
-  margin-top: 1.4rem;
+.venue-gallery__grid {
   display: grid;
+  gap: clamp(0.5rem, 1.2vw, 0.9rem);
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(1rem, 2.5vw, 1.8rem);
+  grid-auto-flow: row dense;
+  max-width: 62rem;
 }
 
-.venue-food__plate {
-  margin: 0;
-  grid-column: span 6;
+.venue-gallery__tile {
+  grid-column: span var(--tile-cols, 2);
+  aspect-ratio: var(--tile-cols, 2) / var(--tile-rows, 2);
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--brand-ink) 6%, transparent);
+  /* A drawn rule rather than a mount: at this density seven framed plates
+     would stack seven cast shadows down the page. */
+  border: 1px solid var(--sp-rule-hair);
 }
 
-@media (min-width: 48rem) {
-  .venue-food__plate {
-    grid-column: span 3;
-  }
-
-  /* A landscape plate takes the full row at this width rather than sitting
-     next to a portrait, where the two would fight over the baseline. */
-  .venue-food__plate[data-shape='landscape'] {
-    grid-column: span 6;
-  }
-}
-
-@media (min-width: 64rem) {
-  .venue-food__plate {
-    grid-column: span 2;
-  }
-
-  /* One landscape plate and four portraits: three portraits fill the first
-     row, and the last portrait pairs with the landscape across the second.
-     Span 4 rather than 3 so that row closes instead of trailing a gap. */
-  .venue-food__plate[data-shape='landscape'] {
-    grid-column: span 4;
-  }
-}
-
-/* The frame carries the aspect so the crop is decided here and by Cloudinary,
-   not by whatever the photographer happened to shoot. */
-.venue-food__plate .venue-plate__frame img {
-  aspect-ratio: var(--plate-aspect, 3 / 4);
+.venue-gallery__img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-/* The two poles of the reference set, carried onto the mount. A subject that
-   floats on a pale ground is mounted on the sheet; a subject sitting in a dark
-   void is mounted on the board, which is darker and lets the photograph keep
-   its own shadow instead of arguing with the page's. */
-.venue-food__plate[data-pole='paper'] .venue-plate__frame {
-  background-color: var(--brand-sheet);
+/* Two columns. A wide tile takes the row, everything else takes half, so the
+   bands still close — and `dense` lifts the square tile up beside the last
+   portrait rather than leaving a hole in front of the wide one. */
+@media (max-width: 64rem) {
+  .venue-gallery__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .venue-gallery__tile {
+    grid-column: span 1;
+  }
+
+  .venue-gallery__tile[data-wide='true'] {
+    grid-column: span 2;
+  }
 }
 
-.venue-food__plate[data-pole='panel'] .venue-plate__frame {
-  background-color: var(--brand-mount);
+/* One column. The tile keeps the proportion its span described rather than
+   collapsing every photograph into the same letterbox. */
+@media (max-width: 40rem) {
+  .venue-gallery__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .venue-gallery__tile,
+  .venue-gallery__tile[data-wide='true'] {
+    grid-column: 1 / -1;
+  }
 }

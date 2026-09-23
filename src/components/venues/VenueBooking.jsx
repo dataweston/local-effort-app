@@ -37,6 +37,7 @@ const ERROR_COPY = {
   'checkout-failed': 'The card step didn’t open. Nothing was charged and the night is still free — try again, or email us.',
   'hold-failed': 'We couldn’t reach the calendar. Nothing was charged. Try again in a moment.',
   'over-capacity': 'That’s more people than the room holds. Drop the count, or ask us about the bigger space.',
+  'enquiry-failed': 'We couldn’t send that. Nothing was charged — try again, or email us directly.',
   'invalid-email': 'That email address doesn’t look right.',
   'missing-name': 'We need a name for the booking.',
 };
@@ -54,6 +55,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
   const [website, setWebsite] = useState(''); // honeypot
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [sent, setSent] = useState(false);
 
   // The room's own ceiling wins over the pricing cap once it is a real fact.
   const roomMax = useMemo(() => {
@@ -73,43 +75,106 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
   // See the state table in VENUES.md.
   const payable = selectedState === 'open';
 
+  /**
+   * Take the money, or ask.
+   *
+   * These are one form rather than two. The venue page used to fall back to
+   * QuickEventBookForm for a night we had not opened, and that form opens with
+   * "what kind of party?" — a different question, in a different vocabulary,
+   * answered with chips. Someone who has already chosen buffet or coursed and
+   * watched a price move should not be handed a fresh questionnaire because the
+   * night they picked happens to be one we have not published yet.
+   *
+   * So the selection is identical either way, and only the last step differs:
+   * an opened night gets a Square link, anything else gets an enquiry carrying
+   * the same service style, guest count and estimate.
+   */
+  const submitDeposit = async () => {
+    const response = await fetch(`/api/venues/${encodeURIComponent(venue.slug)}/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: selectedDate,
+        serviceStyle,
+        guestCount,
+        contactName,
+        contactEmail,
+        contactPhone,
+        notes,
+        website,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.url) return payload.error || 'checkout-failed';
+
+    // Square hosts the card step. Leaving the site is the point — we never
+    // touch card data.
+    window.location.assign(payload.url);
+    return null;
+  };
+
+  const submitEnquiry = async () => {
+    const parts = contactName.trim().split(/\s+/).filter(Boolean);
+    // The shared endpoint prints `eventType` straight into the summary line a
+    // human reads, so it gets the service style rather than a party category
+    // this form no longer collects.
+    const response = await fetch('/api/events/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: parts[0] || '',
+        lastName: parts.slice(1).join(' ') || '-',
+        email: contactEmail,
+        phone: contactPhone,
+        eventDate: selectedDate || undefined,
+        eventType: quote?.serviceStyleLabel || undefined,
+        guestCount,
+        venue: venue.nickname,
+        notes: [
+          `Venue enquiry from /${venue.slug}.`,
+          quote ? `Estimate ${usd(quote.estimateMinCents)}–${usd(quote.estimateMaxCents)}.` : null,
+          selectedDate ? `Date ${selectedDate} is not published as open.` : null,
+          notes,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        website,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) return payload.error || 'enquiry-failed';
+    return null;
+  };
+
   const submit = async (event) => {
     event.preventDefault();
-    if (!selectedDate || !payable || !quote || submitting) return;
+    if (!selectedDate || !quote || submitting) return;
     setSubmitting(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/venues/${encodeURIComponent(venue.slug)}/book`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: selectedDate,
-          serviceStyle,
-          guestCount,
-          contactName,
-          contactEmail,
-          contactPhone,
-          notes,
-          website,
-        }),
-      });
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok || !payload.url) {
-        setError(payload.error || 'checkout-failed');
+      const failure = payable ? await submitDeposit() : await submitEnquiry();
+      if (failure) {
+        setError(failure);
         setSubmitting(false);
         return;
       }
-
-      // Square hosts the card step. Leaving the site is the point — we never
-      // touch card data.
-      window.location.assign(payload.url);
+      if (!payable) setSent(true);
     } catch {
-      setError('checkout-failed');
+      setError(payable ? 'checkout-failed' : 'enquiry-failed');
       setSubmitting(false);
     }
   };
+
+  if (sent) {
+    return (
+      <div className="ht-success" role="status">
+        <span className="ht-success-lead">request received —</span>
+        We&apos;ll confirm {selectedDate} within one business day. Nothing is charged until we have
+        confirmed the details with you.
+      </div>
+    );
+  }
 
   return (
     <form className="ht-form venue-book" onSubmit={submit}>
@@ -190,8 +255,11 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
             </dd>
           </div>
           <div className="venue-ledger__row">
-            <dt className="venue-ledger__term">the room</dt>
-            <dd className="venue-ledger__value">{usd(quote.venueFeeCents)}</dd>
+            <dt className="venue-ledger__term">venue fee</dt>
+            <dd className="venue-ledger__value">
+              {usd(quote.venueFeeCents)}
+              {venue.venueFeeHours ? <i> — est. {venue.venueFeeHours} hours</i> : null}
+            </dd>
           </div>
           <div className="venue-ledger__row venue-book__total">
             <dt className="venue-ledger__term">estimate</dt>
@@ -214,9 +282,9 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       )}
 
       <p className="venue-book__basis">
-        The estimate holds the date. Your chef sets the final menu price from what you actually
-        choose to eat, and the deposit comes off it. If the total lands lower, we refund the
-        difference.
+        {payable || !selectedDate
+          ? 'The estimate holds the date. Your chef sets the final menu price from what you actually choose to eat, and the deposit comes off it. If the total lands lower, we refund the difference.'
+          : 'We haven’t published this night yet, so we won’t take your money for it. Send it over with the details above and we’ll confirm by hand — usually the same day.'}
       </p>
 
       {/* ── who ── the same field primitives every other slip on the site
@@ -295,12 +363,12 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       )}
 
       <div className="venue-book__submit">
-        <button type="submit" className="ht-submit" disabled={!selectedDate || !payable || submitting}>
-          {submitting
-            ? 'Opening the card step…'
-            : selectedDate && payable && quote
-              ? `Hold ${selectedDate} — pay ${usd(quote.depositCents)}`
-              : 'Pick a night above'}
+        <button type="submit" className="ht-submit" disabled={!selectedDate || submitting}>
+          {!selectedDate && 'Pick a night above'}
+          {selectedDate && submitting && (payable ? 'Opening the card step…' : 'Sending…')}
+          {selectedDate && !submitting && payable && quote &&
+            `Hold ${selectedDate} — pay ${usd(quote.depositCents)}`}
+          {selectedDate && !submitting && !payable && `Ask about ${selectedDate}`}
         </button>
         {selectedDate && (
           <button type="button" className="venue-book__clear" onClick={onClearDate}>
@@ -310,8 +378,9 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       </div>
 
       <p className="ht-footnote">
-        Card step is handled by Square. The night is held for 24 hours while you pay, and released
-        if you don’t.
+        {payable || !selectedDate
+          ? 'Card step is handled by Square. The night is held for 24 hours while you pay, and released if you don’t.'
+          : 'No card, and nothing held — this one comes back to you by email.'}
       </p>
     </form>
   );
@@ -322,6 +391,7 @@ VenueBooking.propTypes = {
     slug: PropTypes.string.isRequired,
     nickname: PropTypes.string.isRequired,
     capacity: PropTypes.object,
+    venueFeeHours: PropTypes.number,
   }).isRequired,
   selectedDate: PropTypes.string,
   selectedState: PropTypes.string,
