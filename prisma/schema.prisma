@@ -201,6 +201,7 @@ model Customer {
   commercialAgreements    CommercialAgreement[]
   commercialSubscriptions CommercialSubscription[]
   commercialOrders        CommercialOrder[]
+  commercialQuotes        CommercialQuote[]
 }
 
 model Dish {
@@ -547,6 +548,7 @@ model CommercialAgreement {
   subscriptions     CommercialSubscription[]
   orders            CommercialOrder[]
   invoices          CommercialInvoice[]
+  quotes            CommercialQuote[]
 
   @@unique([sourceSystem, sourceId])
   @@index([customerId, status])
@@ -613,12 +615,209 @@ model CommercialOrder {
   paymentAttempts FinancePaymentAttempt[]
   allocations     FinancePaymentAllocation[]
   costObligations FinanceCostObligation[]
+  inventoryReservations InventoryReservation[]
 
   @@unique([sourceSystem, sourceId])
   @@index([customerId, status])
   @@index([agreementId, status])
   @@index([subscriptionId, status])
   @@index([businessLineKey, bookedAt])
+}
+
+// ============================================================================
+// PRODUCT + PRICING KERNEL
+//
+// Catalog truth, published pricing policy, customer quotes, and inventory
+// reservations are deliberately separate. Accepted quotes can post into the
+// CommercialOrder/Invoice records above without rewriting the policy or the
+// customer-specific negotiation that produced them.
+// ============================================================================
+
+model CommercialProduct {
+  id                 String              @id @default(uuid())
+  key                String              @unique
+  name               String
+  description        String?
+  status             String              @default("active")
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  offers             CommercialOffer[]
+  quotes             CommercialQuote[]
+  inventoryResources InventoryResource[]
+
+  @@index([status])
+}
+
+model CommercialOffer {
+  id          String             @id @default(uuid())
+  productId   String
+  key         String             @unique
+  name        String
+  description String?
+  status      String             @default("draft")
+  composition Json?
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  product     CommercialProduct  @relation(fields: [productId], references: [id])
+  quotes      CommercialQuote[]
+
+  @@index([productId, status])
+}
+
+model PriceBook {
+  id          String                    @id @default(uuid())
+  key         String
+  version     Int
+  name        String
+  status      String                    @default("draft")
+  currency    String                    @default("USD")
+  effectiveAt DateTime
+  expiresAt   DateTime?
+  publishedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  rules       PriceRule[]
+  revisions   CommercialQuoteRevision[]
+
+  @@unique([key, version])
+  @@index([key, status, effectiveAt])
+}
+
+model PriceRule {
+  id           String    @id @default(uuid())
+  priceBookId  String
+  ruleKey      String
+  calculator   String
+  scopeKey     String
+  ruleType     String
+  amountCents  Int?
+  rateBps      Int?
+  parameters   Json?
+  displayLabel String?
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  priceBook    PriceBook @relation(fields: [priceBookId], references: [id], onDelete: Cascade)
+
+  @@unique([priceBookId, ruleKey])
+  @@index([calculator, scopeKey])
+}
+
+model CommercialQuote {
+  id                    String                      @id @default(uuid())
+  productId             String
+  offerId               String?
+  customerId            String?
+  agreementId           String?
+  businessLineKey       String
+  status                String                      @default("draft")
+  currency              String                      @default("USD")
+  pricingMode           String
+  currentRevisionNumber Int                         @default(1)
+  expiresAt             DateTime?
+  acceptedAt            DateTime?
+  sourceSystem          String?
+  sourceId              String?
+  metadata              Json?
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+  product               CommercialProduct           @relation(fields: [productId], references: [id])
+  offer                 CommercialOffer?            @relation(fields: [offerId], references: [id])
+  customer              Customer?                   @relation(fields: [customerId], references: [id])
+  agreement             CommercialAgreement?        @relation(fields: [agreementId], references: [id])
+  revisions             CommercialQuoteRevision[]
+  inventoryReservations InventoryReservation[]
+
+  @@unique([sourceSystem, sourceId])
+  @@index([customerId, status])
+  @@index([businessLineKey, status, createdAt])
+  @@index([productId, offerId])
+}
+
+model CommercialQuoteRevision {
+  id                     String                      @id @default(uuid())
+  quoteId                String
+  priceBookId            String
+  revisionNumber         Int
+  standardSubtotalCents  Int
+  adjustedSubtotalCents  Int
+  feesCents              Int                         @default(0)
+  separateChargesCents   Int                         @default(0)
+  totalCents             Int
+  depositCents           Int                         @default(0)
+  creditEarnedCents      Int                         @default(0)
+  inputSnapshot          Json
+  calculationSnapshot    Json
+  changeSummary          String?
+  createdBy              String?
+  createdAt              DateTime                    @default(now())
+  quote                  CommercialQuote             @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  priceBook              PriceBook                   @relation(fields: [priceBookId], references: [id])
+  adjustments            CommercialQuoteAdjustment[]
+
+  @@unique([quoteId, revisionNumber])
+  @@index([priceBookId])
+}
+
+model CommercialQuoteAdjustment {
+  id              String                  @id @default(uuid())
+  quoteRevisionId String
+  scope           String                  @default("subtotal")
+  amountCents     Int
+  reasonCode      String
+  explanation     String
+  createdBy       String?
+  createdAt       DateTime                @default(now())
+  quoteRevision   CommercialQuoteRevision @relation(fields: [quoteRevisionId], references: [id], onDelete: Cascade)
+
+  @@index([quoteRevisionId, reasonCode])
+}
+
+model InventoryResource {
+  id           String                 @id @default(uuid())
+  productId    String?
+  key          String                 @unique
+  name         String
+  resourceType String
+  unit         String
+  capacity     Int?
+  status       String                 @default("draft")
+  metadata     Json?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  product      CommercialProduct?     @relation(fields: [productId], references: [id])
+  reservations InventoryReservation[]
+
+  @@index([resourceType, status])
+  @@index([productId])
+}
+
+model InventoryReservation {
+  id           String             @id @default(uuid())
+  resourceId   String
+  quoteId      String?
+  orderId      String?
+  status       String             @default("hold")
+  quantity     Int                @default(1)
+  startsAt     DateTime
+  endsAt       DateTime
+  expiresAt    DateTime?
+  sourceSystem String?
+  sourceId     String?
+  metadata     Json?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  resource     InventoryResource  @relation(fields: [resourceId], references: [id])
+  quote        CommercialQuote?   @relation(fields: [quoteId], references: [id])
+  order        CommercialOrder?   @relation(fields: [orderId], references: [id])
+
+  @@unique([sourceSystem, sourceId])
+  @@index([resourceId, startsAt, endsAt, status])
+  @@index([quoteId, status])
+  @@index([orderId, status])
 }
 
 model CommercialOrderLine {

@@ -5,22 +5,50 @@
 // The script (docs/design/VENUES.md):
 //   1. the room, on the sheet      a plate with a cast shadow, name beneath
 //   2. the ledger                  what the room is, ruled
-//   3. the ask                     calendar + slip, side by side
+//   3. the ask                     calendar + deposit, side by side
 //   4. the void                    the room at night — one dark band, the climax
-//   5. release                     photographs, and the calendar feed
+//   5. release                     the kitchen, photographs, and the feed
 //
 // This differs from the service pages, which open on the order slip. A dinner
 // party needs no introduction; a room does. That is the one deliberate
 // departure from the house script and it is argued in VENUES.md.
+//
+// Beat 3 changed in 2026-09: it used to collect an enquiry and wait for a human
+// to reply. It now takes a 20% deposit through Square and holds the night on
+// the spot, because the journey this page is built for — someone who came to
+// book a chef, saw the room, and wants the date — dies in the gap between an
+// enquiry and an answer. The enquiry form is still there, but only for the
+// dates we have not opened, which are the only dates we cannot honestly sell.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
-import PhotoGrid from '../common/PhotoGrid';
 import { QuickEventBookForm } from '../services/slipForms';
 import { useSpecimenReveal } from '../../hooks/useSpecimenReveal';
 import VenueCalendar from './VenueCalendar';
-import { missingFacts } from '../../config/venues';
+import VenueBooking from './VenueBooking';
+import GuestChefPrompt from './GuestChefPrompt';
+import { SHARED_PHOTOS, missingFacts } from '../../config/venues';
+
+const CLOUD_NAME = import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd';
+
+/**
+ * A Cloudinary delivery URL, built by hand rather than through
+ * components/common/cloudinaryImage.jsx.
+ *
+ * That component is a good default elsewhere — it does a blur-up placeholder
+ * and watches the underlying <img> for load. Both cost JavaScript, and neither
+ * survives prerendering: the markup it emits has no real `src` until React
+ * hydrates. These plates sit on a page whose entire argument is that what
+ * matters ships in the HTML, and the other plates here are plain <img>, so
+ * these are too. Cloudinary still does the work that matters — format
+ * negotiation, DPR, and the crop — through the transformation string.
+ */
+const cloudinarySrc = (publicId, width) =>
+  `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/` +
+  `f_auto,q_auto,c_fill,g_auto,dpr_auto,w_${width}/${publicId}`;
+
+const CLOUD_WIDTHS = [400, 640, 900, 1280];
 
 const usd = (cents) =>
   typeof cents === 'number' ? `$${(cents / 100).toLocaleString('en-US')}` : null;
@@ -60,6 +88,76 @@ Plate.propTypes = {
 Plate.defaultProps = { src: null, eager: false };
 
 /**
+ * A secondary plate: a photograph mounted with a folio and a caption, the way
+ * every sheet in the reference set is catalogued. Narrower than the hero on
+ * purpose — the hero is the room, these are its particulars.
+ */
+const CaptionedPlate = ({ plate }) => (
+  <figure className="venue-plate specimen-figure">
+    <div className="venue-plate__frame specimen-frame">
+      <img src={plate.src} alt={plate.alt} loading="lazy" decoding="async" />
+      {plate.folio && <span className="specimen-frame__folio">{plate.folio}</span>}
+    </div>
+    {plate.caption && <figcaption className="venue-plate__caption">{plate.caption}</figcaption>}
+  </figure>
+);
+
+CaptionedPlate.propTypes = {
+  plate: PropTypes.shape({
+    src: PropTypes.string.isRequired,
+    alt: PropTypes.string.isRequired,
+    folio: PropTypes.string,
+    caption: PropTypes.string,
+  }).isRequired,
+};
+
+/**
+ * One food plate on the wall.
+ *
+ * Same mount as the venue plates — ruled frame, folio, caption on the board —
+ * because these photographs are specimens whether or not anyone meant them to
+ * be. The melon is Coorte's composition with a cantaloupe in it: dark ground,
+ * one subject, raking light. The tomato is a botanical sheet. The set falls on
+ * both sides of the paper/panel split the palette was measured against
+ * (brand-tokens.css:60-72), so `pole` carries that through to the mount: a
+ * paper plate sits on the sheet, a panel plate sits on the mount board.
+ */
+const FoodPlate = ({ plate }) => (
+  <figure
+    className="venue-food__plate specimen-figure"
+    data-pole={plate.pole}
+    // The wall is laid out by the shape the photograph already has. Derived
+    // here into a token rather than matched in CSS off the inline style, which
+    // would depend on exactly how React serialises a custom property.
+    data-shape={String(plate.aspect || '').startsWith('3 / 2') ? 'landscape' : 'portrait'}
+  >
+    <div className="venue-plate__frame specimen-frame" style={{ '--plate-aspect': plate.aspect }}>
+      <img
+        src={cloudinarySrc(plate.publicId, 900)}
+        srcSet={CLOUD_WIDTHS.map((w) => `${cloudinarySrc(plate.publicId, w)} ${w}w`).join(', ')}
+        sizes="(max-width: 48rem) 92vw, (max-width: 64rem) 44vw, 30vw"
+        alt={plate.alt}
+        loading="lazy"
+        decoding="async"
+      />
+      {plate.folio && <span className="specimen-frame__folio">{plate.folio}</span>}
+    </div>
+    {plate.caption && <figcaption className="venue-plate__caption">{plate.caption}</figcaption>}
+  </figure>
+);
+
+FoodPlate.propTypes = {
+  plate: PropTypes.shape({
+    publicId: PropTypes.string.isRequired,
+    alt: PropTypes.string.isRequired,
+    aspect: PropTypes.string,
+    folio: PropTypes.string,
+    caption: PropTypes.string,
+    pole: PropTypes.string,
+  }).isRequired,
+};
+
+/**
  * The date a visitor arrived with, if it is usable.
  *
  * buildVenueJsonLd advertises `/<slug>?date={date}` as the ReserveAction entry
@@ -84,13 +182,25 @@ export default function VenueSheet({ venue, headingLevel }) {
   const [selectedDate, setSelectedDate] = useState(() =>
     usableDateParam(searchParams.get('date')),
   );
+  // The calendar knows why a date is selectable; the booking panel needs that
+  // too, because only an operator-opened night can be paid for.
+  const [selectedState, setSelectedState] = useState(null);
   const ledger = useSpecimenReveal();
   const voidBand = useSpecimenReveal();
+  const foodWall = useSpecimenReveal();
+
+  // Square sends the payer back here after the card step.
+  const paidHold = searchParams.get('deposit') === 'success' ? searchParams.get('hold') : null;
+  useEffect(() => {
+    if (paidHold) setSelectedDate(null);
+  }, [paidHold]);
 
   const Heading = headingLevel === 1 ? 'h1' : 'h2';
   const capacity = capacityLine(venue.capacity);
   const roomFee = usd(venue.roomFeeCents);
   const gaps = missingFacts(venue);
+  const plates = venue.photos?.plates || [];
+  const food = SHARED_PHOTOS.food || [];
 
   return (
     <div className={`venue-scope venue-scope--${venue.accent}`}>
@@ -111,6 +221,13 @@ export default function VenueSheet({ venue, headingLevel }) {
         </p>
       )}
 
+      {paidHold && (
+        <p className="venue-book__paid" role="status">
+          Deposit received — {venue.nickname} is held in your name. A confirmation is on its way by
+          email, and we’ll be in touch about the menu.
+        </p>
+      )}
+
       {/* ── 1. The room, on the sheet ── */}
       <section className="venue-hero">
         <Plate
@@ -126,6 +243,14 @@ export default function VenueSheet({ venue, headingLevel }) {
           {isReal(venue.headline) ? venue.headline : venue.nickname}
         </Heading>
         {isReal(venue.summary) && <p className="venue-hero__lede">{venue.summary}</p>}
+
+        {/* The other customer: someone already staying in the building who
+            wants a chef rather than the room. Kept to a footnote so it cannot
+            compete with the page's one climax. Only rendered where we can name
+            the address — an unnamed "already a guest here?" means nothing. */}
+        {isReal(venue.address?.street) && (
+          <GuestChefPrompt addressLabel={venue.address.street} />
+        )}
       </section>
 
       {/* ── 2. The ledger ── */}
@@ -156,13 +281,13 @@ export default function VenueSheet({ venue, headingLevel }) {
           {roomFee && (
             <div className="venue-ledger__row">
               <dt className="venue-ledger__term">room</dt>
-              <dd className="venue-ledger__value">{roomFee}</dd>
+              <dd className="venue-ledger__value">{roomFee} per event day</dd>
             </div>
           )}
           <div className="venue-ledger__row">
             <dt className="venue-ledger__term">food &amp; service</dt>
             <dd className="venue-ledger__value">
-              quoted per guest · dinner &amp; pizza from $850 · larger events from $1,200
+              quoted per guest · $45–$250 depending on how it’s served
             </dd>
           </div>
           {venue.amenities?.length > 0 && (
@@ -172,6 +297,8 @@ export default function VenueSheet({ venue, headingLevel }) {
             </div>
           )}
         </dl>
+
+        {plates[0] && <CaptionedPlate plate={plates[0]} />}
       </section>
 
       {/* ── 3. The ask ── */}
@@ -180,18 +307,56 @@ export default function VenueSheet({ venue, headingLevel }) {
           <p className="ht-kicker">the date —</p>
           <h2 id={`book-${venue.slug}`}>Pick a night at {venue.nickname}</h2>
           <span className="ht-rule-line" aria-hidden="true" />
-          <VenueCalendar
-            venueSlug={venue.slug}
-            venueNickname={venue.nickname}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-          />
-          <QuickEventBookForm
-            source={`venue-${venue.slug}`}
-            venue={venue.nickname}
-            presetDate={selectedDate || ''}
-            ctaLabel="Request this date"
-          />
+
+          {/* Grid rather than stack, above 62rem. The brief for this page is
+              "see the date, pay the deposit, few clicks", and stacking a
+              twelve-row calendar on top of the price puts them in different
+              screens — you cannot check what a Saturday costs without losing
+              sight of the Saturday. Side by side, choosing a night and reading
+              what it costs is one glance. */}
+          <div className="venue-ask">
+            <div className="venue-ask__calendar">
+              <VenueCalendar
+                venueSlug={venue.slug}
+                venueNickname={venue.nickname}
+                selectedDate={selectedDate}
+                onSelectDate={(iso, state) => {
+                  setSelectedDate(iso);
+                  setSelectedState(state);
+                }}
+              />
+            </div>
+
+            <div className="venue-ask__panel">
+              {/* An unmanaged night has no row and promises nothing, so it
+                  cannot be sold on the spot — it goes to the people who can
+                  check it. */}
+              {selectedDate && selectedState === 'unmanaged' ? (
+                <>
+                  <p className="venue-book__basis">
+                    We haven’t opened {selectedDate} yet, so we won’t take your money for it. Send
+                    it over and we’ll confirm by hand — usually the same day.
+                  </p>
+                  <QuickEventBookForm
+                    source={`venue-${venue.slug}`}
+                    venue={venue.nickname}
+                    presetDate={selectedDate}
+                    ctaLabel="Ask about this date"
+                  />
+                </>
+              ) : (
+                <VenueBooking
+                  venue={venue}
+                  selectedDate={selectedDate}
+                  selectedState={selectedState}
+                  onClearDate={() => {
+                    setSelectedDate(null);
+                    setSelectedState(null);
+                  }}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -225,15 +390,34 @@ export default function VenueSheet({ venue, headingLevel }) {
         </div>
       </section>
 
-      {/* ── 5. Release ── */}
-      <section className="service-gallery">
-        <PhotoGrid
-          tags={venue.photos?.galleryTags || ['event', 'dinner']}
-          perPage={9}
-          layout="masonry"
-          className="venue-gallery"
-        />
-      </section>
+      {/* ── 5. Release ── the kitchen, then what comes out of it.
+          This used to be a PhotoGrid pulling nine images by Cloudinary tag. It
+          is now a named set, because a page that has just asked for $420 should
+          not close on whatever the tag happened to return that morning — and
+          because these five photographs are specimens in the sense the whole
+          site means it, which a masonry grid would have flattened. */}
+      {plates[1] && (
+        <section className="venue-release">
+          <CaptionedPlate plate={plates[1]} />
+        </section>
+      )}
+
+      {food.length > 0 && (
+        <section
+          id="the-food"
+          className="venue-food specimen-reveal"
+          ref={foodWall.ref}
+          data-finish={foodWall.finish}
+        >
+          <p className="ht-kicker">the food —</p>
+          <h2>What comes out of it</h2>
+          <div className="venue-food__wall">
+            {food.map((plate) => (
+              <FoodPlate key={plate.publicId} plate={plate} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="service-close">
         <p className="ht-footnote">
@@ -256,6 +440,7 @@ VenueSheet.propTypes = {
     kicker: PropTypes.string,
     headline: PropTypes.string,
     summary: PropTypes.string,
+    address: PropTypes.object,
     capacity: PropTypes.object,
     areaSqFt: PropTypes.number,
     amenities: PropTypes.arrayOf(PropTypes.string),

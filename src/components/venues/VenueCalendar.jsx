@@ -124,6 +124,34 @@ export default function VenueCalendar({
     [dayStates],
   );
 
+  /**
+   * Resolve a date the visitor arrived with, once the calendar knows anything.
+   *
+   * buildVenueJsonLd advertises `/<slug>?date={date}` as the ReserveAction
+   * entry point, so an ad, a Maps surface or a shared link can land someone on
+   * a specific night. That gives the page a date but no STATE, and state is
+   * what decides whether the night can be paid for — so without this the
+   * deposit button stays disabled for exactly the visitors the entry point was
+   * built to serve.
+   *
+   * Guarded by a ref rather than by the dependency list: onSelectDate writes to
+   * the parent, which flows back in as a new selectedDate, and keying the
+   * effect on that would re-enter. One resolution per availability load is all
+   * this needs.
+   */
+  const resolvedRef = useRef(null);
+  useEffect(() => {
+    if (!dayStates || !selectedDate) return;
+    if (resolvedRef.current === selectedDate) return;
+    resolvedRef.current = selectedDate;
+
+    const resolved = selectedDate < todayIso() ? 'blocked' : stateFor(selectedDate);
+    // A night that turns out to be taken is dropped rather than carried
+    // forward, so the form can never hold a date the grid shows as struck.
+    if (SELECTABLE.has(resolved)) onSelectDate(selectedDate, resolved);
+    else onSelectDate(null, null);
+  }, [dayStates, selectedDate, stateFor, onSelectDate]);
+
   const cells = useMemo(() => {
     const { year, month } = cursor;
     const lead = firstWeekday(year, month);

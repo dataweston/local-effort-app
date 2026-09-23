@@ -1,0 +1,406 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Local Effort's unified product and pricing layer",
+    "description": "Architecture and pricing-discovery proposal for small events, meal prep, pizza, and future offers.",
+    "generatedAt": "2026-09-17T18:00:00-05:00",
+    "charts": [
+      {
+        "id": "event_deposit_chart",
+        "title": "Event deposit examples",
+        "subtitle": "Deposits equal 20% of conservative hold estimates.",
+        "type": "bar",
+        "dataset": "event_examples",
+        "sourceId": "current_owner_policy",
+        "valueFormat": "currency",
+        "encodings": {
+          "x": {
+            "field": "short_label",
+            "type": "nominal",
+            "label": "Example"
+          },
+          "y": {
+            "field": "deposit",
+            "type": "quantitative",
+            "label": "Deposit"
+          },
+          "tooltip": [
+            {
+              "field": "estimate_total",
+              "type": "quantitative",
+              "label": "Hold estimate",
+              "format": "currency"
+            }
+          ]
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "client_pricing_table",
+        "title": "Current meal-prep pricing comparison",
+        "subtitle": "Observed recurring charge normalized to four weeks; policy scenarios preserve unresolved plan semantics.",
+        "dataset": "client_pricing",
+        "sourceId": "meal_prep_analysis",
+        "defaultSort": {
+          "field": "client",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "client",
+            "label": "Client",
+            "type": "text"
+          },
+          {
+            "field": "status",
+            "label": "Status",
+            "type": "text"
+          },
+          {
+            "field": "observed_4wk",
+            "label": "Current / 4 wk",
+            "format": "currency"
+          },
+          {
+            "field": "policy_display",
+            "label": "Policy",
+            "type": "text"
+          },
+          {
+            "field": "difference_display",
+            "label": "Delta",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "id": "event_examples_table",
+        "title": "Event hold-estimate examples",
+        "subtitle": "Twenty-to-thirty guests use the low service rate and high guest count; deposits equal 20% of the estimate.",
+        "dataset": "event_examples",
+        "sourceId": "current_owner_policy",
+        "defaultSort": {
+          "field": "estimate_total",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "example",
+            "label": "Example",
+            "type": "text"
+          },
+          {
+            "field": "estimate_total",
+            "label": "Hold estimate",
+            "format": "currency"
+          },
+          {
+            "field": "deposit",
+            "label": "20% deposit",
+            "format": "currency"
+          },
+          {
+            "field": "basis",
+            "label": "Formula",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "meal_prep_analysis",
+        "label": "Meal-prep pricing analysis notebook",
+        "path": "artifacts/product-pricing-discovery-2026-09-17/meal-prep-pricing-analysis.ipynb"
+      },
+      {
+        "id": "current_owner_policy",
+        "label": "Owner-supplied pricing and deposit policy, September 17, 2026",
+        "path": "artifacts/product-pricing-discovery-2026-09-17/source-notes.md"
+      },
+      {
+        "id": "square_live",
+        "label": "Read-only Square recurring-invoice observations, September 17, 2026",
+        "path": "scripts/audit-square-recurring-invoices.cjs"
+      },
+      {
+        "id": "meal_plan_snapshot",
+        "label": "Owner-confirmed meal-prep billing snapshot, August 15-17, 2026",
+        "path": "scripts/data/planner-meal-prep-billing-2026-08-17.json"
+      },
+      {
+        "id": "master_record_24",
+        "label": "Capital Master Record 2.4, September 16, 2026",
+        "path": "artifacts/local_effort_capital_master_record_v2_4.docx"
+      },
+      {
+        "id": "existing_commerce_schema",
+        "label": "Existing Prisma commerce and membership models",
+        "path": "prisma/schema.prisma"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# Local Effort's unified product and pricing layer"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "body": "## Executive Summary\n\n- **Build one small commercial kernel, not one giant catalog.** Stable products, effective-dated price books, immutable quote revisions, reason-coded adjustments, reservation holds, and inventory/capacity reservations should serve every channel.\n- **Meal prep and events need different promises on top of that kernel.** Meal prep can show a realistic final price; an event checkout should show a conservative hold estimate and collect a 20% deposit while the final meal rate remains operator-confirmed.\n- **Treat current client prices as agreements, not evidence that the policy is wrong.** Four accounts have fresh paid Square evidence. Other records are stale or non-Square, and several plan descriptions do not say whether a dinner is a portion or household meal. Import them with effective dates and explicit override reasons.\n- **Do not make the Capital Master Record the price book.** Version 2.4 is useful financing context, but its meal and event rates conflict with the newer owner policy. The commercial system needs its own versioned source of truth."
+      },
+      {
+        "id": "pricing_finding",
+        "type": "markdown",
+        "body": "## Current prices reveal a semantics problem, not just a discount problem\n\nThe confirmed-current Square set is Samantha Bailey, Levy Family, Gabriella Scarpa, and Tyler Cooper, totaling **$4,001 per four-week cycle** before separate membership dues. Catherine Squires remains paused/unresolved. Sanjay Roy's $512 amount is owner-confirmed as of August 15 but could not be refreshed outside Square.\n\nThe wide policy ranges below are deliberate. They show where the present records fail to specify `per_person` versus `family_flat`, delivery versus pickup, or meal category. Those fields must exist before the system can measure a negotiated change honestly.",
+        "sourceId": "meal_prep_analysis"
+      },
+      {
+        "id": "pricing_snapshot",
+        "type": "markdown",
+        "body": "### Four-week client comparison\n\n- **Samantha Bailey:** current $440; policy scenario $456 pickup or $496 delivered; difference -$16 to -$56.\n- **Levy Family:** current $1,068; conditional discount-only scenario $1,090.84; difference -$22.84. Kids meals and snacks remain unpriced.\n- **Gabriella Scarpa:** current $1,405; policy scenario $868 family-flat or $1,806.40 per adult; difference +$537 to -$401.40.\n- **Tyler Cooper:** current $1,088; provisional policy scenario $1,077.76 to $1,309.60; difference +$10.24 to -$221.60.\n- **Catherine Squires:** four-week equivalent $480; policy scenario $400 family-flat or $616 per adult; difference +$80 to -$136. Status remains paused/unresolved.\n- **Sanjay Roy:** dated non-Square amount $512; policy scenario $599.36 as lunches or $746.56 as dinners; difference -$87.36 to -$234.56. Current status remains unresolved.\n\nThese are reconstruction ranges, not inferred discounts. The companion notebook preserves every formula and provenance note.",
+        "sourceId": "meal_prep_analysis"
+      },
+      {
+        "id": "pricing_interpretation",
+        "type": "markdown",
+        "body": "## What the client comparison changes in the model\n\n**Samantha is close to policy.** Her $110 weekly charge is $4 below six lunches at $19 if she picks up, or $14 below if delivery is included.\n\n**Levy cannot be standards-priced yet.** Kids meals and snacks do not have supplied policy prices. If the existing $257 food amount is a net price after the invoice's legacy 10% discount, changing only the discount to 8% would move a four-week total from $1,068 to about $1,090.84. That is a sensitivity, not a reconstructed list price.\n\n**Gabriella, Tyler, Catherine, and Sanjay expose classification gaps.** Their apparent variance changes materially depending on whether dinners are household items or individual portions, and whether the bowls are lunches or dinners. The new system should require those classifications and then store any residual difference as a named agreement adjustment—not guess a reason from the amount.",
+        "sourceId": "meal_prep_analysis"
+      },
+      {
+        "id": "source_of_truth",
+        "type": "markdown",
+        "body": "## Separate four kinds of truth\n\n1. **Catalog truth:** what can be sold—Small Event, Meal Prep, and Other, with pizza reusable inside any of them.\n2. **Pricing policy:** the currently published rules and effective dates. Direct owner instructions now control; Master Record 2.4 remains financing context.\n3. **Customer agreement:** the accepted price for one customer and date range, including explicit negotiated adjustments.\n4. **Transaction truth:** what was quoted, deposited, invoiced, credited, paid, fulfilled, or refunded.\n\nThis separation prevents a negotiated client rate from silently rewriting the public price book, and prevents a later price-book change from altering an old quote or invoice."
+      },
+      {
+        "id": "architecture",
+        "type": "markdown",
+        "body": "## The smallest shared architecture that will hold up\n\nUse the existing `CommercialOrder`, order-line, invoice, and payment-allocation models as the posted transaction layer. Add a pre-transaction layer around them:\n\n- **Product:** stable identity and reporting family (`SMALL_EVENT`, `MEAL_PREP`, `OTHER`). Pizza is a reusable sellable component, not forced into a separate business line.\n- **Offer:** a customer-facing package or point of sale composed from products—for example, a Firehouse week with venue nights, dinners, and stocked lunches.\n- **PriceBookVersion and PriceRule:** effective-dated policy. Start with typed rule evaluators in code plus data-configured rates; do not build a free-form rules language yet.\n- **Quote and QuoteRevision:** immutable snapshots. Every revision preserves the standard calculation, manual adjustment, reason, operator, timestamp, and customer-visible explanation.\n- **Agreement:** accepted recurring or one-time commercial terms, with start/end dates and structured overrides.\n- **ReservationHold:** venue/date or production-capacity hold with an expiry and deposit state.\n- **InventoryResource and InventoryReservation:** one reservation model for venue nights, production slots, packaged stock, and later ingredient lots.\n- **CostDriverSnapshot:** ingredient estimate, prep time, event labor, equipment/travel, and later actuals. These drivers inform operator pricing without exposing internal costs to the customer.\n\nA confirmed quote posts into the existing commercial order/invoice layer. This keeps historical accounting stable while making offers, negotiations, and availability reusable."
+      },
+      {
+        "id": "event_estimator",
+        "type": "markdown",
+        "body": "## Events should sell a date hold first and confirm the meal price second\n\nFor an entered guest range, calculate the hold estimate using the **high guest count and low published service rate**, then add venue fees and known fixed add-ons. The deposit is exactly 20% of that estimate and atomically converts the tentative availability check into a held date.\n\nThe final quote is later set by the operator from chosen ingredients, preparation time, event labor, service format, and other real costs. There is no seasonal/premium axis. If the confirmed total rises, invoice the balance; if it falls below money already collected, issue an explicit refund or customer credit.\n\nThe two-night Firehouse example composes cleanly: $1,500 in venue nights + about $1,000 in two family-style dinners for eight + $304 in stocked lunches = **$2,804**, with a **$560.80** deposit.",
+        "sourceId": "current_owner_policy"
+      },
+      {
+        "id": "event_examples",
+        "type": "chart",
+        "chartId": "event_deposit_chart"
+      },
+      {
+        "id": "meal_prep_ux",
+        "type": "markdown",
+        "body": "## Meal prep can show an exact price while preserving human flexibility\n\nThe customer flow should: verify paid or waived membership; choose household/portion quantities; select `per_person` or eligible `family_flat` dinner mode; choose weekly or four-week billing; choose delivery or pickup; and show the exact recurring total. Apply the 8% four-week discount to eligible food lines only. Keep membership dues, delivery, tax, and credit redemption separate.\n\nPaid members earn 4% store credit only after eligible spending is settled. Record that in an immutable credit ledger; do not treat it as a checkout discount. If a human negotiation changes the plan, create a new agreement revision with an effective date and reason rather than overwriting the standard price.\n\nThe immediate catalog gap is kids meals and snacks. They must become priced products before Levy can be compared with policy or quoted automatically."
+      },
+      {
+        "id": "operator_ux",
+        "type": "markdown",
+        "body": "## The operator needs one pricing workbench\n\nThe operator view should put five things on one screen: the current price-book calculation; the client-facing estimate or exact total; internal ingredient/prep/labor drivers; every requested change; and the revision/approval history. A negotiated change requires a reason such as scope change, menu substitution, repeat-client accommodation, service reduction, hardship, or correction, plus an optional note.\n\nThe availability view should combine customer holds, confirmed events, and inbound venue calendars. Deposit capture and the date hold must succeed or fail together so two customers cannot buy the same date. A draft/published price-book editor should preview affected offers and schedule future effective dates without changing accepted agreements."
+      },
+      {
+        "id": "implementation",
+        "type": "markdown",
+        "body": "## Recommended implementation sequence\n\n1. **Create the kernel and import agreements.** Add products, offers, price-book versions, quotes/revisions, adjustments, agreements, holds, reservations, and credit-ledger entries. Import the six discovered meal-prep arrangements with confidence and as-of dates.\n2. **Move meal prep first.** It has the clearest formulas and will force correct household/portion, cadence, delivery, membership, and credit semantics. Add prices for kids meals and snacks before Levy migration.\n3. **Replace the hard-coded event estimator.** Publish the new service ranges, venue fees, 20% deposit calculation, atomic date hold, and operator confirmation workbench.\n4. **Add reusable offer composition.** Build the Firehouse-week example and pizza-inclusive packages from the same line items and reservation APIs.\n5. **Deepen inventory only after capacity works.** Start with venue/date and production-slot reservations; add ingredient lots and recipe depletion when recipe/receiving data is reliable.\n\nThis order produces customer value early while preserving a clean path to deeper inventory economics."
+      },
+      {
+        "id": "steelman",
+        "type": "markdown",
+        "body": "## Steelman: a generic engine could become the project instead of the product\n\nThe strongest opposing case is that Local Effort has few active accounts and could ship faster with separate meal and event calculators plus manual invoices. That is partly right: a universal rules language, recipe ERP, or generalized workflow builder would be premature.\n\nThe answer is to keep the shared kernel narrow. Reuse identity, versioning, adjustment history, reservations, and transaction posting; let each product family own a typed calculator. Expand abstractions only after a second real use case needs them."
+      },
+      {
+        "id": "calibration",
+        "type": "markdown",
+        "body": "## Calibrate with live transactions, and stop if the model lies\n\n- **Meal prep review:** after eight fulfilled weeks, revise the model if more than 10% of active plans still need an unexplained override.\n- **Event review:** after 20 confirmed events, revise the estimator if median absolute estimate-to-confirmed variance exceeds 15%, or if more than 10% of deposits need refund/credit because the estimate was too high.\n- **Architecture kill condition:** simplify or replace the abstraction if two product families still require bespoke transaction logic after three offers are live, or if an operator cannot publish a price change without an engineer.\n\nTrack list price, structured discounts, negotiated adjustments, final contracted price, cost estimate, actual cost, deposit, invoice, and credit as different measures. That is the data set that will teach Local Effort how its event and meal economics really work."
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Decisions still needed before implementation\n\n- Does the 8% four-week discount apply to food only, or also delivery? This proposal recommends food only.\n- Which spending earns 4% credit: food only, or food plus delivery? This proposal recommends settled eligible food, excluding dues, tax, delivery, refunds, and credit-funded spend.\n- What are the standard prices and serving definitions for kids meals and snacks?\n- Which current plans include delivery, and which dinner lines are household-flat versus per-person?\n- Should venue fees apply per event day or per overnight? The package builder should support either, but the published offer must say which."
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "body": "## Caveats and assumptions\n\nThis is decision-ready architecture with a provisional client backfill. Gmail could not be read because its health probe did not return; iMessage is unavailable; and the live planner/Local Budget paths did not respond. Square therefore controls fresh observed billing where present, while non-Square amounts and plan composition retain their dated owner/repo provenance. No inferred price difference has been labeled a negotiated discount without supporting communication or owner confirmation."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-09-17T18:00:00-05:00",
+    "status": "partial",
+    "datasets": {
+      "client_pricing": [
+        {
+          "client": "Samantha Bailey",
+          "status": "Confirmed current",
+          "observed_4wk": 440,
+          "standard_low": 456,
+          "standard_high": 496,
+          "delta_vs_low": -16,
+          "delta_vs_high": -56,
+          "policy_display": "$456-$496",
+          "difference_display": "-$16 to -$56",
+          "basis": "3 lunches x 2 adults; pickup vs weekly delivery"
+        },
+        {
+          "client": "Levy Family",
+          "status": "Confirmed current; sensitivity only",
+          "observed_4wk": 1068,
+          "standard_low": 1090.84,
+          "standard_high": 1090.84,
+          "delta_vs_low": -22.84,
+          "delta_vs_high": -22.84,
+          "policy_display": "$1,090.84",
+          "difference_display": "-$22.84",
+          "basis": "Discount-only scenario; kids meals/snacks lack policy prices"
+        },
+        {
+          "client": "Gabriella Scarpa",
+          "status": "Confirmed current",
+          "observed_4wk": 1405,
+          "standard_low": 868,
+          "standard_high": 1806.4,
+          "delta_vs_low": 537,
+          "delta_vs_high": -401.4,
+          "policy_display": "$868-$1,806.40",
+          "difference_display": "+$537 to -$401.40",
+          "basis": "5 dinners for 4 adults; flat-family vs per-adult mode"
+        },
+        {
+          "client": "Tyler Cooper",
+          "status": "Confirmed current; composition provisional",
+          "observed_4wk": 1088,
+          "standard_low": 1077.76,
+          "standard_high": 1309.6,
+          "delta_vs_low": 10.24,
+          "delta_vs_high": -221.6,
+          "policy_display": "$1,077.76-$1,309.60",
+          "difference_display": "+$10.24 to -$221.60",
+          "basis": "8 breakfasts, 6 lunches, 3 dinners; portion vs family-of-two mode"
+        },
+        {
+          "client": "Catherine Squires",
+          "status": "Paused/unresolved",
+          "observed_4wk": 480,
+          "standard_low": 400,
+          "standard_high": 616,
+          "delta_vs_low": 80,
+          "delta_vs_high": -136,
+          "policy_display": "$400-$616",
+          "difference_display": "+$80 to -$136",
+          "basis": "2 dinners for 3 adults; flat-family vs per-adult mode"
+        },
+        {
+          "client": "Sanjay Roy",
+          "status": "Current status unresolved; non-Square amount",
+          "observed_4wk": 512,
+          "standard_low": 599.36,
+          "standard_high": 746.56,
+          "delta_vs_low": -87.36,
+          "delta_vs_high": -234.56,
+          "policy_display": "$599.36-$746.56",
+          "difference_display": "-$87.36 to -$234.56",
+          "basis": "8 beef bowls; lunch vs dinner classification, with delivery"
+        }
+      ],
+      "event_examples": [
+        {
+          "example": "Offsite buffet, 20-30 guests",
+          "short_label": "Offsite buffet",
+          "estimate_total": 1350,
+          "deposit": 270,
+          "basis": "$45 x 30"
+        },
+        {
+          "example": "Foodist buffet, 20-30 guests",
+          "short_label": "Foodist buffet",
+          "estimate_total": 1500,
+          "deposit": 300,
+          "basis": "$45 x 30 + $150"
+        },
+        {
+          "example": "Firehouse buffet, 20-30 guests",
+          "short_label": "Firehouse buffet",
+          "estimate_total": 2100,
+          "deposit": 420,
+          "basis": "$45 x 30 + $750"
+        },
+        {
+          "example": "Firehouse, 2 nights, 2 dinners, 16 lunches",
+          "short_label": "Firehouse package",
+          "estimate_total": 2804,
+          "deposit": 560.8,
+          "basis": "$1,500 + $1,000 + $304"
+        }
+      ]
+    },
+    "accessIssues": [
+      {
+        "id": "gmail_unavailable",
+        "dataset": "client_communications",
+        "message": "Gmail health status did not return, so message-level pricing agreements were not reconciled."
+      },
+      {
+        "id": "imessage_unavailable",
+        "dataset": "client_communications",
+        "message": "iMessage is unavailable and may contain material negotiation context."
+      },
+      {
+        "id": "nonsquare_refresh_unavailable",
+        "dataset": "client_pricing",
+        "message": "Live planner and Local Budget reads did not return; non-Square amounts retain dated owner/repo evidence."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "meal_prep_analysis",
+      "label": "Meal-prep pricing analysis notebook",
+      "path": "artifacts/product-pricing-discovery-2026-09-17/meal-prep-pricing-analysis.ipynb",
+      "query": {
+        "engine": "sqlite",
+        "language": "sql",
+        "sql": "WITH client_pricing(client, status, observed_4wk, standard_low, standard_high, delta_vs_low, delta_vs_high, policy_display, difference_display, basis) AS (VALUES ('Samantha Bailey', 'Confirmed current', 440.00, 456.00, 496.00, -16.00, -56.00, '$456-$496', '-$16 to -$56', '3 lunches x 2 adults; pickup vs weekly delivery'), ('Levy Family', 'Confirmed current; sensitivity only', 1068.00, 1090.84, 1090.84, -22.84, -22.84, '$1,090.84', '-$22.84', 'Discount-only scenario; kids meals/snacks lack policy prices'), ('Gabriella Scarpa', 'Confirmed current', 1405.00, 868.00, 1806.40, 537.00, -401.40, '$868-$1,806.40', '+$537 to -$401.40', '5 dinners for 4 adults; flat-family vs per-adult mode'), ('Tyler Cooper', 'Confirmed current; composition provisional', 1088.00, 1077.76, 1309.60, 10.24, -221.60, '$1,077.76-$1,309.60', '+$10.24 to -$221.60', '8 breakfasts, 6 lunches, 3 dinners; portion vs family-of-two mode'), ('Catherine Squires', 'Paused/unresolved', 480.00, 400.00, 616.00, 80.00, -136.00, '$400-$616', '+$80 to -$136', '2 dinners for 3 adults; flat-family vs per-adult mode'), ('Sanjay Roy', 'Current status unresolved; non-Square amount', 512.00, 599.36, 746.56, -87.36, -234.56, '$599.36-$746.56', '-$87.36 to -$234.56', '8 beef bowls; lunch vs dinner classification, with delivery')) SELECT * FROM client_pricing",
+        "description": "Materializes the reviewed current-client pricing comparison produced by the companion notebook.",
+        "executed_at": "2026-09-17T23:35:00-05:00"
+      }
+    },
+    {
+      "id": "current_owner_policy",
+      "label": "Owner-supplied pricing and deposit policy, September 17, 2026",
+      "path": "artifacts/product-pricing-discovery-2026-09-17/source-notes.md",
+      "query": {
+        "engine": "sqlite",
+        "language": "sql",
+        "sql": "WITH inputs(example, short_label, estimate_total, basis) AS (SELECT 'Offsite buffet, 20-30 guests', 'Offsite buffet', 45 * 30, '$45 x 30' UNION ALL SELECT 'Foodist buffet, 20-30 guests', 'Foodist buffet', 45 * 30 + 150, '$45 x 30 + $150' UNION ALL SELECT 'Firehouse buffet, 20-30 guests', 'Firehouse buffet', 45 * 30 + 750, '$45 x 30 + $750' UNION ALL SELECT 'Firehouse, 2 nights, 2 dinners, 16 lunches', 'Firehouse package', 1500 + 1000 + (8 * 2 * 19), '$1,500 + $1,000 + $304') SELECT example, short_label, estimate_total, ROUND(estimate_total * 0.20, 2) AS deposit, basis FROM inputs",
+        "description": "Calculates owner-supplied event hold estimates and 20% deposits.",
+        "executed_at": "2026-09-17T23:30:00-05:00"
+      }
+    },
+    {
+      "id": "square_live",
+      "label": "Read-only Square recurring-invoice observations, September 17, 2026",
+      "path": "scripts/audit-square-recurring-invoices.cjs"
+    },
+    {
+      "id": "meal_plan_snapshot",
+      "label": "Owner-confirmed meal-prep billing snapshot, August 15-17, 2026",
+      "path": "scripts/data/planner-meal-prep-billing-2026-08-17.json"
+    },
+    {
+      "id": "master_record_24",
+      "label": "Capital Master Record 2.4, September 16, 2026",
+      "path": "artifacts/local_effort_capital_master_record_v2_4.docx"
+    },
+    {
+      "id": "existing_commerce_schema",
+      "label": "Existing Prisma commerce and membership models",
+      "path": "prisma/schema.prisma"
+    }
+  ]
+}

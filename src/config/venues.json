@@ -20,29 +20,95 @@
     "CATEGORICAL, not hierarchical: FOODIST being the primary home is expressed",
     "by order, not by a louder colour. See docs/design/VENUES.md.",
     "",
+    "roomFeeCents is NOT free either. It mirrors the owner price book",
+    "(backend/api/pricing/priceBookManifest.js, rules small_event.venue.*) and",
+    "the deposit endpoint re-derives from that manifest, never from this file.",
+    "Change the manifest first; this is the copy the page prints.",
+    "",
     "NOT IN THIS FILE: the Hopkins facility. It is neither of these spaces — it",
     "is backup capacity for large events and frozen pizza production, has no",
     "public booking page, and must not be given one by pattern-matching."
   ],
-
+  "_sharedPhotosREADME": [
+    "The food is the same whichever room it is served in — that is the whole",
+    "thesis of these pages — so these plates are shared rather than copied onto",
+    "each venue. Venue-specific photographs stay under the venue.",
+    "",
+    "Cloudinary public_ids, NOT display names. The owner names assets by their",
+    "camera filename (IMG_6479, and four UUIDs); Cloudinary stores those as",
+    "`display_name` and mints a separate opaque public_id, which is what a URL",
+    "needs. Resolved 2026-09-22 through the Admin search API. If a plate 404s,",
+    "search display_name rather than assuming the id was mistyped.",
+    "",
+    "`pole` is the reference set’s own split (brand-tokens.css:60-72): `paper`",
+    "means the subject floats on a pale ground, `panel` means it sits in a dark",
+    "void under one raking light. These photographs fall on both sides of that",
+    "line by themselves, which is why the wall is laid out by pole and not by a",
+    "uniform grid."
+  ],
+  "sharedPhotos": {
+    "food": [
+      {
+        "publicId": "up7viumzxihlylto4rae",
+        "displayName": "CD4702A3-4D4E-4524-9B75-DA0DB465BF68",
+        "folio": "tomato",
+        "pole": "paper",
+        "aspect": "3 / 4",
+        "alt": "A thick slice of heirloom tomato on a speckled ceramic plate, dressed with olive oil, basil, oregano and chive blossoms.",
+        "caption": "One tomato, in August, on a plate."
+      },
+      {
+        "publicId": "dnb8q02jykgbrbxvdxpq",
+        "displayName": "A990A759-155F-49D7-907A-199F9F2204C9",
+        "folio": "melon",
+        "pole": "panel",
+        "aspect": "3 / 4",
+        "alt": "A cantaloupe cut open with one wedge laid beside it on a pale green plate, on dark wood, lit from one side.",
+        "caption": "Cut, plated, and then left alone."
+      },
+      {
+        "publicId": "kmvajqemwphmqcewgejl",
+        "displayName": "5BF2AE1E-E01B-4C6B-9661-7B42F56058BB",
+        "folio": "sweet corn",
+        "pole": "panel",
+        "aspect": "3 / 4",
+        "alt": "An ear of sweet corn charred over fire, its husk blackened and splayed back, on a speckled plate on a wooden table.",
+        "caption": "Burnt on purpose."
+      },
+      {
+        "publicId": "auto_uploads/food/2025/08/img2742-b5ad489c",
+        "displayName": "img2742-b5ad489c",
+        "folio": "service",
+        "pole": "panel",
+        "aspect": "3 / 2",
+        "alt": "A pepperoni pizza with a blistered, charred crust carried out on a silver tray.",
+        "caption": "Pizza, carried out on a tray."
+      },
+      {
+        "publicId": "youugloqqac4f2xjsive",
+        "displayName": "IMG_6479",
+        "folio": "the haul",
+        "pole": "paper",
+        "aspect": "3 / 4",
+        "alt": "A table covered with red and green heirloom tomatoes, tomatillos, garlic, hot peppers and husks, beside a notepad.",
+        "caption": "One dinner’s shopping, before anybody cooked it."
+      }
+    ]
+  },
   "venues": [
     {
       "slug": "foodist",
       "nickname": "FOODIST",
       "verified": false,
-
       "role": "primary-home",
       "isPrimaryHome": true,
-
       "name": "TODO — legal/Business Profile name",
       "kicker": "foodist —",
       "headline": "TODO — one line, plain, in the register of \"Minnesotan food for Minnesotans\"",
       "summary": "TODO — two sentences: what the room is, and what we do in it. This is the primary home, so it can say so.",
-
       "accent": "ochre",
       "accentToken": "--accent-ochre",
       "accentRationale": "Avercamp, SK-A-1718 — the ice field. Warm earth for the room the kitchen actually lives in, and separable from poppy at a glance and in greyscale.",
-
       "address": {
         "street": "TODO",
         "locality": "TODO",
@@ -50,61 +116,107 @@
         "postalCode": "TODO",
         "country": "US"
       },
-      "geo": { "lat": null, "lng": null },
+      "geo": {
+        "lat": null,
+        "lng": null
+      },
       "phone": null,
       "googleBusinessProfilePlaceId": null,
-
-      "capacity": { "seated": null, "standing": null },
+      "capacity": {
+        "seated": 16,
+        "standing": 50
+      },
       "areaSqFt": null,
       "amenities": [],
-      "hours": { "earliest": "TODO", "latest": "TODO" },
-
-      "roomFeeCents": null,
-      "eventTypes": ["dinner", "pizza", "holiday"],
-
-      "photos": { "hero": null, "void": null, "galleryTags": ["event", "dinner"] },
-
+      "hours": {
+        "earliest": "TODO",
+        "latest": "TODO"
+      },
+      "roomFeeCents": 15000,
+      "eventTypes": [
+        "dinner",
+        "pizza",
+        "holiday"
+      ],
+      "photos": {
+        "hero": null,
+        "void": null,
+        "plates": [],
+        "galleryTags": [
+          "event",
+          "dinner"
+        ]
+      },
       "timezone": "America/Chicago"
     },
-
     {
       "slug": "firehouse",
       "nickname": "FIREHOUSE",
       "verified": false,
-
       "role": "second-space",
       "isPrimaryHome": false,
-
       "name": "TODO — legal/Business Profile name",
       "kicker": "firehouse —",
-      "headline": "TODO — one line, plain",
-      "summary": "TODO — two sentences: what the room is, and what we do in it.",
-
+      "headline": "A fire hall with a kitchen in it.",
+      "summary": "Brick apparatus bay at street level, a steel mezzanine over a double-height hall, and a working kitchen along one wall. We cook in it, and you can have it for the night.",
       "accent": "poppy",
       "accentToken": "--accent-poppy",
-      "accentRationale": "Henstenburgh, RP-T-1898-A-3500. A firehouse is a red building; the measured poppy gets there without the fire-engine-red tell.",
-
+      "accentRationale": "Henstenburgh, RP-T-1898-A-3500. A firehouse is a red building; the measured poppy gets there without the fire-engine-red tell. The exterior photograph confirms it after the fact — the building is red brick.",
       "address": {
-        "street": "TODO",
-        "locality": "TODO",
+        "street": "1290 Snelling",
+        "locality": "TODO — city for 1290 Snelling; owner said the street only",
         "region": "MN",
         "postalCode": "TODO",
         "country": "US"
       },
-      "geo": { "lat": null, "lng": null },
+      "geo": {
+        "lat": null,
+        "lng": null
+      },
       "phone": null,
       "googleBusinessProfilePlaceId": null,
-
-      "capacity": { "seated": null, "standing": null },
+      "capacity": {
+        "seated": 16,
+        "standing": 50
+      },
       "areaSqFt": null,
-      "amenities": [],
-      "hours": { "earliest": "TODO", "latest": "TODO" },
-
-      "roomFeeCents": null,
-      "eventTypes": ["dinner", "pizza", "holiday"],
-
-      "photos": { "hero": null, "void": null, "galleryTags": ["event", "dinner"] },
-
+      "amenities": [
+        "open kitchen",
+        "mezzanine",
+        "street-level bay door"
+      ],
+      "hours": {
+        "earliest": "TODO",
+        "latest": "TODO"
+      },
+      "roomFeeCents": 75000,
+      "eventTypes": [
+        "dinner",
+        "pizza",
+        "holiday"
+      ],
+      "photos": {
+        "hero": "/images/venues/firehouse/hall.webp",
+        "void": "/images/venues/firehouse/hall-wide.jpg",
+        "plates": [
+          {
+            "src": "/images/venues/firehouse/building.webp",
+            "alt": "The FIREHOUSE from the street: red brick, the original apparatus bay glazed over, a carved stone cartouche above the upper window.",
+            "folio": "the building",
+            "caption": "The bay door still opens on the street."
+          },
+          {
+            "src": "/images/venues/firehouse/kitchen.webp",
+            "alt": "The FIREHOUSE kitchen: a long island with a gas range, double ovens, and open shelving along the back wall.",
+            "folio": "the kitchen",
+            "caption": "Where your chef works. Gas range, double ovens, one long pass."
+          }
+        ],
+        "galleryTags": [
+          "event",
+          "dinner"
+        ]
+      },
       "timezone": "America/Chicago"
     }
   ]

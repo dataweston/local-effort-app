@@ -12,6 +12,9 @@
 const express = require('express');
 const { prisma } = require('../utils/prisma');
 const { buildCalendar, parseCalendar, groupIntoRanges, addDaysIso } = require('../utils/ical');
+const crypto = require('crypto');
+const { estimateVenueEvent } = require('../pricing/smallEventEstimator');
+const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
 
 // Static relative require, not path.join: @vercel/node traces static requires
 // and would miss a computed path. vercel.json includeFiles names it too, as a
@@ -77,7 +80,93 @@ const isCronOrAdmin = (req) => {
   return Boolean(supplied) && supplied === CRON_SECRET;
 };
 
-/** Only the fields a public page may see; TODO placeholders are stripped. */
+const resolveSiteUrl = () => {
+  if (process.env.PUBLIC_SITE_URL) return process.env.PUBLIC_SITE_URL;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:5173';
+};
+
+const newToken = () =>
+  typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+
+// How long a deposit link keeps the date off the market. Matches the small
+// events flow (smallEvents.js:8) so a visitor who books a room and a visitor
+// who books a dinner get the same promise.
+const HOLD_WINDOW_HOURS = 24;
+
+// Deposits are only taken against a date an operator has actually opened. An
+// Deposits are only taken against a date an operator has actually opened. An
+// `unmanaged` date — no row in the availability table — is not a promise, so
+// it routes to the enquiry form instead of to a payment link. See VENUES.md.
+
+const isEmail = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || ''));
+
+// In-memory submit limiter, same shape as the one messages.js keeps for every
+// other public form (messages.js:172-215). It is per-instance and therefore
+// best-effort on a serverless platform; it exists to blunt a script, not to be
+// an authorization boundary. The real guard is that the amount is server-derived
+// and the date must already be open.
+const bookRateBuckets = new Map();
+
+const clientIp = (req) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) return forwarded.split(',')[0].trim();
+  return req.ip || req.connection?.remoteAddress || 'unknown';
+};
+
+const bumpBucket = ({ key, windowMs, max }) => {
+  const now = Date.now();
+  const current = bookRateBuckets.get(key);
+  if (!current || current.expiresAt <= now) {
+    bookRateBuckets.set(key, { count: 1, expiresAt: now + windowMs });
+    return { limited: false, retryAfter: 0 };
+  }
+  if (current.count >= max) {
+    return { limited: true, retryAfter: Math.max(1, Math.ceil((current.expiresAt - now) / 1000)) };
+  }
+  current.count += 1;
+  if (bookRateBuckets.size > 4000) {
+    for (const [bucketKey, bucket] of bookRateBuckets.entries()) {
+      if (!bucket || bucket.expiresAt <= now) bookRateBuckets.delete(bucketKey);
+    }
+  }
+  return { limited: false, retryAfter: 0 };
+};
+
+const checkBookRateLimit = (req, email) => {
+  const checks = [
+    { key: `venue-book:ip:${clientIp(req)}`, windowMs: 10 * 60 * 1000, max: 8 },
+  ];
+  if (email) checks.push({ key: `venue-book:email:${email}`, windowMs: 10 * 60 * 1000, max: 5 });
+
+  let retryAfter = 0;
+  for (const check of checks) {
+    const result = bumpBucket(check);
+    if (result.limited) retryAfter = Math.max(retryAfter, result.retryAfter);
+  }
+  return { limited: retryAfter > 0, retryAfter };
+};
+
+/**
+ * Give a held date back.
+ *
+ * Called when a hold was written but the payment link could not be created.
+ * Deleting rather than expiring: nobody was ever shown a price, so there is no
+ * abandoned checkout to reconcile, and leaving the row would block a night for
+ * 24 hours over an outage that lasted a second. Failures are swallowed on
+ * purpose — the caller is already returning an error, and a failed cleanup
+ * degrades to a date that frees itself when the hold window lapses.
+ */
+const releaseHold = async (estimateId, logger) => {
+  try {
+    await prisma.smallEventHold.deleteMany({ where: { estimateId } });
+    await prisma.smallEventEstimate.delete({ where: { id: estimateId } });
+  } catch (error) {
+    if (logger?.error) logger.error({ err: error, estimateId }, 'venue hold release failed');
+  }
+};
+
 const publicVenue = (venue) => {
   const clean = (value) =>
     value == null || String(value).startsWith('TODO') ? null : value;
@@ -286,6 +375,192 @@ function createVenuesRouter({ logger } = {}) {
     } catch (error) {
       if (logger?.error) logger.error({ err: error }, 'venue availability failed');
       return res.status(503).json({ error: 'availability-unavailable' });
+    }
+  });
+
+  // ── The deposit ───────────────────────────────────────────────────────
+  //
+  // One call does the whole ask: validate, price, hold the date, and hand back
+  // a Square link. Making someone submit an enquiry, wait for a reply and then
+  // follow a second link is the flow this page was built to replace.
+  //
+  // Three things are deliberate:
+  //
+  //   1. The price is re-derived here from the owner price book. The client
+  //      ships the same numbers (src/config/eventPricing.js) so the figure can
+  //      render in prerendered HTML, but nothing the browser sends is trusted:
+  //      the amount on the payment link is computed from date, guests and style
+  //      alone.
+  //   2. The hold is written BEFORE the payment link exists, and released if
+  //      Square fails. The opposite order sells a night we never took off the
+  //      market.
+  //   3. Only an operator-opened date is payable. An `unmanaged` date has no
+  //      row, promises nothing, and gets the enquiry form instead.
+  router.post('/:slug/book', async (req, res) => {
+    const venue = resolveVenue(req, res);
+    if (!venue) return undefined;
+    if (!ensurePrisma(res)) return undefined;
+
+    // The two defences every public form here carries: a honeypot the browser
+    // never fills, and an in-memory limiter. This endpoint mints payment links,
+    // so it sits on the strict side of the house numbers.
+    if (normalizeString(req.body?.website, 100)) {
+      return res.status(400).json({ error: 'rejected' });
+    }
+
+    const contactEmail = normalizeString(req.body?.contactEmail, 200).toLowerCase();
+    const limit = checkBookRateLimit(req, contactEmail);
+    if (limit.limited) {
+      res.setHeader('Retry-After', String(limit.retryAfter));
+      return res.status(429).json({ error: 'rate-limit-exceeded', retryAfter: limit.retryAfter });
+    }
+
+    const date = normalizeString(req.body?.date, 10);
+    const contactName = normalizeString(req.body?.contactName, 120);
+    const contactPhone = normalizeString(req.body?.contactPhone, 40);
+    const notes = normalizeString(req.body?.notes, 1000);
+
+    if (!isIsoDate(date)) return res.status(400).json({ error: 'invalid-date' });
+    if (date < todayIso()) return res.status(400).json({ error: 'date-in-past' });
+    if (date > addDaysIso(todayIso(), MAX_HORIZON_DAYS)) {
+      return res.status(400).json({ error: 'date-beyond-horizon' });
+    }
+    if (!contactName) return res.status(400).json({ error: 'missing-name' });
+    if (!isEmail(contactEmail)) return res.status(400).json({ error: 'invalid-email' });
+
+    const quote = estimateVenueEvent({
+      venueSlug: venue.slug,
+      serviceStyle: req.body?.serviceStyle,
+      guestCount: req.body?.guestCount,
+    });
+    if (!quote.ok) return res.status(400).json({ error: quote.error });
+
+    // A room cannot seat more people than it holds. Enforced only once capacity
+    // is a real fact: venues.json ships it null until verified, and inventing a
+    // ceiling would reject real bookings.
+    const seats = Math.max(venue.capacity?.seated || 0, venue.capacity?.standing || 0);
+    if (seats && quote.guestCount > seats) {
+      return res.status(400).json({ error: 'over-capacity', capacity: seats });
+    }
+
+    let estimate;
+    try {
+      estimate = await prisma.$transaction(async (tx) => {
+        // Re-read the date inside the transaction rather than trusting the grid
+        // the visitor was looking at, which may be a minute old.
+        const slot = await tx.smallEventAvailability.findFirst({
+          where: { venue: venue.slug, date, status: 'open' },
+        });
+        if (!slot) throw new Error('date-not-open');
+
+        const blocked = await tx.venueBlock.findFirst({ where: { venue: venue.slug, date } });
+        if (blocked) throw new Error('date-taken');
+
+        const existing = await tx.smallEventHold.findFirst({
+          where: {
+            slotId: slot.id,
+            OR: [{ status: 'confirmed' }, { status: 'held', holdUntil: { gt: new Date() } }],
+          },
+        });
+        if (existing) throw new Error('date-taken');
+
+        return tx.smallEventEstimate.create({
+          data: {
+            type: 'holiday',
+            status: 'hold-pending',
+            location: venue.slug,
+            serviceStyle: quote.serviceStyle,
+            guestCount: quote.guestCount,
+            eventDate: date,
+            contactName,
+            contactEmail,
+            contactPhone: contactPhone || null,
+            notes: notes || null,
+            estimateMinCents: quote.estimateMinCents,
+            estimateMaxCents: quote.estimateMaxCents,
+            subtotalCents: quote.estimateMinCents,
+            depositPercent: quote.depositPercent,
+            depositAmountCents: quote.depositCents,
+            depositStatus: 'pending',
+            claimToken: newToken(),
+            lastEditedAt: new Date(),
+            hold: {
+              create: {
+                slotId: slot.id,
+                status: 'held',
+                holdUntil: new Date(Date.now() + HOLD_WINDOW_HOURS * 3600 * 1000),
+              },
+            },
+          },
+          include: { hold: true },
+        });
+      });
+    } catch (error) {
+      if (error?.message === 'date-not-open' || error?.message === 'date-taken') {
+        return res.status(409).json({ error: error.message });
+      }
+      if (logger?.error) logger.error({ err: error }, 'venue hold failed');
+      return res.status(503).json({ error: 'hold-failed' });
+    }
+
+    const { client: squareClient, locationId } = getSquareClient();
+    if (!squareClient || !locationId) {
+      // The hold is real but unpayable, so it is released rather than left to
+      // block a night nobody can buy.
+      await releaseHold(estimate.id, logger);
+      if (logger?.error) logger.error({}, 'venue checkout: square not configured');
+      return res.status(503).json({ error: 'square-not-configured' });
+    }
+
+    try {
+      const referenceId = `venue:${venue.slug}:${estimate.id}`;
+      const dollars = Math.round(quote.estimateMinCents / 100).toLocaleString('en-US');
+      const response = await squareClient.checkoutApi.createPaymentLink({
+        idempotencyKey: newToken(),
+        order: {
+          locationId,
+          referenceId,
+          lineItems: [
+            {
+              name: `${venue.nickname} - ${date} date hold`,
+              quantity: '1',
+              basePriceMoney: { amount: quote.depositCents, currency: 'USD' },
+              note: `${quote.depositPercent}% deposit against an estimated $${dollars} for ${quote.guestCount} guests`.slice(0, 500),
+            },
+          ],
+        },
+        checkoutOptions: {
+          redirectUrl: `${resolveSiteUrl()}/${venue.slug}?deposit=success&hold=${estimate.id}`,
+          note: referenceId,
+          prePopulateBuyerEmail: contactEmail || undefined,
+        },
+      });
+
+      const paymentLink = response?.result?.paymentLink;
+      if (!paymentLink?.url) throw new Error('no-payment-link');
+
+      await prisma.smallEventPayment.create({
+        data: {
+          estimateId: estimate.id,
+          amountCents: quote.depositCents,
+          status: 'pending',
+          squarePaymentLinkId: paymentLink.id || null,
+          squareOrderId: paymentLink.orderId || paymentLink.order_id || null,
+        },
+      });
+
+      return res.json({
+        url: paymentLink.url,
+        holdId: estimate.id,
+        holdUntil: estimate.hold?.holdUntil,
+        depositCents: quote.depositCents,
+        estimateMinCents: quote.estimateMinCents,
+        estimateMaxCents: quote.estimateMaxCents,
+      });
+    } catch (error) {
+      await releaseHold(estimate.id, logger);
+      if (logger?.error) logger.error({ err: error }, 'venue checkout failed');
+      return res.status(502).json({ error: 'checkout-failed' });
     }
   });
 

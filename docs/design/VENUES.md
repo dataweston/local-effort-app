@@ -265,3 +265,261 @@ direct ancestor in the reference set. It is derived from the caption strip, but
 if it drifts toward a conventional date picker — rounded cells, coloured pills,
 a shadow on the popover — the derivation is gone and it should be pulled back
 to the ruled table it is now.
+
+---
+
+# Addendum — FIREHOUSE finished, and the deposit (2026-09-22)
+
+The direction above did not change. What follows is what filled it in: the
+photographs it was designed around, and the deposit that turns beat 3 from an
+enquiry into a sale.
+
+## The photographs
+
+Four, supplied by the owner. They are committed to `public/images/venues/
+firehouse/` rather than pulled from Cloudinary, because the hero and the void
+are the fold and the climax of a prerendered Google Ads landing page and
+neither can wait on a client-side image search. The gallery at beat 5 still
+comes from Cloudinary by tag, which is the right trade for photographs nobody
+has art-directed.
+
+| File | Beat | Job |
+| --- | --- | --- |
+| `hall.webp` | 1, hero | The volume: mezzanine, steel stair, kitchen behind. The wow, and the reason someone who came for a chef stays for the room. |
+| `building.webp` | 2, after the ledger | The building from the street. Red brick, the apparatus bay glazed over. |
+| `hall-wide.jpg` | 4, the void | The same room wide, under the 62% ink wash the void band already applied. A bright photograph darkened reads as evening, which is what Coorte's ground is. |
+| `kitchen.webp` | 5, release | The kitchen. This is the chef connection: the last thing seen is the room where the cooking happens. |
+
+**The exterior settles the accent after the fact.** `--accent-poppy` was
+sampled from Henstenburgh in `brand-tokens.css:83` long before anyone here had
+seen this building, and the argument for it was that "a firehouse is a red
+building". The building is red brick. The accent was right for a reason that
+turned out to be literal.
+
+**The secondary plates are mounted, not bled.** `.venue-plate` wraps
+`.specimen-frame`, so each gets the ruled border, the hairline inside it, and a
+folio top right — the catalogue treatment the reference set uses on every
+sheet. The frame reserves `padding-top: 1.9rem` because the folio otherwise
+lands on the photograph once the frame's fluid padding shrinks below it. That
+is fine over de Boodt's paper and not fine over a sky; caught in a screenshot at
+503px, not by the build.
+
+## The deposit
+
+Beat 3 used to collect an enquiry. It now takes 20% through Square and holds
+the night.
+
+The reason is the journey this page is actually for: someone who arrived to
+book a chef, saw the room, and wants the date. That intent does not survive a
+day of waiting for a reply, and the availability grid was already sitting right
+there telling them the night is free. Selling it was the only honest next move.
+
+**Where the numbers come from.** `backend/api/pricing/priceBookManifest.js`,
+the owner's published policy, effective 2026-09-18. Nothing is restated:
+`smallEventEstimator.js` derives the service styles, both venue fees and the
+deposit rate out of `RULES` at require time, so editing the manifest moves the
+page.
+
+| | |
+| --- | --- |
+| Buffet or passed | $45–$75 per guest |
+| Family-style or coursed | $65–$95 per guest |
+| Individually plated and coursed | $105–$250 per guest |
+| FIREHOUSE room | $750 per event day |
+| FOODIST room | $150 per event day |
+| Deposit | 20% of the low estimate |
+
+**The deposit is taken against the LOW end, plus fixed costs.** That basis is
+written into the rule itself (`estimateBasis:
+lower_rate_times_high_guest_count_plus_fixed_costs`) and the pricing discovery
+argued it: the operator sets the real menu price later, so holding at the top
+of the range would mean refunding the difference on most bookings. Thirty
+guests at buffet is $45 × 30 + $750 = $2,100, and the hold is $420 — the worked
+example in `artifacts/product-pricing-discovery-2026-09-17`, which the
+estimator's tests assert against directly.
+
+**The prices ship twice, and the duplication is guarded.**
+`src/config/eventPricing.js` carries the same numbers as ESM so the figure
+renders in prerendered HTML — a price that arrives by fetch is a price the
+crawler and the no-JS visitor never see, which is the exact failure the
+prerender exists to prevent. `tests/eventPricing.test.js` requires the CJS
+manifest and asserts every value and every computed deposit across the grid, so
+the copy cannot drift silently. The server re-derives before minting a payment
+link, so the client's copy is never load-bearing for correctness.
+
+**Three rules in `POST /api/venues/:slug/book`:**
+
+1. **The hold is written before the payment link exists**, and released if
+   Square fails. The other order sells a night that was never taken off the
+   market.
+2. **Only an operator-opened date is payable.** `unmanaged` has no row, promises
+   nothing, and routes to the enquiry form — the state table above, enforced.
+   This means *the page cannot sell anything until dates are opened in the
+   availability admin*. That is the fail-closed posture working as designed, not
+   a bug, but it is the difference between a live booking page and a decorative
+   one.
+3. **The amount is server-derived** from date, guests and style alone. A tampered
+   client can only ever pay the correct price.
+
+Known race: two visitors can pass the in-transaction hold check within the same
+instant and both receive a link. The window is milliseconds and the recovery is
+a refund; closing it properly wants a unique constraint on
+`SmallEventHold.slotId`, which is a migration and was left out of this pass
+rather than half-done.
+
+No schema migration was needed. The flow reuses `SmallEventEstimate`,
+`SmallEventAvailability`, `SmallEventHold` and `SmallEventPayment` exactly as
+the /small-events checkout does.
+
+## The ask, laid out
+
+`service-page.css:65` pins `.ht-slip` to `flex: 0 1 560px`, which is right where
+a slip shares a row with a photograph and wrong here, where it left the slip
+stranded at 560px beside an empty window and stacked a twelve-row calendar on
+top of the price. The venue scope overrides it to the page's own 62rem measure
+and splits it: calendar left, deposit right, above 62rem. The calendar is
+sticky, so the night you picked is still on screen while you read what it costs.
+Below 62rem it stacks, because two columns of 15rem is worse than scrolling.
+
+## The other customer
+
+A visitor already staying in the building wants a cook, not a room. That is a
+second product line, so it gets a footnote under the hero and its own sheet —
+never a second call to action at the fold, which would give the page two
+climaxes and therefore none.
+
+`GuestChefPrompt.jsx` is a **scaffold and says so on its face**. The owner named
+two products, "Fill the fridge" and "Personal chef", and nothing else; no copy,
+pricing, field list or checkout has been invented to cover the gap, and every
+unknown renders as a visible `coming soon` in the same spirit as the TODO gate
+in `venues.json`. To finish it, each product needs a line of description, a
+price basis that lands in `priceBookManifest.js` as rules rather than in the
+component, the fields fulfilment actually requires, and whether it takes a
+deposit or is paid in full. The Square path is already built and reusable.
+
+The note only renders where the street is a real value, because an unnamed
+"already a guest here?" means nothing.
+
+## Blacklist audit for this pass
+
+Kept from the original list, plus what this pass was tempted by:
+
+- **Three service-style cards** — the single most likely defect here, since the
+  styles are literally three options. They are ruled radio rows on the ledger's
+  own rules.
+- **A count-up on the estimate** — the figure changes. It does not animate.
+- **A gradient or pill deposit button** — `.ht-submit`, filled with ink, per the
+  accent fence argued above.
+- **Green "available" / red "booked" chips**, again, now that money is involved
+  and the temptation is stronger. Still degrees of finish.
+- **Rounded cards with soft shadows around the photographs** — plates in ruled
+  frames with the raking shadow.
+- **A guest-count slider with a gradient track** — a mono stepper reusing
+  `.venue-calendar__step`, so the two things on this page that step through
+  something are the same control.
+- **"Seamless booking", "instant confirmation", "effortless"** — the copy says
+  what happens: the night is held for 24 hours while you pay, and released if
+  you do not.
+
+## Still owner-blocked
+
+`verified` stays **false**, so there is still no `Place` JSON-LD and both pages
+still send `noindex,follow`. What is missing is facts, not design:
+
+- ~~**Capacity**~~ — supplied 2026-09-22: 16 seated / 50 standing at both rooms.
+  See Addendum 2.
+- **The address** — the owner gave "1290 Snelling" in passing and it is recorded
+  as the street, but the city, postcode and geo are still TODO and must match
+  the Business Profile exactly.
+- Legal name, hours, floor area.
+- FOODIST has had none of this pass: no photographs, no copy. Its fee is now
+  real ($150) and the deposit flow works there, but the page is still starved.
+
+---
+
+# Addendum 2 — the food, and capacity (2026-09-22)
+
+## Capacity
+
+**16 seated, or 50 standing, at both rooms** (owner, 2026-09-22). This is the
+fact the deposit flow most needed: the estimate is per guest, so before this the
+stepper ran to the pricing sanity ceiling of 200 and the page would cheerfully
+quote two hundred people into a room that holds fifty. `VenueBooking` now clamps
+to `max(seated, standing)` and `POST /:slug/book` rejects `over-capacity`
+server-side.
+
+It does **not** flip `verified`. That still needs the address, geo and legal
+name matching the Business Profile.
+
+## The food wall replaces the tag gallery
+
+Beat 5 used to be a `PhotoGrid` pulling nine images by Cloudinary tag. It is now
+five named photographs. A page that has just asked someone for a $420 deposit
+should not close on whatever the `event` tag happened to return that morning.
+
+**These photographs are specimens, and that is not a flourish.** Four of the
+five are a single subject on a plate under raking side light against a dark
+ground — which is the composition of most of the reference set. The melon
+(`A990A759…`) is Coorte's `SK-A-2099` with a cantaloupe in it: dark ground, one
+lit object, a fork where the asparagus has its string. The tomato
+(`CD4702A3…`) is a botanical sheet — subject centred on a pale ground, herbs
+and chive blossoms arranged around it like a study.
+
+So they are mounted the way the venue plates are — ruled frame, hairline
+inside, folio top right, caption on the board — and the set is split by the
+reference set's own two poles (`brand-tokens.css:60-72`). `pole: paper` mounts
+on `--brand-sheet`, `pole: panel` mounts on `--brand-mount`. The distinction is
+quiet by design; it is a mount board, not a highlight.
+
+**The wall is laid out by the shape the photographs already have**, not by a
+column count picked in advance. In a six-column grid a portrait spans 2 and the
+landscape spans 4, which resolves to three specimens across the top and the
+service shot paired with the haul beneath. No "featured item" rule, no bento.
+`data-shape` is derived in the component rather than matched in CSS off the
+inline style, which would depend on how React serialises a custom property.
+
+**Shared, not per-venue.** They live under `sharedPhotos.food` because the food
+is the same whichever room it is served in — that is the thesis of these pages,
+and copying the same five plates onto each venue would encode the opposite.
+
+**Cloudinary public_ids, not display names.** The owner names assets by camera
+filename (`IMG_6479`, and four UUIDs). Cloudinary stores those as `display_name`
+and mints a separate opaque `public_id`, which is what a URL needs; they were
+resolved through the Admin search API. If a plate 404s, search `display_name`
+before assuming a typo.
+
+They are delivered as a plain `<img>` with a Cloudinary `srcset` rather than
+through `components/common/cloudinaryImage.jsx`. That component does a blur-up
+and watches the underlying element for load; both cost JavaScript, and the
+markup it emits carries no real `src` until React hydrates. On a page whose
+whole argument is that what matters ships in the HTML, that is the wrong trade.
+
+**One correction worth recording:** `IMG_6479` is natively 3024×4032, portrait.
+It was first declared `3 / 2` and the CSS crop quietly ate the bottom third of
+the table. Caught in a screenshot by comparing against the source. Declare the
+aspect a photograph actually has.
+
+## The reveal was hiding photographs from crawlers
+
+`useSpecimenReveal` used to start at `pending` and let an effect finish it. Its
+own comment claimed SSR would "get the finished state immediately" — but
+effects do not run during SSR, so the prerendered HTML shipped
+`data-finish="pending"`, and `specimen.css:209` hides `.specimen-figure` inside
+a pending reveal. Every photograph in a revealed section was `opacity: 0` **in
+the file**.
+
+Nothing caught it for as long as the revealed sections held only text. The
+venue plate was the first `.specimen-figure` to live inside a
+`.specimen-reveal`, and a screenshot of the prerendered page came back blank.
+
+The order is now inverted: **finished is the default, and the client applies the
+hidden state on mount**, in a layout effect so it commits before paint and
+nothing flashes. A crawler, a prerendered page and a browser whose script failed
+all see the finished composition — which is what `prefers-reduced-motion`
+already showed (`specimen.css:286`). A section already on screen at mount is
+left finished rather than hidden for the pleasure of animating it back in.
+
+Worth remembering as a general rule for this codebase: **any CSS that hides
+content until JavaScript says otherwise is invisible to Google on a prerendered
+route.** Check `data-*` state attributes in `prerender/<route>/index.html`, not
+just in the browser.

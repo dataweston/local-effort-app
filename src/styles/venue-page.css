@@ -526,3 +526,555 @@
     filter: drop-shadow(3px 2px 4px rgba(58, 46, 63, 0.3));
   }
 }
+
+/* ── Secondary plates ────────────────────────────────────────────────────
+   The hero is the room. These are its particulars — the building from the
+   street, the kitchen — and they are mounted the way the reference set mounts
+   a sheet: inside a ruled frame with a hairline inside it, a folio top right,
+   and the caption set on the board beneath. .specimen-frame already draws
+   exactly that (specimen.css:96-119), so nothing new is invented here; the
+   plate only supplies the width and the photograph.
+
+   Narrower than the hero on purpose. If a particular is as large as the
+   subject, the page stops having a subject. */
+
+.venue-plate {
+  margin: var(--service-rhythm) 0 0;
+  max-width: 34rem;
+}
+
+.venue-plate__frame {
+  background-color: var(--brand-mount);
+}
+
+.venue-plate__frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.venue-plate__caption {
+  margin-top: 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.venue-release {
+  margin-top: var(--service-rhythm);
+}
+
+/* The release plate sits opposite the ledger plate, so the page does not read
+   as a left-aligned column of identical rectangles. */
+.venue-release .venue-plate {
+  margin-left: auto;
+}
+
+/* ── The guest note ──────────────────────────────────────────────────────
+   For the visitor who is already inside the building and wants a cook, not a
+   room. It is a footnote, not a banner: this page has one climax and it is the
+   date, and a second call to action competing at the fold would cost more than
+   the second product line earns.
+
+   The rule above it is the only ornament, and it is the same hairline the
+   ledger rows use — a divider the page already speaks. */
+
+.venue-guest-note {
+  position: relative;
+  margin: 1.6rem 0 0;
+  padding-top: 0.9rem;
+  max-width: 44rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.venue-guest-note__rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3.5rem;
+  border-top: 1px solid var(--venue-accent);
+}
+
+/* A button that reads as a link. The accent is allowed here because it is a
+   rule under text, not a fill — the same fence every other accent on this page
+   sits behind. */
+.venue-guest-note__link {
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: var(--sp-ink);
+  cursor: pointer;
+  border-bottom: 1.5px solid var(--venue-accent);
+  transition: background-color var(--sp-dur-1) var(--sp-ease);
+}
+
+.venue-guest-note__link:hover {
+  background-color: color-mix(in srgb, var(--venue-accent) 12%, transparent);
+}
+
+/* ── The guest sheet ─────────────────────────────────────────────────────
+   A second product on a raised sheet, over the mount board. The dialog element
+   gives the focus trap and the inertness; the styling only has to make it a
+   sheet. */
+
+.venue-guest-sheet {
+  border: 1px solid var(--sp-rule);
+  border-radius: 0;
+  padding: 0;
+  max-width: 34rem;
+  width: calc(100% - 2rem);
+  background-color: var(--brand-sheet);
+  color: var(--sp-ink);
+  filter: drop-shadow(var(--specimen-shadow-lifted));
+}
+
+.venue-guest-sheet::backdrop {
+  background-color: rgba(24, 19, 12, 0.55);
+}
+
+.venue-guest-sheet__inner {
+  padding: clamp(1.2rem, 3.5vw, 2rem);
+}
+
+.venue-guest-sheet__head {
+  position: relative;
+  padding-right: 2rem;
+}
+
+.venue-guest-sheet__head h2 {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.15rem, 3vw, 1.5rem);
+  letter-spacing: -0.012em;
+}
+
+.venue-guest-sheet__close {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--sp-rule);
+  border-radius: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--sp-ink);
+  cursor: pointer;
+  transition: background-color var(--sp-dur-1) var(--sp-ease);
+}
+
+.venue-guest-sheet__close:hover {
+  background-color: color-mix(in srgb, var(--sp-ink) 8%, transparent);
+}
+
+/* The unfinished state, said plainly. Dashed because every provisional mark in
+   this system is dashed — the same language the held calendar state and the
+   dev nag already use. */
+.venue-guest-sheet__pending {
+  margin: 1rem 0 1.2rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px dashed var(--venue-accent);
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.venue-guest-sheet__soon,
+.venue-guest-sheet__slot-label {
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--sp-ink) 50%, transparent);
+}
+
+.venue-guest-sheet__form {
+  margin-top: 1.1rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.venue-guest-sheet__slot {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(4rem, 7rem) 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.venue-guest-sheet__slot input {
+  width: 100%;
+  border: 1px solid var(--sp-rule-hair);
+  border-radius: 0;
+  background-color: color-mix(in srgb, var(--brand-mount) 55%, transparent);
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--sp-ink) 45%, transparent);
+}
+
+@media (max-width: 34rem) {
+  .venue-guest-sheet__slot {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+/* ── The booking panel ───────────────────────────────────────────────────
+   Beat 3. Everything here is a ruled row, because the alternative — three
+   service-style cards and a price box — is the shape VENUES.md:245-261 already
+   ruled out once. */
+
+.venue-book {
+  margin-top: 1.2rem;
+}
+
+.venue-book__field {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.3rem;
+}
+
+.venue-book__legend {
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* The stepper. Square cells with a 1px rule, reusing .venue-calendar__step so
+   the two controls on this page that step through something look identical. */
+.venue-book__stepper {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.venue-book__count {
+  width: 4.5rem;
+  border: 1px solid var(--sp-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  text-align: center;
+  font-family: var(--font-office-code, monospace);
+  /* 16px floor: anything smaller and iOS zooms the page on focus. */
+  font-size: 16px;
+  color: var(--sp-ink);
+  -moz-appearance: textfield;
+}
+
+/* The spinners duplicate the two buttons either side of it. */
+.venue-book__count::-webkit-outer-spin-button,
+.venue-book__count::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.venue-book__stepper-note {
+  margin-left: 0.4rem;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--sp-ink) 55%, transparent);
+}
+
+/* Service styles: a radio list on the ledger's rules. */
+.venue-book__styles {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--sp-rule);
+}
+
+.venue-book__style {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.2rem 0.7rem;
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid var(--sp-rule-hair);
+  cursor: pointer;
+  transition: background-color var(--sp-dur-1) var(--sp-ease);
+}
+
+.venue-book__style:hover {
+  background-color: color-mix(in srgb, var(--sp-ink) 5%, transparent);
+}
+
+/* The chosen row is marked by a rule down its edge, not a fill — the accent
+   fence again. Same idea as the switch hinge on /private-events. */
+.venue-book__style:has(input:checked) {
+  background-color: color-mix(in srgb, var(--venue-accent) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--venue-accent);
+}
+
+.venue-book__style input {
+  accent-color: var(--venue-accent);
+  margin: 0;
+}
+
+.venue-book__style-name {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--sp-ink);
+}
+
+.venue-book__style-rate {
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--sp-ink) 62%, transparent);
+  white-space: nowrap;
+}
+
+.venue-book__style-rate i,
+.venue-book__deposit i {
+  font-style: normal;
+  color: color-mix(in srgb, var(--sp-ink) 48%, transparent);
+}
+
+@media (max-width: 30rem) {
+  .venue-book__style {
+    grid-template-columns: auto 1fr;
+  }
+
+  .venue-book__style-rate {
+    grid-column: 2;
+  }
+}
+
+/* The figure. Same rows as the ledger above, because it is the same kind of
+   statement: this is what the room is, this is what the night costs. */
+.venue-book__ledger {
+  margin: 0 0 1rem;
+  border-top: 1px solid var(--sp-rule);
+}
+
+.venue-book__total .venue-ledger__value,
+.venue-book__deposit .venue-ledger__value {
+  font-size: 1rem;
+}
+
+.venue-book__deposit {
+  border-bottom: 1px solid var(--sp-rule);
+}
+
+.venue-book__deposit .venue-ledger__term,
+.venue-book__deposit .venue-ledger__value {
+  font-weight: 650;
+}
+
+.venue-book__basis {
+  margin: 0 0 1.3rem;
+  max-width: 40rem;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.venue-book__who {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.venue-book__who textarea {
+  resize: vertical;
+}
+
+.venue-book__submit {
+  margin-top: 1.1rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.venue-book__clear {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--sp-ink) 58%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Paid. The one place the accent is allowed a wash rather than a line, because
+   it is a receipt and it is shown once, to one person, after the money moved. */
+.venue-book__paid {
+  margin: 0 0 1.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--venue-accent);
+  background-color: color-mix(in srgb, var(--venue-accent) 7%, transparent);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venue-book__style,
+  .venue-guest-note__link,
+  .venue-guest-sheet__close {
+    transition: none;
+  }
+}
+
+/* ── The ask, laid out ───────────────────────────────────────────────────
+   service-page.css:65 pins .ht-slip to `flex: 0 1 560px`, which is right on
+   the service pages: there the slip sits beside a photograph and the two share
+   the row. These pages put no photograph there, so the same rule leaves the
+   slip stranded at 560px with the rest of the window empty, and stacks a
+   twelve-row calendar on top of the price.
+
+   So the slip takes the page's own measure instead — the same 62rem the hero
+   plate is capped at, so the sheet has one width from top to bottom — and the
+   calendar and the deposit sit side by side inside it. */
+
+.venue-scope .service-hero .ht-slip {
+  flex: 1 1 auto;
+  max-width: 62rem;
+}
+
+.venue-ask {
+  display: grid;
+  gap: clamp(1.4rem, 3vw, 2.4rem);
+}
+
+/* One column until there is genuinely room for two. Below this the calendar
+   and the panel would both be too narrow to read, which is worse than
+   scrolling. */
+@media (min-width: 62rem) {
+  .venue-ask {
+    grid-template-columns: minmax(17rem, 21rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* The calendar stays put while the panel scrolls past it, so the date you
+     picked is still on screen when you read what it costs. Offset clears the
+     sticky site header. */
+  .venue-ask__calendar {
+    position: sticky;
+    top: 5.5rem;
+  }
+}
+
+/* The calendar's own cap (34rem) is wider than the column it now sits in, so
+   it simply fills it. */
+.venue-ask__calendar .venue-calendar {
+  margin-top: 0;
+  max-width: none;
+}
+
+.venue-ask__panel .venue-book {
+  margin-top: 0;
+}
+
+/* The kicker renders the venue slug, and "firehouse" is one of the words that
+   exposes an fi-ligature gap in the kicker face once letter-spacing is applied
+   to it. Caught in a screenshot, not in the build. Ligatures buy nothing in a
+   nine-character lowercase label, so they are turned off here rather than the
+   word being respelled around the bug. Scoped to these pages: the rest of the
+   site keeps whatever its own kickers do today. */
+.venue-scope .ht-kicker {
+  font-variant-ligatures: none;
+}
+
+/* The folio sits 0.55rem from the top of the frame, and .specimen-frame pads
+   by clamp(0.9rem, 2.2vw, 1.6rem) — so on a narrow window the padding shrinks
+   under the folio and the label lands on the photograph instead of the mount.
+   Fine on the apple sheet, where the frame holds type; not fine over a sky.
+   The plate therefore reserves its own top margin for the label. */
+.venue-plate__frame {
+  padding-top: 1.9rem;
+}
+
+/* ── The food wall ───────────────────────────────────────────────────────
+   Beat 5. Five photographs of the cooking, mounted as specimens.
+
+   Not a gallery grid, and the distinction is load-bearing: a uniform row of
+   equal tiles would say "here are some more pictures", and these are not that.
+   Four of the five are single subjects on a plate under a raking side light,
+   which is the composition of most of the reference set — the melon is Coorte
+   with a cantaloupe in it. So they get the catalogue mount the venue plates
+   already use, and the wall is laid out by the SHAPE the photographs already
+   have rather than by a column count chosen in advance:
+
+     a portrait plate (3/4) spans 2 of 6      three to a row
+     a landscape plate (3/2) spans 3 of 6     two to a row
+
+   With five plates that resolves to a row of three and a row of two, which is
+   the asymmetry a catalogue page has and a bento grid does not. Nothing here
+   needs a rule about "featured" items; the images sort themselves. */
+
+.venue-food {
+  margin-top: var(--service-rhythm);
+}
+
+.venue-food__wall {
+  margin-top: 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.8rem);
+}
+
+.venue-food__plate {
+  margin: 0;
+  grid-column: span 6;
+}
+
+@media (min-width: 48rem) {
+  .venue-food__plate {
+    grid-column: span 3;
+  }
+
+  /* A landscape plate takes the full row at this width rather than sitting
+     next to a portrait, where the two would fight over the baseline. */
+  .venue-food__plate[data-shape='landscape'] {
+    grid-column: span 6;
+  }
+}
+
+@media (min-width: 64rem) {
+  .venue-food__plate {
+    grid-column: span 2;
+  }
+
+  /* One landscape plate and four portraits: three portraits fill the first
+     row, and the last portrait pairs with the landscape across the second.
+     Span 4 rather than 3 so that row closes instead of trailing a gap. */
+  .venue-food__plate[data-shape='landscape'] {
+    grid-column: span 4;
+  }
+}
+
+/* The frame carries the aspect so the crop is decided here and by Cloudinary,
+   not by whatever the photographer happened to shoot. */
+.venue-food__plate .venue-plate__frame img {
+  aspect-ratio: var(--plate-aspect, 3 / 4);
+  object-fit: cover;
+}
+
+/* The two poles of the reference set, carried onto the mount. A subject that
+   floats on a pale ground is mounted on the sheet; a subject sitting in a dark
+   void is mounted on the board, which is darker and lets the photograph keep
+   its own shadow instead of arguing with the page's. */
+.venue-food__plate[data-pole='paper'] .venue-plate__frame {
+  background-color: var(--brand-sheet);
+}
+
+.venue-food__plate[data-pole='panel'] .venue-plate__frame {
+  background-color: var(--brand-mount);
+}

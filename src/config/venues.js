@@ -13,6 +13,14 @@ import venuesData from './venues.json';
 
 export const VENUES = venuesData.venues;
 
+/**
+ * Photographs that belong to the cooking rather than to a room.
+ *
+ * Shared because the thesis of these pages is that it is the same food either
+ * way — copying the same five plates onto each venue would encode the opposite.
+ */
+export const SHARED_PHOTOS = venuesData.sharedPhotos || {};
+
 export const getVenue = (slug) => VENUES.find((venue) => venue.slug === slug) || null;
 
 export const VENUE_SLUGS = VENUES.map((venue) => venue.slug);

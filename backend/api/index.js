@@ -105,6 +105,7 @@ const { createPublicContextRouter } = require('./routes/publicContext');
 const { createProductFeedsRouter } = require('./routes/productFeeds');
 const { createSupportRouter } = require('./routes/support');
 const { createDecisionRouter } = require('./routes/decision');
+const { createProductPricingRouter } = require('./routes/productPricing');
 const { createThumbtackRouter } = require('./routes/thumbtack');
 const {
   CHECKOUT_SCOPES,
@@ -1085,6 +1086,7 @@ app.use('/api/crowdfund', createCrowdfundingRouter({ db, squareClient, logger })
 app.use('/api/small-events', createSmallEventsRouter({ logger }));
 app.use('/api/venues', createVenuesRouter({ logger }));
 app.use('/api/finance', createFinanceRouter({ logger }));
+app.use('/api/product-pricing', createProductPricingRouter({ logger }));
 app.use('/api/sales', createSalesRouter({ logger }));
 app.use('/api/planner', createPlannerRouter());
 app.use('/ucp/v1', createUcpRouter({ logger }));
@@ -4722,5 +4724,4 @@ app.use((err, req, res, next) => {
 const createApiApp = () => app;
 
 module.exports = { createApiApp };
-
 
