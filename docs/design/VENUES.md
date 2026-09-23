@@ -552,7 +552,7 @@ the halves separately.
 2. the ledger — what you get
 3. the ask — calendar and deposit, side by side
 4. **the gallery** — rooms and food, one grid
-5. the void — a dark band, the quote, the feed
+5. the void — a dark band, one quote, and that is the end
 
 Beats 4 and 5 swapped, and the gallery absorbed all three scattered photo
 sections. Captions and folios are gone: the catalogue mount earns its keep on a
@@ -617,3 +617,9 @@ month, which was September — where nothing was open. A visitor landed on a gri
 of greyed-out squares with no reason to think pressing the arrow would help.
 `VenueCalendar` now opens on the first month that has an open night, unless the
 visitor arrived with a date of their own.
+
+## The page ends on the void
+
+The calendar-feed footnote below the void band is gone (owner, 2026-09-22). The
+feed itself is untouched: `GET /api/venues/:slug/calendar.ics` still serves and
+`VenuePage` still advertises it in the head as `<link rel="alternate">`.

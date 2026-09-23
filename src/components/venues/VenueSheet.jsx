@@ -7,7 +7,7 @@
 //   2. the ledger                  what the room is, ruled
 //   3. the ask                     calendar + deposit, side by side
 //   4. the gallery                 rooms and food, one grid
-//   5. the void                    a dark band, the quote, the feed
+//   5. the void                    a dark band, one quote, and that is the end
 //
 // This differs from the service pages, which open on the order slip. A dinner
 // party needs no introduction; a room does. That is the one deliberate
@@ -389,16 +389,6 @@ export default function VenueSheet({ venue, headingLevel }) {
             — Alyssa Andes, Soup Sisters MN
           </p>
         </div>
-      </section>
-
-      <section className="service-close">
-        <p className="ht-footnote">
-          Planning around other bookings?{' '}
-          <a href={`/api/venues/${venue.slug}/calendar.ics`}>
-            Subscribe to {venue.nickname}&rsquo;s calendar
-          </a>{' '}
-          in Google Calendar, Airbnb or Apple Calendar and it stays current on its own.
-        </p>
       </section>
     </div>
   );
