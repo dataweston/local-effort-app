@@ -493,3 +493,163 @@
 .pizza-smith .le-checkout-total-row {
   background: var(--ps-paper);
 }
+
+/* Photography: a full product gallery, freezer details and a kitchen journal. */
+.ps-main-photo {
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #eeede7;
+}
+.ps-gallery figcaption {
+  min-height: 42px;
+}
+.ps-gallery figcaption > span:last-child {
+  white-space: nowrap;
+}
+.ps-gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.ps-gallery-controls button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ps-line);
+  background: transparent;
+  font-size: 20px;
+}
+.ps-gallery-controls span {
+  font-size: 12px;
+  color: #5c5c54;
+}
+.ps-thumbnails {
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  max-width: 100%;
+  scrollbar-width: thin;
+}
+.ps-thumbnails button {
+  flex: 0 0 auto;
+}
+.ps-freezer-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+.ps-freezer-photos img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+.ps-freezer-photos figcaption {
+  font-family: var(--font-display, sans-serif);
+  font-size: 14px;
+}
+.ps-journal {
+  margin: 35px 0 0;
+  padding-top: 36px;
+  border-top: 1px solid var(--ps-line);
+}
+.ps-journal header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 26px;
+}
+.ps-journal h2 {
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.ps-journal header > p {
+  max-width: 340px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #5c5c54;
+  margin: 0;
+}
+.ps-journal-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+.ps-journal-grid figure {
+  grid-column: span 2;
+  margin: 0;
+  min-width: 0;
+}
+.ps-journal-grid .ps-journal-sliced {
+  grid-column: span 4;
+}
+.ps-journal-grid img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+.ps-journal-sliced img {
+  aspect-ratio: 3/2;
+}
+.ps-journal-grid figcaption {
+  padding-top: 10px;
+  font-size: 12px;
+  color: #5c5c54;
+}
+.ps-return-to-order {
+  display: inline-block;
+  padding: 16px 0;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--ps-ink);
+  font-size: 16px;
+}
+@media (max-width: 700px) {
+  .ps-main-photo {
+    aspect-ratio: 5/4;
+    object-position: center;
+  }
+  .ps-gallery-controls {
+    order: 0;
+    margin-top: -20px;
+    margin-bottom: -18px;
+  }
+  .ps-thumbnails {
+    margin-top: 0;
+  }
+  .ps-freezer-photos {
+    order: 3;
+    margin-top: 0;
+  }
+  .ps-journal header {
+    display: block;
+  }
+  .ps-journal header > p {
+    margin-top: 16px;
+  }
+  .ps-journal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+  .ps-journal-grid figure {
+    grid-column: span 1;
+  }
+  .ps-journal-grid .ps-journal-sliced {
+    grid-column: span 2;
+  }
+  .ps-journal-grid figcaption {
+    font-size: 11px;
+  }
+}
+@media (max-width: 700px) {
+  .ps-buy {
+    position: static;
+  }
+}

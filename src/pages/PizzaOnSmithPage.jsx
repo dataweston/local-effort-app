@@ -11,21 +11,59 @@ import '../styles/pizza-on-smith.css';
 const money = (cents) => `$${(cents / 100).toFixed(2).replace(/\.00$/, '')}`;
 const photos = [
   {
-    src: 'cheese',
-    alt: 'Freshly baked cheese and pepperoni pizzas on parchment',
-    caption: 'Cheese & pepperoni pictured. Cheese packs below.',
+    src: 'brussels',
+    alt: 'Brussels sprout pizza on a silver platter',
+    caption: 'The Brussels sprout special.',
   },
   {
-    src: 'brussels',
-    alt: 'Brussels sprout pizza with a deeply browned crust',
-    caption: 'The special: Brussels sprout pizza.',
+    src: 'sliced',
+    alt: 'A slice pulled from a pepperoni pizza on a wooden board',
+    caption: 'From the oven to the table. Pepperoni pictured.',
+  },
+  {
+    src: 'crust',
+    alt: 'Close-up of a blistered pizza crust inside its vacuum seal',
+    caption: 'A proper crust. Ready for your oven.',
   },
   {
     src: 'packed',
-    alt: 'Vacuum-sealed Local Effort pizzas stacked for the freezer',
-    caption: 'Sealed for your freezer. Other flavors pictured.',
+    alt: 'A stack of individually vacuum-sealed pizzas',
+    caption: 'A freezer full of good dinners.',
+  },
+  {
+    src: 'cheese',
+    alt: 'Small cheese and pepperoni pizzas on parchment',
+    caption: 'Little pizzas, same big crust.',
+  },
+  {
+    src: 'oven',
+    alt: 'A person holding a freshly baked pizza beside an outdoor oven',
+    caption: 'Pizza makes people happy.',
+  },
+  {
+    src: 'stamp',
+    alt: 'Local Pizza lettering printed with hand-carved potato stamps',
+    caption: 'Even the stamp is homemade.',
+  },
+  {
+    src: 'local-pizza',
+    alt: 'A person holding a small shirt with the red Local Pizza stamp',
+    caption: 'Local pizza. Little shirt.',
+  },
+  {
+    src: 'boxed',
+    alt: 'A pizza in a hand-stamped Local Pizza box',
+    caption: 'A very good thing to bring home.',
+  },
+  {
+    src: 'seasonal',
+    alt: 'A vacuum-sealed seasonal pizza topped with corn, herbs and cheese',
+    caption: 'Midwest ingredients, sealed in.',
   },
 ];
+const journalPhotos = ['sliced', 'local-pizza', 'oven', 'stamp', 'boxed'].map((src) =>
+  photos.find((photo) => photo.src === src)
+);
 const photoUrl = (name) => `/images/pizza-on-smith/${name}.webp`;
 const description =
   'Neapolitan-inspired frozen pizzas, 100% Midwest ingredients. Pick up on Tuesdays at 604 Smith Ave S, West St. Paul.';
@@ -124,7 +162,7 @@ function PizzaShop() {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={`${SITE_URL}/pizza-on-smith`} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={`${SITE_URL}${photoUrl('cheese')}`} />
+        <meta property="og:image" content={`${SITE_URL}${photoUrl('brussels')}`} />
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
       <nav className="ps-nav" aria-label="Pizza shop navigation">
@@ -155,7 +193,7 @@ function PizzaShop() {
         <section className="ps-gallery" aria-label="Our pizzas">
           <figure>
             <img
-              className="ps-main-photo"
+              className={`ps-main-photo ps-photo-${photos[activePhoto].src}`}
               src={photoUrl(photos[activePhoto].src)}
               alt={photos[activePhoto].alt}
               width="960"
@@ -164,9 +202,28 @@ function PizzaShop() {
             />
             <figcaption>
               <span>{photos[activePhoto].caption}</span>
-              <span>0{activePhoto + 1} / 03</span>
+              <span>
+                {String(activePhoto + 1).padStart(2, '0')} / {photos.length}
+              </span>
             </figcaption>
           </figure>
+          <div className="ps-gallery-controls" aria-label="Photo navigation">
+            <button
+              type="button"
+              aria-label="Previous photo"
+              onClick={() => setActivePhoto((activePhoto + photos.length - 1) % photos.length)}
+            >
+              ←
+            </button>
+            <span>Food, freezers &amp; familiar faces</span>
+            <button
+              type="button"
+              aria-label="Next photo"
+              onClick={() => setActivePhoto((activePhoto + 1) % photos.length)}
+            >
+              →
+            </button>
+          </div>
           <div className="ps-thumbnails" aria-label="Choose a photo">
             {photos.map((photo, index) => (
               <button
@@ -176,9 +233,37 @@ function PizzaShop() {
                 aria-pressed={activePhoto === index}
                 onClick={() => setActivePhoto(index)}
               >
-                <img src={photoUrl(photo.src)} alt="" width="72" height="72" loading="lazy" />
+                <img
+                  src={photoUrl(`${photo.src}-thumb`)}
+                  alt=""
+                  width="72"
+                  height="72"
+                  loading="lazy"
+                />
               </button>
             ))}
+          </div>
+          <div className="ps-freezer-photos">
+            <figure>
+              <img
+                src={photoUrl('packed')}
+                alt="Pizzas vacuum sealed individually and stacked for the freezer"
+                width="720"
+                height="960"
+                loading="lazy"
+              />
+              <figcaption>Stock up.</figcaption>
+            </figure>
+            <figure>
+              <img
+                src={photoUrl('crust')}
+                alt="A close look at the browned crust through its vacuum seal"
+                width="720"
+                height="960"
+                loading="lazy"
+              />
+              <figcaption>Look at that crust.</figcaption>
+            </figure>
           </div>
           <div className="ps-story">
             <h2>
@@ -284,6 +369,35 @@ function PizzaShop() {
           </div>
         </section>
       </div>
+      <section className="ps-journal" aria-labelledby="ps-journal-title">
+        <header>
+          <div>
+            <p className="ps-eyebrow">A few pictures from around here</p>
+            <h2 id="ps-journal-title">This is local pizza.</h2>
+          </div>
+          <p>
+            From the first slice to the potato-stamped boxes. A mix of past and present pizzas;
+            today’s selection is in the order form.
+          </p>
+        </header>
+        <div className="ps-journal-grid">
+          {journalPhotos.map((photo) => (
+            <figure key={photo.src} className={`ps-journal-${photo.src}`}>
+              <img
+                src={photoUrl(photo.src)}
+                alt={photo.alt}
+                width={photo.src === 'sliced' ? 1400 : 960}
+                height={photo.src === 'sliced' ? 934 : 1280}
+                loading="lazy"
+              />
+              <figcaption>{photo.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <a className="ps-return-to-order" href="#order">
+          Fill your freezer ↗
+        </a>
+      </section>
       <section className="ps-notes" aria-label="Good to know">
         <div>
           <span>01 / pick up</span>
