@@ -16,6 +16,10 @@ nul
 *.log
 backend-log.txt
 
+# Local agent/operator scratch; reusable tools belong in scripts/.
+/.tmp/
+/tmp-*
+
 # Build artifacts
 public/sitemap.xml
 .routes-manifest.json

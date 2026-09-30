@@ -18,11 +18,24 @@ Optimize for the user's completed outcome, not for the amount of investigation p
 - **Trust owner intent.** Owner-provided decisions, corrections, desired assumptions, and acceptance criteria are inputs, not hypotheses to reconfirm. When asked to encode a forecast or scenario, label the supplied figures as owner-defined/model inputs and implement them. Corroborate only when the requested deliverable makes a claim about observed actuals or the owner explicitly asks for an audit.
 - **Use progressive discovery.** Read the applicable skill or workflow first, then named files or the likely source of truth and its direct consumers. Search narrow paths and read the smallest complete ranges. Broaden only for a specific unresolved dependency. Never inspect Planner, Brain, billing, history, or production systems “just in case.”
 - **Make every lookup earn its context.** Before a read or search, know which implementation or verification decision its result will change. Reuse prior results; do not repeat searches, reread unchanged files, or reread a successful edit merely for reassurance. Avoid large repo-root output.
+- **Keep context boundaries clean.** Treat a materially unrelated follow-up as a new contract and do not preload the prior task's files. If the OMP context is already large, finish reachable work, leave the smallest scoped handoff, and recommend a fresh session rather than asking the owner to manage compaction.
+- **Bound failed approaches.** After two equivalent tool or browser failures, change method or report the exact blocker. Do not blind-retry the same action.
+- **Keep repository evidence lean.** Use the ignored `/.tmp/` directory for temporary working files. Never commit throwaway probes, `tmp-*`, raw service exports/dumps, or copied production evidence. Preserve reusable logic as a named script, remove scratch before delivery, and use descriptive commit subjects that keep unrelated outcomes separate.
 - **Move to implementation promptly.** A small scoped request should normally reach its first edit within two focused discovery waves and finish in roughly 10–15 tool calls. These are diagnostic targets, not permission to skip a needed safety check; exceed them only for a named blocker or dependency, not curiosity.
 - **Choose for the user.** Follow established conventions and take the smallest safe, reversible path when ambiguity is immaterial. Ask only when alternatives produce materially different business outcomes. Do not make the user manage the agent's process.
 - **Keep side effects explicit.** Do not read or mutate production data, contact people, invoke external services, or begin a broad audit unless the requested outcome requires it and the action is authorized. Prefer available dry runs.
 - **Verify once, proportionately.** Use the minimum check that exercises the changed contract: parse plus a targeted model run for data/config; focused test, lint, or smoke path for code; the changed browser path for UI. Use a full build only for build/deploy or cross-cutting integration risk. Do not stack redundant checks without a failure-driven reason.
 - **Stop when done.** Once the acceptance criteria pass, deliver immediately. Report the result, changed files, exact verification, and only material caveats. Do not append a self-audit, speculative follow-up work, or unrelated improvements.
+
+## Resuming interrupted work
+
+When the owner asks to resume a previous session, check `/.tmp/ACTIVE_HANDOFF.md`
+before broad discovery. It is a local execution checkpoint, not a source of
+business truth; confirm it against the named authoritative files and the working
+tree. Before any pause, compaction, or incomplete handoff, rewrite that file with
+the requested outcome, settled decisions, files changed, last successful proof,
+and one exact next command. Keep it concise and exclude secrets, PII, and raw
+financial evidence. Mark it complete or remove it when the deliverable closes.
 
 ## Repo map (what matters)
 
@@ -99,6 +112,8 @@ node scripts/gmail.cjs search "rad pizza" --max 5
 node scripts/gmail.cjs thread <threadId>
 node scripts/gmail.cjs sync --refresh-recent --recent-days 45
 node scripts/audit-square-recurring-invoices.cjs --query "Tyler"  # search live Square invoices by customer/title
+node scripts/audit-square-capital.cjs --from 2025-01-01  # read-only payout/capital history summary
+node scripts/build-financial-snapshot-v2.cjs 2025-02 2026-07 .tmp/financial-snapshot.json
 
 node scripts/planner.cjs list --from 2026-09-01 --to 2026-09-30
 node scripts/planner.cjs add --date fri --title "Rad — pizza dinner" --type event
@@ -121,6 +136,12 @@ stale. If `testingModeGrant` is reported, publish the Google Cloud OAuth consent
 screen because Testing grants expire weekly. Reconnect via the Brain UI →
 Partners → **Connect Gmail**; that POST signs OAuth state server-side, while a
 locally generated URL can fail state verification.
+
+For focused mail triage, use Gmail search syntax through `gmail.cjs search` (for
+example, `after:2026/05/01 square capital`) and inspect matching threads with
+`gmail.cjs thread`; do not create database-dump probes. Historical actuals and
+liquidity pulls belong in `build-financial-snapshot-v2.cjs`; keep ad hoc schema
+inspection and raw exports under `/.tmp/`.
 
 ## Conventions
 

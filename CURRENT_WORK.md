@@ -1,8 +1,9 @@
 # CURRENT_WORK.md — Local Effort execution checkpoint
 
-**Updated:** 2026-09-16
+`**Execution state last reconciled:** 2026-09-16
 **Scope:** Aug–Oct 2026 capital, revenue, founder-platform, speaking, RFP, and execution work.  
-**Read first:** `AGENTS.md`, then this file.
+**Applicability:** Read this file only when resuming one of those workstreams. Routine code/product work starts from `AGENTS.md` and the named source files; do not load this handoff.
+**Freshness:** The dated entries below are historical context, not an evergreen backlog. The current owner request and authoritative systems supersede them; verify operational state before acting.
 
 This is an execution handoff, not a financial source of truth. The repository is public. Do **not** copy customer PII, private email bodies, bank/account details, or the full capital record into this file.
 
@@ -188,7 +189,7 @@ Goal: paid/nominal-fee engagements about local ingredients, small food business,
 
 A prior branch, `agent/aug-oct-operating-plan`, contains an **unmerged, unapplied seed script**. It did **not** prove that production Planner cards were created. Do not infer Planner state from that branch.
 
-**2026-09-13 — planner operations spine built on `min`, uncommitted in the worktree.** Planner events now project into durable operational and financial records instead of living only in card metadata:
+**2026-09-13 — planner operations spine built on `min`; committed on 2026-09-16 in `0f3362934`.** Planner events now project into durable operational and financial records instead of living only in card metadata:
 
 - Schema: `PlannerWorkBlock`, `FinanceCostObligation`, `FinanceCostPayment` (migration `prisma/migrations/20260910000100_planner_operations_ledger`). Work blocks keep `plannerCardId` as a soft source key (no FK) so cancellation/deletion stays synchronized after a card is removed.
 - Backend (`backend/api/planner/`): `workBlocks` (fingerprinted service/prep reconciliation), `commercialLedger` + `billingSchedule` (orders, invoices, COGS, recurring cadence), `evidenceReconciliation` (ledger events, client identity, Gmail/Square evidence refs), `googleCalendarSync` (608 Smith calendar, verified idempotent upserts), `ledgerView` (receivables/payables/cash), `lifecycle` (single entry point the routes call).
@@ -198,7 +199,7 @@ A prior branch, `agent/aug-oct-operating-plan`, contains an **unmerged, unapplie
 
 ### Branch targeting and PR #143
 
-`min` is the only working branch and is in sync with `origin/min`; the planner work above is still uncommitted. PR #143 (`min` → `main`) shows merge state DIRTY for a structural reason, not because of this work: `min` is 1,288 commits ahead of `main` while `main` carries 986 commits `min` never had, and `git merge-tree origin/min origin/main` reports 188 conflicts — 149 add/add (both branches independently created `.gitignore`, `README.md`, `api/**`), 33 rename/delete, 4 rename/rename, 2 content. Resolving it is a repo-history decision (rebase or replace `main`), not a planner task; planner changes keep landing on `min`.
+As of 2026-09-13, `min` was the working branch and matched `origin/min`; the planner work above later landed in `0f3362934`. PR #143 (`min` → `main`) showed merge state DIRTY for a structural reason, not because of this work: `min` was 1,288 commits ahead of `main` while `main` carried 986 commits `min` never had, and `git merge-tree origin/min origin/main` reported 188 conflicts — 149 add/add (both branches independently created `.gitignore`, `README.md`, `api/**`), 33 rename/delete, 4 rename/rename, 2 content. Resolving it is a repo-history decision (rebase or replace `main`), not a planner task; planner changes continue to land on `min`.
 
 Seeding rules still apply to any apply run:
 1. inspect existing production Planner cards/projects;
@@ -225,11 +226,11 @@ Seeding rules still apply to any apply run:
 - Exact lender/application requirements from current Gmail threads.
 - Current external-program deadlines before submission.
 
-## New-agent quick start
+## Scoped resume prompt
 
-Use this exact instruction:
+Use this instruction only when resuming the capital/revenue/operations scope above. Routine code/product work should not load this file.
 
-> Work only from `dataweston/local-effort-app` and the `min` branch unless explicitly told otherwise. Read `AGENTS.md` and `CURRENT_WORK.md` first. Treat the locally supplied `local_effort_capital_master_record_v2_3.docx` as the canonical financing source of truth and do not substitute older conversation figures. Reconcile current Planner state before adding tasks. Continue the Aug–Oct execution plan from the earliest incomplete dated item. Do not invent use-of-funds amounts, final Wefunder terms, or missing accounting facts. Keep speaking work separate from cultural PR. For Gmail-derived tasks, retrieve the live thread rather than relying on copied private correspondence. Report what is done, blocked, and next.
+> Work only from `dataweston/local-effort-app` and the `min` branch unless explicitly told otherwise. Read `AGENTS.md` first, then only the `CURRENT_WORK.md` sections relevant to the requested workstream. Treat the locally supplied `local_effort_capital_master_record_v2_4.docx` as the canonical financing source of truth and do not substitute older conversation figures. Treat the dated queue as context rather than authorization; the current owner request and authoritative systems win. Reconcile current Planner state before modifying it. Do not invent use-of-funds amounts, final Wefunder terms, or missing accounting facts. Keep speaking work separate from cultural PR. For Gmail-derived tasks, retrieve the live thread rather than relying on copied private correspondence. Report what is done, blocked, and next.
 
 ## Handoff discipline going forward
 
