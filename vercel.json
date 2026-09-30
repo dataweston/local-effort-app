@@ -309,6 +309,10 @@
       "dest": "/backend/api/server.js"
     },
     {
+      "src": "^/pizza-on-smith$",
+      "dest": "/prerender/pizza-on-smith/index.html"
+    },
+    {
       "src": "^/$",
       "dest": "/prerender/index.html"
     },

@@ -128,14 +128,14 @@ function reducer(state, action) {
 
 const initial = { items: {}, updatedAt: 0 };
 
-export function CartProvider({ children }) {
+export function CartProvider({ children, storageKey = 'le_cart' }) {
   const [state, dispatch] = useReducer(reducer, initial);
   const [open, setOpen] = useState(false);
 
   // load from storage
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('le_cart');
+      const raw = localStorage.getItem(storageKey);
       if (raw) dispatch({ type: 'init', payload: JSON.parse(raw) });
     } catch (e) {
       // ignore storage error
@@ -144,10 +144,10 @@ export function CartProvider({ children }) {
 
   // persist
   useEffect(() => {
-    try { localStorage.setItem('le_cart', JSON.stringify(state)); } catch (e) {
+    try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (e) {
       // ignore storage error
     }
-  }, [state]);
+  }, [state, storageKey]);
 
   const add = useCallback((payload) => dispatch({ type: 'add', payload }), []);
   const remove = useCallback((key) => dispatch({ type: 'remove', key }), []);

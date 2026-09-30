@@ -20,7 +20,7 @@ import '../../styles/cart-drawer.css';
 const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
 
 // Debounced server pricing — fires 400ms after the last cart mutation.
-const usePricedSubtotal = (items) => {
+const usePricedSubtotal = (items, store) => {
   const [serverSubtotal, setServerSubtotal] = useState(null);
   const [pricingError, setPricingError] = useState(false);
   const timerRef = useRef(null);
@@ -37,6 +37,7 @@ const usePricedSubtotal = (items) => {
     timerRef.current = setTimeout(async () => {
       try {
         const payload = {
+          store, pickup: true,
           items: items.map((i) => ({
             productId: i.productId,
             variationId: i.variationId || null,
@@ -60,19 +61,19 @@ const usePricedSubtotal = (items) => {
     }, 400);
 
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [items]);
+  }, [items, store]);
 
   return { serverSubtotal, pricingError };
 };
 
-export default function CartDrawer({ store = 'sale' }) {
+export default function CartDrawer({ store = 'sale', directCheckout = false }) {
   const { items, subtotal, open, closeCart, clear, remove, updateQty } = useCart();
-  const { serverSubtotal, pricingError } = usePricedSubtotal(items);
+  const { serverSubtotal, pricingError } = usePricedSubtotal(items, store);
   const drawerRef = useRef(null);
   const closeBtnRef = useRef(null);
   const prevFocusRef = useRef(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(directCheckout);
 
   // Displayed subtotal: server value if available, else local estimate
   const displaySubtotal = serverSubtotal ?? subtotal;
@@ -87,7 +88,8 @@ export default function CartDrawer({ store = 'sale' }) {
   useEffect(() => {
     if (!open) return;
     prevFocusRef.current = document.activeElement;
-    if (closeBtnRef.current) closeBtnRef.current.focus();
+    const firstControl = drawerRef.current?.querySelector('button');
+    (closeBtnRef.current || firstControl)?.focus();
 
     const handleKey = (e) => {
       if (e.key === 'Escape') { closeCart(); return; }
@@ -118,10 +120,10 @@ export default function CartDrawer({ store = 'sale' }) {
     } else {
       document.body.style.overflow = '';
       setConfirmClear(false);
-      setCheckingOut(false);
+      setCheckingOut(directCheckout);
     }
     return () => { document.body.style.overflow = ''; };
-  }, [open]);
+  }, [open, directCheckout]);
 
   const handleCheckout = useCallback(() => {
     trackEvent('checkout.started', { store, itemCount: items.length });

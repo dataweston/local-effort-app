@@ -3,6 +3,12 @@
 
 export const PUBLIC_ROUTES = [
   {
+    path: '/pizza-on-smith',
+    title: 'Pizza on Smith | Frozen Pizza Pickup — Local Effort',
+    description: 'Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients. Tuesday pickup at 604 Smith Ave S, West St. Paul. Cheese bundles from $34, kids’ 3-packs $14.50, and Brussels sprout specials.',
+    prerender: true,
+  },
+  {
     path: '/',
     title: 'Local Effort Cooperative - Minneapolis Personal Chef',
     description: 'Local Effort Cooperative is a Minneapolis personal chef team offering in-home dinners, meal prep plans, and small-event catering built around Minnesota-grown ingredients.',

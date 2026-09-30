@@ -1,0 +1,495 @@
+.pizza-smith {
+  --ps-paper: #fafaf8;
+  --ps-ink: #23231f;
+  --ps-line: #d8d8cf;
+  --ps-accent: #a23e24;
+  background: var(--ps-paper);
+  color: var(--ps-ink);
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  padding: 0 max(24px, calc((100vw - 1240px) / 2));
+  min-height: 100vh;
+}
+.pizza-smith * {
+  box-sizing: border-box;
+}
+.pizza-smith button,
+.pizza-smith a,
+.pizza-smith input {
+  touch-action: manipulation;
+}
+.pizza-smith button {
+  font: inherit;
+}
+.pizza-smith :focus-visible {
+  outline: 2px solid var(--ps-accent);
+  outline-offset: 5px;
+}
+.ps-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 78px;
+  border-bottom: 1px solid var(--ps-line);
+  font-size: 14px;
+}
+.ps-wordmark {
+  font-family: var(--font-display, sans-serif);
+  font-size: 24px;
+  letter-spacing: -1px;
+  font-weight: 600;
+}
+.ps-nav > span {
+  font-size: 13px;
+}
+.ps-nav button,
+.ps-nav > a:last-child {
+  background: none;
+  border: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.ps-hero {
+  padding: 34px 0 30px;
+  border-bottom: 1px solid var(--ps-line);
+  margin-bottom: 32px;
+}
+.ps-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+.ps-hero h1 {
+  font-family: var(--font-display, sans-serif);
+  font-weight: 500;
+  font-size: clamp(38px, 5.4vw, 68px);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+  margin: 0 0 15px;
+}
+.ps-hero > p:not(.ps-eyebrow):not(.ps-hero-details) {
+  font-size: 17px;
+  line-height: 1.55;
+  margin: 0;
+}
+.ps-hero strong {
+  font-weight: 500;
+}
+.ps-shop {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 84px);
+  align-items: start;
+}
+.ps-gallery figure {
+  margin: 0;
+}
+.ps-main-photo {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  display: block;
+  background: #e6e4dc;
+}
+.ps-gallery figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  padding: 12px 0;
+  color: #57574e;
+}
+.ps-thumbnails {
+  display: flex;
+  gap: 10px;
+}
+.ps-thumbnails button {
+  padding: 3px;
+  border: 1px solid transparent;
+  background: none;
+}
+.ps-thumbnails button[aria-pressed='true'] {
+  border-color: var(--ps-ink);
+}
+.ps-thumbnails img {
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+}
+.ps-story {
+  padding: 30px 0;
+  max-width: 440px;
+}
+.ps-story h2 {
+  font-family: var(--font-display, sans-serif);
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  margin: 0 0 16px;
+}
+.ps-story p {
+  font-size: 16px;
+  line-height: 1.65;
+  color: #53534c;
+  margin: 0;
+}
+.ps-order {
+  scroll-margin-top: 20px;
+}
+.ps-order-heading h2 {
+  font-family: var(--font-display, sans-serif);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  margin: 0 0 5px;
+}
+.ps-order-heading > p {
+  margin: 0 0 20px;
+  color: #5c5c54;
+  font-size: 15px;
+}
+.ps-product {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0;
+  border-top: 1px solid var(--ps-line);
+}
+.ps-product h3 {
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.ps-product p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #5c5c54;
+}
+.ps-price {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.ps-price small {
+  font-size: 12px;
+  color: #5c5c54;
+}
+.ps-quantity {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid #b4b4a8;
+  border-radius: 3px;
+}
+.ps-quantity button {
+  background: transparent;
+  border: 0;
+  width: 36px;
+  min-height: 44px;
+  font-size: 20px;
+}
+.ps-quantity button:hover:not(:disabled) {
+  background: #eaeae2;
+}
+.ps-quantity button:disabled {
+  opacity: 0.3;
+}
+.ps-quantity output {
+  min-width: 26px;
+  text-align: center;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.ps-special-label {
+  display: block;
+  color: var(--ps-accent);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.ps-oil {
+  display: flex;
+  gap: 13px;
+  padding: 20px 16px;
+  background: #eeeee7;
+  border: 1px solid var(--ps-line);
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 8px 0 22px;
+}
+.ps-oil input {
+  accent-color: var(--ps-ink);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ps-oil strong {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.ps-oil strong span {
+  font-weight: 400;
+  white-space: nowrap;
+}
+.ps-oil small {
+  display: block;
+  margin-top: 7px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #53534c;
+}
+.ps-pickup {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ps-pickup > span {
+  font-size: 25px;
+}
+.ps-pickup strong {
+  font-weight: 600;
+}
+.ps-pickup p {
+  margin: 4px 0;
+  color: #53534c;
+}
+.ps-pickup a {
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ps-buy {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ps-line);
+}
+.ps-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  margin-bottom: 13px;
+}
+.ps-total strong {
+  font-size: 22px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ps-checkout {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ps-ink);
+  color: white;
+  border: 0;
+  border-radius: 3px;
+  padding: 17px 20px;
+  min-height: 58px;
+  font-size: 17px;
+  font-weight: 500;
+}
+.ps-checkout:hover {
+  background: var(--ps-accent);
+}
+.ps-checkout:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ps-buy > p {
+  text-align: center;
+  font-size: 12px;
+  margin: 10px 0;
+  color: #5c5c54;
+}
+.ps-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  border-top: 1px solid var(--ps-line);
+  padding: 36px 0 44px;
+  margin-top: 36px;
+}
+.ps-notes span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #66665d;
+}
+.ps-notes h2 {
+  font-size: 19px;
+  font-weight: 500;
+  margin: 12px 0 9px;
+  letter-spacing: -0.02em;
+}
+.ps-notes p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  color: #53534c;
+}
+.ps-footer {
+  border-top: 1px solid var(--ps-line);
+  padding: 24px 0 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 13px;
+}
+.pizza-smith .le-cart-drawer {
+  background: var(--ps-paper);
+}
+.pizza-smith .le-checkout-section-title,
+.pizza-smith .le-checkout-label {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.pizza-smith .le-checkout-submit {
+  border-radius: 3px;
+}
+.pizza-smith .le-checkout-input {
+  border-radius: 3px;
+}
+@media (min-width: 900px) {
+  .ps-order {
+    position: sticky;
+    top: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .pizza-smith {
+    padding: 0 20px;
+  }
+  .ps-nav {
+    min-height: 65px;
+  }
+  .ps-nav > span {
+    display: none;
+  }
+  .ps-wordmark {
+    font-size: 22px;
+  }
+  .ps-hero {
+    padding: 25px 0 23px;
+    margin-bottom: 22px;
+  }
+  .ps-hero > p:not(.ps-eyebrow):not(.ps-hero-details) {
+    font-size: 15px;
+    max-width: 340px;
+  }
+  .ps-eyebrow {
+    font-size: 9px;
+  }
+  .ps-shop {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .ps-gallery {
+    display: contents;
+  }
+  .ps-gallery figure {
+    order: 0;
+  }
+  .ps-main-photo {
+    aspect-ratio: 5/3;
+    object-position: center 45%;
+  }
+  .ps-gallery figcaption {
+    font-size: 11px;
+  }
+  .ps-thumbnails {
+    order: 0;
+    margin-top: -14px;
+  }
+  .ps-thumbnails img {
+    width: 44px;
+    height: 44px;
+  }
+  .ps-order {
+    order: 1;
+  }
+  .ps-story {
+    order: 2;
+    max-width: none;
+    padding: 20px 0 0;
+  }
+  .ps-story h2 {
+    font-size: 30px;
+  }
+  .ps-product {
+    padding: 17px 0;
+  }
+  .ps-order-heading h2 {
+    font-size: 27px;
+  }
+  .ps-product h3 {
+    font-size: 16px;
+  }
+  .ps-product p {
+    font-size: 12px;
+  }
+  .ps-notes {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-top: 26px;
+    padding: 26px 0;
+  }
+  .ps-notes h2 {
+    margin: 8px 0;
+  }
+  .ps-footer {
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 30px;
+  }
+  .ps-buy {
+    position: sticky;
+    bottom: 0;
+    background: var(--ps-paper);
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 2;
+  }
+  .ps-buy > p {
+    font-size: 11px;
+  }
+  .ps-checkout {
+    min-height: 54px;
+  }
+  .ps-total {
+    margin-bottom: 9px;
+  }
+}
+
+.pizza-smith .ps-hero-details {
+  font-size: 12px;
+  margin-top: 12px;
+  color: #5c5c54;
+}
+.pizza-smith .le-checkout-input,
+.pizza-smith .le-checkout-textarea {
+  background: #fff;
+  color: var(--ps-ink);
+  border-color: var(--ps-line);
+}
+.pizza-smith .le-checkout-section-title {
+  font-family: var(--font-display, sans-serif);
+  font-size: 16px;
+}
+.pizza-smith .le-checkout-label {
+  font-family: var(--font-body, sans-serif);
+  font-size: 13px;
+}
+.pizza-smith .le-checkout-total-row {
+  background: var(--ps-paper);
+}

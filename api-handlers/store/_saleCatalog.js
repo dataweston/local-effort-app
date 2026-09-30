@@ -54,7 +54,7 @@ const getGeneratedSalePage = () => {
 
 const getGeneratedSaleProductMap = (ids = []) => {
   const wanted = new Set(ids.filter(Boolean));
-  const products = getGeneratedSaleProducts();
+  const products = [...getGeneratedSaleProducts(), ...require('./_pizzaOnSmith').products];
   return Object.fromEntries(
     products
       .filter((product) => wanted.size === 0 || wanted.has(product._id))

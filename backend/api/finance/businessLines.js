@@ -65,6 +65,7 @@ const CHANNEL_BUSINESS_LINE = {
  */
 const STORE_BUSINESS_LINE = {
   'pizza-party': 'pizza',
+  'pizza-on-smith': 'pizza',
   'chez-garage': 'store',
   'chez-garage-at-home': 'store',
   sale: 'store',

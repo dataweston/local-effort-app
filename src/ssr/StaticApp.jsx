@@ -8,6 +8,7 @@ import FullPageDemoPage from '../pages/FullPageDemoPage';
 import BlogList from '../pages/BlogList';
 import BlogPost from '../pages/BlogPost';
 import ReleasesPage from '../pages/ReleasesPage';
+import PizzaOnSmithPage from '../pages/PizzaOnSmithPage';
 import SalePage from '../pages/SalePage';
 import ChezGaragePage from '../pages/ChezGaragePage';
 import HappyMondayPage from '../pages/happymondaypage';
@@ -34,13 +35,14 @@ export default function StaticApp({ helmetContext }) {
       <CartProvider>
         <DefaultSeo />
         <div className="app-root min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1" style={{ paddingTop: isFullPageHome ? 0 : '5rem' }}>
+          {location.pathname !== '/pizza-on-smith' && <Header />}
+          <main className="flex-1" style={{ paddingTop: isFullPageHome || location.pathname === '/pizza-on-smith' ? 0 : '5rem' }}>
             <Routes>
               <Route path="/" element={<FullPageDemoPage />} />
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/releases" element={<ReleasesPage />} />
+              <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
               <Route path="/sale" element={<SalePage />} />
               <Route path="/gift-cards" element={<GiftCardsPage />} />
               <Route path="/chez-garage" element={<ChezGaragePage />} />
