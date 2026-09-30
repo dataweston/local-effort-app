@@ -4,3 +4,4 @@ dist/
 public/
 backend/node_modules/
 **/*.min.js
+local-office/packages/db/generated/

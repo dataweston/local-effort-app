@@ -1,16 +1,31 @@
 // Owner-defined offers, shared by the page, pricing and payment handlers.
+const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 const catalog = require('../../src/store/data/pizzaOnSmith.json');
-const products = catalog.products.map((p) => ({
-  ...p,
-  _id: p.id,
-  slug: { current: p.id },
-  stores: [catalog.store],
-  allowsDelivery: false,
-  inventoryMode: 'unmanaged',
-  variants: [],
-  addOns: [],
-  images: p.image ? [{ asset: { url: `/images/pizza-on-smith/${p.image}.webp` } }] : [],
-}));
+const products = catalog.products.map((p) => {
+  const productRef = resolveCommercialProductRef({
+    store: catalog.store,
+    sourceSystem: 'pizza_on_smith',
+    productId: p.id,
+    productTitle: p.name || p.title || p.id,
+  });
+  return {
+    ...p,
+    _id: p.id,
+    slug: { current: p.id },
+    stores: [catalog.store],
+    productKey: productRef.productKey,
+    offerKey: productRef.offerKey,
+    commercialProductKey: productRef.productKey,
+    commercialOfferKey: productRef.offerKey,
+    sourceSystem: productRef.sourceSystem,
+    businessLineKey: productRef.businessLineKey,
+    allowsDelivery: false,
+    inventoryMode: 'unmanaged',
+    variants: [],
+    addOns: [],
+    images: p.image ? [{ asset: { url: `/images/pizza-on-smith/${p.image}.webp` } }] : [],
+  };
+});
 const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 // Never let a Smith order inherit another shop's address or fulfillment terms.
 function validateSmithOrder(items, store, pickup) {

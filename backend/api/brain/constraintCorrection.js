@@ -30,7 +30,7 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
-const { writeLedgerEvent, findOrCreateEntity, canonicalName } = require('./ledger');
+const { writeLedgerEvent, findOrCreateEntity } = require('./ledger');
 
 const verifyAdminRequest = createAdminVerifier();
 

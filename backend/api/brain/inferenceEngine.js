@@ -71,7 +71,7 @@ async function resolveVendor(prisma, key, entityId) {
 // ── PREFERS ──────────────────────────────────────────────────────────────────
 // Vendor paid ≥3 times in last 90 days
 
-async function computePrefers(prisma, now) {
+async function computePrefers(prisma) {
   const cutoff = daysAgo(90);
 
   // Group payment.completed ledger events by source (vendor identity from payload.merchantName)
@@ -140,7 +140,7 @@ async function computeAvoids(prisma, now) {
 // ── CHURNING ─────────────────────────────────────────────────────────────────
 // Customer: orders in last 30 days < half of orders in prior 30 days
 
-async function computeChurning(prisma, now) {
+async function computeChurning(prisma) {
   const period1Start = daysAgo(60);
   const period2Start = daysAgo(30);
 
@@ -340,7 +340,7 @@ function bucketUnitPriceDrift(lineEvents, period2Start) {
   return byVendor;
 }
 
-async function computePriceDrift(prisma, now) {
+async function computePriceDrift(prisma) {
   const period2Start = daysAgo(90);
   const period1Start = daysAgo(180);
 

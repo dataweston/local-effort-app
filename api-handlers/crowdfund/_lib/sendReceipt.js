@@ -98,7 +98,6 @@ async function sendCrowdfundReceipts(options = {}) {
   const successSummary = buildItemsSummary(normalizedItems);
 
   const funderName = sanitize(options.funderName, 120);
-  const friendlyName = funderName || 'Local Effort supporter';
   const customerEmail = sanitize(options.email, 120);
   const phone = sanitize(options.phone, 30);
   const notify = sanitize(options.notify, 60) || 'none';

@@ -57,7 +57,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'hub-dev-api' });
 });
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => {
+  if (res.headersSent) return next(err);
   console.error('[dev-hub-api] handler failed', err);
   res.status(500).json({ error: 'dev-hub-api-error', message: err?.message || 'unknown error' });
 });

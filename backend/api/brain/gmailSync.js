@@ -1127,7 +1127,7 @@ async function ingestGmailMessage(gmail, messageId, {
   const from = mailboxText(parsed.metadata.from);
   const to = mailboxText(parsed.metadata.to);
   const inboxContent = [
-    `Email message: \"${parsed.title}\"`,
+    `Email message: "${parsed.title}"`,
     from ? `From: ${from}` : null,
     to ? `To: ${to}` : null,
     `Gmail message id: ${messageId}`,

@@ -35,8 +35,8 @@ app.post('/api/analyze', async (req, res) => {
 // API: Preview transformation
 app.post('/api/preview', async (req, res) => {
   try {
-    const { shape, files } = req.body;
-    const plan = generateTransformPlan(shape, files);
+    const { shape } = req.body;
+    const plan = generateTransformPlan(shape);
     res.json({ success: true, plan });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -98,7 +98,7 @@ async function analyzeRepo(repoPath) {
 }
 
 // Generate transformation plan based on shape
-function generateTransformPlan(shape, files) {
+function generateTransformPlan(shape) {
   const plans = {
     circular: {
       steps: [

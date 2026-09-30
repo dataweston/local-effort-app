@@ -26,12 +26,6 @@ const prerenderRoutes = prerenderPaths.map((p) => {
 const isPrerenderRoute = (r) =>
   typeof r.dest === 'string' && r.dest.startsWith('/prerender/') && !r.status;
 
-// Find insertion point: right after the /api/(.*) rule
-const apiIdx = vercel.routes.findIndex(
-  (r) => r.src === '/api/(.*)' && r.dest === '/backend/api/server.js'
-);
-const insertAfter = apiIdx >= 0 ? apiIdx + 1 : vercel.routes.length - 1;
-
 // Remove old prerender routes
 const filtered = vercel.routes.filter((r) => !isPrerenderRoute(r));
 

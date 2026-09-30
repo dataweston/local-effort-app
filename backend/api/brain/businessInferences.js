@@ -46,7 +46,7 @@ async function writeBusinessInference(prisma, { anchorId, inferenceType, confide
 }
 
 // ── CASHFLOW ────────────────────────────────────────────────────────────────
-async function computeCashflow(prisma, anchorId, now) {
+async function computeCashflow(prisma) {
   const events = await prisma.ledgerEvent.findMany({
     where: { eventType: { in: ['payment.completed', 'payment.received'] }, source: 'local_budget', tombstonedAt: null },
     select: { eventType: true, occurredAt: true, payload: true },
@@ -88,7 +88,7 @@ async function computeCashflow(prisma, anchorId, now) {
 }
 
 // ── COGS_RATIO ───────────────────────────────────────────────────────────────
-async function computeCogsRatio(prisma, anchorId, now) {
+async function computeCogsRatio(prisma) {
   const events = await prisma.ledgerEvent.findMany({
     where: { eventType: { in: ['payment.completed', 'payment.received'] }, source: 'local_budget', tombstonedAt: null },
     select: { eventType: true, occurredAt: true, payload: true },
@@ -170,7 +170,7 @@ async function computeSeasonality(prisma, anchorId, now) {
 }
 
 // ── DISH_DEMAND (per-dish) ───────────────────────────────────────────────────
-async function computeDishDemand(prisma, now) {
+async function computeDishDemand(prisma) {
   // Rank dishes/products by ORDERED quantity; fold in GAVE_FEEDBACK satisfaction.
   const ordered = await prisma.brainAssertion.findMany({
     where: { relType: 'ORDERED', retractedAt: null },
@@ -228,7 +228,7 @@ async function computeDishDemand(prisma, now) {
 // What fraction of customers who were QUOTED / DISCUSSED an offer went on to a
 // tracked ORDER. Understated (most Square orders are anonymous), so reported as
 // a floor.
-async function computeQuoteClose(prisma, anchorId, now) {
+async function computeQuoteClose(prisma) {
   const quoted = await prisma.brainAssertion.findMany({
     where: { relType: { in: ['QUOTED', 'DISCUSSED_OFFER'] }, retractedAt: null },
     select: { srcId: true, metadata: true },
@@ -256,7 +256,7 @@ async function computeQuoteClose(prisma, anchorId, now) {
 
 // ── LOCALIST_FUNNEL ──────────────────────────────────────────────────────────
 // Conversion through the live Localist pickup-window funnel.
-async function computeLocalistFunnel(prisma, anchorId, now) {
+async function computeLocalistFunnel(prisma) {
   const rows = await prisma.ledgerEvent.groupBy({
     by: ['eventType'],
     where: { eventType: { in: ['localist.window.viewed', 'localist.cart.updated', 'localist.checkout.started', 'localist.checkout.success', 'localist.order.paid'] }, tombstonedAt: null },

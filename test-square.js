@@ -15,7 +15,6 @@ try {
   process.exit(1);
 }
 
-let squareClient = null;
 if (Client) {
   // Resolve environment: prefer SDK Environment enum when available
   const envName = process.env.SQUARE_ENVIRONMENT || 'Sandbox';
@@ -30,7 +29,7 @@ if (Client) {
   }
 
   try {
-    squareClient = new Client({
+    new Client({
       environment: resolvedEnv,
       accessToken: process.env.SQUARE_ACCESS_TOKEN,
     });

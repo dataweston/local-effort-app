@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsUUID } from 'class-validator';
+import type { Prisma } from '@local-office/db';
 
 export class CreateReferralDto {
   @IsOptional()
@@ -18,5 +19,5 @@ export class CreateReferralDto {
   referredOrgId?: string;
 
   @IsOptional()
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, Prisma.InputJsonValue>;
 }

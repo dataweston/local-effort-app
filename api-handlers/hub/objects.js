@@ -147,19 +147,21 @@ async function buildPlannerCardDetail(auth, id) {
     },
   });
   if (!card || card.objectType === 'revenue') return null;
-  const {
-    revenue: _revenue,
-    revenueCents: _revenueCents,
-    cashReceivedCents: _cashReceivedCents,
-    cost: _cost,
-    costCents: _costCents,
-    costPerHour: _costPerHour,
-    costPerHourCents: _costPerHourCents,
-    financialStatus: _financialStatus,
-    financialSource: _financialSource,
-    financialMetadata: _financialMetadata,
-    ...publicPlannerCard
-  } = card;
+  const publicPlannerCard = { ...card };
+  for (const key of [
+    'revenue',
+    'revenueCents',
+    'cashReceivedCents',
+    'cost',
+    'costCents',
+    'costPerHour',
+    'costPerHourCents',
+    'financialStatus',
+    'financialSource',
+    'financialMetadata',
+  ]) {
+    delete publicPlannerCard[key];
+  }
   return {
     object: {
       ...cardToObject(card),

@@ -5,8 +5,6 @@
  */
 
 const SQ_APP_ID = process.env.SQUARE_APP_ID || process.env.VITE_SQUARE_APP_ID;
-const SQ_APP_SECRET = process.env.SQUARE_APP_SECRET;
-const SQ_REDIRECT_URI = process.env.SQUARE_OAUTH_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/square-callback';
 const SQ_ENVIRONMENT = (process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase();
 
 const SQ_AUTH_BASE = SQ_ENVIRONMENT === 'sandbox'

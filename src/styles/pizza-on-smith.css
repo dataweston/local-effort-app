@@ -1,11 +1,13 @@
 .pizza-smith {
-  --ps-paper: #fafaf8;
-  --ps-ink: #23231f;
-  --ps-line: #d8d8cf;
-  --ps-accent: #a23e24;
+  --ps-paper: var(--brand-sheet, #f3ebe5);
+  --ps-mount: var(--brand-mount, #e4e4d8);
+  --ps-ink: var(--brand-ink, #3a2e3f);
+  --ps-muted: rgba(58, 46, 63, 0.72);
+  --ps-line: rgba(58, 46, 63, 0.22);
+  --ps-accent: var(--brand-hearth, #f35c2b);
   background: var(--ps-paper);
   color: var(--ps-ink);
-  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
   padding: 0 max(24px, calc((100vw - 1240px) / 2));
   min-height: 100vh;
 }
@@ -20,9 +22,16 @@
 .pizza-smith button {
   font: inherit;
 }
+.pizza-smith a {
+  color: inherit;
+}
+.pizza-smith ::selection {
+  background: var(--ps-accent);
+  color: var(--ps-paper);
+}
 .pizza-smith :focus-visible {
-  outline: 2px solid var(--ps-accent);
-  outline-offset: 5px;
+  outline: 2px dashed var(--ps-accent);
+  outline-offset: 4px;
 }
 .ps-nav {
   display: flex;
@@ -34,13 +43,17 @@
   font-size: 14px;
 }
 .ps-wordmark {
-  font-family: var(--font-display, sans-serif);
-  font-size: 24px;
-  letter-spacing: -1px;
-  font-weight: 600;
+  font-family: var(--font-national-park, 'National Park', 'General Sans', sans-serif);
+  font-size: 23px;
+  letter-spacing: 0;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
 }
 .ps-nav > span {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-size: 13px;
+  color: var(--ps-muted);
 }
 .ps-nav button,
 .ps-nav > a:last-child {
@@ -49,29 +62,59 @@
   min-height: 44px;
   display: flex;
   align-items: center;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--le-dur-1, 240ms) var(--le-ease, ease),
+    border-color var(--le-dur-1, 240ms) var(--le-ease, ease);
+}
+.ps-nav button:hover,
+.ps-nav > a:last-child:hover {
+  color: var(--ps-accent);
+  border-bottom-color: currentColor;
 }
 .ps-hero {
-  padding: 34px 0 30px;
+  position: relative;
+  padding: 40px 0 36px;
   border-bottom: 1px solid var(--ps-line);
   margin-bottom: 32px;
 }
+.ps-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: clamp(72px, 9vw, 120px);
+  height: 2px;
+  background: var(--ps-accent);
+}
 .ps-eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-yomogi, cursive);
+  font-size: 16px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brand-hearth-deep, #c4441c);
   margin: 0 0 12px;
 }
 .ps-hero h1 {
   font-family: var(--font-display, sans-serif);
-  font-weight: 500;
-  font-size: clamp(38px, 5.4vw, 68px);
-  line-height: 1.05;
-  letter-spacing: -0.055em;
+  max-width: 1100px;
+  color: var(--ps-ink);
+  font-weight: 650;
+  font-size: clamp(42px, 5.2vw, 66px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
   margin: 0 0 15px;
 }
 .ps-hero > p:not(.ps-eyebrow):not(.ps-hero-details) {
   font-size: 17px;
   line-height: 1.55;
+  color: var(--ps-muted);
+  text-wrap: pretty;
   margin: 0;
 }
 .ps-hero strong {
@@ -92,15 +135,16 @@
   aspect-ratio: 4/5;
   object-fit: cover;
   display: block;
-  background: #e6e4dc;
+  background: var(--ps-mount);
 }
 .ps-gallery figcaption {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   font-size: 12px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   padding: 12px 0;
-  color: #57574e;
+  color: var(--ps-muted);
 }
 .ps-thumbnails {
   display: flex;
@@ -112,7 +156,7 @@
   background: none;
 }
 .ps-thumbnails button[aria-pressed='true'] {
-  border-color: var(--ps-ink);
+  border-color: var(--ps-accent);
 }
 .ps-thumbnails img {
   width: 62px;
@@ -125,16 +169,17 @@
 }
 .ps-story h2 {
   font-family: var(--font-display, sans-serif);
+  color: var(--ps-ink);
   font-size: 34px;
   line-height: 1.1;
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: -0.04em;
   margin: 0 0 16px;
 }
 .ps-story p {
   font-size: 16px;
   line-height: 1.65;
-  color: #53534c;
+  color: var(--ps-muted);
   margin: 0;
 }
 .ps-order {
@@ -142,14 +187,15 @@
 }
 .ps-order-heading h2 {
   font-family: var(--font-display, sans-serif);
+  color: var(--ps-ink);
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: -0.035em;
   margin: 0 0 5px;
 }
 .ps-order-heading > p {
   margin: 0 0 20px;
-  color: #5c5c54;
+  color: var(--ps-muted);
   font-size: 15px;
 }
 .ps-product {
@@ -161,6 +207,8 @@
   border-top: 1px solid var(--ps-line);
 }
 .ps-product h3 {
+  font-family: var(--font-display, 'General Sans', sans-serif);
+  color: var(--ps-ink);
   font-size: 17px;
   line-height: 1.35;
   font-weight: 600;
@@ -170,22 +218,24 @@
   margin: 0 0 8px;
   font-size: 13px;
   line-height: 1.45;
-  color: #5c5c54;
+  color: var(--ps-muted);
 }
 .ps-price {
   font-size: 17px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-variant-numeric: tabular-nums;
 }
 .ps-price small {
   font-size: 12px;
-  color: #5c5c54;
+  color: var(--ps-muted);
 }
 .ps-quantity {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  border: 1px solid #b4b4a8;
-  border-radius: 3px;
+  border: 1px solid rgba(58, 46, 63, 0.42);
+  border-radius: 2px;
+  background: rgba(250, 250, 248, 0.48);
 }
 .ps-quantity button {
   background: transparent;
@@ -195,7 +245,8 @@
   font-size: 20px;
 }
 .ps-quantity button:hover:not(:disabled) {
-  background: #eaeae2;
+  background: var(--ps-mount);
+  color: var(--brand-hearth-deep, #c4441c);
 }
 .ps-quantity button:disabled {
   opacity: 0.3;
@@ -204,12 +255,14 @@
   min-width: 26px;
   text-align: center;
   font-size: 15px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-variant-numeric: tabular-nums;
 }
 .ps-special-label {
   display: block;
   color: var(--ps-accent);
-  font-size: 11px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 6px;
@@ -218,7 +271,7 @@
   display: flex;
   gap: 13px;
   padding: 20px 16px;
-  background: #eeeee7;
+  background: color-mix(in srgb, var(--ps-mount) 72%, transparent);
   border: 1px solid var(--ps-line);
   border-radius: 3px;
   cursor: pointer;
@@ -248,7 +301,7 @@
   margin-top: 7px;
   font-size: 13px;
   line-height: 1.5;
-  color: #53534c;
+  color: var(--ps-muted);
 }
 .ps-pickup {
   display: flex;
@@ -258,15 +311,17 @@
 }
 .ps-pickup > span {
   font-size: 25px;
+  color: var(--ps-accent);
 }
 .ps-pickup strong {
   font-weight: 600;
 }
 .ps-pickup p {
   margin: 4px 0;
-  color: #53534c;
+  color: var(--ps-muted);
 }
 .ps-pickup a {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-size: 12px;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -285,6 +340,7 @@
 .ps-total strong {
   font-size: 22px;
   font-weight: 500;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-variant-numeric: tabular-nums;
 }
 .ps-checkout {
@@ -295,14 +351,19 @@
   background: var(--ps-ink);
   color: white;
   border: 0;
-  border-radius: 3px;
+  border-radius: 125px 10px 115px 10px / 10px 115px 10px 125px;
   padding: 17px 20px;
   min-height: 58px;
   font-size: 17px;
-  font-weight: 500;
+  font-family: var(--font-display, 'General Sans', sans-serif);
+  font-weight: 650;
+  transition:
+    background var(--le-dur-1, 240ms) var(--le-ease, ease),
+    transform var(--le-dur-1, 240ms) var(--le-ease, ease);
 }
 .ps-checkout:hover {
   background: var(--ps-accent);
+  transform: translateY(-1px);
 }
 .ps-checkout:disabled {
   opacity: 0.45;
@@ -312,7 +373,8 @@
   text-align: center;
   font-size: 12px;
   margin: 10px 0;
-  color: #5c5c54;
+  color: var(--ps-muted);
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
 }
 .ps-notes {
   display: grid;
@@ -323,13 +385,16 @@
   margin-top: 36px;
 }
 .ps-notes span {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #66665d;
+  color: var(--ps-muted);
 }
 .ps-notes h2 {
+  font-family: var(--font-display, 'General Sans', sans-serif);
+  color: var(--ps-ink);
   font-size: 19px;
-  font-weight: 500;
+  font-weight: 650;
   margin: 12px 0 9px;
   letter-spacing: -0.02em;
 }
@@ -337,7 +402,7 @@
   font-size: 14px;
   line-height: 1.6;
   margin: 0;
-  color: #53534c;
+  color: var(--ps-muted);
 }
 .ps-footer {
   border-top: 1px solid var(--ps-line);
@@ -346,9 +411,13 @@
   justify-content: space-between;
   gap: 20px;
   font-size: 13px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  color: var(--ps-muted);
 }
 .pizza-smith .le-cart-drawer {
   background: var(--ps-paper);
+  color: var(--ps-ink);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
 }
 .pizza-smith .le-checkout-section-title,
 .pizza-smith .le-checkout-label {
@@ -378,7 +447,7 @@
     display: none;
   }
   .ps-wordmark {
-    font-size: 22px;
+    font-size: 18px;
   }
   .ps-hero {
     padding: 25px 0 23px;
@@ -389,7 +458,7 @@
     max-width: 340px;
   }
   .ps-eyebrow {
-    font-size: 9px;
+    font-size: 15px;
   }
   .ps-shop {
     grid-template-columns: 1fr;
@@ -474,7 +543,7 @@
 .pizza-smith .ps-hero-details {
   font-size: 12px;
   margin-top: 12px;
-  color: #5c5c54;
+  color: var(--ps-muted);
 }
 .pizza-smith .le-checkout-input,
 .pizza-smith .le-checkout-textarea {
@@ -493,12 +562,32 @@
 .pizza-smith .le-checkout-total-row {
   background: var(--ps-paper);
 }
+.pizza-smith .le-cart-line-price,
+.pizza-smith .le-cart-qty-count,
+.pizza-smith .le-cart-line-total,
+.pizza-smith .le-cart-subtotal-value,
+.pizza-smith .le-checkout-card-loading,
+.pizza-smith .le-checkout-express-divider,
+.pizza-smith .le-checkout-line-meta,
+.pizza-smith .le-checkout-summary-label,
+.pizza-smith .le-checkout-summary-value,
+.pizza-smith .le-checkout-success-meta,
+.pizza-smith .le-checkout-trust {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+}
+.pizza-smith .le-checkout-drawer-title,
+.pizza-smith .le-checkout-drawer-back,
+.pizza-smith .le-checkout-pickup-pill,
+.pizza-smith .le-checkout-submit {
+  font-family: var(--font-display, 'General Sans', sans-serif);
+}
 
 /* Photography: a full product gallery, freezer details and a kitchen journal. */
 .ps-main-photo {
   aspect-ratio: 1;
   object-fit: contain;
-  background: #eeede7;
+  background: var(--ps-mount);
+  box-shadow: var(--specimen-shadow, 14px 10px 22px -12px rgba(58, 46, 63, 0.42));
 }
 .ps-gallery figcaption {
   min-height: 42px;
@@ -519,10 +608,19 @@
   border: 1px solid var(--ps-line);
   background: transparent;
   font-size: 20px;
+  color: var(--ps-ink);
+  transition:
+    background var(--le-dur-1, 240ms) var(--le-ease, ease),
+    color var(--le-dur-1, 240ms) var(--le-ease, ease);
+}
+.ps-gallery-controls button:hover {
+  background: var(--ps-ink);
+  color: var(--ps-paper);
 }
 .ps-gallery-controls span {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-size: 12px;
-  color: #5c5c54;
+  color: var(--ps-muted);
 }
 .ps-thumbnails {
   overflow-x: auto;
@@ -547,8 +645,8 @@
   display: block;
 }
 .ps-freezer-photos figcaption {
-  font-family: var(--font-display, sans-serif);
-  font-size: 14px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  font-size: 12px;
 }
 .ps-journal {
   margin: 35px 0 0;
@@ -564,8 +662,9 @@
 }
 .ps-journal h2 {
   font-family: var(--font-display, sans-serif);
+  color: var(--ps-ink);
   font-size: clamp(30px, 4vw, 48px);
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: -0.04em;
   margin: 0;
 }
@@ -573,7 +672,7 @@
   max-width: 340px;
   font-size: 14px;
   line-height: 1.6;
-  color: #5c5c54;
+  color: var(--ps-muted);
   margin: 0;
 }
 .ps-journal-grid {
@@ -602,7 +701,8 @@
 .ps-journal-grid figcaption {
   padding-top: 10px;
   font-size: 12px;
-  color: #5c5c54;
+  color: var(--ps-muted);
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
 }
 .ps-return-to-order {
   display: inline-block;
@@ -610,6 +710,9 @@
   margin-top: 14px;
   border-bottom: 1px solid var(--ps-ink);
   font-size: 16px;
+  font-family: var(--font-display, 'General Sans', sans-serif);
+  font-weight: 650;
+  text-decoration: none;
 }
 @media (max-width: 700px) {
   .ps-main-photo {

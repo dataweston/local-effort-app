@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-async function authenticate(page) {
+async function authenticate(page: Page) {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByLabel('API token').fill('demo-token');
   await page.getByLabel('Email').fill('qa@localoffice.dev');

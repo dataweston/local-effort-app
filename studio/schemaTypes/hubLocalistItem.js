@@ -119,7 +119,8 @@ export default {
   ],
   preview: {
     select: { title: 'name', subtitle: 'price', active: 'active', areas: 'areas' },
-    prepare({ title, subtitle, active, areas }) {
+    prepare(selection) {
+      const { title, subtitle, active, areas } = selection
       const areaLabels = (areas || [])
         .map((area) => HUB_SALES_AREA_OPTIONS.find((option) => option.value === area)?.title || area)
         .join(', ')

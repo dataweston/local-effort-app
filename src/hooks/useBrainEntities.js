@@ -54,7 +54,6 @@ export function useBrainEntities({ accessToken, enabled = true }) {
     if (enabled && accessToken) {
       fetch();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, accessToken]);
 
   return { entities, total, loading, filters, setFilters, refetch: fetch, tombstone };

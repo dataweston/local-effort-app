@@ -19,7 +19,7 @@ function toProgramSlot(programId: string, slot: ProgramSlotInput) {
     windowStart: slot.windowStart,
     windowEnd: slot.windowEnd,
     cutoffAt: slot.cutoffAt
-  } satisfies Program['slots'][number];
+  } satisfies NonNullable<Program['slots']>[number];
 }
 
 export async function GET(request: NextRequest) {
@@ -55,7 +55,9 @@ export async function POST(request: NextRequest) {
   const programId = payload.id ?? crypto.randomUUID();
   const existing = db.programs.find((program) => program.id === programId);
 
-  const slots = (payload.slots ?? []).map((slot) => toProgramSlot(programId, slot));
+  const slots = (payload.slots ?? []).map((slot: ProgramSlotInput) =>
+    toProgramSlot(programId, slot)
+  );
 
   if (existing) {
     existing.name = payload.name;

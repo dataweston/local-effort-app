@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Client, PaymentsApi, InvoicesApi } from 'square';
+import { Client, Environment, PaymentsApi, InvoicesApi } from 'square';
 import pino from 'pino';
 
 const logger = pino({ name: 'billing-service' });
@@ -78,7 +78,7 @@ export class BillingService {
       client ??
       new Client({
         accessToken: process.env.SQUARE_ACCESS_TOKEN,
-        environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'
+        environment: process.env.NODE_ENV === 'production' ? Environment.Production : Environment.Sandbox
       });
     this.payments = squareClient.paymentsApi;
     this.invoices = squareClient.invoicesApi;
@@ -101,7 +101,7 @@ export class BillingService {
       });
 
       if (result.errors?.length) {
-        const detail = result.errors.map((error) => error.detail ?? error.message).join('; ');
+        const detail = result.errors.map((error) => error.detail ?? error.code).join('; ');
         throw new Error(`Square payment error: ${detail}`);
       }
 
@@ -113,6 +113,7 @@ export class BillingService {
 
       const amountMoney = payment.amountMoney;
       const amount = amountMoney?.amount != null ? Number(amountMoney.amount) / 100 : undefined;
+      const paymentTimeline = payment.cardDetails?.cardPaymentTimeline;
 
       return {
         id: payment.id,
@@ -120,8 +121,8 @@ export class BillingService {
         amount,
         currency: amountMoney?.currency,
         receiptUrl: payment.receiptUrl ?? undefined,
-        approvedAt: payment.approvedAt ?? undefined,
-        completedAt: payment.completedAt ?? payment.updatedAt ?? undefined,
+        approvedAt: paymentTimeline?.authorizedAt ?? undefined,
+        completedAt: paymentTimeline?.capturedAt ?? payment.updatedAt ?? undefined,
         rawResponse: normalizeJson(payment)
       };
     } catch (error) {
@@ -161,7 +162,7 @@ export class BillingService {
       });
 
       if (result.errors?.length) {
-        const detail = result.errors.map((error) => error.detail ?? error.message).join('; ');
+        const detail = result.errors.map((error) => error.detail ?? error.code).join('; ');
         throw new Error(`Square invoice error: ${detail}`);
       }
 

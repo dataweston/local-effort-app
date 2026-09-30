@@ -197,11 +197,11 @@ function matchVendorPrice(text) {
   const priceDollars = Number(pm[1]);
   if (!Number.isFinite(priceDollars) || priceDollars <= 0) return null;
   // Need at least an item word; vendor optional ("from X" / "@ X").
-  const vendorMatch = src.match(/\b(?:from|@|at)\s+([A-Za-z][\w.'& \-]{1,40})/i);
+  const vendorMatch = src.match(/\b(?:from|@|at)\s+([A-Za-z][\w.'& -]{1,40})/i);
   // ingredient = the non-price, non-vendor remainder (best-effort)
   let item = src
     .replace(PRICE_RE, ' ')
-    .replace(/\b(?:from|@|at)\s+[A-Za-z][\w.'& \-]{1,40}/i, ' ')
+    .replace(/\b(?:from|@|at)\s+[A-Za-z][\w.'& -]{1,40}/i, ' ')
     .replace(/\b(per|each|price|cost|for)\b/gi, ' ')
     .replace(/[.!?]+$/g, '')
     .trim().toLowerCase();

@@ -587,7 +587,7 @@ function registerBrainWriteTools(server) {
         return json({ ok: false, existing, message: `Entity already exists: ${existing.id}` });
       }
 
-      const ledgerEvent = await writeLedgerEvent({
+      await writeLedgerEvent({
         eventType: 'entity.provisional',
         source: 'mcp_claude',
         actorType: 'system',
@@ -621,7 +621,7 @@ function registerBrainWriteTools(server) {
 // ── Ontology tools ───────────────────────────────────────────────────────────
 
 function registerBrainOntologyTools(server) {
-  const { computeRecipeCost, computeDishMargin, createIngredient, createRecipe, recordBatch } = require('../api/brain/ontologyHelpers');
+  const { computeRecipeCost, computeDishMargin, createRecipe, recordBatch } = require('../api/brain/ontologyHelpers');
   const prisma = getPrisma();
 
   server.registerTool(

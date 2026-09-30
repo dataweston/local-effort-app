@@ -1,6 +1,7 @@
 // GET /api/store/products
 // Returns products from Sanity; future: merge with Square for inventory/price.
 const sanity = require('@sanity/client');
+const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 const { generatedProductToResponse, getGeneratedSalePage, getGeneratedSaleProducts } = require('./_saleCatalog');
 
 const projectId = process.env.VITE_APP_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
@@ -84,6 +85,12 @@ module.exports = async (req, res) => {
       // count-managed here, so they show no quantity on the storefront.
       const inventoryManaged = d.inventoryMode === 'manual';
       const inventory = inventoryManaged && typeof d.manualQty === 'number' ? d.manualQty : null;
+      const commercialRef = resolveCommercialProductRef({
+        store: storeFilter,
+        sourceSystem: 'sanity',
+        productId: d._id,
+        productTitle: d.title,
+      });
       return {
       id: d._id,
       title: d.title,
@@ -104,6 +111,12 @@ module.exports = async (req, res) => {
       offerDairyFree: d.offerDairyFree ?? false,
       dairyFreeCost: d.dairyFreeCost ?? 0,
       stores: Array.isArray(d.stores) ? d.stores : [],
+      productKey: d.productKey || commercialRef.productKey,
+      offerKey: d.offerKey || commercialRef.offerKey,
+      commercialProductKey: d.commercialProductKey || commercialRef.productKey,
+      commercialOfferKey: d.commercialOfferKey || commercialRef.offerKey,
+      sourceSystem: d.sourceSystem || commercialRef.sourceSystem,
+      businessLineKey: d.businessLineKey || commercialRef.businessLineKey,
       allowsDelivery: d.allowsDelivery !== false,
       requiresDateSelection: d.requiresDateSelection === true,
       };

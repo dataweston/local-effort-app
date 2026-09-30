@@ -34,6 +34,8 @@ const {
 
 
 
+const DK_LABEL = { tapeWidthMm: 62, printWidthMm: 59, defaultLengthMm: 40 };
+
 // Expand resolved line items (qty N) into N individual labels.
 function buildLabels(items, weekStart) {
   const labels = [];

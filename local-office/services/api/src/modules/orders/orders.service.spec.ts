@@ -1,9 +1,18 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it, mock } from 'node:test';
-import { OrderStatus, PaymentMethod, Prisma } from '@local-office/db';
+import { Prisma } from '@local-office/db';
 
 import { OrdersService } from './orders.service';
 import { ConfirmOrderDto } from './dto/confirm-order.dto';
+
+const ORDER_STATUS = {
+  PENDING: 'PENDING',
+  LOCKED: 'LOCKED'
+} as const;
+const PAYMENT_METHOD = {
+  CARD: 'CARD',
+  ACH: 'ACH'
+} as const;
 
 const cutoffAt = new Date('2099-01-01T12:00:00Z');
 
@@ -12,7 +21,7 @@ describe('OrdersService.confirm', () => {
     id: 'order-1',
     programSlotId: 'slot-1',
     userId: 'user-1',
-    status: OrderStatus.PENDING,
+    status: ORDER_STATUS.PENDING,
     subtotal: new Prisma.Decimal(25),
     tip: new Prisma.Decimal(0),
     loyaltyDiscount: new Prisma.Decimal(0),
@@ -64,7 +73,7 @@ describe('OrdersService.confirm', () => {
 
     const updatedOrder = {
       ...baseOrder,
-      status: OrderStatus.LOCKED,
+      status: ORDER_STATUS.LOCKED,
       tip: new Prisma.Decimal(5),
       total: new Prisma.Decimal(30),
       items: []
@@ -83,7 +92,7 @@ describe('OrdersService.confirm', () => {
       id: 'payment-1',
       orderId: baseOrder.id,
       squarePaymentId: paymentResult.id,
-      method: PaymentMethod.CARD,
+      method: PAYMENT_METHOD.CARD,
       amount: new Prisma.Decimal(30),
       feeAmount: baseOrder.paymentFee,
       status: paymentResult.status,
@@ -112,7 +121,7 @@ describe('OrdersService.confirm', () => {
     const paymentArgs = prisma.payment.create.mock.calls[0].arguments[0];
     assert.equal(paymentArgs.data.orderId, baseOrder.id);
     assert.equal(paymentArgs.data.squarePaymentId, paymentResult.id);
-    assert.equal(paymentArgs.data.method, PaymentMethod.CARD);
+    assert.equal(paymentArgs.data.method, PAYMENT_METHOD.CARD);
     assert.equal(paymentArgs.data.amount.toString(), new Prisma.Decimal(30).toString());
     assert.equal(paymentArgs.data.feeAmount.toString(), baseOrder.paymentFee.toString());
     assert.equal(paymentArgs.data.status, paymentResult.status);
@@ -128,19 +137,21 @@ describe('OrdersService.confirm', () => {
     });
 
     assert.deepEqual(result.payment, paymentRecord);
-    assert.equal(result.order.status, OrderStatus.LOCKED);
-    assert.deepEqual(result.order.payment, paymentRecord);
-    assert.deepEqual(result.order.programSlot, baseOrder.programSlot);
+    assert.deepEqual(result.order, {
+      ...updatedOrder,
+      payment: paymentRecord,
+      programSlot: baseOrder.programSlot
+    });
   });
 
   it('returns existing payment when the order is already confirmed', async () => {
     const lockedOrder = {
       ...baseOrder,
-      status: OrderStatus.LOCKED,
+      status: ORDER_STATUS.LOCKED,
       payment: {
         id: 'payment-existing',
         squarePaymentId: 'square-existing',
-        method: PaymentMethod.ACH
+        method: PAYMENT_METHOD.ACH
       }
     };
 

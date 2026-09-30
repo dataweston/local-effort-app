@@ -12,6 +12,7 @@ import {
   Max,
   ValidateNested
 } from 'class-validator';
+import type { Prisma } from '@local-office/db';
 
 class OrderItemDto {
   @IsNotEmpty()
@@ -27,7 +28,7 @@ class OrderItemDto {
 
   @IsOptional()
   @IsObject()
-  modifiers?: Record<string, unknown>;
+  modifiers?: Record<string, Prisma.InputJsonValue>;
 
   @IsOptional()
   @IsString()

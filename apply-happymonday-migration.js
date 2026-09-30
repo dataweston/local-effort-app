@@ -79,8 +79,7 @@ async function applyMigration() {
         });
 
         if (!response.ok && response.status !== 404) {
-          const errorText = await response.text();
-          console.log(`Statement ${i + 1} - Status: ${response.status}`);
+                    console.log(`Statement ${i + 1} - Status: ${response.status}`);
           // Don't fail on errors, some statements might already exist
         }
       } catch (err) {

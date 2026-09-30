@@ -124,7 +124,6 @@ export function MonthlyView({ planner, year, month, onNextMonth, onPrevMonth, on
         weekCards,
         planner.overheads,
         planner.monthCogs || planner.cogs,
-        weekStarts.length,
         planner.actualsByDate
       ),
     [
@@ -133,7 +132,6 @@ export function MonthlyView({ planner, year, month, onNextMonth, onPrevMonth, on
       planner.monthCogs,
       planner.cogs,
       planner.actualsByDate,
-      weekStarts.length,
     ]
   );
 

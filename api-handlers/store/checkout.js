@@ -4,6 +4,7 @@
 
 const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
+const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { prisma } = require('../_lib/prisma');
@@ -140,23 +141,35 @@ const buildOptionSummary = (doc, variationId, addOnIndices, dairyFree) => {
 // order line keyed by its Sanity product id, and a charged delivery fee becomes
 // its own fee line so margin work never mistakes fulfilment revenue for food.
 const buildCommercialLines = (pricedLines, deliveryFee) => {
-  const lines = pricedLines.map((line) => ({
-    lineType: 'item',
-    sku: line.productId,
-    name: line.title || 'Store item',
-    description: line.optionSummary || null,
-    quantity: line.qty,
-    unitPriceCents: line.unitPrice,
-    totalCents: line.lineTotal,
-    sourceSystem: 'sanity',
-    sourceId: line.variationId || line.productId,
-    metadata: {
-      variationId: line.variationId || null,
-      addOnIndices: line.addOnIndices,
-      dairyFree: line.dairyFree,
-      selectedDate: line.selectedDate || null,
-    },
-  }));
+  const lines = pricedLines.map((line) => {
+    const productRef = resolveCommercialProductRef({
+      store: line.store || 'sale',
+      sourceSystem: line.sourceSystem,
+      productId: line.productId,
+      productTitle: line.title || line.productId,
+    });
+    return {
+      lineType: 'item',
+      sku: line.productId,
+      name: line.title || 'Store item',
+      description: line.optionSummary || null,
+      quantity: line.qty,
+      unitPriceCents: line.unitPrice,
+      totalCents: line.lineTotal,
+      sourceSystem: productRef.sourceSystem,
+      sourceId: line.variationId || line.productId,
+      metadata: {
+        variationId: line.variationId || null,
+        addOnIndices: line.addOnIndices,
+        dairyFree: line.dairyFree,
+        selectedDate: line.selectedDate || null,
+        productKey: line.productKey || productRef.productKey,
+        offerKey: line.offerKey || productRef.offerKey,
+        businessLineKey: line.businessLineKey || productRef.businessLineKey,
+        store: line.store || 'sale',
+      },
+    };
+  });
 
   if (deliveryFee > 0) {
     lines.push({
@@ -248,6 +261,12 @@ module.exports = async (req, res) => {
       const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
       const dairyFree = !!item.dairyFree;
       const selectedDate = String(item.selectedDate || '').trim();
+      const productRef = resolveCommercialProductRef({
+        store,
+        sourceSystem: store === 'pizza-on-smith' ? 'pizza_on_smith' : 'sanity',
+        productId: item.productId,
+        productTitle: doc.title || item.title || item.productId,
+      });
       if (
         doc.requiresDateSelection === true &&
         !isSelectableDate(selectedDate)
@@ -270,6 +289,11 @@ module.exports = async (req, res) => {
         dairyFree,
         selectedDate,
         optionSummary: buildOptionSummary(doc, variationId, addOnIndices, dairyFree),
+        productKey: productRef.productKey,
+        offerKey: productRef.offerKey,
+        businessLineKey: productRef.businessLineKey,
+        sourceSystem: productRef.sourceSystem,
+        store,
       });
     }
 

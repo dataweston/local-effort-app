@@ -1,0 +1,53 @@
+== api-handlers/crowdfund/_lib/sendReceipt.js:101:9
+  const funderName = sanitize(options.funderName, 120);
+  const friendlyName = funderName || 'Local Effort supporter';
+  const customerEmail = sanitize(options.email, 120);
+== api-handlers/crowdfund/checkout.js:30:7
+
+const createIdempotencyKey = () => {
+  if (typeof crypto.randomUUID === 'function') {
+== api-handlers/crowdfund/checkout.js:120:100
+
+    const { items, funderName, token, email, phone, notes, notify, discountCode, rewardPreference, pizzaQty, verificationToken, checkoutAttemptId } = req.body || {};
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
+== api-handlers/crowdfund/confirm-payment.js:124:23
+        items: normalizedItems,
+        discountCode: trimmedDiscount,
+        discountLabel: safeDiscountLabel,
+== api-handlers/happymonday/quickbooks-callback.js:9:7
+const QB_REDIRECT_URI = process.env.QUICKBOOKS_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/quickbooks-callback';
+const QB_ENVIRONMENT = process.env.QUICKBOOKS_ENVIRONMENT || 'production';
+
+== api-handlers/happymonday/quickbooks-callback.js:39:17
+
+  const { code, state, realmId, error: oauthError } = req.query;
+
+== api-handlers/happymonday/quickbooks-connect.js:13:5
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
+== api-handlers/happymonday/quickbooks-connect.js:20:7
+const QB_CLIENT_ID = process.env.QUICKBOOKS_CLIENT_ID;
+const QB_CLIENT_SECRET = process.env.QUICKBOOKS_CLIENT_SECRET;
+const QB_REDIRECT_URI = process.env.QUICKBOOKS_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/quickbooks-callback';
+== api-handlers/happymonday/quickbooks-invoice.js:194:31
+    const adjustments = Array.isArray(order.adjustments) ? order.adjustments : [];
+    adjustments.forEach((adj, index) => {
+      const amount = (adj.amount_cents || 0) / 100;
+== api-handlers/happymonday/square-callback.js:39:17
+
+  const { code, state, error: oauthError } = req.query;
+
+== api-handlers/happymonday/square-connect.js:8:7
+const SQ_APP_ID = process.env.SQUARE_APP_ID || process.env.VITE_SQUARE_APP_ID;
+const SQ_APP_SECRET = process.env.SQUARE_APP_SECRET;
+const SQ_REDIRECT_URI = process.env.SQUARE_OAUTH_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/square-callback';
+== api-handlers/happymonday/square-connect.js:9:7
+const SQ_APP_SECRET = process.env.SQUARE_APP_SECRET;
+const SQ_REDIRECT_URI = process.env.SQUARE_OAUTH_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/square-callback';
+const SQ_ENVIRONMENT = (process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase();
+== api-handlers/happymonday/sync-inventory.js:227:35
+    // Create sync log entry
+    const { data: syncLog, error: syncLogError } = await supabase
+      .from('happymonday_inventory_syncs')
+== api-handlers/hub/_bot.js:1:9

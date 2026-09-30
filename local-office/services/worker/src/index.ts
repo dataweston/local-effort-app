@@ -1,4 +1,4 @@
-import { Queue, Worker, QueueScheduler, type JobsOptions, type QueueOptions } from 'bullmq';
+import { Queue, Worker, type JobsOptions, type QueueOptions } from 'bullmq';
 import { prisma } from '@local-office/db';
 import { createIdempotencyKey } from '@local-office/lib';
 
@@ -124,8 +124,6 @@ export const queues = {
   deliveryUpdates: new Queue('delivery-updates', queueOptions('delivery-updates'))
 };
 
-const schedulers = Object.values(queues).map((queue) => new QueueScheduler(queue.name, baseConnection));
-void schedulers;
 
 const storage = createObjectStorage();
 const notifier = createDefaultNotificationClient();

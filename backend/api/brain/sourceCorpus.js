@@ -62,7 +62,8 @@ function sourceDocumentWhere({ id, source, sourceId }) {
 
 function publicSourceDocument(row) {
   if (!row) return null;
-  const { rawContent, ...safe } = row;
+  const safe = { ...row };
+  delete safe.rawContent;
   return safe;
 }
 

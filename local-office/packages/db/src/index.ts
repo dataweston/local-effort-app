@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/client';
 
 type GlobalPrisma = {
   prisma?: PrismaClient;
@@ -12,5 +12,4 @@ if (process.env.NODE_ENV !== 'production') {
   globalRef.prisma = prisma;
 }
 
-export type { PrismaClient };
-export * from '@prisma/client';
+export * from '../generated/client';

@@ -77,6 +77,8 @@ module.exports = async (req, res) => {
     return res.json({ success: true, message: 'No pizza items to update.' });
   }
 
+  const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
+
   try {
     const docRef = db.collection('crowdfund').doc('status');
     await db.runTransaction(async (transaction) => {
@@ -85,8 +87,6 @@ module.exports = async (req, res) => {
       const goal = typeof current.goal === 'number' ? current.goal : 1000;
       const pizzasSold = Number(current.pizzasSold) || 0;
       const funders = Array.isArray(current.funders) ? current.funders.slice() : [];
-
-      const trimmedDiscount = typeof discountCode === 'string' ? discountCode.trim().slice(0, 60) : '';
 
       funders.push({
         name: sanitizedFunderName,

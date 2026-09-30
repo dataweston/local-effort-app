@@ -40,10 +40,6 @@ const tylerRows = [
   },
 ];
 
-function sourcePrisma(rows = tylerRows) {
-  return { $queryRaw: vi.fn().mockResolvedValue(rows) };
-}
-
 function tylerMemoryPrisma() {
   return {
     $queryRaw: vi.fn()

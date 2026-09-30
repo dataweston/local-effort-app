@@ -494,10 +494,10 @@ export default function AdminPage() {
                       <span className="text-sm font-semibold text-slate-800">${invoice.total.toFixed(2)}</span>
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-1 text-xs text-slate-500 sm:grid-cols-3">
-                      <span>Delivery ${invoice.deliveryTotal.toFixed(2)}</span>
-                      <span>Tips ${invoice.tipsTotal.toFixed(2)}</span>
-                      <span>Discounts ${invoice.discountsTotal.toFixed(2)}</span>
-                      <span>Fees ${invoice.paymentFees.toFixed(2)}</span>
+                      <span>Delivery ${(invoice.deliveryTotal ?? 0).toFixed(2)}</span>
+                      <span>Tips ${(invoice.tipsTotal ?? 0).toFixed(2)}</span>
+                      <span>Discounts ${(invoice.discountsTotal ?? 0).toFixed(2)}</span>
+                      <span>Fees ${(invoice.paymentFees ?? 0).toFixed(2)}</span>
                       <span>Status {invoice.status}</span>
                     </div>
                   </li>

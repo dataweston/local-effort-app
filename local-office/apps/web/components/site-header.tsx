@@ -85,7 +85,6 @@ export function SiteHeader() {
                     onChange={(event) => setTokenInput(event.target.value)}
                     className={inputClasses}
                     placeholder="demo-token"
-                    autoFocus
                   />
                 </div>
                 <div>

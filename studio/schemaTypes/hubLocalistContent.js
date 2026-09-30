@@ -85,7 +85,8 @@ export default {
       active: 'active',
       areas: 'areas',
     },
-    prepare({ title, subtitle, active, areas }) {
+    prepare(selection) {
+      const { title, subtitle, active, areas } = selection
       const subtitleText = Array.isArray(subtitle)
         ? subtitle.flatMap((block) => block.children || []).map((child) => child.text || '').join(' ')
         : subtitle

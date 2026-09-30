@@ -22,7 +22,6 @@ const { classify } = require('./classify');
 const {
   writeLedgerEvent,
   findOrCreateEntity,
-  createInboxItem,
   canonicalName,
 } = require('../ledger');
 const { applyConstraintCorrection } = require('../constraintCorrection');

@@ -30,13 +30,11 @@ function buildExpression({ collection, type, published = true, extra = [] } = {}
       const trimmed = e.trim();
       // If extra already looks like a namespaced tag (starts with tags: and contains a colon), quote the rhs
       if (/^tags:[^\s]+:[^\s]+/.test(trimmed)) {
-        const [, , rest] = trimmed.split(/tags:([^:]+):(.+)/);
-        // The above split yields undefined in some engines; fallback to simple replace
         const m = trimmed.match(/^tags:([^:]+):(.+)$/);
         if (m) {
           const ns = m[1];
           const val = m[2];
-          parts.push(`tags:"${ns}:${String(val).replace(/\"/g, '\\\"')}"`);
+          parts.push(`tags:"${ns}:${String(val).replace(/"/g, '\\"')}"`);
           continue;
         }
       }

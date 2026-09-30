@@ -167,8 +167,7 @@ function txnEmails(payload, actorId) {
 // Build a per-customer enrichment index from the ledger. Returns a function that,
 // given a customer's { squareCustomerIds, emails }, yields { transactions, totalSpendCents,
 // transactionCount, emailThreads, emailThreadCount }.
-async function buildEnrichmentIndex({ squareCustomerIds, emails }) {
-  const sqIds = [...new Set(squareCustomerIds.filter(Boolean))];
+async function buildEnrichmentIndex({ emails }) {
   const emailSet = new Set(emails.map(normalizeEmail).filter(Boolean));
 
   // Transactions: fetch recent Square revenue events. We over-fetch then bucket in JS,

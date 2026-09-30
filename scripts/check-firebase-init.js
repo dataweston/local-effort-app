@@ -1,5 +1,5 @@
 // Loads .env, requires the firebase admin helper, and calls getFirebaseAdmin()
-try { require('dotenv').config(); } catch (e) {}
+try { require('dotenv').config(); } catch { /* dotenv optional */ }
 
 const { getFirebaseAdmin } = require('../api-handlers/_lib/firebaseAdmin');
 

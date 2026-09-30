@@ -159,7 +159,7 @@
     "studio:deploy-graphql": "npm --prefix studio run deploy-graphql",
     "build:analyze": "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN vite build --mode production",
     "build:prerender:copy": "node tools/copy-prerender.js",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && prisma generate --schema local-office/packages/db/prisma/schema.prisma",
     "test": "vite test",
     "eject": "vite eject",
     "lint": "eslint \"src/**/*.{js,jsx}\" --max-warnings=0",

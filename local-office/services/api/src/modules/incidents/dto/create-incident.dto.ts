@@ -1,5 +1,6 @@
 import { IsEnum, IsNotEmpty, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 import { IncidentCategory, IncidentSeverity } from '@local-office/db';
+import type { Prisma } from '@local-office/db';
 
 export class CreateIncidentDto {
   @IsOptional()
@@ -38,5 +39,5 @@ export class CreateIncidentDto {
 
   @IsOptional()
   @IsObject()
-  resolution?: Record<string, unknown>;
+  resolution?: Record<string, Prisma.InputJsonValue>;
 }

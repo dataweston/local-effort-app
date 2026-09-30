@@ -7,8 +7,41 @@
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@local-office/db": [
+        "../../packages/db/src"
+      ],
+      "@local-office/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@local-office/lib": [
+        "../../packages/lib/src"
+      ],
+      "@local-office/lib/*": [
+        "../../packages/lib/src/*"
+      ],
+      "@local-office/billing": [
+        "../billing/src"
+      ],
+      "@local-office/billing/*": [
+        "../billing/src/*"
+      ],
+      "@local-office/labeler": [
+        "../labeler/src"
+      ],
+      "@local-office/labeler/*": [
+        "../labeler/src/*"
+      ]
+    }
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

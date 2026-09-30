@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   let body: any;
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON payload.' }, { status: 400 });
   }
 

@@ -35,12 +35,3 @@ ${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}
   }
 }
 
-function escapeXml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}

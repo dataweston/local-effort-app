@@ -6,7 +6,7 @@ const PUBLIC_BASE_URL =
 const buildTarget = () => {
   try {
     return new URL('/paikka', PUBLIC_BASE_URL).toString();
-  } catch (_) {
+  } catch {
     return 'https://localeffortfood.com/paikka';
   }
 };

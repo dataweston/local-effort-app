@@ -26,12 +26,6 @@ function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-  });
-}
-
 function formatDateShort(d) {
   return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
@@ -60,10 +54,6 @@ function buildPortableTextBody(introText, dishes) {
 
   // One block per dish
   dishes.forEach((dish, i) => {
-    const dishText = dish.description
-      ? `${dish.title} — ${dish.description}`
-      : dish.title;
-
     blocks.push({
       _type: 'block',
       _key: `dish-title-${i}`,

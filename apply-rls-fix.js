@@ -1,5 +1,4 @@
 // Apply RLS policy fix to Supabase
-import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -9,8 +8,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
   process.exit(1);
 }
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function applyFix() {
   console.log('Applying RLS policy fix...\n');

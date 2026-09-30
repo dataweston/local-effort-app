@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   const db = getDb();
   const incident: Incident = {
     id: crypto.randomUUID(),
-    orgId: payload.orgId ?? 'demo-org',
+    orgId: 'demo-org',
     orderId: payload.orderId ?? null,
     batchId: payload.batchId ?? null,
     deliveryJobId: payload.deliveryJobId ?? null,

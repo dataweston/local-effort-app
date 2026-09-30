@@ -163,9 +163,8 @@ export function weekTotalsWithActual(cards, actualsByDate = {}) {
  * @param {Array} monthCards - all cards for the month's weeks
  * @param {Array} overheads - array of { monthlyCost } objects
  * @param {Array} cogsItems - array of { amount } objects (all COGS for the month)
- * @param {number} _weeksInMonth - unused, kept for API compat
  */
-export function monthTotals(monthCards, overheads = [], cogsItems = [], _weeksInMonth = 4, actualsByDate = {}) {
+export function monthTotals(monthCards, overheads = [], cogsItems = [], actualsByDate = {}) {
   const cardTotals = weekTotalsWithActual(monthCards, actualsByDate);
   const revenue = cardTotals.revenue;
   const labor = cardTotals.labor;

@@ -197,7 +197,7 @@ module.exports = async function handler(req, res) {
       });
     }
     const adjustments = Array.isArray(order.adjustments) ? order.adjustments : [];
-    adjustments.forEach((adj, index) => {
+    adjustments.forEach((adj) => {
       const amount = (adj.amount_cents || 0) / 100;
       if (!amount) return;
       lineItems.push({

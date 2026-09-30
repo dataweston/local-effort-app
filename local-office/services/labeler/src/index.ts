@@ -1,5 +1,29 @@
-import PDFDocument from 'pdfkit';
-import QRCode from 'qrcode';
+import { createRequire } from 'node:module';
+
+interface PdfDocumentInstance {
+  on(event: 'data', listener: (chunk: Buffer) => void): this;
+  on(event: 'end', listener: () => void): this;
+  on(event: 'error', listener: (error: Error) => void): this;
+  addPage(): this;
+  fontSize(size: number): this;
+  text(text: string, options?: { continued?: boolean }): this;
+  moveDown(lines?: number): this;
+  fillColor(color: string): this;
+  image(source: Buffer, options?: { fit?: [number, number]; align?: string }): this;
+  end(): void;
+}
+
+interface PdfDocumentConstructor {
+  new (options: { size: string; margin: number }): PdfDocumentInstance;
+}
+
+interface QrCodeModule {
+  toDataURL(text: string): Promise<string>;
+}
+
+const loadModule = createRequire(__filename);
+const PDFDocument = loadModule('pdfkit') as PdfDocumentConstructor;
+const QRCode = loadModule('qrcode') as QrCodeModule;
 
 export interface LabelInput {
   name: string;
@@ -17,7 +41,7 @@ function renderPdf(batchId: string, labels: LabelInput[]): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'LETTER', margin: 36 });
     const buffers: Buffer[] = [];
-    doc.on('data', (chunk) => buffers.push(chunk as Buffer));
+    doc.on('data', (chunk: Buffer) => buffers.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(buffers)));
     doc.on('error', reject);
 

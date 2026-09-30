@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, LoyaltyTier, InvoicePeriod, IncidentCategory, IncidentSeverity } from '@prisma/client';
+import { PrismaClient, UserRole, LoyaltyTier, InvoicePeriod, IncidentCategory, IncidentSeverity } from '../generated/client';
 
 const prisma = new PrismaClient();
 

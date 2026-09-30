@@ -146,7 +146,7 @@ const detectAllergens = (text) => {
 };
 
 const isHeading = (line) => {
-  const cleaned = stripBullet(line).replace(/[:\-]+$/, '').trim();
+  const cleaned = stripBullet(line).replace(/[:-]+$/, '').trim();
   if (!cleaned) return false;
   if (cleaned.length > 28) return false;
   const lower = cleaned.toLowerCase();
@@ -160,7 +160,7 @@ const isHeading = (line) => {
 };
 
 const getHeadingCategories = (line) => {
-  const lower = stripBullet(line).replace(/[:\-]+$/, '').toLowerCase();
+  const lower = stripBullet(line).replace(/[:-]+$/, '').toLowerCase();
   const categories = [];
   Object.keys(MEAL_TIME_KEYWORDS).forEach((key) => {
     if (lower.includes(key)) categories.push(key);

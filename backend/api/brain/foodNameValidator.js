@@ -87,7 +87,7 @@ function isFoodFragment(name, entityType) {
 // few real menu threads ("Re: February Home Dinners") also match.
 const MENU_SUBJECT_SMELL = [
   /^(re|fwd|fw):/i,
-  /[🎉🍕📣📧✉️]/u,
+  /[🎉🍕📣📧]|\u2709\uFE0F?/u,
   /\bnew pledge\b/i,
   /\bpast due\b/i,
   /^rent\b|\brent\.\.\./i,

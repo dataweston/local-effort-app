@@ -18,9 +18,14 @@ const PRODUCTS = [
     description: 'Membership-based recurring household meal preparation.',
   },
   {
-    key: 'other',
-    name: 'Other',
-    description: 'Drop-off catering, pizza, retail, and offers awaiting a dedicated product family.',
+    key: 'pizza',
+    name: 'Pizza',
+    description: 'Pickup pizza orders sold through the Pizza on Smith storefront and related retail pizza offerings.',
+  },
+  {
+    key: 'retail',
+    name: 'Retail Storefront',
+    description: 'General storefront retail items and non-pizza products sold through /sale.',
   },
 ];
 
@@ -46,11 +51,25 @@ const OFFERS = [
     },
   },
   {
-    key: 'other_custom',
-    productKey: 'other',
-    name: 'Custom Food Order',
-    status: 'draft',
-    composition: { requiresOperatorQuote: true },
+    key: 'pizza_on_smith_pickup',
+    productKey: 'pizza',
+    name: 'Pizza on Smith pickup',
+    status: 'active',
+    composition: {
+      channels: ['pickup'],
+      location: '604 Smith Ave S, West St. Paul',
+      store: 'pizza-on-smith',
+    },
+  },
+  {
+    key: 'retail_storefront',
+    productKey: 'retail',
+    name: 'Storefront retail item',
+    status: 'active',
+    composition: {
+      channels: ['pickup', 'delivery'],
+      storefronts: ['sale'],
+    },
   },
 ];
 

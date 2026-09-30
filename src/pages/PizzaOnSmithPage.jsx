@@ -167,7 +167,7 @@ function PizzaShop() {
       </Helmet>
       <nav className="ps-nav" aria-label="Pizza shop navigation">
         <Link to="/" className="ps-wordmark">
-          local effort
+          Local Effort Cooperative
         </Link>
         <span>good food, close to home.</span>
         {totalQty > 0 ? (
@@ -179,8 +179,12 @@ function PizzaShop() {
         )}
       </nav>
       <header className="ps-hero">
-        <h1>Home Oven Pizzas available on Smith Ave.</h1>
-        <p>pickup on tuesdays. Perfect frozen pizzas for quick home dinners. 100% midwest ingredients. Real Food.</p>
+        <p className="ps-eyebrow">Frozen pizza · Tuesday pickup</p>
+        <h1>Home-oven pizzas, available on Smith Ave.</h1>
+        <p>
+          Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest
+          ingredients. Real food.
+        </p>
       </header>
       <div className="ps-shop">
         <section className="ps-gallery" aria-label="Our pizzas">
@@ -191,7 +195,7 @@ function PizzaShop() {
               alt={photos[activePhoto].alt}
               width="960"
               height="1200"
-              fetchpriority="high"
+              fetchPriority="high"
             />
             <figcaption>
               <span>{photos[activePhoto].caption}</span>
@@ -316,8 +320,13 @@ function PizzaShop() {
               </div>
             ))}
           </div>
-          <label className="ps-oil">
+          <label
+            className="ps-oil"
+            htmlFor="ps-olive-oil"
+            aria-label="Add 1 liter of olive oil for $32"
+          >
             <input
+              id="ps-olive-oil"
               type="checkbox"
               checked={!!quantities['smith-olive-oil']}
               onChange={(event) => setQty('smith-olive-oil', event.target.checked ? 1 : 0)}

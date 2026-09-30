@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+/* global __firebase_config, __app_id */
+import React, { useState, useEffect, useMemo } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { 
@@ -12,8 +13,7 @@ import {
     onSnapshot,
     deleteDoc,
     updateDoc,
-    runTransaction,
-    setDoc
+    runTransaction
 } from 'firebase/firestore';
 import { Home, FileText, Package, Book, Utensils, DollarSign, PlusCircle, Trash2, Edit, ChevronLeft, AlertCircle, X, CheckCircle, LogOut } from 'lucide-react';
 
@@ -90,8 +90,9 @@ const Login = ({ auth, showNotification }) => {
                 <h2 className="text-2xl font-bold text-center text-gray-800">{isSignUp ? 'Create an Account' : 'Welcome Back!'}</h2>
                 <form onSubmit={handleAuth} className="space-y-6">
                     <div>
-                        <label className="text-sm font-bold text-gray-600 block">Email</label>
+                        <label htmlFor="auth-email" className="text-sm font-bold text-gray-600 block">Email</label>
                         <input
+                            id="auth-email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -100,8 +101,9 @@ const Login = ({ auth, showNotification }) => {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-bold text-gray-600 block">Password</label>
+                        <label htmlFor="auth-password" className="text-sm font-bold text-gray-600 block">Password</label>
                         <input
+                            id="auth-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -363,7 +365,7 @@ const Dashboard = ({ stats, navigateTo }) => {
     );
 };
 
-const Invoices = ({ invoices, viewInvoiceDetail, db, getCollectionRef, inventory, showNotification }) => {
+const Invoices = ({ invoices, viewInvoiceDetail, getCollectionRef, showNotification }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newInvoice, setNewInvoice] = useState({ vendor: '', date: new Date().toISOString().split('T')[0], totalAmount: '' });
 
@@ -433,7 +435,7 @@ const Invoices = ({ invoices, viewInvoiceDetail, db, getCollectionRef, inventory
     );
 };
 
-const InvoiceDetail = ({ invoiceId, db, getCollectionRef, inventory, showNotification, navigateBack }) => {
+const InvoiceDetail = ({ invoiceId, db, inventory, showNotification, navigateBack }) => {
     const [invoice, setInvoice] = useState(null);
     const [lineItems, setLineItems] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -700,7 +702,7 @@ const Inventory = ({ inventory, db, getCollectionRef, showNotification }) => {
     );
 };
 
-const Recipes = ({ recipes, viewRecipeDetail, db, getCollectionRef, showNotification }) => {
+const Recipes = ({ recipes, viewRecipeDetail, getCollectionRef, showNotification }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newRecipeName, setNewRecipeName] = useState('');
 
@@ -744,7 +746,7 @@ const Recipes = ({ recipes, viewRecipeDetail, db, getCollectionRef, showNotifica
     );
 };
 
-const RecipeDetail = ({ recipeId, db, getCollectionRef, inventory, showNotification, navigateBack }) => {
+const RecipeDetail = ({ recipeId, db, inventory, showNotification, navigateBack }) => {
     const [recipe, setRecipe] = useState(null);
     const [ingredients, setIngredients] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -849,21 +851,9 @@ const RecipeDetail = ({ recipeId, db, getCollectionRef, inventory, showNotificat
     );
 };
 
-const MenuItems = ({ menuItems, recipes, inventory, db, getCollectionRef, showNotification }) => {
+const MenuItems = ({ menuItems, recipes, db, getCollectionRef, showNotification }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newItem, setNewItem] = useState({ name: '', recipeId: '', sellingPrice: '' });
-
-    const getRecipeCost = useCallback((recipeId) => {
-        if (!recipeId) return 0;
-        const recipeIngredientsRef = collection(db, `artifacts/${appId}/users/${getAuth().currentUser.uid}/recipes/${recipeId}/ingredients`);
-        
-        // This is a simplified calculation. A more robust solution would fetch ingredients on demand.
-        // For this UI, we rely on pre-fetched data.
-        let totalCost = 0;
-        // This part is tricky without fetching subcollections for all recipes.
-        // We will approximate or show N/A. For a real app, this data structure would be different.
-        return 'N/A'; // Simplified for this example
-    }, [db, inventory]);
 
     const handleSaveItem = async () => {
         if (!newItem.name || !newItem.recipeId || !newItem.sellingPrice) {

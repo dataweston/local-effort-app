@@ -13,6 +13,9 @@ const BatchStatus = {
   LOCKED: 'LOCKED'
 } as const;
 
+type OrderStatusValue = (typeof OrderStatus)[keyof typeof OrderStatus];
+type BatchStatusValue = (typeof BatchStatus)[keyof typeof BatchStatus];
+
 async function createRedis(queueName: string) {
   const connection = { connection: { host: '127.0.0.1', port: 6379 } } as const;
   const queue = new Queue(queueName, connection);
@@ -42,10 +45,20 @@ describe('batcher job', () => {
         ]
       ]),
       orders: [
-        { id: 'order-1', programSlotId: 'slot-1', status: OrderStatus.PENDING, batchId: null as string | null },
-        { id: 'order-2', programSlotId: 'slot-1', status: OrderStatus.LOCKED, batchId: null as string | null }
-      ],
-      batches: new Map<string, { id: string; status: BatchStatus; siteId: string; providerId: string; orgId: string; programSlotId: string }>()
+        { id: 'order-1', programSlotId: 'slot-1', status: OrderStatus.PENDING, batchId: null },
+        { id: 'order-2', programSlotId: 'slot-1', status: OrderStatus.LOCKED, batchId: null }
+      ] as Array<{ id: string; programSlotId: string; status: OrderStatusValue; batchId: string | null }>,
+      batches: new Map<
+        string,
+        {
+          id: string;
+          status: BatchStatusValue;
+          siteId: string;
+          providerId: string;
+          orgId: string;
+          programSlotId: string;
+        }
+      >()
     };
 
     const prisma = {
@@ -149,7 +162,7 @@ describe('webhook job', () => {
       }
     };
 
-    const deliverMock = vi.fn(async () => undefined);
+    const deliverMock = vi.fn(async (_input: unknown) => undefined);
     deliverMock.mockRejectedValueOnce(new Error('network error')).mockResolvedValueOnce(undefined);
 
     const prisma = {
@@ -181,6 +194,10 @@ describe('webhook job', () => {
     const completion = new Promise<any>((resolve, reject) => {
       worker.once('completed', (_job, result) => resolve(result));
       worker.on('failed', (job, error) => {
+        if (!job) {
+          reject(error);
+          return;
+        }
         const maxAttempts = job.opts.attempts ?? 1;
         if (job.attemptsMade >= maxAttempts) {
           reject(error);

@@ -26,8 +26,6 @@ const NOTE_SOURCE = 'drafts';
 const NOTE_TIMEZONE = 'America/Chicago';
 const FUTURE_WEEK_COUNT = 6;
 const PAST_WEEK_COUNT = 2;
-const SHEET_SOURCE_PREFIX = 'food-inputs:sheet:week-';
-const MD_SOURCE_PREFIX = 'food-inputs:md:week-';
 // Base prefixes WITHOUT the `week-` segment, so a `<slug>:` customer scope can be
 // inserted between the base and `week-` (see scopePrefix / savedWeekStarts).
 const SHEET_SOURCE_PREFIX_BASE = 'food-inputs:sheet:';

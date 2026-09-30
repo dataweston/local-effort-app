@@ -7,11 +7,17 @@ import {
   getDb,
   json,
   type CreateOrderRequest,
-  type Order
+  type Order,
+  type Program
 } from '../_lib/store';
 
+type ProgramSlot = NonNullable<Program['slots']>[number];
+type OrderItemInput = CreateOrderRequest['items'][number];
+
 function findProgramOrgForSlot(programs: ReturnType<typeof getDb>['programs'], slotId: string) {
-  return programs.find((program) => program.slots?.some((slot) => slot.id === slotId));
+  return programs.find((program) =>
+    program.slots?.some((slot: ProgramSlot) => slot.id === slotId)
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -53,7 +59,9 @@ export async function POST(request: NextRequest) {
     return badRequest('Program slot not found.');
   }
 
-  const slot = program.slots?.find((item) => item.id === payload.programSlotId);
+  const slot = program.slots?.find(
+    (item: ProgramSlot) => item.id === payload.programSlotId
+  );
   if (!slot) {
     return badRequest('Program slot not found.');
   }
@@ -62,13 +70,19 @@ export async function POST(request: NextRequest) {
     return conflict('Ordering window is closed for this slot.');
   }
 
-  const totalQuantity = payload.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalQuantity = payload.items.reduce(
+    (sum: number, item: OrderItemInput) => sum + item.quantity,
+    0
+  );
   if (totalQuantity > 50) {
     return conflict('Quantity exceeds the batch maximum of 50 items.');
   }
 
   const basePrice = 16;
-  const subtotal = payload.items.reduce((sum, item) => sum + item.quantity * basePrice, 0);
+  const subtotal = payload.items.reduce(
+    (sum: number, item: OrderItemInput) => sum + item.quantity * basePrice,
+    0
+  );
   const orderId = crypto.randomUUID();
 
   const order: Order = {
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
     referralCredit: 0,
     paymentFee: subtotal * 0.05,
     total: subtotal + (payload.tip ?? 0),
-    items: payload.items.map((item) => ({
+    items: payload.items.map((item: OrderItemInput) => ({
       id: crypto.randomUUID(),
       orderId,
       skuId: item.skuId,

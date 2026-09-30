@@ -7,7 +7,7 @@ import type { NormalizedSale, NormalizedSaleProduct } from '../../lib/sales';
 import type { SaleTheme } from './theme';
 
 const InlineCheckoutContext = createContext<{
-  startCheckout: (product: NormalizedSaleProduct) => void; // eslint-disable-line no-unused-vars
+  startCheckout: (product: NormalizedSaleProduct) => void; // eslint-disable-line @typescript-eslint/no-unused-vars
 } | null>(null);
 
 export function useSaleInlineCheckout() {

@@ -126,6 +126,7 @@ module.exports = async (req, res) => {
 
   let resolvedRules = rules || {};
 
+  let authUser = null;
   if (prisma) {
     const dishIds = items.map((item) => item.dishId).filter(Boolean);
     const [menuWeek, customer, menuWeekItems, priceRows, overrideRows, planRow] = await Promise.all([
@@ -174,7 +175,7 @@ module.exports = async (req, res) => {
     });
 
     const authEmail = supabaseUser.email;
-    const authUser = authEmail
+    authUser = authEmail
       ? await prisma.user.findFirst({ where: { email: authEmail.toLowerCase() } })
       : null;
 

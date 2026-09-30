@@ -3,21 +3,7 @@
  * Initiates OAuth flow for Happy Monday to connect their QuickBooks account
  */
 
-// Supabase client
-let supabase = null;
-try {
-  const { createClient } = require('@supabase/supabase-js');
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-  if (supabaseUrl && supabaseKey) {
-    supabase = createClient(supabaseUrl, supabaseKey);
-  }
-} catch (err) {
-  console.warn('[HappyMonday] Supabase not available:', err.message);
-}
-
 const QB_CLIENT_ID = process.env.QUICKBOOKS_CLIENT_ID;
-const QB_CLIENT_SECRET = process.env.QUICKBOOKS_CLIENT_SECRET;
 const QB_REDIRECT_URI = process.env.QUICKBOOKS_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/quickbooks-callback';
 const QB_ENVIRONMENT = process.env.QUICKBOOKS_ENVIRONMENT || 'production'; // 'sandbox' or 'production'
 

@@ -1,4 +1,3 @@
-const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -11,16 +10,6 @@ async function applyMigration() {
     console.error('Missing Supabase credentials in .env file');
     process.exit(1);
   }
-  
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    },
-    db: {
-      schema: 'public'
-    }
-  });
   
   const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20241027_calendar_system.sql');
   const sql = fs.readFileSync(migrationPath, 'utf8');

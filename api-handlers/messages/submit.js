@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
 
   try {
     console.log('[Messages] Received request body:', req.body);
-    const { name, email, subject, message, type, category } = req.body;
+    const { name, email, subject, message, category } = req.body;
 
     if (!message) {
       console.log('[Messages] Message field is missing or empty');

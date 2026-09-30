@@ -70,12 +70,12 @@ function extractDocument(message) {
   const body = parsed.textContent;
   const searchable = `${headers.subject || ''}\n${message.snippet || ''}\n${body}`.slice(0, 50000);
   const amount = firstMatch(searchable, [
-    /(?:amount due|invoice total|order total|grand total|total)\s*[:\-]?\s*\$?([0-9,]+(?:\.\d{2})?)/i,
+    /(?:amount due|invoice total|order total|grand total|total)\s*[:-]?\s*\$?([0-9,]+(?:\.\d{2})?)/i,
     /\$([0-9,]+\.\d{2})\b/,
   ]);
   const invoiceNumber = firstMatch(searchable, [
-    /(?:invoice|inv)\s*(?:number|no\.?|#)\s*[:\-]?\s*([A-Z0-9][A-Z0-9-]{2,})/i,
-    /(?:order|purchase order|po)\s*(?:number|no\.?|#)\s*[:\-]?\s*([A-Z0-9][A-Z0-9-]{2,})/i,
+    /(?:invoice|inv)\s*(?:number|no\.?|#)\s*[:-]?\s*([A-Z0-9][A-Z0-9-]{2,})/i,
+    /(?:order|purchase order|po)\s*(?:number|no\.?|#)\s*[:-]?\s*([A-Z0-9][A-Z0-9-]{2,})/i,
   ]);
   const documentType = /receipt/i.test(searchable) ? 'receipt'
     : /statement/i.test(searchable) ? 'statement'

@@ -83,7 +83,7 @@ describe('Company Brain source corpus', () => {
   it('does not recompress an unchanged source at the same extraction version', async () => {
     const raw = Buffer.from('immutable source');
     const initialWriter = memoryPrisma();
-    const existing = await writeSourceDocument({
+    await writeSourceDocument({
       source: 'gmail',
       sourceId: 'message-3',
       mediaType: 'message/rfc822',

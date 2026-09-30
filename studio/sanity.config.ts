@@ -1,7 +1,7 @@
 // If some environments fail to resolve 'sanity', consider swapping to:
 // import {defineConfig} from 'sanity/lib/exports'
 import {defineConfig} from 'sanity'
-import type {Template} from 'sanity'
+import type {DocumentActionComponent, Template} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {colorInput} from '@sanity/color-input'
@@ -40,7 +40,9 @@ export default defineConfig({
 
   document: {
     actions: (prev, context) => {
-      if (context.schemaType === 'release') return [...prev, ...releasePressKitClipboardActions]
+      if (context.schemaType === 'release') {
+        return [...prev, ...(releasePressKitClipboardActions as DocumentActionComponent[])]
+      }
       return prev
     },
     badges: (prev, context) => {

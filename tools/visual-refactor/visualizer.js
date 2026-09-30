@@ -5,16 +5,6 @@ const canvas = document.getElementById('architecture-canvas');
 const ctx = canvas.getContext('2d');
 let currentShape = 'tree';
 let nodes = [];
-let selectedTransform = null;
-
-// Sample repository structure
-const repoStructure = {
-    'src/pages': ['HomePage.jsx', 'MenuPage.jsx', 'EventsPage.jsx', 'GalleryPage.jsx'],
-    'src/components': ['Header.jsx', 'Footer.jsx', 'Card.jsx', 'Button.jsx'],
-    'api/routes': ['messages.js', 'campaigns.js', 'payments.js'],
-    'backend/services': ['emailService.js', 'paymentService.js', 'dbService.js'],
-    'studio/schemas': ['product.js', 'event.js', 'message.js']
-};
 
 // Initialize canvas
 function initCanvas() {
@@ -531,6 +521,9 @@ function applyTransform() {
         alert('In a real implementation, this would execute the jscodeshift transforms and file movements.');
     }
 }
+
+// Exposed for inline onclick handlers in index.html
+Object.assign(window, { generateScript, showDiff, applyTransform });
 
 function generateTransformScript(shape) {
     const plan = getTransformPlan(shape);

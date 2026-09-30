@@ -15,7 +15,7 @@
  */
 
 const { getPrisma } = require('../utils/prisma');
-const { writeLedgerEvent, createInboxItem } = require('./ledger');
+const { createInboxItem } = require('./ledger');
 
 const RATING_SCORES = { love: 4, like: 3, ok: 2, dislike: 1 };
 

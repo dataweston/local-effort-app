@@ -23,7 +23,7 @@ const parsePayload = async (request: NextRequest): Promise<CheckoutRequest> => {
   let body: unknown;
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON payload.');
   }
 

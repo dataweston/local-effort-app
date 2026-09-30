@@ -116,8 +116,6 @@ const {
   verifySquareSignature,
   applyCompletedPayment,
   getCrowdfundingSummary,
-  createFeedback,
-  listFeedback,
 } = require('../../packages/lib/crowdfundingPipeline');
 const { applySmallEventPayment } = require('./utils/smallEventsPayments');
 const { prisma: financePrisma } = require('./utils/prisma');
@@ -1265,7 +1263,7 @@ app.all('/api/store/price', async (req, res, next) => {
   }
 });
 
-app.all('/api/store/events', async (req, res, next) => {
+app.all('/api/store/events', async (req, res) => {
   try {
     await storeEventsHandler(req, res);
   } catch (err) {
@@ -2092,12 +2090,8 @@ app.get('/api/crowdfund/summary', handleCrowdfundingSummary);
 
 const FEEDBACK_FALLBACK_MAX = 50;
 const FEEDBACK_FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-const FEEDBACK_COMMENT_LIMIT = 2000;
 const feedbackFallbackEntries = [];
 const FEEDBACK_QUERY_TIMEOUT_MS = 8000;
-
-const isFirestoreUnavailable = (err) =>
-  !!(err && typeof err === 'object' && err.code === 'firestore-unavailable');
 
 const resolveFeedbackLimit = (value) => {
   let limit = Number(value ?? 200);
@@ -2143,28 +2137,6 @@ const addFallbackFeedback = ({ name, rating, comment, customerId, orderId }) => 
     feedbackFallbackEntries.length = FEEDBACK_FALLBACK_MAX;
   }
   return entry;
-};
-
-const parseFeedbackBody = (body) => {
-  const rating = Number(body?.rating);
-  const comment = typeof body?.comment === 'string'
-    ? body.comment.replace(/\r/g, '').trim().slice(0, FEEDBACK_COMMENT_LIMIT)
-    : '';
-  const customerId = typeof body?.customerId === 'string' && body.customerId.trim()
-    ? body.customerId.trim()
-    : null;
-  const orderId = typeof body?.orderId === 'string' && body.orderId.trim()
-    ? body.orderId.trim()
-    : null;
-
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { error: 'invalid-rating' };
-  }
-  if (!comment) {
-    return { error: 'missing-comment' };
-  }
-
-  return { rating, comment, customerId, orderId };
 };
 
 const withFeedbackTimeout = async (promise) => {
@@ -4493,7 +4465,7 @@ app.post('/api/intake/submit', async (req, res) => {
     const formatLabel = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     // Helper to format values for email display
-    const formatValue = (value, indent = 0) => {
+    const formatValue = (value) => {
       if (value === null || value === undefined || value === '') return '<em style="color:#999;">—</em>';
       if (Array.isArray(value)) {
         if (value.length === 0) return '<em style="color:#999;">None selected</em>';

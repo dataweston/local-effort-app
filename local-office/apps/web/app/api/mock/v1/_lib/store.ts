@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import type { components } from '../../../../lib/api-schema';
+import type { components } from '../../../../../lib/api-schema';
 
 const DEMO_TOKEN = 'demo-token';
 
 export type Program = components['schemas']['Program'];
 export type ProgramUpsertRequest = components['schemas']['ProgramUpsertRequest'];
 export type ProgramSlotInput = components['schemas']['ProgramSlotInput'];
+type ProgramSlot = components['schemas']['ProgramSlot'];
 export type Order = components['schemas']['Order'];
 export type CreateOrderRequest = components['schemas']['CreateOrderRequest'];
 export type OrderConfirmationResponse = components['schemas']['OrderConfirmationResponse'];
@@ -56,7 +57,7 @@ function seedDb(): MockDb {
     windowStart: iso(hoursFrom(slotOneDate, -2)),
     windowEnd: iso(hoursFrom(slotOneDate, 2)),
     cutoffAt: iso(hoursFrom(slotOneDate, -48))
-  } satisfies Program['slots'][number];
+  } satisfies ProgramSlot;
 
   const slot2 = {
     id: 'slot-2',
@@ -66,7 +67,7 @@ function seedDb(): MockDb {
     windowStart: iso(hoursFrom(slotTwoDate, -2)),
     windowEnd: iso(hoursFrom(slotTwoDate, 2)),
     cutoffAt: iso(hoursFrom(slotTwoDate, -48))
-  } satisfies Program['slots'][number];
+  } satisfies ProgramSlot;
 
   const slot3 = {
     id: 'slot-3',
@@ -76,7 +77,7 @@ function seedDb(): MockDb {
     windowStart: iso(hoursFrom(slotThreeDate, -1)),
     windowEnd: iso(hoursFrom(slotThreeDate, 1)),
     cutoffAt: iso(hoursFrom(slotThreeDate, -24))
-  } satisfies Program['slots'][number];
+  } satisfies ProgramSlot;
 
   const programs: Program[] = [
     {

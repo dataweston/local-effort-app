@@ -32,7 +32,7 @@ async function applyRLSFix() {
   console.log('---\n');
 
   // Execute the SQL using the rpc method
-  const { data, error } = await supabase.rpc('exec_sql', { sql: migrationSQL });
+  const { error } = await supabase.rpc('exec_sql', { sql: migrationSQL });
 
   if (error) {
     console.error('❌ Error applying migration:', error.message);

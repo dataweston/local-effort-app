@@ -1,5 +1,4 @@
 import axios from 'axios';
-import httpAdapter from 'axios/lib/adapters/http.js';
 import type { Request } from 'express';
 import nock from 'nock';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,6 +8,8 @@ import { OloAdapter } from '../olo';
 import { UberDirectAdapter } from '../uberDirect';
 import { AdapterHttpError } from '../../utils/errors';
 import { createHmacDigest } from '../../utils/signature';
+
+const httpAdapter = axios.getAdapter('http');
 
 axios.defaults.adapter = httpAdapter;
 process.env.HTTP_PROXY = '';

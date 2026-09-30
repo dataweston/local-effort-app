@@ -1,6 +1,6 @@
 'use client';
 
-import { format, formatDistanceToNowStrict, parseISO } from 'date-fns';
+import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
@@ -90,7 +90,7 @@ export default function ProviderPage() {
   const upcomingBatches = useMemo(() => {
     return batches
       .slice()
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .sort((a, b) => Date.parse(a.createdAt ?? '') - Date.parse(b.createdAt ?? ''));
   }, [batches]);
 
   const loadManifest = async (batchId: string) => {

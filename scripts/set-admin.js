@@ -32,7 +32,7 @@ async function setAdmin() {
     'utf-8'
   );
   
-  const { data, error } = await supabase.rpc('exec_sql', { sql });
+  const { error } = await supabase.rpc('exec_sql', { sql });
   
   if (error) {
     // If the RPC doesn't exist, try direct execution
@@ -59,7 +59,7 @@ async function setAdmin() {
     console.log('\nAttempting direct profile update...');
     
     // Check if user exists
-    const { data: users, error: userError } = await supabase
+    const { error: userError } = await supabase
       .from('auth.users')
       .select('id, email')
       .eq('email', 'dataweston@gmail.com');
@@ -69,7 +69,7 @@ async function setAdmin() {
     }
     
     // Try to insert/update profile
-    const { data: profileData, error: profileError } = await supabase
+    const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
         email: 'dataweston@gmail.com',

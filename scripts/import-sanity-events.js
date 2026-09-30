@@ -52,7 +52,7 @@ async function importSanityEvents() {
         }
       };
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('calendar_events')
         .insert([eventData])
         .select()

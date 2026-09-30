@@ -207,7 +207,7 @@ async function phase1Extract() {
 async function phase2Merge(extracted) {
   console.log('\n── Phase 2: Applying merge rules ─────────────────────────────');
 
-  const { leCustomers, leDishes, leOrders, leMenuWeeks, vendors } = extracted;
+  const { vendors } = extracted;
 
   // Check for existing brain entities to avoid re-seeding
   const existingCount = await localEffort.brainEntity.count();
@@ -249,8 +249,6 @@ async function phase3Write(data) {
   console.log('\n── Phase 3: Writing to brain tables ──────────────────────────');
 
   const { leCustomers, leDishes, leOrders, leMenuWeeks, vendors, mergeReviews } = data;
-  const now = new Date();
-
   if (DRY_RUN) {
     console.log('  DRY RUN — no writes will occur');
     console.log(`  Would create:`);

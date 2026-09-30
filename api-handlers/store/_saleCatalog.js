@@ -1,3 +1,5 @@
+const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
+
 let generatedSalePageData = null;
 
 try {
@@ -8,6 +10,12 @@ try {
 
 const normalizeGeneratedProduct = (product) => {
   if (!product || typeof product !== 'object' || !product.id) return null;
+  const productRef = resolveCommercialProductRef({
+    store: 'sale',
+    sourceSystem: 'sanity',
+    productId: product.id,
+    productTitle: product.title || product.id,
+  });
   return {
     _id: product.id,
     id: product.id,
@@ -30,6 +38,12 @@ const normalizeGeneratedProduct = (product) => {
     offerDairyFree: !!product.offerDairyFree,
     dairyFreeCost: Number(product.dairyFreeCost) || 0,
     stores: Array.isArray(product.stores) ? product.stores : ['sale'],
+    productKey: product.productKey || productRef.productKey,
+    offerKey: product.offerKey || productRef.offerKey,
+    commercialProductKey: product.commercialProductKey || productRef.productKey,
+    commercialOfferKey: product.commercialOfferKey || productRef.offerKey,
+    sourceSystem: product.sourceSystem || productRef.sourceSystem,
+    businessLineKey: product.businessLineKey || productRef.businessLineKey,
     allowsDelivery: product.allowsDelivery !== false,
     requiresDateSelection: product.requiresDateSelection === true,
   };
@@ -82,6 +96,12 @@ const generatedProductToResponse = (product) => ({
   offerDairyFree: product.offerDairyFree ?? false,
   dairyFreeCost: product.dairyFreeCost ?? 0,
   stores: Array.isArray(product.stores) ? product.stores : [],
+  productKey: product.productKey || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).productKey,
+  offerKey: product.offerKey || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).offerKey,
+  commercialProductKey: product.commercialProductKey || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).productKey,
+  commercialOfferKey: product.commercialOfferKey || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).offerKey,
+  sourceSystem: product.sourceSystem || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).sourceSystem,
+  businessLineKey: product.businessLineKey || resolveCommercialProductRef({ store: 'sale', sourceSystem: 'sanity', productId: product._id, productTitle: product.title }).businessLineKey,
   allowsDelivery: product.allowsDelivery !== false,
   requiresDateSelection: product.requiresDateSelection === true,
 });

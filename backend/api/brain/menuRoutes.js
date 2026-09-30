@@ -149,7 +149,7 @@ function registerMenuRoutes(app, { logger } = {}) {
         },
       });
 
-      const ledgerEvent = await writeLedgerEvent({
+      await writeLedgerEvent({
         eventType: 'menu.created',
         source: 'admin_ux',
         actorType: 'founder',

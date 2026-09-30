@@ -1,5 +1,3 @@
-const { PrismaClient } = require('@prisma/client');
-
 async function findOrCreateThread(prisma, { objectType, objectId, visibility, title }) {
   const existing = await prisma.objectThread.findFirst({
     where: { objectType, objectId, visibility },

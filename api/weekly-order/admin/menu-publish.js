@@ -33,9 +33,6 @@ const { requireWeeklyOrderAdmin } = require('../../../api-handlers/weekly-order/
 let prisma = null;
 try { prisma = new PrismaClient(); } catch (_) { prisma = null; }
 
-const normalize = (s) =>
-  (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-
 // Default cutoff: Saturday 8pm local (2 days before Monday weekStart)
 function defaultCutoff(weekStart) {
   const d = new Date(weekStart);

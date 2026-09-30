@@ -2,7 +2,6 @@
 // Accepts embedded card payment (Square) for crowdfunding pizzas / pledges.
 // Body: { items: [{ name, price (in cents), quantity, type, pizzaCount }], funderName, token, pizzaQty }
 
-const crypto = require('crypto');
 const { getSquareClient } = require('../_lib/squareClient');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { resolveCrowdfundDiscount, applyCrowdfundDiscount } = require('./_lib/discountCodes');
@@ -25,13 +24,6 @@ const countPizzasInItems = (items) => {
       const normalized = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
       return sum + normalized;
     }, 0);
-};
-
-const createIdempotencyKey = () => {
-  if (typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${crypto.randomBytes(16).toString('hex')}`;
 };
 
 async function recordCrowdfundContribution({
@@ -117,7 +109,7 @@ module.exports = async (req, res) => {
     if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
     if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
-    const { items, funderName, token, email, phone, notes, notify, discountCode, rewardPreference, pizzaQty, verificationToken, checkoutAttemptId } = req.body || {};
+    const { items, funderName, token, email, phone, notes, notify, discountCode, rewardPreference, verificationToken, checkoutAttemptId } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
 
     let lineTotal = items.reduce((sum, item) => {

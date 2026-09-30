@@ -10,6 +10,7 @@ import {
   IsUUID,
   ValidateNested
 } from 'class-validator';
+import type { Prisma } from '@local-office/db';
 
 export class ProgramSlotDto {
   @IsOptional()
@@ -71,7 +72,7 @@ export class CreateProgramDto {
   loyaltyRequired?: boolean;
 
   @IsOptional()
-  subsidyRules?: Record<string, unknown>;
+  subsidyRules?: Record<string, Prisma.InputJsonValue>;
 
   @IsArray()
   @ArrayMinSize(1)

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Router } from "express";
 import { ensureActiveKey } from "./keys.js";
 import { createOrder, listOrders, redeemOrder } from "./orders.js";
 import { sendOrderEmail } from "./brevo.js";
@@ -6,7 +6,7 @@ import { env } from "./env.js";
 import { renderQrPng } from "./qr.js";
 import { createCheckout } from "./square.js";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/health", (_req, res) => {
   res.json({ ok: true });

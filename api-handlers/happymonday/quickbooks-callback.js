@@ -6,7 +6,6 @@
 const QB_CLIENT_ID = process.env.QUICKBOOKS_CLIENT_ID;
 const QB_CLIENT_SECRET = process.env.QUICKBOOKS_CLIENT_SECRET;
 const QB_REDIRECT_URI = process.env.QUICKBOOKS_REDIRECT_URI || 'https://localeffortfood.com/api/happymonday/quickbooks-callback';
-const QB_ENVIRONMENT = process.env.QUICKBOOKS_ENVIRONMENT || 'production';
 
 const QB_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 
@@ -36,7 +35,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, state, realmId, error: oauthError } = req.query;
+  const { code, realmId, error: oauthError } = req.query;
 
   // Handle OAuth errors
   if (oauthError) {

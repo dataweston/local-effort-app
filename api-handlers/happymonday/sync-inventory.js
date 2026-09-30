@@ -224,7 +224,7 @@ module.exports = async function handler(req, res) {
     }
 
     // Create sync log entry
-    const { data: syncLog, error: syncLogError } = await supabase
+    const { data: syncLog } = await supabase
       .from('happymonday_inventory_syncs')
       .insert({
         order_id: orderId,

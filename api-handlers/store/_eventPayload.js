@@ -33,7 +33,7 @@ const TEXT_LIMITS = Object.freeze({
 
 function cleanString(value, maxLength) {
   if (typeof value !== 'string' && typeof value !== 'number') return null;
-  const cleaned = String(value).replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  const cleaned = String(value).replace(/\p{Cc}/gu, '').trim();
   return cleaned ? cleaned.slice(0, maxLength) : null;
 }
 
