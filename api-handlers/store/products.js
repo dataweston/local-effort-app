@@ -26,6 +26,9 @@ module.exports = async (req, res) => {
   try {
     // Get store filter from query parameter (e.g., ?store=happy-monday)
     const storeFilter = req.query?.store || 'sale'; // Default to 'sale' for backwards compatibility
+    if (storeFilter === 'pizza-on-smith') {
+      return res.status(200).json({ products: require('./_pizzaOnSmith').products.map(generatedProductToResponse), source: 'catalog' });
+    }
     const fallbackProducts = storeFilter === 'sale'
       ? getGeneratedSaleProducts().map(generatedProductToResponse)
       : [];

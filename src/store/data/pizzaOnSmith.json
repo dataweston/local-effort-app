@@ -1,0 +1,46 @@
+{
+  "store": "pizza-on-smith",
+  "pickup": {
+    "name": "Pizza on Smith \u2014 Local Effort",
+    "date": "Tuesdays",
+    "time": "",
+    "address": "604 Smith Ave S, West St. Paul, MN"
+  },
+  "products": [
+    {
+      "id": "smith-cheese-3",
+      "title": "10\u2033 frozen cheese pizzas \u00b7 3 pack",
+      "price": 3400,
+      "count": 3,
+      "image": "cheese"
+    },
+    {
+      "id": "smith-cheese-6",
+      "title": "10\u2033 frozen cheese pizzas \u00b7 6 pack",
+      "price": 5900,
+      "count": 6,
+      "image": "cheese"
+    },
+    {
+      "id": "smith-kids-3",
+      "title": "Kids\u2019 cheese pizzas \u00b7 3 pack",
+      "price": 1450,
+      "count": 3,
+      "image": "cheese"
+    },
+    {
+      "id": "smith-brussels",
+      "title": "Brussels sprout pizza \u00b7 special",
+      "price": 1450,
+      "count": 1,
+      "image": "brussels"
+    },
+    {
+      "id": "smith-olive-oil",
+      "title": "Olive oil \u00b7 1 liter",
+      "price": 3200,
+      "count": 1,
+      "image": null
+    }
+  ]
+}

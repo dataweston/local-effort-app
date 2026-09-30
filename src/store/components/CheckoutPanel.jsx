@@ -5,6 +5,7 @@ import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/
 import { trackEvent } from '../../lib/trackEvent';
 import { useCart } from '../cart/CartContext';
 import '../../styles/le-checkout.css';
+import smithCatalog from '../data/pizzaOnSmith.json';
 
 const fmt = (cents) => `$${((Number(cents) || 0) / 100).toFixed(2)}`;
 const PROFILE_STORAGE_KEY = 'le:storeCheckoutProfile';
@@ -145,7 +146,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const loadedProfile = useMemo(loadProfile, []);
   const [customer, setCustomer] = useState(loadedProfile.customer);
   const [pickup, setPickup] = useState(
-    store === CHEZ_GARAGE_STORE ? false : loadedProfile.pickup,
+    store === smithCatalog.store ? true : store === CHEZ_GARAGE_STORE ? false : loadedProfile.pickup,
   );
   const [address, setAddress] = useState(loadedProfile.address);
   const [deliveryInstructions, setDeliveryInstructions] = useState(loadedProfile.deliveryInstructions);
@@ -408,7 +409,9 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
             </p>
             <p className="le-checkout-success-copy">
               {orderResult.pickup
-                ? store === CHEZ_GARAGE_STORE
+                ? store === smithCatalog.store
+                  ? `Pickup is on Tuesdays at ${smithCatalog.pickup.address}.`
+                  : store === CHEZ_GARAGE_STORE
                   ? `Pickup is at ${CHEZ_GARAGE_PICKUP_ADDRESS}.`
                   : `Pickup is at Neon Kitchens, 2103 W Broadway, Minneapolis${orderResult.pickupWindow ? ` on Wednesday ${orderResult.pickupWindow}` : ''}.`
                 : 'Local delivery details will be sent separately.'}
@@ -564,6 +567,12 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                   {pickup
                     ? 'The pickup address will be included in your confirmation email after purchase.'
                     : `${fmt(CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS)} merchandise minimum plus ${fmt(CHEZ_GARAGE_DELIVERY_FEE_CENTS)} local delivery. Delivery only; shipping is not available.`}
+                </p>
+              )}
+
+              {store === smithCatalog.store && (
+                <p className="le-checkout-footnote" style={{ textAlign: 'left' }}>
+                  Free Tuesday pickup · {smithCatalog.pickup.address}
                 </p>
               )}
 

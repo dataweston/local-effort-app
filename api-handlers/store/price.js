@@ -13,6 +13,7 @@
 // }
 
 const sanity = require('@sanity/client');
+const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
 const { getGeneratedSaleProductMap } = require('./_saleCatalog');
 const { isSelectableDate } = require('./_dateSelection');
 const {
@@ -38,6 +39,7 @@ const client =
 // Fetch canonical product data keyed by Sanity _id.
 const fetchProducts = async (ids) => {
   const fallback = getGeneratedSaleProductMap(ids);
+  if (ids.every((id) => smithProducts[id])) return fallback;
   if (!client || !ids.length) return fallback;
   const query = `*[_type == "product" && _id in $ids]{
     _id,
@@ -115,6 +117,9 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const smithError = validateSmithOrder(items, store, pickup);
+    if (smithError) return res.status(422).json({ error: smithError });
+
     const ids = [...new Set(items.map((i) => i.productId))];
     const productMap = await fetchProducts(ids);
 

@@ -17,6 +17,7 @@ const UNIFIED_FULFILLMENT_STORES = new Set(['sale']);
 
 // Pickup details shown on the page and in confirmation emails.
 const pickupByStore = {
+  'pizza-on-smith': require('./_pizzaOnSmith').catalog.pickup,
   'tiny-diner': {
     name: 'Tiny Diner',
     date: 'October 31, 2025',

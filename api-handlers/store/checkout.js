@@ -4,6 +4,7 @@
 
 const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
+const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { prisma } = require('../_lib/prisma');
 const { businessLineForStore } = require('../../backend/api/finance/businessLines');
@@ -81,6 +82,7 @@ const normalizeAddOnIndices = (value) => {
 
 const fetchProducts = async (ids) => {
   const fallback = getGeneratedSaleProductMap(ids);
+  if (ids.every((id) => smithProducts[id])) return fallback;
   if (!sanityClient || !ids.length) return fallback;
 
   const query = `*[_type == "product" && _id in $ids]{
@@ -228,6 +230,9 @@ module.exports = async (req, res) => {
       const qty = Number(item.qty);
       if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ error: 'Invalid qty' });
     }
+
+    const smithError = validateSmithOrder(items, store, pickup);
+    if (smithError) return res.status(422).json({ error: smithError });
 
     const ids = [...new Set(items.map((item) => item.productId))];
     const productMap = await fetchProducts(ids);
@@ -505,7 +510,7 @@ module.exports = async (req, res) => {
         ? pickupDetails.date
         : resolvedPickupWindow
           ? `${pickupDetails.date} ${resolvedPickupWindow}`
-          : `${pickupDetails.date} at ${pickupDetails.time}`;
+          : `${pickupDetails.date}${pickupDetails.time ? ` at ${pickupDetails.time}` : ''}`;
       const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
       const fulfillmentInfo = pickup
         ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`

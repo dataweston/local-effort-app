@@ -17,6 +17,7 @@ import { SupabaseAuthProvider } from './contexts/SupabaseAuthContext';
 const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
+const PizzaOnSmithPage = lazy(() => import('./pages/PizzaOnSmithPage'));
 const SalePage = lazy(() => import('./pages/SalePage'));
 const ChezGaragePage = lazy(() => import('./pages/ChezGaragePage'));
 const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
@@ -64,6 +65,7 @@ const AppContent = () => {
   const isFullPageHome = location.pathname === '/';
   const hideHeader =
     location.pathname === '/weddings' ||
+    location.pathname === '/pizza-on-smith' ||
     location.pathname === '/julydinner' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
@@ -76,6 +78,7 @@ const AppContent = () => {
     location.pathname === '/' ||
     location.pathname === '/sale' ||
     location.pathname === '/chez-garage' ||
+    location.pathname === '/pizza-on-smith' ||
     location.pathname === '/julydinner' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||
@@ -236,6 +239,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
                 <Route path="/salepage" element={<Navigate to="/sale" replace />} />
                 <Route
                   path="/return-policy"
