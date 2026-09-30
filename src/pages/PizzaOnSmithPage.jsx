@@ -179,15 +179,8 @@ function PizzaShop() {
         )}
       </nav>
       <header className="ps-hero">
-        <p className="ps-eyebrow">Frozen pizza / Tuesday pickup / St. Paul</p>
-        <h1>Pizza on Smith.</h1>
-        <p>
-          Your freezer’s new favorite. Pick up on Tuesdays at{' '}
-          <strong>604 Smith Ave S, West St. Paul.</strong>
-        </p>
-        <p className="ps-hero-details">
-          Neapolitan-inspired · 100% Midwest ingredients · Vacuum sealed
-        </p>
+        <h1>Home Oven Pizzas available on Smith Ave.</h1>
+        <p>pickup on tuesdays. Perfect frozen pizzas for quick home dinners. 100% midwest ingredients. Real Food.</p>
       </header>
       <div className="ps-shop">
         <section className="ps-gallery" aria-label="Our pizzas">
