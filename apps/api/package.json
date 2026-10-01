@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -16,7 +16,7 @@
   "dependencies": {
     "@local-effort/shared": "workspace:*",
     "@noble/ed25519": "^3.0.0",
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^13.0.3",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jose": "^6.1.0",

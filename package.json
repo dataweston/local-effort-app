@@ -104,7 +104,7 @@
   },
   "packageManager": "pnpm@9.12.3",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",

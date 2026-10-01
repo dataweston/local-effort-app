@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@local-effort/shared": "workspace:*",
-    "better-sqlite3": "^9.4.0",
+    "better-sqlite3": "^13.0.3",
     "electron": "^28.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
