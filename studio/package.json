@@ -5,7 +5,7 @@
   "main": "package.json",
   "license": "UNLICENSED",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "sanity dev",

@@ -145,7 +145,7 @@ inspection and raw exports under `/.tmp/`.
 
 ## Conventions
 
-- pnpm only; Node 20; React pinned to 18.2.0 via overrides.
+- pnpm only; Node 24; React pinned to 18.2.0 via overrides.
 - API handlers: `module.exports = async (req, res) => {}`; mount in `backend/api/index.js`.
 - Escape all user input interpolated into email HTML (`escapeHtml` helpers exist in routers).
 - Webhooks verify secrets with timing-safe comparison — follow the existing patterns in `backend/api/index.js`.
