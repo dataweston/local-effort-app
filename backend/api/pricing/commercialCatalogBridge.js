@@ -1,3 +1,5 @@
+const { businessLineForStore } = require('../finance/businessLines');
+
 const DEFAULT_COMMERCIAL_PRODUCTS = {
   pizza: {
     productKey: 'pizza',
@@ -30,7 +32,7 @@ function resolveCommercialProductRef({
     return {
       productKey,
       offerKey,
-      businessLineKey: productKey === 'pizza' ? 'pizza' : 'store',
+      businessLineKey: businessLineForStore(normalizedStore),
       sourceSystem: sanitizedSourceSystem || (productKey === 'pizza' ? 'pizza_on_smith' : 'sanity'),
       sourceId: productId || productTitle || productKey,
     };

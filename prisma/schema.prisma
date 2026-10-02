@@ -645,6 +645,7 @@ model CommercialProduct {
   offers             CommercialOffer[]
   quotes             CommercialQuote[]
   inventoryResources InventoryResource[]
+  orderLines         CommercialOrderLine[]
 
   @@index([status])
 }
@@ -662,6 +663,7 @@ model CommercialOffer {
   updatedAt   DateTime           @updatedAt
   product     CommercialProduct  @relation(fields: [productId], references: [id])
   quotes      CommercialQuote[]
+  orderLines  CommercialOrderLine[]
 
   @@index([productId, status])
 }
@@ -681,6 +683,7 @@ model PriceBook {
   updatedAt   DateTime                  @updatedAt
   rules       PriceRule[]
   revisions   CommercialQuoteRevision[]
+  orderLines  CommercialOrderLine[]
 
   @@unique([key, version])
   @@index([key, status, effectiveAt])
@@ -821,24 +824,34 @@ model InventoryReservation {
 }
 
 model CommercialOrderLine {
-  id             String          @id @default(uuid())
-  orderId        String
-  lineType       String          @default("item")
-  sku            String?
-  name           String
-  description    String?
-  quantity       Int             @default(1)
-  unitPriceCents Int
-  totalCents     Int
-  sourceSystem   String?
-  sourceId       String?
-  metadata       Json?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  order          CommercialOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id                  String             @id @default(uuid())
+  orderId             String
+  commercialProductId String?
+  commercialOfferId   String?
+  priceBookId         String?
+  catalogRevision     String?
+  lineType            String             @default("item")
+  sku                 String?
+  name                String
+  description         String?
+  quantity            Int                @default(1)
+  unitPriceCents      Int
+  totalCents          Int
+  sourceSystem        String?
+  sourceId            String?
+  metadata            Json?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  order               CommercialOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  commercialProduct   CommercialProduct? @relation(fields: [commercialProductId], references: [id])
+  commercialOffer     CommercialOffer?   @relation(fields: [commercialOfferId], references: [id])
+  priceBook           PriceBook?         @relation(fields: [priceBookId], references: [id])
 
   @@index([orderId])
   @@index([sku])
+  @@index([commercialProductId])
+  @@index([commercialOfferId])
+  @@index([priceBookId])
 }
 
 model CommercialInvoice {

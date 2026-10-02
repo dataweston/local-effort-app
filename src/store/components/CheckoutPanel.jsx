@@ -82,6 +82,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
     fulfillmentFee: 0,
     lines: [],
     pricedAt: null,
+    pricingVersion: null,
   });
 
   const payloadKey = useMemo(
@@ -91,7 +92,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
 
   useEffect(() => {
     if (!items.length) {
-      setPricing({ loading: false, error: '', subtotal: null, fulfillmentFee: 0, lines: [], pricedAt: null });
+      setPricing({ loading: false, error: '', subtotal: null, fulfillmentFee: 0, lines: [], pricedAt: null, pricingVersion: null });
       return undefined;
     }
 
@@ -114,6 +115,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
           fulfillmentFee: Number.isInteger(data?.fulfillmentFee) ? data.fulfillmentFee : 0,
           lines: Array.isArray(data?.lines) ? data.lines : [],
           pricedAt: data?.pricedAt || null,
+          pricingVersion: data?.pricingVersion || null,
         });
       })
       .catch((error) => {
@@ -125,6 +127,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
           fulfillmentFee: 0,
           lines: [],
           pricedAt: null,
+          pricingVersion: null,
         });
       });
 
@@ -281,6 +284,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
         token,
         verificationToken,
         checkoutAttemptId,
+        pricingVersion: pricing.pricingVersion,
         store,
       }),
     });
@@ -315,6 +319,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     items,
     pickup,
     pickupWindow,
+    pricing,
     resolveCheckoutAttemptId,
     store,
     usesUnifiedFulfillment,

@@ -62,7 +62,7 @@
     "Agents shopping on a human's behalf: read the 'How to buy' section of /llms.txt — browse GET /api/store/products, then either link the human to /sale or /psyche, or create a UCP checkout session and hand them the continue_url."
   ],
   "navigation": [
-    { "path": "/pizza-on-smith", "title": "Pizza on Smith", "summary": "Frozen pizza: Tuesday pickup at 604 Smith Ave S, West St. Paul. Cheese 3/$34 or 6/$59; kids 3/$14.50; Brussels special $14.50; 1 liter olive oil $32." },
+    { "path": "/pizza-on-smith", "title": "Pizza on Smith", "summary": "Frozen pizza: Tuesday pickup at 608 Smith Ave S, West St. Paul. Cheese 3/$34 or 6/$59; kids 3/$14.50; Brussels special $14.50; 1 liter olive oil $32." },
     { "path": "/", "title": "Home", "summary": "Service overview, testimonials, catering sections, and business information." },
     { "path": "/book", "title": "Book a Private Event", "summary": "Book a chef-led dinner party, pizza party, wedding, or small event; instant estimate and deposit." },
     { "path": "/sale", "title": "Sale", "summary": "Public sale catalog and checkout surface." },

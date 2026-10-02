@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CartProvider, useCart } from '../store/cart/CartContext';
 import CartDrawer from '../store/components/CartDrawer';
 import catalog from '../store/data/pizzaOnSmith.json';
+import generatedCatalog from '../store/data/generatedPizzaOnSmithPageData.json';
 import { SITE_URL } from '../config/siteMetadata';
 import { trackEvent } from '../lib/trackEvent';
 import '../styles/pizza-on-smith.css';
@@ -13,60 +14,62 @@ const photos = [
   {
     src: 'brussels',
     alt: 'Brussels sprout pizza on a silver platter',
-    caption: 'The Brussels sprout special.',
   },
   {
     src: 'sliced',
     alt: 'A slice pulled from a pepperoni pizza on a wooden board',
-    caption: 'From the oven to the table. Pepperoni pictured.',
   },
   {
     src: 'crust',
     alt: 'Close-up of a blistered pizza crust inside its vacuum seal',
-    caption: 'A proper crust. Ready for your oven.',
-  },
-  {
-    src: 'packed',
-    alt: 'A stack of individually vacuum-sealed pizzas',
-    caption: 'A freezer full of good dinners.',
   },
   {
     src: 'cheese',
     alt: 'Small cheese and pepperoni pizzas on parchment',
-    caption: 'Little pizzas, same big crust.',
   },
   {
     src: 'oven',
     alt: 'A person holding a freshly baked pizza beside an outdoor oven',
-    caption: 'Pizza makes people happy.',
   },
   {
     src: 'stamp',
     alt: 'Local Pizza lettering printed with hand-carved potato stamps',
-    caption: 'Even the stamp is homemade.',
-  },
-  {
-    src: 'local-pizza',
-    alt: 'A person holding a small shirt with the red Local Pizza stamp',
-    caption: 'Local pizza. Little shirt.',
   },
   {
     src: 'boxed',
     alt: 'A pizza in a hand-stamped Local Pizza box',
-    caption: 'A very good thing to bring home.',
   },
   {
     src: 'seasonal',
     alt: 'A vacuum-sealed seasonal pizza topped with corn, herbs and cheese',
-    caption: 'Midwest ingredients, sealed in.',
   },
 ];
-const journalPhotos = ['sliced', 'local-pizza', 'oven', 'stamp', 'boxed'].map((src) =>
+const journalPhotos = ['sliced', 'oven', 'stamp', 'boxed'].map((src) =>
   photos.find((photo) => photo.src === src)
 );
 const photoUrl = (name) => `/images/pizza-on-smith/${name}.webp`;
+const productImage = (product) => product.images?.[0] || (product.image ? photoUrl(product.image) : null);
 const description =
-  'Neapolitan-inspired frozen pizzas, 100% Midwest ingredients. Pick up on Tuesdays at 604 Smith Ave S, West St. Paul.';
+  'Neapolitan-inspired frozen pizzas, 100% Midwest ingredients. Pick up on Tuesdays at 608 Smith Ave S, West St. Paul.';
+
+const fallbackPage = {
+  eyebrow: 'Frozen pizza · Tuesday pickup',
+  headline: 'Home-oven pizzas, available on Smith Ave.',
+  introduction: 'Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.',
+  storyHeading: 'A little Naples.\nAll Midwest.',
+  storyText: 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection. Keep a few on hand for the nights you’d rather just turn on the oven.',
+  orderHeading: 'Stock your freezer.',
+  orderIntroduction: 'Choose your packs. Mix as you like.',
+  pickupHeading: 'Pick up on Tuesday.',
+  pickupAddress: '608 Smith Ave S, West St. Paul, MN',
+  journalEyebrow: 'A few pictures from around here',
+  journalHeading: 'This is local pizza.',
+  notes: [
+    {label: '01 / pick up', heading: 'Your Tuesday stop.', text: 'Collect your order at 608 Smith Ave S in West St. Paul. These pizzas are for local pickup only.'},
+    {label: '02 / keep frozen', heading: 'Dinner, on standby.', text: 'Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking directions on the package.'},
+    {label: '03 / finish well', heading: 'Don’t forget the crust.', text: 'After the bake, brush a little olive oil over the crust. A small step that makes a better pizza.'},
+  ],
+};
 
 function Quantity({ title, value, onChange }) {
   return (
@@ -95,18 +98,32 @@ function Quantity({ title, value, onChange }) {
 }
 
 function PizzaShop() {
-  const { add, clear, totalQty, openCart } = useCart();
+  const { add, clear, openCart } = useCart();
   const [quantities, setQuantities] = useState({ 'smith-cheese-3': 1 });
   const [activePhoto, setActivePhoto] = useState(0);
+  const [products, setProducts] = useState(generatedCatalog.products);
+  const [page, setPage] = useState(fallbackPage);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/store/products?store=pizza-on-smith')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!alive || !data) return;
+        if (Array.isArray(data.products) && data.products.length) setProducts(data.products);
+        if (data.page) setPage({...fallbackPage, ...data.page, notes: data.page.notes?.length ? data.page.notes : fallbackPage.notes});
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
   const setQty = (id, qty) => setQuantities((current) => ({ ...current, [id]: qty }));
-  const total = catalog.products.reduce(
+  const total = products.reduce(
     (sum, product) => sum + product.price * (quantities[product.id] || 0),
     0
   );
   const buy = () => {
     // This is a complete order builder, so repeated clicks never duplicate a bag.
     clear();
-    catalog.products.forEach((product) => {
+    products.forEach((product) => {
       const qty = quantities[product.id] || 0;
       if (qty)
         add({
@@ -114,7 +131,7 @@ function PizzaShop() {
           title: product.title,
           qty,
           unitPrice: product.price,
-          image: product.image ? photoUrl(product.image) : null,
+          image: productImage(product),
           allowsDelivery: false,
         });
     });
@@ -129,7 +146,7 @@ function PizzaShop() {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Pizza on Smith',
-    itemListElement: catalog.products.map((product, index) => ({
+    itemListElement: products.map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       item: {
@@ -140,7 +157,7 @@ function PizzaShop() {
           product.id === 'smith-olive-oil'
             ? '1 liter of olive oil. Brush a little on the crust after baking.'
             : description,
-        ...(product.image ? { image: `${SITE_URL}${photoUrl(product.image)}` } : {}),
+        ...(productImage(product) ? { image: productImage(product).startsWith('http') ? productImage(product) : `${SITE_URL}${productImage(product)}` } : {}),
         brand: { '@type': 'Brand', name: 'Local Effort' },
         offers: {
           '@type': 'Offer',
@@ -165,26 +182,10 @@ function PizzaShop() {
         <meta property="og:image" content={`${SITE_URL}${photoUrl('brussels')}`} />
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
-      <nav className="ps-nav" aria-label="Pizza shop navigation">
-        <Link to="/" className="ps-wordmark">
-          Local Effort Cooperative
-        </Link>
-        <span>good food, close to home.</span>
-        {totalQty > 0 ? (
-          <button type="button" onClick={openCart}>
-            Your order ({totalQty}) ↗
-          </button>
-        ) : (
-          <a href="#order">Order pizza ↗</a>
-        )}
-      </nav>
       <header className="ps-hero">
-        <p className="ps-eyebrow">Frozen pizza · Tuesday pickup</p>
-        <h1>Home-oven pizzas, available on Smith Ave.</h1>
-        <p>
-          Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest
-          ingredients. Real food.
-        </p>
+        <p className="ps-eyebrow">{page.eyebrow}</p>
+        <h1>{page.headline}</h1>
+        <p>{page.introduction}</p>
       </header>
       <div className="ps-shop">
         <section className="ps-gallery" aria-label="Our pizzas">
@@ -197,12 +198,6 @@ function PizzaShop() {
               height="1200"
               fetchPriority="high"
             />
-            <figcaption>
-              <span>{photos[activePhoto].caption}</span>
-              <span>
-                {String(activePhoto + 1).padStart(2, '0')} / {photos.length}
-              </span>
-            </figcaption>
           </figure>
           <div className="ps-gallery-controls" aria-label="Photo navigation">
             <button
@@ -212,7 +207,6 @@ function PizzaShop() {
             >
               ←
             </button>
-            <span>Food, freezers &amp; familiar faces</span>
             <button
               type="button"
               aria-label="Next photo"
@@ -240,17 +234,7 @@ function PizzaShop() {
               </button>
             ))}
           </div>
-          <div className="ps-freezer-photos">
-            <figure>
-              <img
-                src={photoUrl('packed')}
-                alt="Pizzas vacuum sealed individually and stacked for the freezer"
-                width="720"
-                height="960"
-                loading="lazy"
-              />
-              <figcaption>Stock up.</figcaption>
-            </figure>
+          <div className="ps-freezer-photos ps-freezer-photos-single">
             <figure>
               <img
                 src={photoUrl('crust')}
@@ -259,51 +243,32 @@ function PizzaShop() {
                 height="960"
                 loading="lazy"
               />
-              <figcaption>Look at that crust.</figcaption>
             </figure>
           </div>
           <div className="ps-story">
-            <h2>
-              A little Naples.
-              <br />
-              All Midwest.
-            </h2>
-            <p>
-              Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf
-              life and home-oven perfection. Keep a few on hand for the nights you’d rather just
-              turn on the oven.
-            </p>
+            <h2>{page.storyHeading.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)}</h2>
+            <p>{page.storyText}</p>
           </div>
         </section>
         <section className="ps-order" id="order" aria-labelledby="ps-order-title">
           <div className="ps-order-heading">
-            <h2 id="ps-order-title">Stock your freezer.</h2>
-            <p>Choose your packs. Mix as you like.</p>
+            <h2 id="ps-order-title">{page.orderHeading}</h2>
+            <p>{page.orderIntroduction}</p>
           </div>
           <div className="ps-products">
-            {catalog.products.slice(0, 4).map((product, index) => (
+            {products.slice(0, 4).map((product, index) => (
               <div className={`ps-product ${index === 3 ? 'ps-special' : ''}`} key={product.id}>
                 <div className="ps-product-copy">
                   {index === 3 && <span className="ps-special-label">The special</span>}
-                  <h3>
-                    {
-                      [
-                        '10″ cheese · 3 pack',
-                        '10″ cheese · 6 pack',
-                        'Kids’ cheese · 3 pack',
-                        'Brussels sprout pizza',
-                      ][index]
-                    }
-                  </h3>
+                  <h3>{product.title}</h3>
                   <p>
-                    {
+                    {product.shortDescription ||
                       [
                         'Three pizzas, ready when you are.',
                         'Six pizzas. Save $9 vs. two 3-packs.',
                         'Little pizzas for little appetites.',
                         'One pizza. Something a little different.',
-                      ][index]
-                    }
+                      ][index]}
                   </p>
                   <span className="ps-price">
                     {money(product.price)}
@@ -344,13 +309,10 @@ function PizzaShop() {
           <div className="ps-pickup">
             <span aria-hidden="true">↗</span>
             <div>
-              <strong>Pick up on Tuesday. It’s free.</strong>
-              <p>
-                604 Smith Ave S<br />
-                West St. Paul, MN
-              </p>
+              <strong>{page.pickupHeading}</strong>
+              <p>{page.pickupAddress}</p>
               <a
-                href="https://www.google.com/maps/search/?api=1&query=604+Smith+Ave+S+West+St+Paul+MN"
+                href="https://www.google.com/maps/search/?api=1&query=608+Smith+Ave+S+West+St+Paul+MN"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -374,13 +336,9 @@ function PizzaShop() {
       <section className="ps-journal" aria-labelledby="ps-journal-title">
         <header>
           <div>
-            <p className="ps-eyebrow">A few pictures from around here</p>
-            <h2 id="ps-journal-title">This is local pizza.</h2>
+            <p className="ps-eyebrow">{page.journalEyebrow}</p>
+            <h2 id="ps-journal-title">{page.journalHeading}</h2>
           </div>
-          <p>
-            From the first slice to the potato-stamped boxes. A mix of past and present pizzas;
-            today’s selection is in the order form.
-          </p>
         </header>
         <div className="ps-journal-grid">
           {journalPhotos.map((photo) => (
@@ -392,7 +350,6 @@ function PizzaShop() {
                 height={photo.src === 'sliced' ? 934 : 1280}
                 loading="lazy"
               />
-              <figcaption>{photo.caption}</figcaption>
             </figure>
           ))}
         </div>
@@ -401,30 +358,7 @@ function PizzaShop() {
         </a>
       </section>
       <section className="ps-notes" aria-label="Good to know">
-        <div>
-          <span>01 / pick up</span>
-          <h2>Your Tuesday stop.</h2>
-          <p>
-            Collect your order at 604 Smith Ave S in West St. Paul. Pickup is free; these pizzas are
-            for local pickup only.
-          </p>
-        </div>
-        <div>
-          <span>02 / keep frozen</span>
-          <h2>Dinner, on standby.</h2>
-          <p>
-            Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking
-            directions on the package.
-          </p>
-        </div>
-        <div>
-          <span>03 / finish well</span>
-          <h2>Don’t forget the crust.</h2>
-          <p>
-            After the bake, brush a little olive oil over the crust. A small step that makes a
-            better pizza.
-          </p>
-        </div>
+        {page.notes.map((note) => <div key={note.label}><span>{note.label}</span><h2>{note.heading}</h2><p>{note.text}</p></div>)}
       </section>
       <footer className="ps-footer">
         <Link to="/">local effort cooperative</Link>

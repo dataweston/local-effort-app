@@ -27,6 +27,16 @@ const STORES = [
     },
   },
   {
+    slug: 'pizza-on-smith',
+    outputFile: 'src/store/data/generatedPizzaOnSmithPageData.json',
+    usesSalePageDoc: false,
+    fallbackPage: {
+      title: 'Pizza on Smith',
+      subheading: 'Tuesday pickup at 608 Smith Ave S, West St. Paul.',
+      introText: 'Frozen pizzas and pantry goods from Local Effort Cooperative.',
+    },
+  },
+  {
     slug: 'chez-garage',
     outputFile: 'src/store/data/generatedChezGaragePageData.json',
     usesSalePageDoc: false,
@@ -58,6 +68,14 @@ function ensureDirectory(filePath) {
 }
 
 function fallbackData(store) {
+  try {
+    const existing = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), store.outputFile), 'utf8'));
+    if (Array.isArray(existing?.products) && existing.products.length) {
+      return existing;
+    }
+  } catch (_) {
+    // First build: use the store's copy-only fallback below.
+  }
   return {
     generatedAt: new Date().toISOString(),
     store: store.slug,
@@ -116,6 +134,8 @@ async function fetchStoreData(client, store) {
       offerDairyFree,
       dairyFreeCost,
       stores,
+      commercialProductKey,
+      commercialOfferKey,
       allowsDelivery,
       requiresDateSelection
     }
@@ -156,6 +176,8 @@ async function fetchStoreData(client, store) {
       offerDairyFree: Boolean(product.offerDairyFree),
       dairyFreeCost: typeof product.dairyFreeCost === 'number' ? product.dairyFreeCost : 0,
       stores: Array.isArray(product.stores) ? product.stores : [],
+      commercialProductKey: product.commercialProductKey || null,
+      commercialOfferKey: product.commercialOfferKey || null,
       allowsDelivery: product.allowsDelivery !== false,
       requiresDateSelection: product.requiresDateSelection === true,
     })),

@@ -46,6 +46,10 @@ function normalizeLines(lines) {
       ? unitPriceCents * quantity
       : requireInt(line.totalCents, 'line.totalCents');
     return {
+      commercialProductId: line.commercialProductId || null,
+      commercialOfferId: line.commercialOfferId || null,
+      priceBookId: line.priceBookId || null,
+      catalogRevision: line.catalogRevision ? String(line.catalogRevision).slice(0, 240) : null,
       lineType: line.lineType || 'item',
       sku: line.sku ? String(line.sku).slice(0, 240) : null,
       name: String(line.name || `Line ${index + 1}`).slice(0, 500),

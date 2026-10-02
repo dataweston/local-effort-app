@@ -16,7 +16,7 @@ const GROUPED_TYPES = [
   // Store
   'product',
   // Sales
-  'sale', 'salePage', 'happyMondayPage', 'happyMondaySalePage', 'tinyDinerSalePage',
+  'sale', 'salePage', 'happyMondayPage', 'happyMondaySalePage', 'tinyDinerSalePage', 'pizzaOnSmithPage',
   // Content
   'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner',
   'menu', 'menuSection', 'menuItems', 'mealPrepMenu',
@@ -82,6 +82,7 @@ export default defineConfig({
                   S.documentTypeListItem('happyMondayPage').title('Happy Monday Page'),
                   S.documentTypeListItem('happyMondaySalePage').title('Happy Monday Sale'),
                   S.documentTypeListItem('tinyDinerSalePage').title('Tiny Diner Sale'),
+                  S.documentTypeListItem('pizzaOnSmithPage').title('Pizza on Smith Page'),
                 ]),
               ),
 

@@ -7,7 +7,7 @@ llms-txt: https://www.localeffortfood.com/llms.txt
 last-updated: 2026-07-12
 
 primary-pages:
-- /pizza-on-smith Frozen pizza: Tuesday pickup at 604 Smith Ave S, West St. Paul. 10-inch cheese: 3/$34 or 6/$59; kids cheese: 3/$14.50; Brussels special: $14.50; olive oil: 1 liter/$32.
+- /pizza-on-smith Frozen pizza: Tuesday pickup at 608 Smith Ave S, West St. Paul. 10-inch cheese: 3/$34 or 6/$59; kids cheese: 3/$14.50; Brussels special: $14.50; olive oil: 1 liter/$32.
 - /              Home page with service overview, testimonials, and business information
 - /book          Book a private event (dinner party, pizza party, wedding, small event) with instant estimate + deposit
 - /sale          Public sale catalog page

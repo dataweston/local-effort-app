@@ -1,0 +1,174 @@
+{
+  "generatedAt": null,
+  "store": "pizza-on-smith",
+  "page": {
+    "title": "Pizza on Smith",
+    "subheading": "Tuesday pickup at 608 Smith Ave S, West St. Paul.",
+    "introText": "Frozen pizzas and pantry goods from Local Effort Cooperative."
+  },
+  "products": [
+    {
+      "id": "smith-cheese-3",
+      "title": "10″ frozen cheese pizzas · 3 pack",
+      "slug": "smith-cheese-3",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": null,
+      "images": [
+        "/images/pizza-on-smith/cheese.webp"
+      ],
+      "price": 3400,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "pizza-on-smith"
+      ],
+      "commercialProductKey": "pizza",
+      "commercialOfferKey": "pizza_on_smith.cheese.3_pack",
+      "allowsDelivery": false,
+      "requiresDateSelection": false,
+      "migrationMetadata": {
+        "legacyId": "smith-cheese-3"
+      },
+      "count": 3
+    },
+    {
+      "id": "smith-cheese-6",
+      "title": "10″ frozen cheese pizzas · 6 pack",
+      "slug": "smith-cheese-6",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": null,
+      "images": [
+        "/images/pizza-on-smith/cheese.webp"
+      ],
+      "price": 5900,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "pizza-on-smith"
+      ],
+      "commercialProductKey": "pizza",
+      "commercialOfferKey": "pizza_on_smith.cheese.6_pack",
+      "allowsDelivery": false,
+      "requiresDateSelection": false,
+      "migrationMetadata": {
+        "legacyId": "smith-cheese-6"
+      },
+      "count": 6
+    },
+    {
+      "id": "smith-kids-3",
+      "title": "Kids’ cheese pizzas · 3 pack",
+      "slug": "smith-kids-3",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": null,
+      "images": [
+        "/images/pizza-on-smith/cheese.webp"
+      ],
+      "price": 1450,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "pizza-on-smith"
+      ],
+      "commercialProductKey": "pizza",
+      "commercialOfferKey": "pizza_on_smith.kids_cheese.3_pack",
+      "allowsDelivery": false,
+      "requiresDateSelection": false,
+      "migrationMetadata": {
+        "legacyId": "smith-kids-3"
+      },
+      "count": 3
+    },
+    {
+      "id": "smith-brussels",
+      "title": "Brussels sprout pizza · special",
+      "slug": "smith-brussels",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": null,
+      "images": [
+        "/images/pizza-on-smith/brussels.webp"
+      ],
+      "price": 1450,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "pizza-on-smith"
+      ],
+      "commercialProductKey": "pizza",
+      "commercialOfferKey": "pizza_on_smith.brussels.single",
+      "allowsDelivery": false,
+      "requiresDateSelection": false,
+      "migrationMetadata": {
+        "legacyId": "smith-brussels"
+      },
+      "count": 1
+    },
+    {
+      "id": "smith-olive-oil",
+      "title": "Olive oil · 1 liter",
+      "slug": "smith-olive-oil",
+      "shortDescription": "",
+      "longDescription": null,
+      "longDescriptionBlocks": null,
+      "images": [],
+      "price": 3200,
+      "salePrice": null,
+      "priceDisplay": null,
+      "inventoryManaged": false,
+      "inventory": null,
+      "squareItemId": null,
+      "squareVariationId": null,
+      "variants": [],
+      "addOns": [],
+      "offerDairyFree": false,
+      "dairyFreeCost": 0,
+      "stores": [
+        "pizza-on-smith"
+      ],
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "pizza_on_smith.olive_oil.1_liter",
+      "allowsDelivery": false,
+      "requiresDateSelection": false,
+      "migrationMetadata": {
+        "legacyId": "smith-olive-oil"
+      },
+      "count": 1
+    }
+  ]
+}

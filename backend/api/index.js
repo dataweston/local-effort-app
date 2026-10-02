@@ -45,6 +45,7 @@ const pizzaPartyBookingsHandler = require('../../api-handlers/store/pizza-party-
 const chezGarageAtHomeCheckoutHandler = require('../../api-handlers/store/chez-garage-at-home-checkout');
 const storeProductsHandler = require('../../api-handlers/store/products');
 const storePriceHandler = require('../../api-handlers/store/price');
+const sanityCommerceSyncHandler = require('../../api-handlers/internal/sanity-commerce-sync');
 const storeEventsHandler = require('../../api-handlers/store/events');
 const storeSyncSquareHandler = require('../../api-handlers/store/sync-square');
 const localistImagesHandler = require('../../api-handlers/localist/images');
@@ -1086,6 +1087,9 @@ app.use('/api/venues', createVenuesRouter({ logger }));
 app.use('/api/finance', createFinanceRouter({ logger }));
 app.use('/api/product-pricing', createProductPricingRouter({ logger }));
 app.use('/api/sales', createSalesRouter({ logger }));
+app.post('/api/internal/catalog/sanity-sync', async (req, res, next) => {
+  try { await sanityCommerceSyncHandler(req, res); } catch (err) { next(err); }
+});
 app.use('/api/planner', createPlannerRouter());
 app.use('/ucp/v1', createUcpRouter({ logger }));
 app.all('/api/crowdfund/checkout', async (req, res, next) => {

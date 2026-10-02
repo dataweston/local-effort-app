@@ -1,11 +1,17 @@
 const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 
 let generatedSalePageData = null;
+let generatedPizzaOnSmithPageData = null;
 
 try {
   generatedSalePageData = require('../../src/store/data/generatedSalePageData.json');
 } catch (_) {
   generatedSalePageData = null;
+}
+try {
+  generatedPizzaOnSmithPageData = require('../../src/store/data/generatedPizzaOnSmithPageData.json');
+} catch (_) {
+  generatedPizzaOnSmithPageData = null;
 }
 
 const normalizeGeneratedProduct = (product) => {
@@ -15,6 +21,8 @@ const normalizeGeneratedProduct = (product) => {
     sourceSystem: 'sanity',
     productId: product.id,
     productTitle: product.title || product.id,
+    productKey: product.commercialProductKey,
+    offerKey: product.commercialOfferKey,
   });
   return {
     _id: product.id,
@@ -49,9 +57,10 @@ const normalizeGeneratedProduct = (product) => {
   };
 };
 
-const getGeneratedSaleProducts = () => {
-  const products = Array.isArray(generatedSalePageData?.products)
-    ? generatedSalePageData.products
+const getGeneratedSaleProducts = (store = 'sale') => {
+  const data = store === 'pizza-on-smith' ? generatedPizzaOnSmithPageData : generatedSalePageData;
+  const products = Array.isArray(data?.products)
+    ? data.products
     : [];
   return products.map(normalizeGeneratedProduct).filter(Boolean);
 };
@@ -68,7 +77,7 @@ const getGeneratedSalePage = () => {
 
 const getGeneratedSaleProductMap = (ids = []) => {
   const wanted = new Set(ids.filter(Boolean));
-  const products = [...getGeneratedSaleProducts(), ...require('./_pizzaOnSmith').products];
+  const products = [...getGeneratedSaleProducts(), ...getGeneratedSaleProducts('pizza-on-smith'), ...require('./_pizzaOnSmith').products];
   return Object.fromEntries(
     products
       .filter((product) => wanted.size === 0 || wanted.has(product._id))

@@ -637,6 +637,9 @@
   gap: 12px;
   margin-top: 24px;
 }
+.ps-freezer-photos-single {
+  grid-template-columns: minmax(0, 1fr);
+}
 .ps-freezer-photos img {
   width: 100%;
   height: auto;

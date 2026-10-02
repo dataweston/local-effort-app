@@ -35,8 +35,8 @@ export default function StaticApp({ helmetContext }) {
       <CartProvider>
         <DefaultSeo />
         <div className="app-root min-h-screen flex flex-col">
-          {location.pathname !== '/pizza-on-smith' && <Header />}
-          <main className="flex-1" style={{ paddingTop: isFullPageHome || location.pathname === '/pizza-on-smith' ? 0 : '5rem' }}>
+          <Header />
+          <main className="flex-1" style={{ paddingTop: isFullPageHome ? 0 : '5rem' }}>
             <Routes>
               <Route path="/" element={<FullPageDemoPage />} />
               <Route path="/blog" element={<BlogList />} />

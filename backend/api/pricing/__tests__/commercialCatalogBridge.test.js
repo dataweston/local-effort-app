@@ -29,4 +29,21 @@ describe('commercial catalog bridge', () => {
       businessLineKey: 'pizza',
     });
   });
+
+  it('prefers explicit item-level identity while deriving the business line from the store', () => {
+    expect(resolveCommercialProductRef({
+      store: 'pizza-on-smith',
+      sourceSystem: 'sanity',
+      productId: 'olive-oil',
+      productTitle: 'Olive Oil',
+      productKey: 'retail',
+      offerKey: 'pizza_on_smith.olive_oil.1_liter',
+    })).toEqual({
+      productKey: 'retail',
+      offerKey: 'pizza_on_smith.olive_oil.1_liter',
+      businessLineKey: 'pizza',
+      sourceSystem: 'sanity',
+      sourceId: 'olive-oil',
+    });
+  });
 });

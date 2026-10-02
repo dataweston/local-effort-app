@@ -65,7 +65,6 @@ const AppContent = () => {
   const isFullPageHome = location.pathname === '/';
   const hideHeader =
     location.pathname === '/weddings' ||
-    location.pathname === '/pizza-on-smith' ||
     location.pathname === '/julydinner' ||
     location.pathname === '/winterdinner' ||
     location.pathname === '/winterpizza' ||

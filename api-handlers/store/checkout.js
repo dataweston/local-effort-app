@@ -5,6 +5,7 @@
 const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
+const { priceStorefrontCart } = require('../../backend/api/pricing/storefrontCatalogService');
 const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { prisma } = require('../_lib/prisma');
@@ -83,7 +84,6 @@ const normalizeAddOnIndices = (value) => {
 
 const fetchProducts = async (ids) => {
   const fallback = getGeneratedSaleProductMap(ids);
-  if (ids.every((id) => smithProducts[id])) return fallback;
   if (!sanityClient || !ids.length) return fallback;
 
   const query = `*[_type == "product" && _id in $ids]{
@@ -92,6 +92,8 @@ const fetchProducts = async (ids) => {
     addOns[]{name, additionalCost},
     offerDairyFree, dairyFreeCost,
     inventoryMode, manualQty,
+    commercialProductKey,
+    commercialOfferKey,
     allowsDelivery,
     requiresDateSelection
   }`;
@@ -147,19 +149,29 @@ const buildCommercialLines = (pricedLines, deliveryFee) => {
       sourceSystem: line.sourceSystem,
       productId: line.productId,
       productTitle: line.title || line.productId,
+      productKey: line.productKey,
+      offerKey: line.offerKey,
     });
     return {
       lineType: 'item',
-      sku: line.productId,
+      sku: line.offerKey,
       name: line.title || 'Store item',
       description: line.optionSummary || null,
       quantity: line.qty,
       unitPriceCents: line.unitPrice,
       totalCents: line.lineTotal,
       sourceSystem: productRef.sourceSystem,
-      sourceId: line.variationId || line.productId,
+      sourceId: line.productId,
+      commercialProductId: line.commercialProductId,
+      commercialOfferId: line.commercialOfferId,
+      priceBookId: line.priceBookId,
+      catalogRevision: line.catalogRevision,
       metadata: {
         variationId: line.variationId || null,
+        addOnKeys: line.addOnKeys || [],
+        pricingRuleKeys: line.pricingRuleKeys || [],
+        priceBookKey: line.priceBookKey,
+        priceBookVersion: line.priceBookVersion,
         addOnIndices: line.addOnIndices,
         dairyFree: line.dairyFree,
         selectedDate: line.selectedDate || null,
@@ -233,10 +245,12 @@ module.exports = async (req, res) => {
       customerNotes = '',
       verificationToken,
       checkoutAttemptId,
+      pricingVersion,
     } = req.body || {};
 
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
+    if (!pricingVersion) return res.status(409).json({ error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
 
     for (const item of items) {
       if (!item?.productId) return res.status(400).json({ error: 'Each item needs productId' });
@@ -247,55 +261,10 @@ module.exports = async (req, res) => {
     const smithError = validateSmithOrder(items, store, pickup);
     if (smithError) return res.status(422).json({ error: smithError });
 
-    const ids = [...new Set(items.map((item) => item.productId))];
-    const productMap = await fetchProducts(ids);
-    const pricedLines = [];
-    let amount = 0;
-
-    for (const item of items) {
-      const doc = productMap[item.productId];
-      if (!doc) return res.status(422).json({ error: `Product not found: ${item.productId}` });
-
-      const qty = Math.max(1, Number(item.qty) || 1);
-      const variationId = item.variationId || null;
-      const addOnIndices = normalizeAddOnIndices(item.addOnIndices);
-      const dairyFree = !!item.dairyFree;
-      const selectedDate = String(item.selectedDate || '').trim();
-      const productRef = resolveCommercialProductRef({
-        store,
-        sourceSystem: store === 'pizza-on-smith' ? 'pizza_on_smith' : 'sanity',
-        productId: item.productId,
-        productTitle: doc.title || item.title || item.productId,
-      });
-      if (
-        doc.requiresDateSelection === true &&
-        !isSelectableDate(selectedDate)
-      ) {
-        return res.status(422).json({
-          error: `Choose a future date for ${doc.title || 'this event'}. No payment was taken.`,
-        });
-      }
-      const unitPrice = resolveUnitPrice(doc, variationId, addOnIndices, dairyFree);
-      const lineTotal = unitPrice * qty;
-      amount += lineTotal;
-      pricedLines.push({
-        productId: item.productId,
-        variationId,
-        title: doc.title || item.title || '',
-        qty,
-        unitPrice,
-        lineTotal,
-        addOnIndices,
-        dairyFree,
-        selectedDate,
-        optionSummary: buildOptionSummary(doc, variationId, addOnIndices, dairyFree),
-        productKey: productRef.productKey,
-        offerKey: productRef.offerKey,
-        businessLineKey: productRef.businessLineKey,
-        sourceSystem: productRef.sourceSystem,
-        store,
-      });
-    }
+    const priced = await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
+    const pricedLines = priced.lines;
+    const productMap = Object.fromEntries(pricedLines.map((line) => [line.productId, line]));
+    let amount = priced.subtotal;
 
     if (!Number.isInteger(amount) || amount <= 0) {
       return res.status(422).json({ error: 'Invalid order total' });
@@ -305,7 +274,7 @@ module.exports = async (req, res) => {
 
     if (!pickup) {
       const pickupOnlyLine = pricedLines.find(
-        (line) => productMap[line.productId]?.allowsDelivery === false,
+        (line) => line.allowsDelivery === false,
       );
       if (pickupOnlyLine) {
         throw Object.assign(

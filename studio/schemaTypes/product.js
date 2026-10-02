@@ -5,6 +5,12 @@ export default {
   name: 'product',
   title: 'Product',
   type: 'document',
+  groups: [
+    {
+      name: 'commerceIdentity',
+      title: 'Commerce identity',
+    },
+  ],
   fields: [
     { name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() },
     { name: 'slug', title: 'Slug', type: 'slug', options: { source: 'title', maxLength: 96 } },
@@ -26,12 +32,58 @@ export default {
       options: {
         list: [
           { title: 'Main Store (/sale)', value: 'sale' },
+          { title: 'Pizza on Smith (/pizza-on-smith)', value: 'pizza-on-smith' },
           { title: 'Chez Garage (/chez-garage)', value: 'chez-garage' },
           { title: 'Happy Monday (/happy-monday)', value: 'happy-monday' },
           { title: 'Tiny Diner (/tiny-diner)', value: 'tiny-diner' }
         ],
         layout: 'checkbox'
       },
+    },
+    {
+      name: 'commercialProductKey',
+      title: 'Commercial product family',
+      type: 'string',
+      group: 'commerceIdentity',
+      description:
+        'Stable pricing-kernel product family. Required for an active product assigned to a store.',
+      options: {
+        list: [
+          {title: 'Pizza', value: 'pizza'},
+          {title: 'Retail', value: 'retail'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const document = context.document || {}
+          const isStorefrontProduct =
+            document.active !== false && Array.isArray(document.stores) && document.stores.length > 0
+          return !isStorefrontProduct || value
+            ? true
+            : 'Required for an active product assigned to a store.'
+        }),
+    },
+    {
+      name: 'commercialOfferKey',
+      title: 'Commercial offer key',
+      type: 'string',
+      group: 'commerceIdentity',
+      description:
+        'Stable item-level offer key. Required for an active product assigned to a store and immutable after its first sale.',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const document = context.document || {}
+          const isStorefrontProduct =
+            document.active !== false && Array.isArray(document.stores) && document.stores.length > 0
+          if (isStorefrontProduct && !value) {
+            return 'Required for an active product assigned to a store.'
+          }
+          if (value && !/^[a-z0-9][a-z0-9._-]*$/.test(value)) {
+            return 'Use lowercase letters, numbers, periods, underscores, or hyphens.'
+          }
+          return true
+        }),
     },
     {
       name: 'addOns',

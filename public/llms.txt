@@ -9,7 +9,7 @@ How to engage:
 
 ## Services and pages
 
-- [Pizza on Smith](https://www.localeffortfood.com/pizza-on-smith): Tuesday pickup at 604 Smith Ave S, West St. Paul. 10-inch frozen cheese pizzas 3/$34 or 6/$59; kids cheese 3/$14.50; Brussels sprout special $14.50 each. Olive oil add-on 1 liter/$32. Pickup only. Catalog: GET /api/store/products?store=pizza-on-smith. Checkout uses store=pizza-on-smith; do not combine with other storefront orders.
+- [Pizza on Smith](https://www.localeffortfood.com/pizza-on-smith): Tuesday pickup at 608 Smith Ave S, West St. Paul. 10-inch frozen cheese pizzas 3/$34 or 6/$59; kids cheese 3/$14.50; Brussels sprout special $14.50 each. Olive oil add-on 1 liter/$32. Pickup only. Catalog: GET /api/store/products?store=pizza-on-smith. Checkout uses store=pizza-on-smith; do not combine with other storefront orders.
 
 - [Book a private event](https://www.localeffortfood.com/book): estimates and deposits for chef-led dinners, pizza parties, weddings, and small events
 - [Pizza party](https://www.localeffortfood.com/pizza-party): wood-fired pizza party booking with deposit

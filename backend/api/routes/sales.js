@@ -440,6 +440,31 @@ function createSalesRouter({ logger = null } = {}) {
     });
   }));
 
+  router.get('/products', guarded(async (req, res) => {
+    const days = Math.min(3650, Math.max(1, Number.parseInt(req.query.days, 10) || 365));
+    const since = new Date(Date.now() - days * DAY_MS);
+    const lines = await prisma.commercialOrderLine.findMany({
+      where: { order: { status: 'paid', createdAt: { gte: since } }, lineType: 'item' },
+      select: { quantity: true, totalCents: true, createdAt: true, commercialProductId: true, commercialOfferId: true, order: { select: { id: true, businessLineKey: true, channel: true, bookedAt: true, createdAt: true } }, commercialProduct: { select: { key: true, name: true } }, commercialOffer: { select: { key: true, name: true } } },
+    });
+    const grouped = new Map();
+    const coverage = { unmappedPaidLineCount: 0, unmappedPaidCents: 0 };
+    for (const line of lines) {
+      if (!line.commercialProduct || !line.commercialOffer) {
+        coverage.unmappedPaidLineCount += 1;
+        coverage.unmappedPaidCents += line.totalCents;
+        continue;
+      }
+      const key = `${line.commercialOffer.key}::${line.order.businessLineKey || ''}::${line.order.channel}`;
+      const at = line.order.bookedAt || line.order.createdAt || line.createdAt;
+      const entry = grouped.get(key) || { commercialProductKey: line.commercialProduct.key, commercialProductName: line.commercialProduct.name, commercialOfferKey: line.commercialOffer.key, commercialOfferName: line.commercialOffer.name, businessLineKey: line.order.businessLineKey, channel: line.order.channel, orderIds: new Set(), units: 0, grossPaidCents: 0, firstSale: at, latestSale: at };
+      entry.orderIds.add(line.order.id); entry.units += line.quantity; entry.grossPaidCents += line.totalCents;
+      if (at < entry.firstSale) entry.firstSale = at; if (at > entry.latestSale) entry.latestSale = at;
+      grouped.set(key, entry);
+    }
+    return res.json({ ok: true, generatedAt: new Date().toISOString(), since: since.toISOString(), products: [...grouped.values()].map(({ orderIds, ...entry }) => ({ ...entry, orderCount: orderIds.size })).sort((a, b) => b.grossPaidCents - a.grossPaidCents), coverage });
+  }));
+
   return router;
 }
 

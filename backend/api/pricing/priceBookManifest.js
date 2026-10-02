@@ -57,7 +57,7 @@ const OFFERS = [
     status: 'active',
     composition: {
       channels: ['pickup'],
-      location: '604 Smith Ave S, West St. Paul',
+      location: '608 Smith Ave S, West St. Paul',
       store: 'pizza-on-smith',
     },
   },

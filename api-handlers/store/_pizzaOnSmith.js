@@ -31,11 +31,11 @@ const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 function validateSmithOrder(items, store, pickup) {
   const hasSmith = items.some((item) => !!productMap[item.productId]);
   if (!hasSmith && store !== catalog.store) return null;
-  if (store !== catalog.store || items.some((item) => !productMap[item.productId])) {
+  if (store !== catalog.store) {
     return 'Please check out Pizza on Smith items separately at /pizza-on-smith.';
   }
   if (pickup !== true)
-    return 'Pizza on Smith is pickup only: Tuesdays at 604 Smith Ave S, West St. Paul.';
+    return 'Pizza on Smith is pickup only: Tuesdays at 608 Smith Ave S, West St. Paul.';
   if (items.some((item) => item.variationId || item.dairyFree || item.addOnIndices?.length)) {
     return 'These pizzas have no selectable modifiers. Please refresh your order.';
   }

@@ -5,7 +5,7 @@ export const PUBLIC_ROUTES = [
   {
     path: '/pizza-on-smith',
     title: 'Pizza on Smith | Frozen Pizza Pickup — Local Effort',
-    description: 'Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients. Tuesday pickup at 604 Smith Ave S, West St. Paul. Cheese bundles from $34, kids’ 3-packs $14.50, and Brussels sprout specials.',
+    description: 'Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients. Tuesday pickup at 608 Smith Ave S, West St. Paul. Cheese bundles from $34, kids’ 3-packs $14.50, and Brussels sprout specials.',
     prerender: true,
   },
   {
