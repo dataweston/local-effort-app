@@ -75,6 +75,12 @@ const getGeneratedSalePage = () => {
   };
 };
 
+const getGeneratedStorePage = (store = 'sale') => {
+  if (store === 'sale') return getGeneratedSalePage();
+  if (store === 'pizza-on-smith') return generatedPizzaOnSmithPageData?.page || null;
+  return null;
+};
+
 const getGeneratedSaleProductMap = (ids = []) => {
   const wanted = new Set(ids.filter(Boolean));
   const products = [...getGeneratedSaleProducts(), ...getGeneratedSaleProducts('pizza-on-smith'), ...require('./_pizzaOnSmith').products];
@@ -118,6 +124,7 @@ const generatedProductToResponse = (product) => ({
 module.exports = {
   generatedProductToResponse,
   getGeneratedSalePage,
+  getGeneratedStorePage,
   getGeneratedSaleProductMap,
   getGeneratedSaleProducts,
 };

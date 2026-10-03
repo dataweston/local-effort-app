@@ -2,6 +2,7 @@ export default {
   name: 'pizzaOnSmithPage',
   title: 'Pizza on Smith Page',
   type: 'document',
+  description: 'Published text appears on /pizza-on-smith. Product names, prices, descriptions, images, and placement are edited under Store → Products.',
   fields: [
     {name: 'eyebrow', title: 'Hero eyebrow', type: 'string'},
     {name: 'headline', title: 'Hero headline', type: 'string'},
@@ -12,13 +13,23 @@ export default {
     {name: 'orderIntroduction', title: 'Order introduction', type: 'string'},
     {name: 'pickupHeading', title: 'Pickup heading', type: 'string'},
     {name: 'pickupAddress', title: 'Pickup address', type: 'string'},
+    {
+      name: 'oliveOilDescription',
+      title: 'Olive oil description',
+      type: 'text',
+      rows: 3,
+      description: 'The product name and price come from the olive oil product; this edits the supporting sentence.',
+    },
+    {name: 'checkoutFootnote', title: 'Checkout footnote', type: 'string'},
     {name: 'journalEyebrow', title: 'Photo section eyebrow', type: 'string'},
     {name: 'journalHeading', title: 'Photo section heading', type: 'string'},
+    {name: 'returnToOrderLabel', title: 'Return-to-order link', type: 'string'},
     {
       name: 'notes',
-      title: 'Bottom information sections',
+      title: 'Bottom information sections (including “Your Tuesday stop”)',
       type: 'array',
-      validation: (Rule) => Rule.max(3),
+      description: 'Add, remove, reorder, or rewrite the complete cards at the bottom of the page.',
+      validation: (Rule) => Rule.max(6),
       of: [
         {
           type: 'object',

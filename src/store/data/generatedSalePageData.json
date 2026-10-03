@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T19:54:33.574Z",
+  "generatedAt": "2026-10-03T04:21:12.968Z",
   "store": "sale",
   "page": {
     "title": "local effort sales",
@@ -9,6 +9,7 @@
   "products": [
     {
       "id": "08df1e0c-94f7-42b9-84fd-b6f1d930da18",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "BREAD - loaf - Red fife",
       "slug": "bread-loaf-red-fife",
       "shortDescription": "",
@@ -61,11 +62,15 @@
       "stores": [
         "sale"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.08df1e0c.94f7.42b9.84fd.b6f1d930da18",
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "a33aab49-4e73-40b8-ad72-5637bb45273c",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Goat Milk Yogurt",
       "slug": null,
       "shortDescription": "one time offer?",
@@ -101,11 +106,15 @@
       "stores": [
         "sale"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.a33aab49.4e73.40b8.ad72.5637bb45273c",
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "f857fde2-8250-4816-9982-b4f8ea245ba8",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Ice Cream - Mountain Mint - Pint",
       "slug": "ice-cream-mountain-mint-pint",
       "shortDescription": "Highlighting the flavor of local dairy",
@@ -173,11 +182,15 @@
       "stores": [
         "sale"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.f857fde2.8250.4816.9982.b4f8ea245ba8",
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "43289a7a-4ab1-40ed-82b6-acd8727164eb",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Kimchi - Early Spring",
       "slug": "kimchi-early-spring",
       "shortDescription": "sweet and bitter",
@@ -259,11 +272,15 @@
       "stores": [
         "sale"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.43289a7a.4ab1.40ed.82b6.acd8727164eb",
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "6c5a8dce-43bd-4dac-aff4-f981b20fec3d",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Ramp Oil",
       "slug": "ramp-oil",
       "shortDescription": "dirty chef secret. ",
@@ -323,11 +340,15 @@
         "sale",
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.6c5a8dce.43bd.4dac.aff4.f981b20fec3d",
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "0091442a-902e-4879-970c-9aba4bb6937e",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Vanilla Tart with Currants",
       "slug": "I like it because it's not sweet",
       "shortDescription": "actually not sweet, a dense buttery treat.",
@@ -368,6 +389,9 @@
       "stores": [
         "sale"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.0091442a.902e.4879.970c.9aba4bb6937e",
       "allowsDelivery": true,
       "requiresDateSelection": false
     }

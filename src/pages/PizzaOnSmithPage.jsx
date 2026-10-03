@@ -64,11 +64,30 @@ const fallbackPage = {
   pickupAddress: '608 Smith Ave S, West St. Paul, MN',
   journalEyebrow: 'A few pictures from around here',
   journalHeading: 'This is local pizza.',
+  oliveOilDescription: 'The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.',
+  checkoutFootnote: 'Secure payment with Square · No account needed',
+  returnToOrderLabel: 'Fill your freezer ↗',
   notes: [
     {label: '01 / pick up', heading: 'Your Tuesday stop.', text: 'Collect your order at 608 Smith Ave S in West St. Paul. These pizzas are for local pickup only.'},
     {label: '02 / keep frozen', heading: 'Dinner, on standby.', text: 'Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking directions on the package.'},
     {label: '03 / finish well', heading: 'Don’t forget the crust.', text: 'After the bake, brush a little olive oil over the crust. A small step that makes a better pizza.'},
   ],
+};
+
+const mergePage = (nextPage) => ({
+  ...fallbackPage,
+  ...(nextPage || {}),
+  notes: nextPage?.notes?.length ? nextPage.notes : fallbackPage.notes,
+});
+
+const uniqueProducts = (items) => {
+  const bySlug = new Map();
+  for (const product of items || []) {
+    const key = product.slug || product.id;
+    const existing = bySlug.get(key);
+    if (!existing || product.id === key) bySlug.set(key, product);
+  }
+  return [...bySlug.values()];
 };
 
 function Quantity({ title, value, onChange }) {
@@ -101,20 +120,26 @@ function PizzaShop() {
   const { add, clear, openCart } = useCart();
   const [quantities, setQuantities] = useState({ 'smith-cheese-3': 1 });
   const [activePhoto, setActivePhoto] = useState(0);
-  const [products, setProducts] = useState(generatedCatalog.products);
-  const [page, setPage] = useState(fallbackPage);
+  const [products, setProducts] = useState(uniqueProducts(generatedCatalog.products));
+  const [page, setPage] = useState(() => mergePage(generatedCatalog.page));
   useEffect(() => {
     let alive = true;
     fetch('/api/store/products?store=pizza-on-smith')
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
         if (!alive || !data) return;
-        if (Array.isArray(data.products) && data.products.length) setProducts(data.products);
-        if (data.page) setPage({...fallbackPage, ...data.page, notes: data.page.notes?.length ? data.page.notes : fallbackPage.notes});
+        if (Array.isArray(data.products) && data.products.length) setProducts(uniqueProducts(data.products));
+        if (data.page) setPage(mergePage(data.page));
       })
       .catch(() => {});
     return () => { alive = false; };
   }, []);
+  const oliveOil = products.find((product) =>
+    product.id === 'smith-olive-oil' ||
+    product.slug === 'smith-olive-oil' ||
+    product.offerKey?.includes('olive_oil')
+  );
+  const pizzaProducts = products.filter((product) => product.id !== oliveOil?.id);
   const setQty = (id, qty) => setQuantities((current) => ({ ...current, [id]: qty }));
   const total = products.reduce(
     (sum, product) => sum + product.price * (quantities[product.id] || 0),
@@ -132,7 +157,7 @@ function PizzaShop() {
           qty,
           unitPrice: product.price,
           image: productImage(product),
-          allowsDelivery: false,
+          allowsDelivery: product.allowsDelivery !== false,
         });
     });
     trackEvent('checkout.started', {
@@ -234,7 +259,7 @@ function PizzaShop() {
               </button>
             ))}
           </div>
-          <div className="ps-freezer-photos ps-freezer-photos-single">
+          <div className="ps-freezer-photos">
             <figure>
               <img
                 src={photoUrl('crust')}
@@ -246,7 +271,7 @@ function PizzaShop() {
             </figure>
           </div>
           <div className="ps-story">
-            <h2>{page.storyHeading.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)}</h2>
+            <h2>{String(page.storyHeading || '').split('\n').map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line}</React.Fragment>)}</h2>
             <p>{page.storyText}</p>
           </div>
         </section>
@@ -256,23 +281,18 @@ function PizzaShop() {
             <p>{page.orderIntroduction}</p>
           </div>
           <div className="ps-products">
-            {products.slice(0, 4).map((product, index) => (
-              <div className={`ps-product ${index === 3 ? 'ps-special' : ''}`} key={product.id}>
+            {pizzaProducts.map((product) => {
+              const isSpecial = product.id.includes('brussels') || product.slug?.includes('brussels');
+              const isSixPack = product.id.includes('cheese-6') || product.slug?.includes('cheese-6');
+              return (
+              <div className={`ps-product ${isSpecial ? 'ps-special' : ''}`} key={product.id}>
                 <div className="ps-product-copy">
-                  {index === 3 && <span className="ps-special-label">The special</span>}
+                  {isSpecial && <span className="ps-special-label">The special</span>}
                   <h3>{product.title}</h3>
-                  <p>
-                    {product.shortDescription ||
-                      [
-                        'Three pizzas, ready when you are.',
-                        'Six pizzas. Save $9 vs. two 3-packs.',
-                        'Little pizzas for little appetites.',
-                        'One pizza. Something a little different.',
-                      ][index]}
-                  </p>
+                  {product.shortDescription ? <p>{product.shortDescription}</p> : null}
                   <span className="ps-price">
                     {money(product.price)}
-                    {index === 1 && (
+                    {isSixPack && (
                       <small> / {money(Math.round(product.price / 6))} per pizza</small>
                     )}
                   </span>
@@ -283,29 +303,26 @@ function PizzaShop() {
                   onChange={(qty) => setQty(product.id, qty)}
                 />
               </div>
-            ))}
+            )})}
           </div>
-          <label
+          {oliveOil ? <label
             className="ps-oil"
             htmlFor="ps-olive-oil"
-            aria-label="Add 1 liter of olive oil for $32"
+            aria-label={`Add ${oliveOil.title} for ${money(oliveOil.price)}`}
           >
             <input
               id="ps-olive-oil"
               type="checkbox"
-              checked={!!quantities['smith-olive-oil']}
-              onChange={(event) => setQty('smith-olive-oil', event.target.checked ? 1 : 0)}
+              checked={!!quantities[oliveOil.id]}
+              onChange={(event) => setQty(oliveOil.id, event.target.checked ? 1 : 0)}
             />
             <span>
               <strong>
-                Add olive oil <span>1 liter · $32</span>
+                {oliveOil.title} <span>{money(oliveOil.price)}</span>
               </strong>
-              <small>
-                The finishing touch: brush a little olive oil on the crusts after baking. They’re
-                better that way.
-              </small>
+              <small>{page.oliveOilDescription}</small>
             </span>
-          </label>
+          </label> : null}
           <div className="ps-pickup">
             <span aria-hidden="true">↗</span>
             <div>
@@ -329,7 +346,7 @@ function PizzaShop() {
               {total ? `Checkout · ${money(total)}` : 'Choose your pizzas'}
               <span aria-hidden="true">↗</span>
             </button>
-            <p>Secure payment with Square · No account needed</p>
+            <p>{page.checkoutFootnote}</p>
           </div>
         </section>
       </div>
@@ -354,11 +371,11 @@ function PizzaShop() {
           ))}
         </div>
         <a className="ps-return-to-order" href="#order">
-          Fill your freezer ↗
+          {page.returnToOrderLabel}
         </a>
       </section>
       <section className="ps-notes" aria-label="Good to know">
-        {page.notes.map((note) => <div key={note.label}><span>{note.label}</span><h2>{note.heading}</h2><p>{note.text}</p></div>)}
+        {page.notes.map((note, index) => <div key={note._key || note.label || index}><span>{note.label}</span><h2>{note.heading}</h2><p>{note.text}</p></div>)}
       </section>
       <footer className="ps-footer">
         <Link to="/">local effort cooperative</Link>

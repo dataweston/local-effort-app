@@ -3,6 +3,7 @@ import {useClient} from 'sanity'
 
 const STORE_PAGES = [
   {title: 'Main Store', path: '/sale', value: 'sale'},
+  {title: 'Pizza on Smith', path: '/pizza-on-smith', value: 'pizza-on-smith'},
   {title: 'Chez Garage', path: '/chez-garage', value: 'chez-garage'},
   {title: 'Happy Monday', path: '/happy-monday', value: 'happy-monday'},
   {title: 'Tiny Diner', path: '/tiny-diner', value: 'tiny-diner'},
@@ -118,7 +119,14 @@ export default function ProductManager() {
 
   useEffect(() => {
     load()
-  }, [load])
+    const subscription = client
+      .listen('*[_type == "product"]', {}, {events: ['mutation'], visibility: 'query'})
+      .subscribe({
+        next: load,
+        error: () => setMessage('Live product updates paused. Use Refresh to reload.'),
+      })
+    return () => subscription.unsubscribe()
+  }, [client, load])
 
   const visibleProducts = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -198,7 +206,8 @@ export default function ProductManager() {
       <h1 style={{margin: 0}}>Product manager</h1>
       <p style={{marginTop: 6, opacity: 0.75}}>
         Change availability and storefront placement without opening each product. Changes are live
-        immediately; products may be active while assigned to no pages.
+        immediately; products may be active while assigned to no pages. Store placement and
+        product-level delivery eligibility are separate settings.
       </p>
 
       <div style={styles.toolbar}>
@@ -256,7 +265,7 @@ export default function ProductManager() {
               <th style={{...styles.cell, textAlign: 'left'}}>Product</th>
               <th style={{...styles.cell, textAlign: 'left'}}>Status</th>
               {STORE_PAGES.map((page) => <th key={page.value} style={styles.cell} title={page.path}>{page.title}</th>)}
-              <th style={styles.cell}>Pickup only</th>
+              <th style={styles.cell} title="Product-level rule only; store pickup rules are configured separately">Delivery excluded</th>
               <th style={styles.cell}>Calendar</th>
               <th style={{...styles.cell, textAlign: 'left'}}>Manual inventory</th>
             </tr>
@@ -308,7 +317,7 @@ export default function ProductManager() {
                 <td style={{...styles.cell, textAlign: 'center'}}>
                   <input
                     type="checkbox"
-                    aria-label={`${product.title} is pickup only`}
+                    aria-label={`${product.title} is excluded from delivery`}
                     checked={!product.allowsDelivery}
                     disabled={busy}
                     onChange={(event) => {

@@ -82,7 +82,15 @@ export default defineConfig({
                   S.documentTypeListItem('happyMondayPage').title('Happy Monday Page'),
                   S.documentTypeListItem('happyMondaySalePage').title('Happy Monday Sale'),
                   S.documentTypeListItem('tinyDinerSalePage').title('Tiny Diner Sale'),
-                  S.documentTypeListItem('pizzaOnSmithPage').title('Pizza on Smith Page'),
+                  S.listItem()
+                    .id('pizza-on-smith-page')
+                    .title('Pizza on Smith Page')
+                    .child(
+                      S.document()
+                        .schemaType('pizzaOnSmithPage')
+                        .documentId('pizza-on-smith-page')
+                        .title('Pizza on Smith Page'),
+                    ),
                 ]),
               ),
 

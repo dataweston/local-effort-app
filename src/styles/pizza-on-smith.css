@@ -132,8 +132,9 @@
 .ps-main-photo {
   width: 100%;
   height: auto;
-  aspect-ratio: 4/5;
-  object-fit: cover;
+  aspect-ratio: 3/4;
+  object-fit: contain;
+  object-position: center;
   display: block;
   background: var(--ps-mount);
 }
@@ -471,8 +472,7 @@
     order: 0;
   }
   .ps-main-photo {
-    aspect-ratio: 5/3;
-    object-position: center 45%;
+    aspect-ratio: 3/4;
   }
   .ps-gallery figcaption {
     font-size: 11px;
@@ -584,8 +584,6 @@
 
 /* Photography: a full product gallery, freezer details and a kitchen journal. */
 .ps-main-photo {
-  aspect-ratio: 1;
-  object-fit: contain;
   background: var(--ps-mount);
   box-shadow: var(--specimen-shadow, 14px 10px 22px -12px rgba(58, 46, 63, 0.42));
 }
@@ -636,9 +634,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-top: 24px;
-}
-.ps-freezer-photos-single {
-  grid-template-columns: minmax(0, 1fr);
 }
 .ps-freezer-photos img {
   width: 100%;
@@ -719,8 +714,7 @@
 }
 @media (max-width: 700px) {
   .ps-main-photo {
-    aspect-ratio: 5/4;
-    object-position: center;
+    aspect-ratio: 3/4;
   }
   .ps-gallery-controls {
     order: 0;

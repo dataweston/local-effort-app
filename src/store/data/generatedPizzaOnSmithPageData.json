@@ -1,21 +1,53 @@
 {
-  "generatedAt": null,
+  "generatedAt": "2026-10-03T04:21:13.169Z",
   "store": "pizza-on-smith",
   "page": {
-    "title": "Pizza on Smith",
-    "subheading": "Tuesday pickup at 608 Smith Ave S, West St. Paul.",
-    "introText": "Frozen pizzas and pantry goods from Local Effort Cooperative."
+    "eyebrow": "Frozen pizza · Tuesday pickup",
+    "headline": "Home-oven pizzas, available on Smith Ave.",
+    "introduction": "Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.",
+    "storyHeading": "A little Naples.\nAll Midwest.",
+    "storyText": "Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection. Keep a few on hand for the nights you’d rather just turn on the oven.",
+    "orderHeading": "Stock your freezer.",
+    "orderIntroduction": "Choose your packs. Mix as you like.",
+    "pickupHeading": "Pick up on Tuesday.",
+    "pickupAddress": "608 Smith Ave S, West St. Paul, MN",
+    "oliveOilDescription": "The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.",
+    "checkoutFootnote": "Secure payment with Square · No account needed",
+    "journalEyebrow": "A few pictures from around here",
+    "journalHeading": "This is local pizza.",
+    "returnToOrderLabel": "Fill your freezer ↗",
+    "notes": [
+      {
+        "_key": "pickup",
+        "heading": "Your Tuesday stop.",
+        "label": "01 / pick up",
+        "text": "Collect your order at 608 Smith Ave S in West St. Paul. These pizzas are for local pickup only."
+      },
+      {
+        "_key": "frozen",
+        "heading": "Dinner, on standby.",
+        "label": "02 / keep frozen",
+        "text": "Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking directions on the package."
+      },
+      {
+        "_key": "finish",
+        "heading": "Don’t forget the crust.",
+        "label": "03 / finish well",
+        "text": "After the bake, brush a little olive oil over the crust. A small step that makes a better pizza."
+      }
+    ]
   },
   "products": [
     {
       "id": "smith-cheese-3",
+      "catalogRevision": "13yBLt8E66F9WfFsDVQNJh",
       "title": "10″ frozen cheese pizzas · 3 pack",
       "slug": "smith-cheese-3",
-      "shortDescription": "",
+      "shortDescription": "Three pizzas, ready when you are.",
       "longDescription": null,
       "longDescriptionBlocks": null,
       "images": [
-        "/images/pizza-on-smith/cheese.webp"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/d206bdeab014235ab4ae505a3f0293cdca27bdab-900x1200.webp"
       ],
       "price": 3400,
       "salePrice": null,
@@ -31,24 +63,22 @@
       "stores": [
         "pizza-on-smith"
       ],
+      "storeSortOrder": 10,
       "commercialProductKey": "pizza",
       "commercialOfferKey": "pizza_on_smith.cheese.3_pack",
-      "allowsDelivery": false,
-      "requiresDateSelection": false,
-      "migrationMetadata": {
-        "legacyId": "smith-cheese-3"
-      },
-      "count": 3
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "smith-cheese-6",
+      "catalogRevision": "13yBLt8E66F9WfFsDVQNJh",
       "title": "10″ frozen cheese pizzas · 6 pack",
       "slug": "smith-cheese-6",
-      "shortDescription": "",
+      "shortDescription": "Six pizzas. Save $9 vs. two 3-packs.",
       "longDescription": null,
       "longDescriptionBlocks": null,
       "images": [
-        "/images/pizza-on-smith/cheese.webp"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/d206bdeab014235ab4ae505a3f0293cdca27bdab-900x1200.webp"
       ],
       "price": 5900,
       "salePrice": null,
@@ -64,24 +94,22 @@
       "stores": [
         "pizza-on-smith"
       ],
+      "storeSortOrder": 20,
       "commercialProductKey": "pizza",
       "commercialOfferKey": "pizza_on_smith.cheese.6_pack",
-      "allowsDelivery": false,
-      "requiresDateSelection": false,
-      "migrationMetadata": {
-        "legacyId": "smith-cheese-6"
-      },
-      "count": 6
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "smith-kids-3",
+      "catalogRevision": "13yBLt8E66F9WfFsDVQNJh",
       "title": "Kids’ cheese pizzas · 3 pack",
       "slug": "smith-kids-3",
-      "shortDescription": "",
+      "shortDescription": "Little pizzas for little appetites.",
       "longDescription": null,
       "longDescriptionBlocks": null,
       "images": [
-        "/images/pizza-on-smith/cheese.webp"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/d206bdeab014235ab4ae505a3f0293cdca27bdab-900x1200.webp"
       ],
       "price": 1450,
       "salePrice": null,
@@ -97,24 +125,22 @@
       "stores": [
         "pizza-on-smith"
       ],
+      "storeSortOrder": 30,
       "commercialProductKey": "pizza",
       "commercialOfferKey": "pizza_on_smith.kids_cheese.3_pack",
-      "allowsDelivery": false,
-      "requiresDateSelection": false,
-      "migrationMetadata": {
-        "legacyId": "smith-kids-3"
-      },
-      "count": 3
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "smith-brussels",
+      "catalogRevision": "13yBLt8E66F9WfFsDVQNJh",
       "title": "Brussels sprout pizza · special",
       "slug": "smith-brussels",
-      "shortDescription": "",
+      "shortDescription": "One pizza. Something a little different.",
       "longDescription": null,
       "longDescriptionBlocks": null,
       "images": [
-        "/images/pizza-on-smith/brussels.webp"
+        "https://cdn.sanity.io/images/d6l9d0ea/localeffort/aedc3e3fa9862774433f622b1c09e69ce3370bb2-900x1200.webp"
       ],
       "price": 1450,
       "salePrice": null,
@@ -130,20 +156,18 @@
       "stores": [
         "pizza-on-smith"
       ],
+      "storeSortOrder": 40,
       "commercialProductKey": "pizza",
       "commercialOfferKey": "pizza_on_smith.brussels.single",
-      "allowsDelivery": false,
-      "requiresDateSelection": false,
-      "migrationMetadata": {
-        "legacyId": "smith-brussels"
-      },
-      "count": 1
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     },
     {
       "id": "smith-olive-oil",
+      "catalogRevision": "13yBLt8E66F9WfFsDVQNJh",
       "title": "Olive oil · 1 liter",
       "slug": "smith-olive-oil",
-      "shortDescription": "",
+      "shortDescription": "Brush a little on the crust after baking.",
       "longDescription": null,
       "longDescriptionBlocks": null,
       "images": [],
@@ -161,14 +185,11 @@
       "stores": [
         "pizza-on-smith"
       ],
+      "storeSortOrder": 50,
       "commercialProductKey": "retail",
       "commercialOfferKey": "pizza_on_smith.olive_oil.1_liter",
-      "allowsDelivery": false,
-      "requiresDateSelection": false,
-      "migrationMetadata": {
-        "legacyId": "smith-olive-oil"
-      },
-      "count": 1
+      "allowsDelivery": true,
+      "requiresDateSelection": false
     }
   ]
 }

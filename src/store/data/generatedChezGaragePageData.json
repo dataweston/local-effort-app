@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T19:54:33.778Z",
+  "generatedAt": "2026-10-03T04:21:13.367Z",
   "store": "chez-garage",
   "page": {
     "title": "Chez Garage",
@@ -9,6 +9,7 @@
   "products": [
     {
       "id": "580bbaf4-0f1d-4eea-aba6-3dc856a17cdf",
+      "catalogRevision": "I8TAqJkqQY3h9t4glsjiko",
       "title": "Classic Cheese 12\"",
       "slug": null,
       "shortDescription": "mozzarella and brick cheese",
@@ -46,11 +47,15 @@
       "stores": [
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": null,
+      "commercialOfferKey": null,
       "allowsDelivery": false,
       "requiresDateSelection": false
     },
     {
       "id": "81f4a1d6-c013-402a-a0a6-783461a19960",
+      "catalogRevision": "SQNvSzYaLO1ZGixMW4n42r",
       "title": "Frozen Pizzas",
       "slug": "chez-garage-frozen-pizza",
       "shortDescription": "Really delicious pub pizza",
@@ -86,21 +91,25 @@
       "squareVariationId": null,
       "variants": [
         {
+          "_key": "qPRi4vZaPhvytdTkf0W3kd",
           "name": "2 pack - 12\" Cheese",
           "price": 2400,
           "squareVariationId": "chez-garage-frozen-pizza-cheese"
         },
         {
+          "_key": "qPRi4vZaPhvytdTkf0W3nV",
           "name": "2 pack - 12\" Pepperoni",
           "price": 2800,
           "squareVariationId": "chez-garage-frozen-pizza-pepp-2-pack"
         },
         {
+          "_key": "2b3e634e43ce",
           "name": "6 pack - 12\" Cheese",
           "price": 6400,
           "squareVariationId": null
         },
         {
+          "_key": "845865a62743",
           "name": "6 pack - 12\" Pepperoni",
           "price": 7400,
           "squareVariationId": null
@@ -112,11 +121,15 @@
       "stores": [
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": null,
+      "commercialOfferKey": null,
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "5e0bc9c2-4728-4b29-8f51-563c7cf2b413",
+      "catalogRevision": "Ln7bbWSL9IX5yh72ufV4TK",
       "title": "Green Leeks Pizza 12\"",
       "slug": null,
       "shortDescription": "green tomatillo sauce base, roasted leeks",
@@ -170,11 +183,15 @@
         "tiny-diner",
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": null,
+      "commercialOfferKey": null,
       "allowsDelivery": false,
       "requiresDateSelection": false
     },
     {
       "id": "83445a4b-ccd0-41bc-b020-008fff50aafc",
+      "catalogRevision": "FHgHG06NenAI49vCz05iHC",
       "title": "Pork Belly",
       "slug": "chez-garage-pork-belly",
       "shortDescription": "cherry rub",
@@ -210,11 +227,15 @@
       "stores": [
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": null,
+      "commercialOfferKey": null,
       "allowsDelivery": true,
       "requiresDateSelection": false
     },
     {
       "id": "6c5a8dce-43bd-4dac-aff4-f981b20fec3d",
+      "catalogRevision": "Pu9qHhaNw2JcvWC2NxLQtn",
       "title": "Ramp Oil",
       "slug": "ramp-oil",
       "shortDescription": "dirty chef secret. ",
@@ -274,6 +295,9 @@
         "sale",
         "chez-garage"
       ],
+      "storeSortOrder": null,
+      "commercialProductKey": "retail",
+      "commercialOfferKey": "sale.6c5a8dce.43bd.4dac.aff4.f981b20fec3d",
       "allowsDelivery": true,
       "requiresDateSelection": false
     }

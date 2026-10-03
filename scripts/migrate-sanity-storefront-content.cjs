@@ -21,11 +21,12 @@ function getClient() {
 
 function pizzaDocuments() {
   const legacy = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/store/data/pizzaOnSmith.json'), 'utf8'));
-  return legacy.products.map((product) => ({
-    _id: `storefront-pizza-on-smith-${product.id}`,
+  return legacy.products.map((product, index) => ({
+    _id: product.id,
     _type: 'product', title: product.title, slug: { _type: 'slug', current: product.id }, active: true,
     price: product.price, stores: ['pizza-on-smith'], commercialProductKey: OFFER_KEYS[product.id][0],
-    commercialOfferKey: OFFER_KEYS[product.id][1], allowsDelivery: false, inventoryMode: 'unmanaged',
+    commercialOfferKey: OFFER_KEYS[product.id][1], allowsDelivery: true, inventoryMode: 'unmanaged',
+    storeSortOrder: (index + 1) * 10,
     migrationMetadata: { legacyId: product.id, source: 'pizzaOnSmith.json' },
     legacyImage: product.image || null,
   }));

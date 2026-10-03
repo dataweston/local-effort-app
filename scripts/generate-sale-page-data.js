@@ -31,9 +31,21 @@ const STORES = [
     outputFile: 'src/store/data/generatedPizzaOnSmithPageData.json',
     usesSalePageDoc: false,
     fallbackPage: {
-      title: 'Pizza on Smith',
-      subheading: 'Tuesday pickup at 608 Smith Ave S, West St. Paul.',
-      introText: 'Frozen pizzas and pantry goods from Local Effort Cooperative.',
+      eyebrow: 'Frozen pizza · Tuesday pickup',
+      headline: 'Home-oven pizzas, available on Smith Ave.',
+      introduction: 'Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.',
+      storyHeading: 'A little Naples.\nAll Midwest.',
+      storyText: 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection.',
+      orderHeading: 'Stock your freezer.',
+      orderIntroduction: 'Choose your packs. Mix as you like.',
+      pickupHeading: 'Pick up on Tuesday.',
+      pickupAddress: '608 Smith Ave S, West St. Paul, MN',
+      oliveOilDescription: 'Brush a little olive oil on the crusts after baking. They’re better that way.',
+      checkoutFootnote: 'Secure payment with Square · No account needed',
+      journalEyebrow: 'A few pictures from around here',
+      journalHeading: 'This is local pizza.',
+      returnToOrderLabel: 'Fill your freezer ↗',
+      notes: [],
     },
   },
   {
@@ -111,12 +123,20 @@ async function fetchStoreData(client, store) {
       subheading,
       intro
     },`
-    : '"page": null,';
+    : store.slug === 'pizza-on-smith'
+      ? `"page": *[_type == "pizzaOnSmithPage"][0]{
+          eyebrow, headline, introduction, storyHeading, storyText,
+          orderHeading, orderIntroduction, pickupHeading, pickupAddress,
+          oliveOilDescription, checkoutFootnote, journalEyebrow, journalHeading,
+          returnToOrderLabel, notes[]{_key, label, heading, text}
+        },`
+      : '"page": null,';
 
   const query = `{
     ${pageProjection}
-    "products": *[_type == "product" && active == true && $store in stores] | order(title asc){
+    "products": *[_type == "product" && active == true && $store in stores] | order(coalesce(storeSortOrder, 9999) asc, lower(title) asc){
       _id,
+      _rev,
       title,
       "slug": slug.current,
       shortDescription,
@@ -129,11 +149,12 @@ async function fetchStoreData(client, store) {
       manualQty,
       squareItemId,
       squareVariationId,
-      variants[]{name, squareVariationId, price},
-      addOns[]{name, additionalCost, squareModifierId, defaultSelected},
+      variants[]{_key, name, squareVariationId, price},
+      addOns[]{_key, name, additionalCost, squareModifierId, defaultSelected},
       offerDairyFree,
       dairyFreeCost,
       stores,
+      storeSortOrder,
       commercialProductKey,
       commercialOfferKey,
       allowsDelivery,
@@ -144,17 +165,30 @@ async function fetchStoreData(client, store) {
   const result = await client.fetch(query, { store: store.slug });
   const page = result?.page || {};
   const products = Array.isArray(result?.products) ? result.products : [];
+  const productsBySlug = new Map();
+  products.forEach((product) => {
+    const key = product.slug || product._id;
+    const existing = productsBySlug.get(key);
+    if (!existing || product._id === key) productsBySlug.set(key, product);
+  });
+  const uniqueProducts = [...productsBySlug.values()];
+  const normalizedPage = store.usesSalePageDoc
+    ? {
+        title: page.title || store.fallbackPage.title,
+        subheading: page.subheading || store.fallbackPage.subheading,
+        introText: extractPortableText(page.intro) || store.fallbackPage.introText,
+      }
+    : store.slug === 'pizza-on-smith'
+      ? {...store.fallbackPage, ...page, notes: page.notes?.length ? page.notes : store.fallbackPage.notes}
+      : store.fallbackPage;
 
   return {
     generatedAt: new Date().toISOString(),
     store: store.slug,
-    page: {
-      title: page.title || store.fallbackPage.title,
-      subheading: page.subheading || store.fallbackPage.subheading,
-      introText: extractPortableText(page.intro) || store.fallbackPage.introText,
-    },
-    products: products.map((product) => ({
+    page: normalizedPage,
+    products: uniqueProducts.map((product) => ({
       id: product._id,
+      catalogRevision: product._rev || null,
       title: product.title,
       slug: product.slug || null,
       shortDescription: product.shortDescription || '',
@@ -176,6 +210,7 @@ async function fetchStoreData(client, store) {
       offerDairyFree: Boolean(product.offerDairyFree),
       dairyFreeCost: typeof product.dairyFreeCost === 'number' ? product.dairyFreeCost : 0,
       stores: Array.isArray(product.stores) ? product.stores : [],
+      storeSortOrder: typeof product.storeSortOrder === 'number' ? product.storeSortOrder : null,
       commercialProductKey: product.commercialProductKey || null,
       commercialOfferKey: product.commercialOfferKey || null,
       allowsDelivery: product.allowsDelivery !== false,
@@ -186,11 +221,15 @@ async function fetchStoreData(client, store) {
 
 async function main() {
   const client = getSanityClient();
+  const storeArg = process.argv.find((argument) => argument.startsWith('--store='));
+  const requestedStore = storeArg ? storeArg.slice('--store='.length) : null;
+  const stores = requestedStore ? STORES.filter((store) => store.slug === requestedStore) : STORES;
+  if (requestedStore && !stores.length) throw new Error(`Unknown store: ${requestedStore}`);
   if (!client) {
     process.stderr.write('[sale-data] Missing Sanity environment variables. Writing fallback data.\n');
   }
 
-  for (const store of STORES) {
+  for (const store of stores) {
     const data = client
       ? await fetchStoreData(client, store).catch((error) => {
         process.stderr.write(`[sale-data] ${store.slug}: Sanity fetch failed, writing fallback. ${error?.message || error}\n`);

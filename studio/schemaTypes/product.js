@@ -41,6 +41,13 @@ export default {
       },
     },
     {
+      name: 'storeSortOrder',
+      title: 'Store display order',
+      type: 'number',
+      description: 'Optional. Lower numbers appear first on store pages (10, 20, 30 leaves room between items).',
+      validation: (Rule) => Rule.integer().min(0),
+    },
+    {
       name: 'commercialProductKey',
       title: 'Commercial product family',
       type: 'string',
@@ -207,7 +214,7 @@ export default {
       name: 'allowsDelivery',
       title: 'Eligible for local delivery',
       type: 'boolean',
-      description: 'Enabled by default. Turn this off to mark the product pickup only; guests will see a red pickup-only notice.',
+      description: 'Product-level rule only. Store pages can still be pickup-only; assigning a product to Pizza on Smith does not change this setting.',
       initialValue: true,
     },
     {

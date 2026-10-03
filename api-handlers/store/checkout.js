@@ -6,6 +6,7 @@ const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 const { priceStorefrontCart } = require('../../backend/api/pricing/storefrontCatalogService');
+const { priceSanityStorefrontCart } = require('./_sanityStorefront');
 const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { prisma } = require('../_lib/prisma');
@@ -261,7 +262,9 @@ module.exports = async (req, res) => {
     const smithError = validateSmithOrder(items, store, pickup);
     if (smithError) return res.status(422).json({ error: smithError });
 
-    const priced = await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
+    const priced = store === 'pizza-on-smith'
+      ? await priceSanityStorefrontCart({ store, items, expectedPricingVersion: pricingVersion })
+      : await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
     const pricedLines = priced.lines;
     const productMap = Object.fromEntries(pricedLines.map((line) => [line.productId, line]));
     let amount = priced.subtotal;
