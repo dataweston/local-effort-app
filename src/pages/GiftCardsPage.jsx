@@ -37,7 +37,7 @@ const GiftCardsPage = () => {
             />
           </figure>
           <div className="about-gift-card__copy">
-            <p className="about-gift-card__folio">gift certificate / field no. 01</p>
+            <p className="about-gift-card__folio">Local Effort / gift cards</p>
             <h1 className="about-gift-card__title" id="gift-card-page-title">
               Give them dinner, not more stuff.
             </h1>
@@ -52,7 +52,7 @@ const GiftCardsPage = () => {
               <span>$500</span>
             </div>
             <div>
-              <GiftCardDialog autoOpen />
+              <GiftCardDialog />
             </div>
             <p className="about-gift-card__note">redeemable across Local Effort experiences —</p>
           </div>
