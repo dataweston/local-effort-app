@@ -155,9 +155,9 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
-    path: '/foodist',
-    title: 'FOODIST — Private Event Space in Minneapolis | Local Effort Cooperative',
-    description: 'Book FOODIST, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
+    path: '/localkitchen',
+    title: 'Local Kitchen — Private Event Space in Minneapolis | Local Effort Cooperative',
+    description: 'Book Local Kitchen, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
     prerender: true,
   },
   {

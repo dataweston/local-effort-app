@@ -438,6 +438,35 @@
   color: rgba(241, 227, 216, 0.66);
 }
 
+.venue-wordmark {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.22rem;
+  margin: 1rem 0 0;
+  color: var(--sp-ink);
+  line-height: 1;
+}
+
+.venue-wordmark__article {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+}
+
+.venue-wordmark__script {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.venue-wordmark__registered {
+  margin-left: -0.18rem;
+  font-family: var(--font-body);
+  font-size: 0.52rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 /* ── The switch: two sheets on one mount ─────────────────────────────────
    /private-events carries both rooms, so it needs a way to move between them.
    Not a segmented pill — that is the same control every product on the

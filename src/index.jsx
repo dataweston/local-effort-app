@@ -15,6 +15,7 @@ const GLOBAL_FONT_STYLES = [
   'https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Yomogi&display=swap',
+  'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&display=swap',
   'https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic&subset=latin',
 ];
 

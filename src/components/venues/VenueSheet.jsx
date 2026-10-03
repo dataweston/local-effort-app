@@ -189,7 +189,7 @@ const usableDateParam = (raw) => {
   return raw;
 };
 
-export default function VenueSheet({ venue, headingLevel }) {
+export default function VenueSheet({ venue, headingLevel, showWordmark }) {
   const [searchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(() =>
     usableDateParam(searchParams.get('date')),
@@ -417,6 +417,13 @@ export default function VenueSheet({ venue, headingLevel }) {
           </p>
         </div>
       </section>
+      {showWordmark && (
+        <footer className="venue-wordmark" role="img" aria-label="a Local Kitchen registered trademark">
+          <span className="venue-wordmark__article" aria-hidden="true">a</span>
+          <span className="venue-wordmark__script" aria-hidden="true">Local Kitchen</span>
+          <sup className="venue-wordmark__registered" aria-hidden="true">®</sup>
+        </footer>
+      )}
       </div>
     </div>
   );
@@ -439,6 +446,7 @@ VenueSheet.propTypes = {
     photos: PropTypes.object,
   }).isRequired,
   headingLevel: PropTypes.oneOf([1, 2]),
+  showWordmark: PropTypes.bool,
 };
 
-VenueSheet.defaultProps = { headingLevel: 2 };
+VenueSheet.defaultProps = { headingLevel: 2, showWordmark: false };

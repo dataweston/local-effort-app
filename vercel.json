@@ -389,8 +389,13 @@
       "dest": "/prerender/firehouse/index.html"
     },
     {
+      "src": "^/localkitchen$",
+      "dest": "/prerender/localkitchen/index.html"
+    },
+    {
       "src": "^/foodist$",
-      "dest": "/prerender/foodist/index.html"
+      "dest": "/localkitchen",
+      "status": 308
     },
     {
       "src": "^/private-events$",

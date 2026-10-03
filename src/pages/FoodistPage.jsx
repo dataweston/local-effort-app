@@ -1,9 +1,11 @@
-// /foodist — one of the two Local Effort event spaces.
-// Everything lives in the shared shell; the only thing a venue page carries is
-// which room it is. Facts: src/config/venues.json. Design: docs/design/VENUES.md
+// /localkitchen — the Local Kitchen venue page.
+// The backend continues to use the foodist venue identity for booking data,
+// while the public-facing display and route are renamed to Local Kitchen.
 import React from 'react';
 import VenuePage from '../components/venues/VenuePage';
 
-const FoodistPage = () => <VenuePage slug="foodist" path="/foodist" />;
+const LocalKitchenPage = () => (
+  <VenuePage slug="foodist" path="/localkitchen" displayName="Local Kitchen" />
+);
 
-export default FoodistPage;
+export default LocalKitchenPage;
