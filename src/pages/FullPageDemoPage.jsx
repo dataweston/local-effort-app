@@ -25,6 +25,8 @@ import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
 // The slip forms are shared with the standalone /weekly-meals and /small-events
 // pages so the home funnel and the indexable pages cannot drift apart.
 import { QuickEventBookForm } from '../components/services/slipForms';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import '../styles/home-hero.css';
 import '../styles/home-tabs.css';
 
 const SMALL_EVENT_CONFIG = {
@@ -73,6 +75,14 @@ const SMALL_EVENT_CONFIG = {
 };
 
 const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
+const renderBulletinLine = (line, keyPrefix) => {
+  const tokens = String(line).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return tokens.map((token, index) => {
+    if (token.startsWith('**') && token.endsWith('**')) return <strong key={`${keyPrefix}-${index}`}>{token.slice(2, -2)}</strong>;
+    if (token.startsWith('*') && token.endsWith('*')) return <em key={`${keyPrefix}-${index}`}>{token.slice(1, -1)}</em>;
+    return token;
+  });
+};
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
@@ -323,10 +333,11 @@ const GalleryItem = ({
 };
 
 const FullPageDemoPage = () => {
+  const { accessToken, isAdmin } = useSupabaseAuth();
   const [activePage, setActivePage] = useState(0);
   const [visitedPages, setVisitedPages] = useState(() => new Set([0]));
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const [activeDragId, setActiveDragId] = useState(null);
   const prefetched = useRef(new Set());
@@ -335,6 +346,13 @@ const FullPageDemoPage = () => {
   const [columnOrder, setColumnOrder] = useState([]);
   const [positions, setPositions] = useState({});
   const [galleryHeight, setGalleryHeight] = useState(2000);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryRequested, setGalleryRequested] = useState(false);
+  const [bulletin, setBulletin] = useState('');
+  const [bulletinDraft, setBulletinDraft] = useState('');
+  const [bulletinEditing, setBulletinEditing] = useState(false);
+  const [bulletinSaving, setBulletinSaving] = useState(false);
+  const [bulletinStatus, setBulletinStatus] = useState('');
   const [layoutConfig, setLayoutConfig] = useState({ columns: 0, columnWidth: 0, gap: 10 });
   const containerRef = useRef(null);
   const [layoutReady, setLayoutReady] = useState(false);
@@ -1765,8 +1783,38 @@ const normalizeMealStyle = (value) =>
   }, [shuffle]);
 
   useEffect(() => {
-    fetchImages();
-  }, [fetchImages]);
+    if (galleryOpen && !galleryRequested && !loading) {
+      setGalleryRequested(true);
+      fetchImages();
+    }
+  }, [galleryOpen, galleryRequested, loading, fetchImages]);
+
+  useEffect(() => {
+    fetch('/api/home-bulletin').then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (data && typeof data.markdown === 'string') setBulletin(data.markdown); })
+      .catch(() => {});
+  }, []);
+
+  const saveBulletin = async () => {
+    setBulletinSaving(true);
+    setBulletinStatus('');
+    try {
+      const response = await fetch('/api/home-bulletin', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ markdown: bulletinDraft }),
+      });
+      if (!response.ok) throw new Error('Could not save');
+      const data = await response.json();
+      setBulletin(data.markdown || '');
+      setBulletinEditing(false);
+      setBulletinStatus('Saved');
+    } catch {
+      setBulletinStatus('Could not save');
+    } finally {
+      setBulletinSaving(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
@@ -2764,7 +2812,49 @@ const normalizeMealStyle = (value) =>
                 : '5rem',
             }}
           >
-            {loading ? (
+            {!galleryOpen ? (
+              <section className="home-hero" aria-label="Featured photograph and latest note">
+                <figure className="home-hero__art specimen specimen-sheet">
+                  <div className="specimen-frame home-hero__frame">
+                    <img
+                      src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/dnb8q02jykgbrbxvdxpq"
+                      alt="Untiedt's Sugar Melon"
+                      fetchPriority="high"
+                    />
+                    <figcaption className="specimen-caption home-hero__caption" style={{ '--sp-caption-cells': 2 }}>
+                      <span className="specimen-caption__data">Untiedt's Sugar Melon</span>
+                      <span className="specimen-caption__data">Graham Tolbert</span>
+                    </figcaption>
+                  </div>
+                </figure>
+                <div className="home-hero__bulletin">
+                  {bulletinEditing ? (
+                    <div className="home-hero__editor">
+                      <div className="home-hero__format" aria-label="Formatting">
+                        <button type="button" onClick={() => setBulletinDraft((value) => `${value}**text**`)}>Bold</button>
+                        <button type="button" onClick={() => setBulletinDraft((value) => `${value} *text*`)}>Italic</button>
+                      </div>
+                      <textarea aria-label="Bulletin markdown" value={bulletinDraft} onChange={(event) => setBulletinDraft(event.target.value)} rows={9} />
+                      <div className="home-hero__edit-actions">
+                        <button type="button" onClick={saveBulletin} disabled={bulletinSaving}>{bulletinSaving ? 'Saving' : 'Save'}</button>
+                        <button type="button" onClick={() => { setBulletinEditing(false); setBulletinStatus(''); }}>Cancel</button>
+                        <span aria-live="polite">{bulletinStatus}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="home-hero__note">
+                        {bulletin.split('\n').map((line, index) => (
+                          <p key={`bulletin-${index}`}>{renderBulletinLine(line, `line-${index}`)}</p>
+                        ))}
+                      </div>
+                      {isAdmin && <button type="button" className="home-hero__edit" onClick={() => { setBulletinDraft(bulletin); setBulletinEditing(true); }}>Edit</button>}
+                    </>
+                  )}
+                </div>
+                <button type="button" className="home-hero__gallery-link" onClick={() => setGalleryOpen(true)}>view gallery</button>
+              </section>
+            ) : loading ? (
               <div className="text-center py-20" style={{ color: BRAND_TOKENS.textPrimary }}>
                 Loading images...
               </div>
@@ -2777,6 +2867,8 @@ const normalizeMealStyle = (value) =>
                 Loading images...
               </div>
             ) : (
+              <>
+              <button type="button" className="home-hero__gallery-link home-hero__gallery-link--back" onClick={() => setGalleryOpen(false)}>close gallery</button>
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -2811,6 +2903,7 @@ const normalizeMealStyle = (value) =>
                   </div>
                 </SortableContext>
               </DndContext>
+              </>
             )}
           </div>
         </FullPageSection>

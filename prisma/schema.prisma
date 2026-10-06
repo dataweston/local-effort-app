@@ -18,6 +18,12 @@ model SmallEventUser {
   estimates    SmallEventEstimate[]
 }
 
+model HomeBulletin {
+  id        String   @id @default("home")
+  markdown  String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
 model SmallEventSession {
   id        String         @id @default(uuid())
   token     String         @unique

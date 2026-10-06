@@ -782,6 +782,8 @@ async function main() {
   const wedge = buildWedgeReport(inventory, localBudget);
   const menu = buildMenuReport(inventory, core);
   const candidateCounts = inventory.records.reduce((counts, row) => { counts[row.deterministic.category] = (counts[row.deterministic.category] || 0) + 1; return counts; }, {});
+  const gmailEventCandidates = buildGmailRevenueCandidates(inventory, 'event');
+  const gmailMealPrepCandidates = buildGmailRevenueCandidates(inventory, 'meal_prep');
   const unresolved = [
     ...inventory.records.filter((row) => row.source.captureStatus !== 'complete').map((row) => ({ lane: 'gmail', sourceId: row.sourceId, reason: 'lossless_source_capture_missing' })),
     ...core.event.exceptions.map((row) => ({ lane: 'event', id: row.estimateId, reason: row.reasons.join(',') })),
@@ -792,8 +794,6 @@ async function main() {
     ...gmailMealPrepCandidates.map((row) => ({ lane: 'gmail_meal_prep', id: row.provenance.gmailMessageId, reason: row.reasons.join(',') })),
     ...wedge.receipts.filter((row) => row.parsed?.parseState !== 'parsed').map((row) => ({ lane: 'wedge', sourceId: row.sourceId, reason: 'receipt_parse_review_required' })),
   ].slice(0, 500);
-  const gmailEventCandidates = buildGmailRevenueCandidates(inventory, 'event');
-  const gmailMealPrepCandidates = buildGmailRevenueCandidates(inventory, 'meal_prep');
   const report = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
