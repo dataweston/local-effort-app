@@ -32,14 +32,18 @@ const GiftCardsPage = () => {
               src="https://iiif.micr.io/jaTqd/full/900,/0/default.jpg"
               alt="Botanical study of four apples by Anselmus Boëtius de Boodt"
               width={900}
-              height={1152}
+              height={1199}
               decoding="async"
             />
+            <figcaption className="gift-card-page__caption">
+              Anselmus Boëtius de Boodt · Apple · 1596–1610<br />
+              Rijksmuseum, RP-T-BR-2017-1-9-58
+            </figcaption>
           </figure>
           <div className="about-gift-card__copy">
-            <p className="about-gift-card__folio">gift certificate / field no. 01</p>
+            <p className="about-gift-card__folio">Local Effort / gift cards</p>
             <h1 className="about-gift-card__title" id="gift-card-page-title">
-              Give them dinner, not more stuff.
+              Give them something good.
             </h1>
             <p className="about-gift-card__text">
               A Local Effort gift card can become a quiet dinner at home, a pizza party, weekly meals,
@@ -52,9 +56,9 @@ const GiftCardsPage = () => {
               <span>$500</span>
             </div>
             <div>
-              <GiftCardDialog autoOpen />
+              <GiftCardDialog />
             </div>
-            <p className="about-gift-card__note">redeemable across Local Effort experiences —</p>
+            <p className="about-gift-card__note">Digital cards from $50 · send now or schedule for later.</p>
           </div>
         </section>
       </main>

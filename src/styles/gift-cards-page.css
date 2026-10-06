@@ -22,3 +22,27 @@
     padding: 0.75rem;
   }
 }
+
+.gift-card-page__caption {
+  margin-top: 0.6rem;
+  color: #5a6350;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.65rem;
+  line-height: 1.5;
+}
+
+.gift-card-page .about-gift-card__plate {
+  display: flex;
+  flex-direction: column;
+}
+
+.gift-card-page .about-gift-card__plate img {
+  height: auto;
+  min-height: 0;
+  object-fit: contain;
+  margin: auto 0;
+}
+
+.gift-card-page .about-gift-card__copy {
+  min-width: 0;
+}

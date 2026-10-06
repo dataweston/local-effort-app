@@ -37,63 +37,52 @@ const buildRecipientHtml = ({
   const safeCode = escapeHtml(code || 'Pending');
   const safeNote = note ? escapeHtml(note).replace(/\n/g, '<br />') : '';
   const safeInstructions = (instructions || []).map((step) => `<li style="margin:6px 0;">${escapeHtml(step)}</li>`).join('');
-  const shippingBlock = physicalDetails ? `<div style="margin-top:16px; padding:16px; background:#fef3c7; border-radius:12px; color:#92400e;">
-      <strong style="display:block; font-size:15px; margin-bottom:6px;">Physical card is on the way</strong>
-      <span style="font-size:14px; line-height:20px;">${escapeHtml(physicalDetails)}</span>
-    </div>` : '';
-  const noteBlock = safeNote ? `<div style="margin-top:16px; padding:16px; background:#f8fafc; border-radius:12px;">
-      <p style="margin:0; font-size:14px; color:#334155;">${safeNote}</p>
-    </div>` : '';
-  const scheduledLine = sendOn ? `<p style="margin:12px 0 0; font-size:13px; color:#2563eb;">Scheduled delivery: ${escapeHtml(formatSchedule(sendOn) || sendOn)}</p>` : '';
+  const redemptionHref = `mailto:hello@localeffortfood.com?subject=${encodeURIComponent('Redeem my Local Effort gift card')}&body=${encodeURIComponent(`Hello Local Effort,\n\nI'd like to use my gift card (${code || 'Pending'}).\n\nHere's what I have in mind: `)}`;
+  const shippingBlock = physicalDetails ? `<p style="margin:24px 0 0;padding-top:16px;border-top:1px solid #b8ad9f;font-size:14px;line-height:22px;"><strong>Your leather keepsake</strong><br />${escapeHtml(physicalDetails)}</p>` : '';
+  const noteBlock = safeNote ? `<div style="margin:24px 0;padding:18px 20px;border-left:3px solid #7a846e;background:#e4e4d8;"><p style="margin:0 0 8px;font:12px Arial,sans-serif;color:#5a6350;">A note from ${safeBuyer}</p><p style="margin:0;font-size:18px;line-height:27px;">${safeNote}</p></div>` : '';
+  const scheduledLine = sendOn ? `<p style="margin:16px 0 0;font:13px Arial,sans-serif;color:#5a6350;">Delivery date: ${escapeHtml(formatSchedule(sendOn) || sendOn)}</p>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Your Local Effort Gift Card</title>
 </head>
-<body style="margin:0; padding:0; background-color:#fff8f1; font-family:'Helvetica Neue', Arial, sans-serif; color:#1f2937;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fb923c,#f97316,#facc15); padding:0;">
-    <tr>
-      <td style="padding:32px 16px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:rgba(255,255,255,0.95); border-radius:20px; overflow:hidden; box-shadow:0 20px 45px rgba(249,115,22,0.25);">
-          <tr>
-            <td style="background:#0f172a; padding:28px; text-align:center;">
-              <img src="https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto,w_96/site/partners/logo_sticker" alt="Local Effort" width="80" height="80" style="display:inline-block; border-radius:20px; border:3px solid rgba(255,255,255,0.35);" />
-              <h1 style="margin:16px 0 0; font-size:28px; color:#f8fafc;">Local Effort Gift Card</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:28px 32px;">
-              <p style="margin:0; font-size:16px;">Hey ${safeRecipient},</p>
-              <p style="font-size:16px; line-height:24px; margin:12px 0 0;">${safeBuyer} just sent you a ${escapeHtml(cardType === 'physical' ? 'Local Effort gift card (with a leather keepsake on the way!)' : 'Local Effort gift card')} worth <strong>${escapeHtml(amountLabel)}</strong>.</p>
-              ${scheduledLine}
-              ${noteBlock}
-              <div style="margin-top:20px; padding:20px; background:#ecfeff; border:2px dashed #06b6d4; border-radius:16px; text-align:center;">
-                <p style="margin:0; font-size:14px; color:#0369a1; letter-spacing:0.08em; text-transform:uppercase;">Your gift card code</p>
-                <p style="margin:12px 0 0; font-size:28px; font-weight:700; color:#0f172a; letter-spacing:0.18em;">${safeCode}</p>
-              </div>
-              <div style="margin-top:24px;">
-                <p style="margin:0 0 8px; font-weight:600; color:#dc2626; text-transform:uppercase; letter-spacing:0.06em;">How to redeem</p>
-                <ul style="margin:0; padding-left:20px; font-size:15px; color:#1f2937; list-style:circle;">
-                  ${safeInstructions}
-                </ul>
-              </div>
-              ${shippingBlock}
-              <p style="margin:24px 0 0; font-size:14px; color:#475569;">This email was sent to ${escapeHtml(deliveryTarget === 'recipient' ? 'you directly' : 'the buyer')} so we can make sure your delicious plans go smoothly.</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="background:#0f172a; padding:20px 28px; text-align:center; color:#e2e8f0;">
-              <p style="margin:0; font-size:14px;">Need to schedule your experience? Email <a href="mailto:hello@localeffortfood.com" style="color:#facc15; text-decoration:none; font-weight:600;">hello@localeffortfood.com</a> and we'll craft a menu together.</p>
-              <div style="margin-top:14px;">
-                <img src="https://res.cloudinary.com/dokyhfvyd/image/upload/f_auto,q_auto,w_120/vjuesai2mxfavpq9d2df" alt="Local Effort feast" width="120" style="border-radius:12px; box-shadow:0 5px 18px rgba(15,23,42,0.45);" />
-              </div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+<body style="margin:0;padding:0;background:#e4e4d8;color:#3a2e3f;font-family:Georgia,'Times New Roman',serif;">
+  <div style="display:none;max-height:0;overflow:hidden;">${safeBuyer} sent you ${escapeHtml(amountLabel)} toward a Local Effort experience.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e4e4d8;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#f3ebe5;border:4px double #3a2e3f;">
+        <tr><td style="padding:24px 24px 18px;border-bottom:1px solid #3a2e3f;">
+          <p style="margin:0;font:13px Arial,sans-serif;color:#8f3031;">Local Effort Cooperative / gift certificate</p>
+          <h1 style="margin:12px 0 0;font-size:34px;font-weight:400;line-height:1.1;">Something good is waiting.</h1>
+        </td></tr>
+        <tr><td style="padding:20px 24px 0;">
+          <img src="https://iiif.micr.io/XcYvw/full/900,/0/default.jpg" alt="Study sheet of fruit, plants and flowers by Theo Nieuwenhuis" width="544" style="display:block;width:100%;max-width:544px;height:auto;border:0;" />
+          <p style="margin:8px 0 0;font:11px Arial,sans-serif;color:#5a6350;">Theo Nieuwenhuis · fruit, plants &amp; flowers · 1876–1951<br />Rijksmuseum, RP-T-1969-185(R)</p>
+        </td></tr>
+        <tr><td style="padding:24px;">
+          <p style="margin:0;font-size:18px;line-height:27px;">For ${safeRecipient}, from ${safeBuyer}.</p>
+          <p style="margin:12px 0 0;font-size:16px;line-height:25px;">A dinner at home, a pizza party, weekly meals, or something we plan together. Your ${escapeHtml(cardType === 'physical' ? 'gift card and leather keepsake' : 'digital gift card')} starts here.</p>
+          ${noteBlock}
+          <div style="margin:24px 0;padding:22px 12px;border-top:1px solid #3a2e3f;border-bottom:1px solid #3a2e3f;text-align:center;">
+            <p style="margin:0;font-size:48px;line-height:1.1;">${escapeHtml(amountLabel)}</p>
+            <p style="margin:10px 0 0;font:12px Arial,sans-serif;color:#5a6350;">Your gift card code</p>
+            <p style="margin:8px 0 0;font:18px 'Courier New',monospace;overflow-wrap:anywhere;word-break:break-all;">${safeCode}</p>
+          </div>
+          <h2 style="margin:0 0 12px;font-size:23px;font-weight:400;">Make a plan.</h2>
+          <ol style="margin:0 0 22px;padding-left:20px;font-size:15px;line-height:24px;">${safeInstructions}</ol>
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="#3a2e3f" style="border:1px solid #3a2e3f;"><a href="${escapeHtml(redemptionHref)}" style="display:inline-block;padding:14px 20px;color:#fffaf2;font:15px Arial,sans-serif;text-decoration:none;">Plan your experience →</a></td></tr></table>
+          ${scheduledLine}${shippingBlock}
+          <p style="margin:24px 0 0;font:13px Arial,sans-serif;line-height:21px;color:#5a6350;">${deliveryTarget === 'recipient' ? 'You received this email because someone purchased a Local Effort gift card for you.' : 'You chose to receive this gift card yourself. Forward it or print it for your recipient.'} Keep this email and code for redemption.</p>
+        </td></tr>
+        <tr><td style="padding:18px 24px;border-top:1px solid #3a2e3f;font:13px Arial,sans-serif;line-height:22px;">
+          Local Effort · Minneapolis–St. Paul<br />Questions or ready to book? <a href="mailto:hello@localeffortfood.com" style="color:#3a2e3f;">hello@localeffortfood.com</a><br />
+          <a href="https://www.localeffortfood.com/gift-cards" style="color:#5a6350;">Local Effort gift cards</a>
+        </td></tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;

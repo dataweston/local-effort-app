@@ -279,3 +279,26 @@
     transition: none;
   }
 }
+
+.gift-card-form button[aria-pressed] {
+  min-height: 44px;
+  border: 1px solid var(--gift-olive) !important;
+  background: transparent !important;
+  color: var(--gift-ink) !important;
+}
+
+.gift-card-form button[aria-pressed='true'] {
+  background: var(--gift-ink) !important;
+  color: #fffaf2 !important;
+  border-color: var(--gift-ink) !important;
+}
+
+.gift-card-form button[aria-pressed]:disabled {
+  opacity: 0.45;
+}
+
+.gift-card-form button:focus-visible,
+.gift-card-trigger:focus-visible {
+  outline: 2px solid var(--gift-red, #8f3031);
+  outline-offset: 3px;
+}

@@ -358,7 +358,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
           <p className="gift-card-dialog__folio">gift certificate / no. 01</p>
           <DialogTitle className="gift-card-dialog__title">Gift a Local Effort experience</DialogTitle>
           <DialogDescription className="gift-card-dialog__description">
-            Choose the amount, pick digital or leather gift card, and we will send it instantly with all the right instructions.
+            Choose an amount and add a note. Send a digital card now, schedule it for later, or include a leather keepsake with gifts of $250 or more.
           </DialogDescription>
         </DialogHeader>
 
@@ -375,6 +375,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
                     <button
                       type="button"
                       key={value}
+                      aria-pressed={active}
                       className={cn(
                         "rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold transition",
                         active ? "border-orange-500 bg-orange-500 text-white" : "bg-white text-slate-700 hover:border-orange-400 hover:text-orange-500"
@@ -413,6 +414,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
                 ].map((option) => (
                   <button
                     key={option.value}
+                    aria-pressed={form.deliveryTarget === option.value}
                     type="button"
                     onClick={() => setForm((prev) => ({ ...prev, deliveryTarget: option.value }))}
                     className={cn(
@@ -431,6 +433,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
+                  aria-pressed={form.cardType === "digital"}
                   onClick={() => setForm((prev) => ({ ...prev, cardType: "digital" }))}
                   className={cn(
                     "rounded-lg border px-3 py-2 text-sm font-medium transition",
@@ -444,6 +447,7 @@ const GiftCardDialog = ({ className = "", autoOpen = false, showTrigger = true, 
                 <button
                   type="button"
                   disabled={!canChoosePhysical}
+                  aria-pressed={form.cardType === "physical"}
                   onClick={() => setForm((prev) => ({ ...prev, cardType: "physical" }))}
                   className={cn(
                     "rounded-lg border px-3 py-2 text-sm font-medium transition",
