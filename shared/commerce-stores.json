@@ -1,0 +1,6 @@
+{
+  "sale": { "label": "Main Store (/sale)" },
+  "pizza-on-smith": { "label": "Pizza on Smith (/pizza-on-smith)" },
+  "chez-garage": { "label": "Chez Garage (/chez-garage)" },
+  "happy-monday": { "label": "Happy Monday (/happy-monday)" }
+}

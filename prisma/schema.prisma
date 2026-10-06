@@ -1904,7 +1904,7 @@ model BrainSeedReview {
 model BrainJobRun {
   id                    String    @id @default(uuid())
   jobName               String
-  status                String // 'success' | 'error' | 'partial'
+  status                String // 'success' | 'error' | 'partial' | 'blocked' | 'no_new_data'
   startedAt             DateTime  @default(now())
   finishedAt            DateTime?
   durationMs            Int?
@@ -1917,6 +1917,33 @@ model BrainJobRun {
 
   @@index([jobName, startedAt])
   @@index([status])
+}
+
+// Durable recommendation/action/outcome records. These are operational
+// decisions, not graph assertions: a recommendation can be accepted, deferred,
+// completed, or dismissed without rewriting the evidence that produced it.
+model BrainAction {
+  id               String    @id @default(uuid())
+  actionType       String
+  status           String    @default("proposed")
+  title            String
+  rationale        String?
+  recommendation   Json?
+  evidenceIds      String[]  @default([])
+  sourceType       String?
+  sourceId         String?
+  subjectEntityId  String?
+  owner            String?
+  dueAt            DateTime?
+  decidedAt        DateTime?
+  completedAt      DateTime?
+  outcome          Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status, dueAt])
+  @@index([subjectEntityId, status])
+  @@index([sourceType, sourceId])
 }
 
 // ---------------------------------------------------------------------------

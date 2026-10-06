@@ -24,8 +24,10 @@ const {
   findOrCreateEntity,
   canonicalName,
 } = require('../ledger');
-const { applyConstraintCorrection } = require('../constraintCorrection');
 const { setPricing } = require('../ontologyHelpers');
+function getConstraintCorrection() {
+  return require('../constraintCorrection').applyConstraintCorrection;
+}
 const { resolveEntity } = require('../resolver');
 const { reconcilePlannerWorkBlocks } = require('../../planner/workBlocks');
 const { runPlannerCardLifecycle } = require('../../planner/lifecycle');
@@ -339,7 +341,7 @@ async function apply(prisma, intent, fields, resolved, ctx) {
       const results = [];
       for (const c of fields.corrections || []) {
         results.push(
-          await applyConstraintCorrection({
+          await getConstraintCorrection()({
             customerId: resolved.customer?.id,
             name: resolved.customer ? undefined : fields.customerRef,
             item: c.item,

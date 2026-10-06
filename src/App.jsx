@@ -37,6 +37,7 @@ const PsychePage = lazy(() => import('./pages/PsychePage'));
 const JulyDinnerPage = lazy(() => import('./pages/JulyDinnerPage'));
 const FineFoodsPage = lazy(() => import('./pages/FineFoodsPage'));
 const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
+const AnnualReportPage = lazy(() => import('./pages/AnnualReportPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
@@ -72,6 +73,7 @@ const AppContent = () => {
     location.pathname === '/catherine-schedule' ||
     location.pathname === '/planner' ||
     location.pathname === '/weeklydemo' ||
+    location.pathname === '/annual-report' ||
     location.pathname.startsWith('/hub');
   const hideFooter =
     location.pathname === '/' ||
@@ -85,6 +87,7 @@ const AppContent = () => {
     location.pathname === '/catherine-schedule' ||
     location.pathname === '/planner' ||
     location.pathname === '/weeklydemo' ||
+    location.pathname === '/annual-report' ||
     location.pathname.startsWith('/hub');
 
   useEffect(() => {
@@ -494,6 +497,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <CampaignsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/annual-report"
+                  element={
+                    <AnimatedPage>
+                      <AnnualReportPage />
                     </AnimatedPage>
                   }
                 />

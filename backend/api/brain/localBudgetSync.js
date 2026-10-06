@@ -123,6 +123,7 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
     captureSeen: 0, captureWritten: 0, captureExisting: 0,
     capturesUnattributed: 0, duplicateCashRetired: 0,
     customersResolved: 0, customersCreated: 0, customersBlocked: 0,
+    resolutionMethods: { Vendor: {}, Customer: {} },
     errors: [],
   };
 
@@ -175,8 +176,11 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
           });
           if (r.blocked) { stats.vendorsBlocked++; vendorEntityId = null; }
           else {
-            vendorEntityId = r.entity?.id || null;
             if (r.created) stats.vendorsCreated++; else if (r.entity) stats.vendorsResolved++;
+            if (r.entity) {
+              const method = r.matchedBy || 'unresolved';
+              stats.resolutionMethods.Vendor[method] = (stats.resolutionMethods.Vendor[method] || 0) + 1;
+            }
           }
           vendorCache.set(cacheKey, vendorEntityId);
         }
@@ -291,10 +295,14 @@ async function runLocalBudgetSync({ logger, sinceDays = null, limit = 10000 } = 
             create: !!(email || phone),
             properties: { source: 'local_budget_square_capture' },
           });
-          if (r.blocked) stats.customersBlocked++;
-          else {
-            customerEntityId = r.entity?.id || null;
+          if (r.blocked) {
+            stats.customersBlocked++;
+          } else {
             if (r.created) stats.customersCreated++; else if (r.entity) stats.customersResolved++;
+            if (r.entity) {
+              const method = r.matchedBy || 'unresolved';
+              stats.resolutionMethods.Customer[method] = (stats.resolutionMethods.Customer[method] || 0) + 1;
+            }
           }
           customerCache.set(cacheKey, customerEntityId);
         }

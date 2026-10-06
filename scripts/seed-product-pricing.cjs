@@ -29,7 +29,9 @@ function assertPublishedBookHasNoDrift(existing) {
   const existingByKey = new Map(existing.rules.map((rule) => [rule.ruleKey, rule]));
   for (const expected of RULES) {
     const actual = existingByKey.get(expected.ruleKey);
-    if (!actual) continue;
+    if (!actual) {
+      throw new Error(`Published price book is incomplete: missing ${expected.ruleKey}. Create a new version ${PRICE_BOOK.version + 1} instead of filling the published version.`);
+    }
     if (JSON.stringify(comparableRule(actual)) !== JSON.stringify(comparableRule(expected))) {
       throw new Error(`Published price rule drifted: ${expected.ruleKey}. Create price-book version ${PRICE_BOOK.version + 1} instead of rewriting it.`);
     }

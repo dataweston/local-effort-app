@@ -21,6 +21,7 @@ Disallow: /hub
 Disallow: /brain
 Disallow: /native-mobile-hub
 Disallow: /meal-prep-intake
+Disallow: /annual-report
 
 # Explicitly allow common AI crawlers
 User-agent: GPTBot

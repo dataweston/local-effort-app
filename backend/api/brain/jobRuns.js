@@ -25,6 +25,7 @@ const JOB_SLA = {
   'google-graph-projection': 24,
   'search-console-sync': 24,
   'local-budget-sync': 24,
+  'local-budget-items-sync': 24,
   'cogs-rollup': 24,
   'square-reconcile': 24,
   'gmail-sync': 24,
@@ -33,6 +34,15 @@ const JOB_SLA = {
   'hypothesis-run': 24,
   'triage-run': 24, // runs twice daily; 24h window tolerates one miss
 };
+
+const HEALTHY_STATUSES = new Set(['success', 'no_new_data']);
+
+function runStatus(summary, error = null) {
+  if (summary?.blocked === true || summary?.status === 'blocked') return 'blocked';
+  if (summary?.ok === false) return 'error';
+  if (summary?.noNewData === true) return 'no_new_data';
+  return reportedErrorCount(summary, error) > 0 ? 'partial' : 'success';
+}
 
 function reportedErrorCount(summary = {}, error = null) {
   if (Array.isArray(summary.errors)) return summary.errors.length;
@@ -95,11 +105,14 @@ async function withJobRun(jobName, fn, { prismaClient = null } = {}) {
   const startedAt = new Date();
   try {
     const summary = (await fn()) || {};
-    const hasErrors = reportedErrorCount(summary) > 0;
-    // A job that reports ok:false failed even if it threw nothing — a config
-    // no-op (e.g. missing env var) must not count as a success for the SLA.
-    const status = summary.ok === false ? 'error' : (hasErrors ? 'partial' : 'success');
-    await recordJobRun(prisma, { jobName, status, startedAt, summary, error: summary.ok === false ? summary.error : null });
+    const status = runStatus(summary);
+    await recordJobRun(prisma, {
+      jobName,
+      status,
+      startedAt,
+      summary,
+      error: status === 'error' || status === 'blocked' ? summary.error : null,
+    });
     return summary;
   } catch (error) {
     await recordJobRun(prisma, { jobName, status: 'error', startedAt, error: error?.message || String(error) });
@@ -108,18 +121,24 @@ async function withJobRun(jobName, fn, { prismaClient = null } = {}) {
 }
 
 /**
- * Freshness report: for each known job, the last successful run and whether it
- * is within SLA. `stale` jobs are the alarm surface.
+ * Freshness report: for each known job, the last healthy run and whether it
+ * is within SLA. Partial, blocked, and error runs remain visible as the latest
+ * run but cannot satisfy the freshness SLA.
  */
 async function jobFreshness(prisma) {
   const now = Date.now();
   const jobs = Object.keys(JOB_SLA);
   const rows = [];
   for (const jobName of jobs) {
-    const lastSuccess = await prisma.brainJobRun.findFirst({
-      where: { jobName, status: { in: ['success', 'partial'] } },
+    const lastHealthy = await prisma.brainJobRun.findFirst({
+      where: { jobName, status: { in: [...HEALTHY_STATUSES] } },
       orderBy: { startedAt: 'desc' },
       select: { startedAt: true, status: true, itemsWritten: true, errorCount: true },
+    });
+    const lastPartial = await prisma.brainJobRun.findFirst({
+      where: { jobName, status: 'partial' },
+      orderBy: { startedAt: 'desc' },
+      select: { startedAt: true },
     });
     const lastAny = await prisma.brainJobRun.findFirst({
       where: { jobName },
@@ -127,20 +146,22 @@ async function jobFreshness(prisma) {
       select: { startedAt: true, status: true },
     });
     const slaHours = JOB_SLA[jobName];
-    const ageHours = lastSuccess ? (now - new Date(lastSuccess.startedAt).getTime()) / 3_600_000 : null;
+    const ageHours = lastHealthy ? (now - new Date(lastHealthy.startedAt).getTime()) / 3_600_000 : null;
     const stale = ageHours === null || ageHours > slaHours;
     rows.push({
       jobName,
       expectedIntervalHours: slaHours,
-      lastSuccessAt: lastSuccess?.startedAt || null,
+      lastSuccessAt: lastHealthy?.startedAt || null,
+      lastSuccessStatus: lastHealthy?.status || null,
       lastSuccessAgeHours: ageHours === null ? null : Math.round(ageHours * 10) / 10,
+      lastPartialAt: lastPartial?.startedAt || null,
       lastRunAt: lastAny?.startedAt || null,
       lastRunStatus: lastAny?.status || 'never',
-      itemsWritten: lastSuccess?.itemsWritten ?? null,
+      itemsWritten: lastHealthy?.itemsWritten ?? null,
       stale,
     });
   }
   return { jobs: rows, staleCount: rows.filter(r => r.stale).length, checkedAt: new Date().toISOString() };
 }
 
-module.exports = { recordJobRun, withJobRun, jobFreshness, JOB_SLA };
+module.exports = { recordJobRun, withJobRun, jobFreshness, JOB_SLA, runStatus };

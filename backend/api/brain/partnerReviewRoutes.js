@@ -3,7 +3,8 @@ const { Prisma } = require('@prisma/client');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent } = require('./ledger');
 const { reconcileVendorPayments } = require('./vendorPaymentReconcile');
-const verifyAdminRequest = createAdminVerifier();
+const { currentAssertionWhere } = require('./assertionState');
+const { withJobRun } = require('./jobRuns');
 
 const PARTNER_RELATIONS = new Set([
   'SUPPLIES', 'PRICED_AT', 'PAYMENT_SENT', 'INVOICED', 'ISSUED_BY',
@@ -123,14 +124,13 @@ function registerPartnerReviewRoutes(app, { logger } = {}) {
         orderBy: { updatedAt: 'desc' },
         take: limit,
         include: {
-          aliases: true,
           srcAssertions: {
-            where: { retractedAt: null, knownUntil: null },
+            where: currentAssertionWhere(),
             orderBy: { createdAt: 'desc' }, take: 100,
             include: { dst: { select: { id: true, name: true, entityType: true } }, ledgerEvent: true },
           },
           dstAssertions: {
-            where: { retractedAt: null, knownUntil: null },
+            where: currentAssertionWhere(),
             orderBy: { createdAt: 'desc' }, take: 100,
             include: { src: { select: { id: true, name: true, entityType: true } }, ledgerEvent: true },
           },
@@ -177,7 +177,11 @@ function registerPartnerReviewRoutes(app, { logger } = {}) {
 
   app.post('/api/brain/partners/reconcile-payments', async (req, res) => {
     if (!await verifyAdminRequest(req)) return res.status(403).json({ error: 'admin only' });
-    const result = await reconcileVendorPayments({ apply: req.body?.apply === true, daysBack: Math.min(Number(req.body?.daysBack || 1095), 1095), logger });
+    const result = await withJobRun('vendor-payment-reconcile', () => reconcileVendorPayments({
+      apply: req.body?.apply === true,
+      daysBack: Math.min(Number(req.body?.daysBack || 1095), 1095),
+      logger,
+    }));
     return res.json({ ok: true, ...result });
   });
 

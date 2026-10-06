@@ -1,8 +1,10 @@
 const crypto = require('crypto');
 const sanity = require('@sanity/client');
+const { COMMERCE_STORE_KEYS } = require('./commerceStores');
+const { RULES: BASE_PRICE_RULES } = require('./priceBookManifest');
 
 const PRICE_BOOK_KEY = 'local-effort-standard';
-const KNOWN_STORES = new Set(['sale', 'pizza-on-smith', 'chez-garage', 'happy-monday']);
+const KNOWN_STORES = new Set(COMMERCE_STORE_KEYS);
 const KEY_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
 class CatalogValidationError extends Error {
@@ -109,6 +111,13 @@ function storefrontRules(products) {
       listPriceCents: product.listPriceCents,
       salePriceCents: product.salePriceCents,
       stores: product.stores,
+      fulfillment: { allowsDelivery: product.allowsDelivery, requiresDateSelection: product.requiresDateSelection },
+      inventory: { mode: product.inventoryMode, manualQty: product.manualQty },
+      processor: { squareItemId: product.squareItemId, squareVariationId: product.squareVariationId },
+      variants: product.variants,
+      addOns: product.addOns,
+      offerDairyFree: product.offerDairyFree,
+      dairyFreeCost: product.dairyFreeCost,
     };
     const base = [{ ruleKey: `storefront.${product.offerKey}.base`, calculator: 'store_item', scopeKey: product.offerKey, ruleType: 'unit_amount', amountCents: product.priceCents, parameters, displayLabel: product.title, sortOrder: 1000 + productIndex * 100 }];
     product.variants.forEach((variant, index) => base.push({ ruleKey: `storefront.${product.offerKey}.variant.${variant.key}`, calculator: 'store_item', scopeKey: product.offerKey, ruleType: 'unit_amount', amountCents: variant.amountCents, parameters: { ...parameters, optionKey: variant.key }, displayLabel: variant.name, sortOrder: 1010 + productIndex * 100 + index }));
@@ -134,8 +143,18 @@ async function reconcileStorefrontCatalog({ prisma, documents, apply = false }) 
   const families = await prisma.commercialProduct.findMany({ select: { id: true, key: true } });
   const familyByKey = new Map(families.map((family) => [family.key, family]));
   const products = normalizeSanityCatalog(documents, { productKeys: new Set(familyByKey.keys()) });
+  if (!products.length) throw new Error('No active Sanity storefront products were found; reconciliation was not applied.');
   const digest = catalogDigest(products);
   const latest = await prisma.priceBook.findFirst({ where: { key: PRICE_BOOK_KEY, status: 'published' }, orderBy: { version: 'desc' }, include: { rules: true } });
+  if (!latest || !Array.isArray(latest.rules) || !latest.rules.some((rule) => rule.calculator !== 'store_item')) {
+    throw new Error('A complete base price book must be seeded before storefront reconciliation.');
+  }
+  const publishedRules = new Map(latest.rules.map((rule) => [rule.ruleKey, rule]));
+  const missingBaseRule = BASE_PRICE_RULES.find((rule) => {
+    const published = publishedRules.get(rule.ruleKey);
+    return !published || JSON.stringify(stable({ calculator: published.calculator, scopeKey: published.scopeKey, ruleType: published.ruleType, amountCents: published.amountCents ?? null, rateBps: published.rateBps ?? null, parameters: published.parameters ?? null })) !== JSON.stringify(stable({ calculator: rule.calculator, scopeKey: rule.scopeKey, ruleType: rule.ruleType, amountCents: rule.amountCents ?? null, rateBps: rule.rateBps ?? null, parameters: rule.parameters ?? null }));
+  });
+  if (missingBaseRule) throw new Error(`The published base price book is incomplete or changed at ${missingBaseRule.ruleKey}.`);
   const existingOffers = await prisma.commercialOffer.findMany({ where: { metadata: { path: ['source'], equals: 'sanity_storefront' } } });
   const existingByKey = new Map(existingOffers.map((offer) => [offer.key, offer]));
   const activeKeys = new Set(products.map((product) => product.offerKey));

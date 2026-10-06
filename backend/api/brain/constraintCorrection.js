@@ -31,7 +31,7 @@
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { writeLedgerEvent, findOrCreateEntity } = require('./ledger');
-
+const { currentAssertionWhere } = require('./assertionState');
 const verifyAdminRequest = createAdminVerifier();
 
 const DIRECTIONS = new Set(['avoids', 'prefers']);
@@ -112,9 +112,9 @@ async function applyConstraintCorrection({
   // all three constraint relTypes — a correction overrides whatever was believed.
   const priors = await prisma.brainAssertion.findMany({
     where: {
+      ...currentAssertionWhere(now),
       srcId: customer.id, dstId: dst.id,
       relType: { in: CONSTRAINT_RELS },
-      retractedAt: null, knownUntil: null,
     },
     select: { id: true, relType: true },
   });
@@ -311,14 +311,33 @@ function registerConstraintCorrectionRoutes(app, { logger } = {}) {
       if (!admin) return res.status(403).json({ error: 'admin only' });
 
       const b = req.body || {};
-      const result = await applyConstraintCorrection({
-        customerId: b.customerId, email: b.email, name: b.name,
-        item: b.item, kind: b.kind || 'ingredient',
-        direction: b.direction, severity: b.severity,
-        validUntil: b.validUntil || null, note: b.note || null,
-        actor: b.actor || 'staff',
-        logger,
-      });
+      const prisma = getPrisma();
+      let customerId = b.customerId || null;
+      if (!customerId && (b.email || b.name)) {
+        const customer = await resolveCustomer(prisma, { email: b.email, name: b.name });
+        if (!customer) throw new Error('customer not found');
+        customerId = customer.id;
+      }
+      const { applyDirect } = require('./ingest/engine');
+      const result = await applyDirect(
+        'constraint_correction',
+        {
+          customerRef: null,
+          corrections: [{
+            item: b.item,
+            kind: b.kind || 'ingredient',
+            direction: b.direction,
+            severity: b.severity,
+            validUntil: b.validUntil || null,
+          }],
+        },
+        {
+          customerId,
+          source: 'constraint-correction',
+          actor: b.actor || 'staff',
+          text: b.note || null,
+        }
+      );
       return res.json(result);
     } catch (err) {
       const msg = err?.message || 'internal-error';
@@ -343,7 +362,12 @@ function registerConstraintCorrectionRoutes(app, { logger } = {}) {
       if (dryRun) {
         return res.json({ ok: true, dryRun: true, parsed: parseCorrectionText(text) });
       }
-      const result = await applyCorrectionFromText({ text, customerId, note, actor: 'founder', logger });
+      const { process: processIngest } = require('./ingest/engine');
+      const result = await processIngest(
+        text,
+        { customerId, source: 'constraint-quick-capture', actor: 'founder', force: true },
+        { commit: true }
+      );
       return res.json(result);
     } catch (err) {
       const msg = err?.message || 'internal-error';

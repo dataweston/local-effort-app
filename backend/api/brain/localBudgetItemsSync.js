@@ -51,9 +51,22 @@ const SOLD_ENTITY_TYPES = ['Dish', 'Product'];
 
 function apiConfig() {
   const baseUrl = String(process.env.LOCAL_BUDGET_API_URL || '').trim().replace(/\/+$/, '');
-  const token = String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
+  const rawToken = String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
+  const token = rawToken.replace(/^Bearer\s+/i, '').replace(/^(['"])(.*)\1$/, '$2').trim();
   if (!baseUrl || !token) {
     throw new Error('LOCAL_BUDGET_API_URL and LOCAL_BUDGET_API_TOKEN are required');
+  }
+  if (/[\r\n]/.test(token)) {
+    throw new Error('LOCAL_BUDGET_API_TOKEN contains a newline; provide the raw token without header formatting');
+  }
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(baseUrl);
+  } catch {
+    throw new Error('LOCAL_BUDGET_API_URL must be a valid URL');
+  }
+  if (!/^https?:$/.test(parsedUrl.protocol)) {
+    throw new Error('LOCAL_BUDGET_API_URL must use http or https');
   }
   return { baseUrl, token };
 }
@@ -134,6 +147,7 @@ async function runLocalBudgetItemsSync({
     soldLines: 0, purchasedLines: 0,
     vendorsResolved: 0, vendorsCreated: 0, vendorsBlocked: 0,
     itemsMatched: 0, itemsUnmatched: 0,
+    resolutionMethods: { Vendor: {} },
     unmatchedSoldNames: [],
     dryRun,
     errors: [],
@@ -173,11 +187,15 @@ async function runLocalBudgetItemsSync({
               create: !!row.vendorName,
               properties: { source: 'local_budget_items_sync' },
             });
-            if (resolved.blocked) stats.vendorsBlocked++;
-            else {
-              vendorEntityId = resolved.entity?.id || null;
+            if (resolved.blocked) {
+              stats.vendorsBlocked++;
+            } else {
               if (resolved.created) stats.vendorsCreated++;
               else if (resolved.entity) stats.vendorsResolved++;
+              if (resolved.entity) {
+                const method = resolved.matchedBy || 'unresolved';
+                stats.resolutionMethods.Vendor[method] = (stats.resolutionMethods.Vendor[method] || 0) + 1;
+              }
             }
             vendorCache.set(cacheKey, vendorEntityId);
           }

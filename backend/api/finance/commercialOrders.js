@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 /**
  * Finance Core commercial-checkout intake.
  *
@@ -71,12 +73,25 @@ function findAttempt(prisma, provider, idempotencyKey) {
   });
 }
 
-function resolveExistingAttempt(attempt, totalCents) {
+function canonical(value) {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonical(value[key])]));
+  return value;
+}
+
+function basketFingerprint(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex');
+}
+
+function resolveExistingAttempt(attempt, totalCents, expectedFingerprint) {
   if (attempt.requestedCents !== totalCents) {
     throw new CommercialCheckoutConflictError(
       'Checkout attempt amount changed. Please start checkout again.',
       'attempt-amount-changed',
     );
+  }
+  if (!attempt.metadata?.basketFingerprint || attempt.metadata.basketFingerprint !== expectedFingerprint) {
+    throw new CommercialCheckoutConflictError('Checkout contents changed. Please start checkout again.', 'attempt-basket-changed');
   }
   if (attempt.status === 'succeeded' && attempt.externalPaymentId) {
     return { order: attempt.commercialOrder, attempt, replay: 'succeeded' };
@@ -119,6 +134,7 @@ async function startCommercialCheckout({
   lines = [],
   orderMetadata = null,
   attemptMetadata = null,
+  basket = null,
 }) {
   if (!prisma) throw new Error('Prisma is required');
   if (!idempotencyKey) throw new Error('idempotencyKey is required');
@@ -128,10 +144,13 @@ async function startCommercialCheckout({
   const amountCents = requireInt(totalCents, 'totalCents');
   if (amountCents <= 0) throw new Error('totalCents must be positive');
 
-  const existing = await findAttempt(prisma, provider, idempotencyKey);
-  if (existing) return resolveExistingAttempt(existing, amountCents);
-
   const orderLines = normalizeLines(lines);
+  const fingerprint = basketFingerprint(basket || {
+    sourceSystem, channel, businessLineKey, currency, subtotalCents, totalCents: amountCents,
+    lines: orderLines, orderMetadata,
+  });
+  const existing = await findAttempt(prisma, provider, idempotencyKey);
+  if (existing) return resolveExistingAttempt(existing, amountCents, fingerprint);
 
   try {
     const order = await prisma.commercialOrder.create({
@@ -161,7 +180,7 @@ async function startCommercialCheckout({
             status: 'pending',
             requestedCents: amountCents,
             currency,
-            metadata: attemptMetadata || undefined,
+            metadata: { ...(attemptMetadata || {}), basketFingerprint: fingerprint },
           },
         },
       },
@@ -173,7 +192,7 @@ async function startCommercialCheckout({
     // records rather than booking the order twice.
     if (error?.code !== 'P2002') throw error;
     const raced = await findAttempt(prisma, provider, idempotencyKey);
-    if (raced) return resolveExistingAttempt(raced, amountCents);
+    if (raced) return resolveExistingAttempt(raced, amountCents, fingerprint);
 
     // The source identity collided without a matching attempt: two different
     // checkout attempts claimed one source id. Refusing is the only safe answer
@@ -188,5 +207,6 @@ async function startCommercialCheckout({
 module.exports = {
   CommercialCheckoutConflictError,
   normalizeLines,
+  basketFingerprint,
   startCommercialCheckout,
 };

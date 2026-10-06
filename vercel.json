@@ -275,6 +275,15 @@
       ]
     },
     {
+      "source": "/annual-report",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
       "source": "/api/decision/admin/(.*)",
       "headers": [
         {
@@ -393,13 +402,13 @@
       "dest": "/prerender/localkitchen/index.html"
     },
     {
+      "src": "^/private-events$",
+      "dest": "/prerender/private-events/index.html"
+    },
+    {
       "src": "^/foodist$",
       "dest": "/localkitchen",
       "status": 308
-    },
-    {
-      "src": "^/private-events$",
-      "dest": "/prerender/private-events/index.html"
     },
     {
       "src": "^/weeklymeals$",

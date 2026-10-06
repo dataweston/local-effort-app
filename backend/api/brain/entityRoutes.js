@@ -11,6 +11,7 @@ const { createAdminVerifier } = require('../utils/adminVerifier');
 const { RELATIONSHIPS, validateRelationship } = require('./relationshipDictionary');
 const { canonicalName: canonicalEntityName, writeLedgerEvent } = require('./ledger');
 const { foodNameLooksValid, isFoodFragment, FOOD_ENTITY_TYPES: FOOD_TYPES_LIST } = require('./foodNameValidator');
+const { currentAssertionWhere, currentAssertionSql } = require('./assertionState');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -343,17 +344,19 @@ function registerEntityRoutes(app, { logger } = {}) {
         where.name = { contains: q.trim(), mode: 'insensitive' };
       }
       if (JSON.parse(provisionalOnly)) {
+        const provisionalCurrent = { ...currentAssertionWhere(), provisional: true };
         where.OR = [
-          { srcAssertions: { some: { provisional: true, retractedAt: null, knownUntil: null } } },
-          { dstAssertions: { some: { provisional: true, retractedAt: null, knownUntil: null } } },
+          { srcAssertions: { some: provisionalCurrent } },
+          { dstAssertions: { some: provisionalCurrent } },
         ];
       }
       if (relType && String(relType).trim()) {
         const normalizedRel = String(relType).trim().toUpperCase();
+        const relatedCurrent = { ...currentAssertionWhere(), relType: normalizedRel };
         where.OR = [
           ...(where.OR || []),
-          { srcAssertions: { some: { relType: normalizedRel, retractedAt: null, knownUntil: null } } },
-          { dstAssertions: { some: { relType: normalizedRel, retractedAt: null, knownUntil: null } } },
+          { srcAssertions: { some: relatedCurrent } },
+          { dstAssertions: { some: relatedCurrent } },
         ];
       }
 
@@ -391,12 +394,12 @@ function registerEntityRoutes(app, { logger } = {}) {
               SELECT a."srcId" AS id, a."createdAt" AS "lastSignalAt"
               FROM "BrainAssertion" a
               WHERE a."srcId" = ANY(${ids})
-                AND a."retractedAt" IS NULL
+                AND ${currentAssertionSql('a')}
               UNION ALL
               SELECT a."dstId" AS id, a."createdAt" AS "lastSignalAt"
               FROM "BrainAssertion" a
               WHERE a."dstId" = ANY(${ids})
-                AND a."retractedAt" IS NULL
+                AND ${currentAssertionSql('a')}
             ) x
             ORDER BY x.id, x."lastSignalAt" DESC
           `
@@ -410,13 +413,13 @@ function registerEntityRoutes(app, { logger } = {}) {
               FROM "BrainAssertion" a
               WHERE a."srcId" = ANY(${ids})
                 AND a.provisional = true
-                AND a."retractedAt" IS NULL
+                AND ${currentAssertionSql('a')}
               UNION ALL
               SELECT a."dstId" AS id
               FROM "BrainAssertion" a
               WHERE a."dstId" = ANY(${ids})
                 AND a.provisional = true
-                AND a."retractedAt" IS NULL
+                AND ${currentAssertionSql('a')}
             ) x
             GROUP BY id
           `
@@ -1110,6 +1113,7 @@ function registerEntityRoutes(app, { logger } = {}) {
         selfEdges,
         provisional,
         orphaned,
+        ontologyRows,
       ] = await Promise.all([
         prisma.$queryRaw`
           SELECT "entityType",
@@ -1151,12 +1155,13 @@ function registerEntityRoutes(app, { logger } = {}) {
           SELECT a."relType", e."entityType", COUNT(*)::int AS n
           FROM "BrainAssertion" a
           JOIN "BrainEntity" e ON e.id = a."srcId"
-          WHERE a."srcId" = a."dstId" AND a."retractedAt" IS NULL
+          WHERE a."srcId" = a."dstId"
+            AND ${currentAssertionSql('a')}
           GROUP BY 1, 2
           ORDER BY n DESC
           LIMIT 50
         `,
-        prisma.brainAssertion.count({ where: { provisional: true, retractedAt: null } }),
+        prisma.brainAssertion.count({ where: { ...currentAssertionWhere(), provisional: true } }),
         prisma.$queryRaw`
           SELECT e."entityType", COUNT(*)::int AS n
           FROM "BrainEntity" e
@@ -1164,12 +1169,18 @@ function registerEntityRoutes(app, { logger } = {}) {
             AND NOT EXISTS (
               SELECT 1 FROM "BrainAssertion" a
               WHERE (a."srcId" = e.id OR a."dstId" = e.id)
-                AND a."retractedAt" IS NULL
+                AND ${currentAssertionSql('a')}
             )
           GROUP BY 1
           ORDER BY n DESC
           LIMIT 50
         `,
+        prisma.brainAssertion.groupBy({
+          by: ['relType'],
+          where: currentAssertionWhere(),
+          _count: { _all: true },
+          orderBy: { _count: { relType: 'desc' } },
+        }),
       ]);
 
       return res.json({
@@ -1180,6 +1191,12 @@ function registerEntityRoutes(app, { logger } = {}) {
         selfEdges,
         provisionalAssertions: provisional,
         orphanedEntitiesByType: orphaned,
+        ontology: {
+          currentRelationshipCounts: ontologyRows.map(row => ({ relType: row.relType, count: row._count._all })),
+          unknownRelationshipTypes: ontologyRows
+            .filter(row => !Object.prototype.hasOwnProperty.call(RELATIONSHIPS, row.relType))
+            .map(row => row.relType),
+        },
       });
     } catch (err) {
       logger?.error({ err }, 'brain: quality report error');

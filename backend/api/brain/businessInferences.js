@@ -16,6 +16,7 @@
  */
 
 const { getPrisma } = require('../utils/prisma');
+const { currentAssertionWhere } = require('./assertionState');
 
 function monthKey(d) { return new Date(d).toISOString().slice(0, 7); }
 
@@ -173,7 +174,7 @@ async function computeSeasonality(prisma, anchorId, now) {
 async function computeDishDemand(prisma) {
   // Rank dishes/products by ORDERED quantity; fold in GAVE_FEEDBACK satisfaction.
   const ordered = await prisma.brainAssertion.findMany({
-    where: { relType: 'ORDERED', retractedAt: null },
+    where: { ...currentAssertionWhere(), relType: 'ORDERED' },
     select: { dstId: true, metadata: true },
   });
   if (!ordered.length) return [];
@@ -230,7 +231,7 @@ async function computeDishDemand(prisma) {
 // a floor.
 async function computeQuoteClose(prisma) {
   const quoted = await prisma.brainAssertion.findMany({
-    where: { relType: { in: ['QUOTED', 'DISCUSSED_OFFER'] }, retractedAt: null },
+    where: { ...currentAssertionWhere(), relType: { in: ['QUOTED', 'DISCUSSED_OFFER'] } },
     select: { srcId: true, metadata: true },
   });
   if (quoted.length < 5) return null;
@@ -239,7 +240,7 @@ async function computeQuoteClose(prisma) {
   let closed = 0;
   for (const cid of quotedCustomers) {
     const ordered = await prisma.brainAssertion.count({
-      where: { srcId: cid, relType: 'ORDERED', retractedAt: null },
+      where: { ...currentAssertionWhere(), srcId: cid, relType: 'ORDERED' },
     });
     if (ordered > 0) closed++;
   }

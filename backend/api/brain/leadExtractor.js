@@ -17,6 +17,7 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { bodyOf, recipientOf, classifyOffer, resolveCustomer, resolveOffer } = require('./gmailExtractCommon');
+const { currentAssertionWhere } = require('./assertionState');
 
 const GUEST_COUNT = /(\d{1,4})\s?(?:guests|people|pax|persons|ppl)\b/i;
 const OCCASION = /\b(wedding|birthday|anniversary|graduation|holiday|corporate|reunion|shower|rehearsal|gala|funeral|memorial|retirement|dinner party|cocktail|bachelorette|gathering)\b/i;
@@ -100,7 +101,7 @@ async function extractLeads({ apply = false, logger } = {}) {
       };
       // Idempotency: one lead DISCUSSED_OFFER per (customer, offer, event).
       const existing = await prisma.brainAssertion.findFirst({
-        where: { relType: 'DISCUSSED_OFFER', srcId: customer.id, dstId: offer.id, sourceId: ev.id, retractedAt: null },
+        where: { ...currentAssertionWhere(), relType: 'DISCUSSED_OFFER', srcId: customer.id, dstId: offer.id, sourceId: ev.id },
         select: { id: true },
       });
       if (!existing) {

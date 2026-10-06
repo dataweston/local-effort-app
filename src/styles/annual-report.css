@@ -1,0 +1,1165 @@
+/* Annual report — /annual-report
+   Direction and provenance: docs/design/ANNUAL-REPORT.md
+
+   This page used to carry its own palette (terracotta on cream), its own type
+   (DM Sans with a Playfair italic), mono-caps eyebrows and 01–06 markers. None
+   of it traced to the site. It now extends the specimen system (specimen.css,
+   SPECIMEN.md): the sheet is the field, one dark band spends the weight, and
+   the figures are set the way the sources set their captions — ruled, in
+   mono, with the hand note in Yomogi.
+
+   Nothing here introduces a colour, a typeface or a duration. Every value is
+   an alias of brand-tokens.css or index.css. */
+
+.annual-report {
+  --ar-ink: var(--brand-ink);
+  --ar-sheet: var(--brand-sheet);
+  --ar-mount: var(--brand-mount);
+  --ar-oxide: var(--brand-oxide);
+  /* The measured oxide is 3.9:1 on the sheet, which is fine for a rule and not
+     for 12px text. Text that needs the accent borrows some ink. */
+  --ar-oxide-text: color-mix(in srgb, var(--brand-oxide) 70%, var(--brand-ink));
+  --ar-muted: color-mix(in srgb, var(--brand-ink) 72%, transparent);
+  --ar-soft: color-mix(in srgb, var(--brand-ink) 26%, transparent);
+  --ar-faint: color-mix(in srgb, var(--brand-ink) 8%, transparent);
+  --ar-rule: var(--specimen-rule);
+  --ar-hair: var(--specimen-rule-hair);
+  --ar-gutter: clamp(1.25rem, 5vw, 4rem);
+  --ar-bar: 3.25rem;
+  --ar-measure: 80rem;
+  --ar-mono: var(--font-office-code, monospace);
+  --ar-display: var(--font-display, 'General Sans', sans-serif);
+
+  min-height: 100vh;
+  background-color: var(--ar-sheet);
+  color: var(--ar-ink);
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.annual-report *,
+.annual-report *::before,
+.annual-report *::after {
+  box-sizing: border-box;
+}
+
+.annual-report :where(h1, h2, h3, p, figure, dl, dd, ol, ul) {
+  margin: 0;
+}
+
+.annual-report :where(ol, ul) {
+  padding: 0;
+  list-style: none;
+}
+
+.annual-report a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.annual-report img {
+  display: block;
+  max-width: 100%;
+}
+
+.annual-report :is(h1, h2, h3) {
+  font-family: var(--ar-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: inherit;
+}
+
+.annual-report h2 {
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  line-height: 1.1;
+}
+
+.annual-report h3 {
+  font-size: 1.20rem;
+  line-height: 1.3;
+}
+
+.ar-small {
+  font-size: 1.01rem;
+  line-height: 1.5;
+  color: var(--ar-muted);
+}
+
+.ar-credit {
+  margin-top: 0.6rem;
+  font-family: var(--ar-mono);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ar-muted);
+}
+
+.is-negative {
+  color: var(--ar-oxide-text);
+}
+
+/* ── The mount ───────────────────────────────────────────────────────────
+   Board around sheet (SPECIMEN.md, "the field is the sheet; the chrome is the
+   mount"). The current section is marked by a rule that draws under its link,
+   the same device header-nav.css uses — no numbers, no scroll arrow. */
+
+.ar-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: var(--ar-bar);
+  padding-inline: var(--ar-gutter);
+  background-color: var(--ar-mount);
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-bar__mark {
+  flex: none;
+  font-family: var(--ar-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ar-bar nav {
+  display: flex;
+  gap: 1.6rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ar-bar nav::-webkit-scrollbar {
+  display: none;
+}
+
+.ar-bar nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--ar-bar);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  color: var(--ar-muted);
+  transition: color var(--le-dur-1) var(--le-ease);
+}
+
+.ar-bar nav a::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  background-color: var(--ar-oxide);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--le-dur-2) var(--le-ease);
+}
+
+.ar-bar nav a:hover,
+.ar-bar nav a[aria-current='true'] {
+  color: var(--ar-ink);
+}
+
+.ar-bar nav a:hover::after,
+.ar-bar nav a[aria-current='true']::after {
+  transform: scaleX(1);
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────
+   Each opens on a rule that draws itself when the section arrives. Transform
+   only. Prerender and no-JS see the finished rule (useSpecimenReveal starts
+   at "done"). */
+
+.ar-cover,
+.ar-section,
+.ar-void {
+  scroll-margin-top: var(--ar-bar);
+}
+
+.ar-section {
+  padding: clamp(3.5rem, 8vw, 7rem) var(--ar-gutter);
+}
+
+.ar-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: max(var(--ar-gutter), calc((100vw - var(--ar-measure)) / 2));
+  right: max(var(--ar-gutter), calc((100vw - var(--ar-measure)) / 2));
+  height: 1px;
+  background-color: var(--ar-rule);
+  transform-origin: left;
+  transition: transform var(--le-dur-3) var(--le-ease);
+}
+
+.ar-section.specimen-reveal:not([data-finish='done'])::after {
+  transform: scaleX(0);
+}
+
+.ar-wrap {
+  max-width: var(--ar-measure);
+  margin-inline: auto;
+}
+
+.ar-wrap--wide {
+  max-width: 92rem;
+}
+
+.ar-section p:not([class]) {
+  max-width: 36rem;
+}
+
+/* ── Cover ───────────────────────────────────────────────────────────────
+   de Boodt's construction: a plate, and the caption strip along its foot.
+   The photograph lies on the sheet with the shared raking shadow. */
+
+.ar-cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: calc(100svh - var(--ar-bar));
+  padding: clamp(2rem, 5vw, 4rem) var(--ar-gutter) clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.ar-cover > * {
+  width: 100%;
+  max-width: var(--ar-measure);
+  margin-inline: auto;
+}
+
+.ar-cover__body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  align-items: end;
+}
+
+.ar-cover h1 {
+  font-size: clamp(2.4rem, 4.4vw, 3.8rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.ar-cover__plate img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 58%;
+  box-shadow: var(--specimen-shadow);
+}
+
+.annual-report .specimen-caption > * {
+  font-size: 0.9rem;
+}
+
+.annual-report .specimen-frame__folio {
+  font-size: 0.8rem;
+}
+
+.ar-cover__caption {
+  margin-top: 0;
+}
+
+/* ── Summary ─────────────────────────────────────────────────────────────── */
+
+.ar-summary__grid {
+  display: grid;
+  grid-template-columns: minmax(17rem, 24rem) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.ar-summary__text h2,
+.ar-costs__text h2,
+.ar-revenue__head h2,
+.ar-hm__body h2,
+.ar-notes__body h2,
+.ar-statement h2 {
+  margin-bottom: 1rem;
+}
+
+/* A ledger, not four cards: labels left, figures right, a rule between. */
+.ar-ledger {
+  margin-top: 2rem;
+  border-top: 1px solid var(--ar-rule);
+}
+
+.ar-ledger > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1rem;
+  align-items: baseline;
+  padding: 0.85rem 0 0.8rem;
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-ledger dt {
+  font-family: var(--ar-display);
+  font-weight: 600;
+  font-size: 1.09rem;
+}
+
+.ar-ledger dd:not(.ar-ledger__note) {
+  font-family: var(--ar-mono);
+  font-size: 1.54rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ar-ledger__note {
+  grid-column: 1 / -1;
+  margin-top: 0.15rem;
+  font-size: 0.97rem;
+  line-height: 1.4;
+  color: var(--ar-muted);
+}
+
+.ar-ledger--tight {
+  margin-bottom: 2.5rem;
+}
+
+/* The chart: every bar carries its own number, so there is no legend and no
+   axis to decode. Hand notes mark the two months the text talks about. */
+.ar-months h3 {
+  margin-bottom: 1.25rem;
+}
+
+.ar-months ol {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: clamp(0.25rem, 1.2vw, 0.9rem);
+}
+
+.ar-months__plot {
+  height: clamp(14rem, 28vw, 20rem);
+  padding-top: 3.4rem;
+  border-bottom: 1px solid var(--ar-rule);
+}
+
+.ar-months__plot li {
+  position: relative;
+  height: 100%;
+}
+
+.ar-months__bar {
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--h);
+  background-color: var(--ar-ink);
+  transform-origin: bottom;
+}
+
+.ar-months__value {
+  position: absolute;
+  inset: auto 0 var(--h);
+  padding-bottom: 0.3rem;
+  font-family: var(--ar-mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ar-months__axis li,
+.ar-months__income li {
+  font-family: var(--ar-mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ar-months__axis li {
+  padding-top: 0.5rem;
+  color: var(--ar-muted);
+}
+
+.ar-months__rowname {
+  margin: 1.4rem 0 0.35rem;
+  font-size: 1.01rem;
+  color: var(--ar-muted);
+}
+
+.ar-months__income {
+  margin-bottom: 2.4rem;
+  border-block: 1px solid var(--ar-hair);
+}
+
+.ar-months__income li {
+  position: relative;
+  padding-block: 0.4rem;
+}
+
+.ar-months__note {
+  position: absolute;
+  left: 50%;
+  white-space: nowrap;
+  font-family: var(--font-yomogi, cursive);
+  font-size: 1.15rem;
+  line-height: 1.2;
+  /* the house hand-note colour (specimen.css .specimen-caption__hand) */
+  color: color-mix(in srgb, var(--ar-ink) 78%, transparent);
+  transform: translateX(-50%);
+}
+
+.ar-months__note--peak {
+  bottom: calc(var(--h) + 1.6rem);
+}
+
+.ar-months__income .ar-months__note {
+  top: 100%;
+  margin-top: 0.15rem;
+}
+
+.ar-months .specimen-caption {
+  margin-top: 0;
+}
+
+/* ── Costs ───────────────────────────────────────────────────────────────── */
+
+.ar-costs__grid {
+  display: grid;
+  grid-template-columns: minmax(16rem, 23rem) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.ar-costs__text p + p {
+  margin-top: 1rem;
+}
+
+.ar-plate {
+  margin-top: 2.5rem;
+}
+
+.ar-plate--tile {
+  max-width: 11rem;
+}
+
+.ar-plate--tile img,
+.ar-plate img {
+  width: 100%;
+  height: auto;
+}
+
+.ar-fall {
+  border-top: 1px solid var(--ar-rule);
+}
+
+.ar-fall__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) 7.5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.05rem 0;
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-fall__label,
+.ar-channels__name,
+.ar-kinds__name {
+  font-family: var(--ar-display);
+  font-weight: 600;
+  font-size: 1.09rem;
+  line-height: 1.25;
+}
+
+.ar-fall small,
+.ar-channels small,
+.ar-kinds small {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  font-size: 0.91rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ar-muted);
+}
+
+/* The track is the whole of net revenue; each bar sits where its share of it
+   sits, so what is left is the length of the last bar. */
+.ar-fall__track,
+.ar-channels__track,
+.ar-kinds__track {
+  position: relative;
+  height: 1.5rem;
+}
+
+.ar-fall__track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-inline: 1px solid var(--ar-hair);
+}
+
+.ar-fall__track i,
+.ar-channels__track i,
+.ar-kinds__track i {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  display: block;
+  background-color: var(--ar-ink);
+  transform-origin: left;
+}
+
+.ar-fall__row--out .ar-fall__track i {
+  background-color: var(--ar-soft);
+}
+
+.ar-fall__value,
+.ar-channels__value,
+.ar-kinds__value {
+  font-family: var(--ar-mono);
+  font-size: 1.14rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ar-fall__value small,
+.ar-channels__value small {
+  font-family: var(--ar-mono);
+  font-size: 0.86rem;
+}
+
+/* ── The dark band ───────────────────────────────────────────────────────
+   The page's one climax, and its only dark surface. Coorte's ground is the
+   measured --brand-void, so the painting dissolves into the field instead of
+   sitting in a box. */
+
+.ar-void {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 40rem;
+  padding: 4rem var(--ar-gutter);
+  padding-left: max(var(--ar-gutter), calc((100vw - var(--ar-measure)) / 2));
+  overflow: hidden;
+}
+
+.ar-void__text {
+  position: relative;
+  z-index: 1;
+  max-width: 30rem;
+}
+
+.ar-void__figure {
+  font-family: var(--ar-display);
+  font-weight: 600;
+  font-size: clamp(3.2rem, 8vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ar-void__line {
+  max-width: 24rem;
+  margin-top: 1.25rem;
+  font-size: 1.49rem;
+  line-height: 1.4;
+}
+
+.ar-void__aside {
+  margin-top: 1.5rem;
+  font-size: 1.09rem;
+  color: color-mix(in srgb, var(--brand-linen) 72%, transparent);
+}
+
+.ar-void__plate {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(48%, 46rem);
+  overflow: hidden;
+}
+
+.ar-void__plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 62%;
+  /* a hair of crop so the canvas edge never shows against the void */
+  transform: scale(1.04);
+  transform-origin: 40% 60%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 28%);
+}
+
+.ar-void .ar-credit {
+  position: absolute;
+  right: var(--ar-gutter);
+  bottom: 1rem;
+  margin: 0;
+  text-align: right;
+  color: color-mix(in srgb, var(--brand-linen) 68%, transparent);
+}
+
+/* ── Revenue ─────────────────────────────────────────────────────────────── */
+
+.ar-channels {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--ar-rule);
+}
+
+.ar-channels__row {
+  display: grid;
+  grid-template-columns: 5rem minmax(10rem, 1.1fr) minmax(8rem, 2fr) 9rem;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-channels__plate {
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  box-shadow: 5px 4px 8px -5px rgb(58 46 63 / 0.45);
+}
+
+.ar-channels__track {
+  height: 0.6rem;
+  background-color: var(--ar-faint);
+}
+
+.ar-revenue__foot {
+  max-width: 36rem;
+  margin-top: 1.25rem;
+}
+
+/* ── Happy Monday ────────────────────────────────────────────────────────── */
+
+.ar-hm__grid {
+  display: grid;
+  grid-template-columns: minmax(16rem, 26rem) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.ar-hm__plate {
+  position: sticky;
+  top: calc(var(--ar-bar) + 2rem);
+  margin-top: 0;
+}
+
+.ar-hm__plate img {
+  box-shadow: var(--specimen-shadow);
+}
+
+.ar-hm__body > p:first-of-type {
+  margin-bottom: 0;
+}
+
+.ar-hm__body h3 {
+  margin: 0 0 0.75rem;
+}
+
+.ar-kinds {
+  margin-bottom: 2.5rem;
+  border-top: 1px solid var(--ar-rule);
+}
+
+.ar-kinds li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) 7.5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-kinds__track {
+  height: 0.6rem;
+  background-color: var(--ar-faint);
+}
+
+.ar-hm__audit {
+  max-width: 38rem;
+  margin-top: 2rem;
+}
+
+.ar-hm__audit strong {
+  color: var(--ar-ink);
+}
+
+/* ── The statement ───────────────────────────────────────────────────────
+   The destination. Mono, tabular, decimals aligned, costs positive under
+   their own heads, negatives in parentheses. The double frame is the sheet's;
+   the folio names the period the way a cataloguer would. */
+
+.ar-statement__lede {
+  margin-bottom: 2.5rem;
+  color: var(--ar-muted);
+}
+
+.ar-statement__frame {
+  padding-top: 2.4rem;
+}
+
+.ar-tablewrap {
+  overflow-x: auto;
+}
+
+.ar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--ar-mono);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ar-table caption {
+  padding-bottom: 0.6rem;
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  font-size: 1.01rem;
+  text-align: left;
+  color: var(--ar-muted);
+}
+
+.ar-table th,
+.ar-table td {
+  padding: 0.5rem 0.55rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ar-table thead th {
+  font-weight: 400;
+  color: var(--ar-muted);
+  border-bottom: 1px solid var(--ar-rule);
+}
+
+.ar-table thead th:first-child,
+.ar-table tbody th[scope='row'] {
+  padding-left: 0;
+  text-align: left;
+}
+
+.ar-table tbody th[scope='row'] {
+  min-width: 12.5rem;
+  font-family: var(--font-body, 'Source Sans 3', sans-serif);
+  font-size: 1.03rem;
+  font-weight: 400;
+}
+
+.ar-row--section th {
+  padding-left: 0;
+  padding-top: 1.7rem;
+  padding-bottom: 0.4rem;
+  font-family: var(--ar-display);
+  font-size: 1.01rem;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid var(--ar-rule);
+}
+
+.ar-row--quiet th,
+.ar-row--quiet td {
+  color: var(--ar-muted);
+}
+
+.ar-row--total th,
+.ar-row--total td {
+  font-weight: 600;
+  border-top: 1px solid var(--ar-hair);
+}
+
+.ar-row--result th,
+.ar-row--result td {
+  font-weight: 600;
+  border-block: 1px solid var(--ar-rule);
+}
+
+.ar-row--final th,
+.ar-row--final td {
+  font-weight: 600;
+  border-top: 1px solid var(--ar-rule);
+  border-bottom: 3px double var(--ar-rule);
+}
+
+.ar-table td:last-child {
+  padding-right: 0;
+  font-weight: 600;
+}
+
+.ar-table--small {
+  font-size: 0.91rem;
+}
+
+.ar-table--small td:last-child {
+  font-weight: inherit;
+}
+
+/* ── Notes ───────────────────────────────────────────────────────────────── */
+
+.ar-notes__grid {
+  display: grid;
+  grid-template-columns: minmax(15rem, 24rem) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.ar-notes__plate {
+  margin-top: 0;
+}
+
+.ar-notes__plate img {
+  box-shadow: var(--specimen-shadow);
+}
+
+.ar-notes__plate .specimen-caption {
+  margin-top: 1.1rem;
+}
+
+.ar-notes__body h3 {
+  margin: 2.5rem 0 0.75rem;
+}
+
+.ar-notes__body h2 + h3 {
+  margin-top: 1.5rem;
+}
+
+.ar-terms,
+.ar-open,
+.ar-sources {
+  max-width: 40rem;
+  border-top: 1px solid var(--ar-rule);
+}
+
+.ar-terms > div,
+.ar-open li,
+.ar-sources li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--ar-hair);
+}
+
+.ar-terms > div {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.ar-terms dt {
+  font-family: var(--ar-display);
+  font-weight: 600;
+  font-size: 1.09rem;
+}
+
+.ar-sources li {
+  font-family: var(--ar-mono);
+  font-size: 0.89rem;
+  line-height: 1.5;
+}
+
+.ar-notes__body .ar-small {
+  margin-top: 1.5rem;
+}
+
+.ar-nowrap {
+  white-space: nowrap;
+}
+
+.annual-report .ar-top {
+  display: inline-block;
+  margin-top: 2rem;
+  text-decoration: underline;
+  text-decoration-color: var(--ar-rule);
+  text-underline-offset: 0.3em;
+}
+
+/* ── Gate ────────────────────────────────────────────────────────────────
+   The slip, hinged to the mount board. */
+
+.ar-gate {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.5rem;
+  background-color: var(--ar-mount);
+}
+
+.ar-gate.specimen-sheet {
+  background-color: var(--brand-mount);
+}
+
+.ar-gate__slip {
+  width: min(100%, 26rem);
+  padding: 2.4rem 2rem 2rem;
+  background-color: var(--brand-sheet);
+  box-shadow: var(--specimen-shadow-lifted);
+}
+
+.ar-gate__slip h1 {
+  font-size: 2.17rem;
+  line-height: 1.1;
+}
+
+.ar-gate__slip p {
+  margin-top: 0.75rem;
+  color: var(--ar-muted);
+}
+
+.ar-gate__slip label {
+  display: block;
+  margin-top: 2rem;
+  font-size: 1.01rem;
+  color: var(--ar-muted);
+}
+
+.ar-gate__slip input {
+  width: 100%;
+  padding: 0.55rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--ar-rule);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ar-ink);
+  font: inherit;
+  font-size: 1.14rem;
+}
+
+.ar-gate__slip button {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ar-ink);
+  border-radius: 0;
+  background-color: var(--ar-ink);
+  color: var(--brand-linen);
+  cursor: pointer;
+  font-family: var(--ar-display);
+  font-size: 1.09rem;
+  font-weight: 600;
+  transition:
+    background-color var(--le-dur-1) var(--le-ease),
+    color var(--le-dur-1) var(--le-ease);
+}
+
+.ar-gate__slip button:hover {
+  background-color: transparent;
+  color: var(--ar-ink);
+}
+
+.ar-gate__slip .ar-gate__error {
+  color: var(--ar-oxide-text);
+}
+
+/* ── Finish ──────────────────────────────────────────────────────────────
+   specimen.css handles the plates (wash, then colour). The bars finish the
+   same way the sections do: they grow from the baseline inside the shared
+   600ms window, staggered by 30–60ms a step and no more. Prerender, no-JS and
+   reduced motion all show the finished chart. */
+
+.specimen-reveal .ar-months__bar {
+  transform: scaleY(0);
+  transition: transform var(--le-dur-2) var(--le-ease) calc(var(--i, 0) * 30ms);
+}
+
+.specimen-reveal .ar-months__value,
+.specimen-reveal .ar-months__note--peak {
+  opacity: 0;
+  transition: opacity var(--le-dur-2) var(--le-ease) calc(var(--i, 0) * 30ms + 240ms);
+}
+
+.specimen-reveal .ar-fall__track i,
+.specimen-reveal .ar-channels__track i,
+.specimen-reveal .ar-kinds__track i {
+  transform: scaleX(0);
+  transition: transform var(--le-dur-2) var(--le-ease) calc(var(--i, 0) * 60ms);
+}
+
+.specimen-reveal[data-finish='done'] .ar-months__bar,
+.specimen-reveal[data-finish='done'] .ar-fall__track i,
+.specimen-reveal[data-finish='done'] .ar-channels__track i,
+.specimen-reveal[data-finish='done'] .ar-kinds__track i {
+  transform: none;
+}
+
+.specimen-reveal[data-finish='done'] .ar-months__value,
+.specimen-reveal[data-finish='done'] .ar-months__note--peak {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .specimen-reveal .ar-months__bar,
+  .specimen-reveal .ar-fall__track i,
+  .specimen-reveal .ar-channels__track i,
+  .specimen-reveal .ar-kinds__track i {
+    transform: none;
+    transition: none;
+  }
+
+  .specimen-reveal .ar-months__value,
+  .specimen-reveal .ar-months__note--peak {
+    opacity: 1;
+    transition: none;
+  }
+
+  .ar-section.specimen-reveal::after,
+  .ar-section.specimen-reveal:not([data-finish='done'])::after {
+    transform: none;
+    transition: none;
+  }
+
+  .ar-bar nav a::after {
+    transition: none;
+  }
+}
+
+/* ── Narrow ──────────────────────────────────────────────────────────────
+   The plates stack above their text, the rows fold so the figure sits beside
+   the label and the bar takes the line beneath, and the statement keeps its
+   shape by scrolling sideways with the labels pinned. */
+
+@media (max-width: 52rem) {
+  .ar-cover__body,
+  .ar-summary__grid,
+  .ar-costs__grid,
+  .ar-hm__grid,
+  .ar-notes__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ar-cover {
+    min-height: 0;
+  }
+
+  .ar-hm__plate {
+    position: static;
+    max-width: 22rem;
+  }
+
+  .ar-notes__plate {
+    max-width: 22rem;
+  }
+
+  .ar-void {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2rem;
+    min-height: 0;
+    padding: 3.5rem var(--ar-gutter) 0;
+  }
+
+  .ar-void__plate {
+    position: relative;
+    inset: auto;
+    width: calc(100% + 2 * var(--ar-gutter));
+    margin-inline: calc(-1 * var(--ar-gutter));
+    height: 26rem;
+  }
+
+  .ar-void__plate img {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 30%);
+  }
+
+  .ar-fall__row,
+  .ar-channels__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.6rem;
+  }
+
+  .ar-fall__track,
+  .ar-channels__track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .ar-channels__row {
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
+  }
+
+  .ar-channels__plate {
+    width: 4rem;
+    height: 4rem;
+    grid-row: 1;
+  }
+
+  .ar-channels__track {
+    grid-column: 1 / -1;
+  }
+
+  .ar-kinds li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.5rem;
+  }
+
+  .ar-kinds__track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .ar-terms > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .ar-table tbody th[scope='row'] {
+    position: sticky;
+    left: 0;
+    min-width: 9.5rem;
+    background-color: var(--ar-sheet);
+  }
+}
+
+@media (max-width: 34rem) {
+  .annual-report {
+    font-size: 1.14rem;
+  }
+
+  .ar-bar {
+    gap: 1rem;
+  }
+
+  .ar-months ol {
+    gap: 0.2rem;
+  }
+
+  .ar-months__value,
+  .ar-months__axis li,
+  .ar-months__income li {
+    font-size: 0.75rem;
+  }
+
+  .ar-cover__plate img {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────
+   People print this one. The bar goes, the dark band keeps its ground, and
+   nothing is split across pages that reads as a unit. */
+
+@media print {
+  .ar-bar {
+    display: none;
+  }
+
+  .ar-cover {
+    min-height: 0;
+  }
+
+  .ar-void {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ar-section,
+  .ar-void,
+  .ar-fall,
+  .ar-ledger,
+  .ar-months {
+    break-inside: avoid;
+  }
+
+  .ar-hm__plate {
+    position: static;
+  }
+
+  .ar-tablewrap {
+    overflow: visible;
+  }
+}

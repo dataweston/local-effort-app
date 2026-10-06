@@ -1,6 +1,6 @@
 const { getPrisma } = require('../utils/prisma');
 const { findOrCreateEntity, writeLedgerEvent } = require('./ledger');
-
+const { currentAssertionWhere } = require('./assertionState');
 function daysBetween(a, b) { return Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 86400000; }
 function candidateScore(invoice, payment) {
   const i = invoice.payload || {}; const p = payment.payload || {};
@@ -32,7 +32,7 @@ async function reconcileVendorPayments({ apply = false, daysBack = 1095, logger 
     const paymentEntity = (await findOrCreateEntity({ entityType: 'Payment', name: `Square payment ${best.payment.sourceId}`, properties: { ledgerEventId: best.payment.id } })).entity;
     if (!invoiceEntity || !paymentEntity) continue;
     const event = await writeLedgerEvent({ eventType: 'vendor.payment.reconciliation_suggested', source: 'partner_layer', sourceId: `${invoice.id}:${best.payment.id}`, occurredAt: new Date(), payload: suggestions[suggestions.length - 1] });
-    const exists = await prisma.brainAssertion.findFirst({ where: { srcId: invoiceEntity.id, dstId: paymentEntity.id, relType: 'RECONCILED_WITH', sourceId: event.id, retractedAt: null } });
+    const exists = await prisma.brainAssertion.findFirst({ where: { ...currentAssertionWhere(), srcId: invoiceEntity.id, dstId: paymentEntity.id, relType: 'RECONCILED_WITH', sourceId: event.id } });
     if (!exists) await prisma.brainAssertion.create({ data: { srcId: invoiceEntity.id, dstId: paymentEntity.id, relType: 'RECONCILED_WITH', sourceType: 'vendor_payment_matcher', sourceId: event.id, createdBy: 'vendor_payment_reconcile', provisional: !suggestions[suggestions.length - 1].autoEligible, confidence: best.score, metadata: { reasons: best.reasons, lagDays: best.lagDays } } });
   }
   const summary = { invoicesSeen: invoices.length, paymentsSeen: payments.length, suggestions: suggestions.length, autoEligible: suggestions.filter(s => s.autoEligible).length, itemsProcessed: invoices.length };

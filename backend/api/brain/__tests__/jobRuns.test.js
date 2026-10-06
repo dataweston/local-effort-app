@@ -33,4 +33,55 @@ describe('Company Brain ingestion job accounting', () => {
       }),
     });
   });
+
+  it('does not treat partial or blocked runs as fresh', async () => {
+    const prisma = {
+      brainJobRun: {
+        create: vi.fn().mockImplementation(async ({ data }) => data),
+        findFirst: vi.fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce({ startedAt: new Date(), status: 'partial' })
+          .mockResolvedValueOnce({ startedAt: new Date(), status: 'blocked' }),
+      },
+    };
+
+    const { jobFreshness } = jobRunsModule;
+    const freshness = await jobFreshness(prisma);
+
+    expect(freshness.jobs[0].stale).toBe(true);
+    expect(freshness.jobs[0].lastPartialAt).toEqual(expect.any(Date));
+  });
+
+  it('records an explicit no-new-data run as healthy', async () => {
+    const prisma = {
+      brainJobRun: {
+        create: vi.fn().mockImplementation(async ({ data }) => data),
+      },
+    };
+
+    await withJobRun('google-ads-sync', async () => ({ noNewData: true }), { prismaClient: prisma });
+
+    expect(prisma.brainJobRun.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ status: 'no_new_data' }),
+    });
+  });
+
+  it('records an unsuccessful summary as an error run', async () => {
+    const prisma = {
+      brainJobRun: {
+        create: vi.fn().mockImplementation(async ({ data }) => data),
+      },
+    };
+
+    await withJobRun('inference-run', async () => ({ ok: false, error: 'database unavailable' }), {
+      prismaClient: prisma,
+    });
+
+    expect(prisma.brainJobRun.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: 'error',
+        detail: expect.objectContaining({ error: 'database unavailable' }),
+      }),
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import PriceUsdInput from '../components/PriceUsdInput.jsx'
 import { richTextBlock } from './objects/richTextBlock'
+import commerceStores from '../../shared/commerce-stores.json'
 
 export default {
   name: 'product',
@@ -30,13 +31,7 @@ export default {
       description: 'Select which store page(s) this product should appear on. You can select multiple stores.',
       of: [{ type: 'string' }],
       options: {
-        list: [
-          { title: 'Main Store (/sale)', value: 'sale' },
-          { title: 'Pizza on Smith (/pizza-on-smith)', value: 'pizza-on-smith' },
-          { title: 'Chez Garage (/chez-garage)', value: 'chez-garage' },
-          { title: 'Happy Monday (/happy-monday)', value: 'happy-monday' },
-          { title: 'Tiny Diner (/tiny-diner)', value: 'tiny-diner' }
-        ],
+        list: Object.entries(commerceStores).map(([value, store]) => ({ title: store.label, value })),
         layout: 'checkbox'
       },
     },

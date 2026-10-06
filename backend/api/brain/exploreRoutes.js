@@ -23,7 +23,7 @@
 const { Prisma } = require('@prisma/client');
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
-
+const { currentAssertionWhere, currentAssertionSql } = require('./assertionState');
 const verifyAdminRequest = createAdminVerifier();
 
 // ── Dataset definitions ───────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const DATASETS = {
   },
   assertions: {
     from: '"BrainAssertion" a JOIN "BrainEntity" s ON s.id = a."srcId" JOIN "BrainEntity" d ON d.id = a."dstId"',
-    base: 'a."retractedAt" IS NULL',
+    base: () => currentAssertionSql('a'),
     columns: {
       relType: 'a."relType"',
       srcType: 's."entityType"',
@@ -147,7 +147,7 @@ function coerceValue(ds, field, op, value) {
 }
 
 function buildWhere(ds, filters) {
-  const parts = [Prisma.raw(ds.base)];
+  const parts = [typeof ds.base === 'function' ? ds.base() : Prisma.raw(ds.base)];
   for (const f of filters || []) {
     if (!f || !f.field || !OPS[f.op]) continue;
     const expr = columnExpr(ds, f.field);
@@ -280,8 +280,7 @@ function registerExploreRoutes(app, { logger } = {}) {
       const edges = ids.length
         ? await prisma.brainAssertion.findMany({
             where: {
-              retractedAt: null,
-              knownUntil: null,
+              ...currentAssertionWhere(),
               srcId: { in: ids },
               dstId: { in: ids },
             },
@@ -296,9 +295,10 @@ function registerExploreRoutes(app, { logger } = {}) {
       if (entities.length && edges.length < entities.length / 2 && !q) {
         const extraEdges = await prisma.brainAssertion.findMany({
           where: {
-            retractedAt: null,
-            knownUntil: null,
-            OR: [{ srcId: { in: ids.slice(0, 50) } }, { dstId: { in: ids.slice(0, 50) } }],
+            AND: [
+              currentAssertionWhere(),
+              { OR: [{ srcId: { in: ids.slice(0, 50) } }, { dstId: { in: ids.slice(0, 50) } }] },
+            ],
           },
           take: 1500,
           select: { id: true, srcId: true, dstId: true, relType: true, provisional: true },

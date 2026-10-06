@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import syncModule from '../storefrontCatalogSync';
+import manifest from '../priceBookManifest';
 const { CatalogValidationError, catalogDigest, normalizeSanityCatalog, reconcileStorefrontCatalog, storefrontRules } = syncModule;
+const baseRules = manifest.RULES;
 
 const doc = (overrides = {}) => ({ _id: 'p1', _rev: 'rev1', title: 'Pizza', price: 1200, salePrice: 1000, stores: ['sale'], commercialProductKey: 'retail', commercialOfferKey: 'sale.pizza', variants: [{ _key: 'large', name: 'Large', price: 1800 }], addOns: [{ _key: 'pepper', name: 'Pepper', additionalCost: 125 }], offerDairyFree: true, dairyFreeCost: 200, ...overrides });
 
@@ -36,13 +38,25 @@ describe('storefront catalog synchronization', () => {
     const normalized = normalizeSanityCatalog(documents, { productKeys: new Set(['retail']) });
     const digest = catalogDigest(normalized);
     const create = vi.fn(); const update = vi.fn();
-    const prisma = { commercialProduct: { findMany: vi.fn().mockResolvedValue([{ id: 'family1', key: 'retail' }]) }, commercialOffer: { findMany: vi.fn().mockResolvedValue([]) }, priceBook: { findFirst: vi.fn().mockResolvedValue({ id: 'book1', key: 'local-effort-standard', version: 1, name: 'Standard', currency: 'USD', metadata: {}, rules: [{ id: 'r1', priceBookId: 'book1', ruleKey: 'meal_prep.breakfast', calculator: 'meal_prep', scopeKey: 'breakfast', ruleType: 'unit_amount', amountCents: 1200, sortOrder: 1 }] }) }, $transaction: (callback) => callback({ commercialOffer: { upsert: vi.fn(), updateMany: vi.fn() }, priceBook: { create, update } }) };
+    const prisma = { commercialProduct: { findMany: vi.fn().mockResolvedValue([{ id: 'family1', key: 'retail' }]) }, commercialOffer: { findMany: vi.fn().mockResolvedValue([]) }, priceBook: { findFirst: vi.fn().mockResolvedValue({ id: 'book1', key: 'local-effort-standard', version: 1, name: 'Standard', currency: 'USD', metadata: {}, rules: [...baseRules, { id: 'r1', priceBookId: 'book1', ruleKey: 'meal_prep.breakfast', calculator: 'meal_prep', scopeKey: 'breakfast', ruleType: 'unit_amount', amountCents: 1200, sortOrder: 1 }] }) }, $transaction: (callback) => callback({ commercialOffer: { upsert: vi.fn(), updateMany: vi.fn() }, priceBook: { create, update } }) };
     const first = await reconcileStorefrontCatalog({ prisma, documents, apply: true });
     expect(first.newPriceBookVersions).toBe(1);
     expect(create.mock.calls[0][0].data.rules.create.some((rule) => rule.calculator === 'meal_prep')).toBe(true);
-    prisma.priceBook.findFirst.mockResolvedValue({ id: 'book2', key: 'local-effort-standard', version: 2, metadata: { storefrontCatalogDigest: digest }, rules: [] });
+    prisma.priceBook.findFirst.mockResolvedValue({ id: 'book2', key: 'local-effort-standard', version: 2, metadata: { storefrontCatalogDigest: digest }, rules: [...baseRules, ...storefrontRules(normalized)] });
     const second = await reconcileStorefrontCatalog({ prisma, documents, apply: true });
     expect(second.newPriceBookVersions).toBe(0);
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses reconciliation when the seeded base book is absent or incomplete', async () => {
+    const prisma = {
+      commercialProduct: { findMany: vi.fn().mockResolvedValue([{ id: 'family1', key: 'retail' }]) },
+      priceBook: { findFirst: vi.fn().mockResolvedValue({ id: 'book1', version: 1, rules: [] }) },
+      commercialOffer: { findMany: vi.fn() },
+      $transaction: vi.fn(),
+    };
+    await expect(reconcileStorefrontCatalog({ prisma, documents: [doc()], apply: true })).rejects.toThrow('complete base price book');
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.commercialOffer.findMany).not.toHaveBeenCalled();
   });
 });

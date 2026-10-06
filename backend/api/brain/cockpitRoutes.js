@@ -9,6 +9,8 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
+const { currentAssertionWhere } = require('./assertionState');
+const { jobFreshness } = require('./jobRuns');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -20,7 +22,8 @@ function registerCockpitRoutes(app, { logger } = {}) {
       const admin = await verifyAdminRequest(req);
       if (!admin) return res.status(403).json({ error: 'admin only' });
 
-      const [inferences, inboxPending, provisionalPending, sourceFreshness, recentCaptures] = await Promise.all([
+      const current = currentAssertionWhere();
+      const [inferences, inboxPending, provisionalPending, sourceFreshness, recentCaptures, freshness, currentAssertionCount, staleInferenceCount, incompleteSourceCount, openActions] = await Promise.all([
         prisma.brainInference.findMany({
           where: { knownUntil: null, supersededBy: null },
           orderBy: { computedAt: 'desc' },
@@ -28,7 +31,7 @@ function registerCockpitRoutes(app, { logger } = {}) {
           include: { src: { select: { id: true, name: true, entityType: true } } },
         }),
         prisma.brainInboxItem.count({ where: { status: 'pending' } }),
-        prisma.brainAssertion.count({ where: { provisional: true, retractedAt: null, knownUntil: null } }),
+        prisma.brainAssertion.count({ where: { ...current, provisional: true } }),
         prisma.$queryRaw`
           SELECT source, MAX("occurredAt") AS "lastEventAt", COUNT(*)::int AS "totalEvents"
           FROM "LedgerEvent"
@@ -41,6 +44,24 @@ function registerCockpitRoutes(app, { logger } = {}) {
           orderBy: { capturedAt: 'desc' },
           take: 5,
           select: { id: true, rawContent: true, source: true, capturedAt: true, triageHint: true },
+        }),
+        jobFreshness(prisma),
+        prisma.brainAssertion.count({ where: current }),
+        prisma.brainInference.count({
+          where: { knownUntil: null, supersededBy: null, staleAt: { not: null } },
+        }),
+        prisma.brainSourceDocument.count({
+          where: {
+            OR: [
+              { captureStatus: { not: 'complete' } },
+              { extractionStatus: { not: 'complete' } },
+            ],
+          },
+        }),
+        prisma.brainAction.findMany({
+          where: { status: { in: ['proposed', 'accepted', 'in_progress'] } },
+          orderBy: [{ dueAt: 'asc' }, { createdAt: 'desc' }],
+          take: 10,
         }),
       ]);
 
@@ -58,6 +79,7 @@ function registerCockpitRoutes(app, { logger } = {}) {
         counts: {
           inboxPending,
           provisionalPending,
+          openActions: openActions.length,
         },
         sources: sourceFreshness.map((s) => ({
           source: s.source,
@@ -65,6 +87,15 @@ function registerCockpitRoutes(app, { logger } = {}) {
           totalEvents: Number(s.totalEvents || 0),
         })),
         recentCaptures,
+        actions: openActions,
+        health: {
+          jobs: freshness.jobs,
+          staleJobCount: freshness.staleCount,
+          currentAssertionCount,
+          staleInferenceCount,
+          incompleteSourceCount,
+          checkedAt: freshness.checkedAt,
+        },
       });
     } catch (err) {
       logger?.error({ err }, 'brain/cockpit error');

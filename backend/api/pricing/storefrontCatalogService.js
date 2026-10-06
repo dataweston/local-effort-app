@@ -1,6 +1,7 @@
 const sanity = require('@sanity/client');
 const { businessLineForStore } = require('../finance/businessLines');
 const { PRICE_BOOK_KEY } = require('./storefrontCatalogSync');
+const { COMMERCE_STORES } = require('./commerceStores');
 
 class StorefrontCatalogError extends Error {
   constructor(message, code, statusCode) {
@@ -23,7 +24,7 @@ function createClient(env = process.env) {
   return sanity.createClient({ projectId, dataset, token: env.SANITY_READ_TOKEN || env.SANITY_WRITE_TOKEN, useCdn: false, perspective: 'published', apiVersion: '2025-02-19' });
 }
 
-const PROJECTION = `{_id,_rev,title,slug,shortDescription,longDescription,images[]{asset->{url}},price,salePrice,priceDisplay,inventoryMode,manualQty,squareItemId,squareVariationId,variants[]{_key,name,squareVariationId,price},addOns[]{_key,name,additionalCost,squareModifierId,defaultSelected},offerDairyFree,dairyFreeCost,stores,commercialProductKey,commercialOfferKey,allowsDelivery,requiresDateSelection}`;
+const PROJECTION = `{_id,_rev,title,slug,shortDescription,longDescription,images[]{asset->{url}},price,salePrice,priceDisplay,inventoryMode,manualQty,squareItemId,squareVariationId,variants[]{_key,name,squareVariationId,price},addOns[]{_key,name,additionalCost,squareModifierId,defaultSelected},offerDairyFree,dairyFreeCost,stores,storeSortOrder,commercialProductKey,commercialOfferKey,allowsDelivery,requiresDateSelection}`;
 
 async function publishedKernel(prisma) {
   if (!prisma) throw new StorefrontCatalogError('Pricing is temporarily unavailable.', 'catalog-pricing-unavailable', 503);
@@ -34,12 +35,16 @@ async function publishedKernel(prisma) {
 
 async function fetchDocuments(client, { store, productIds }) {
   if (!client) throw new StorefrontCatalogError('Catalog is temporarily unavailable.', 'catalog-pricing-unavailable', 503);
-  const filter = productIds?.length ? '_id in $productIds' : '$store in stores';
-  return client.fetch(`*[_type == "product" && active == true && ${filter}]${PROJECTION} | order(title asc)`, { store, productIds: productIds || [] });
+  if (!COMMERCE_STORES[store]) throw new StorefrontCatalogError('Unknown commerce store.', 'catalog-store-invalid', 404);
+  const filter = productIds?.length ? '(_id in $productIds && $store in stores)' : '$store in stores';
+  return client.fetch(`*[_type == "product" && active == true && ${filter}]${PROJECTION} | order(coalesce(storeSortOrder, 9999) asc, lower(title) asc)`, { store, productIds: productIds || [] });
 }
 
 async function getStorefrontCatalog({ store, productIds = null, prisma, sanityClient = createClient() }) {
   const [book, docs] = await Promise.all([publishedKernel(prisma), fetchDocuments(sanityClient, { store, productIds })]);
+  const expectedRevisions = book.metadata?.sanityRevisions || {};
+  const drifted = (docs || []).find((doc) => expectedRevisions[doc._id] !== doc._rev);
+  if (drifted) throw new StorefrontCatalogError('Catalog changed; pricing is being updated. Please try again shortly.', 'catalog-revision-drift', 409);
   const offerKeys = [...new Set((docs || []).map((doc) => doc.commercialOfferKey).filter(Boolean))];
   const offers = await prisma.commercialOffer.findMany({ where: { key: { in: offerKeys }, status: 'active' }, include: { product: true } });
   const offerByKey = new Map(offers.map((offer) => [offer.key, offer]));
@@ -55,11 +60,13 @@ async function getStorefrontCatalog({ store, productIds = null, prisma, sanityCl
       shortDescription: doc.shortDescription || null, longDescription: typeof doc.longDescription === 'string' ? doc.longDescription : null,
       longDescriptionBlocks: Array.isArray(doc.longDescription) ? doc.longDescription : null,
       images: (doc.images || []).map((image) => image?.asset?.url).filter(Boolean),
-      price: baseRule.amountCents, salePrice: doc.salePrice ?? null, priceDisplay: doc.priceDisplay || null,
+      price: baseRule.amountCents, salePrice: null, priceDisplay: null,
       inventoryManaged: doc.inventoryMode === 'manual', inventory: doc.inventoryMode === 'manual' ? doc.manualQty ?? 0 : null,
       inventoryMode: doc.inventoryMode || 'unmanaged', manualQty: doc.manualQty ?? null,
+      storeSortOrder: doc.storeSortOrder ?? null,
       squareItemId: doc.squareItemId || null, squareVariationId: doc.squareVariationId || null,
-      variants: doc.variants || [], addOns: doc.addOns || [], offerDairyFree: doc.offerDairyFree === true,
+      variants: (doc.variants || []).map((variant) => ({ ...variant, price: ruleByKey.get(`storefront.${doc.commercialOfferKey}.variant.${variant._key}`)?.amountCents })),
+      addOns: (doc.addOns || []).map((addOn) => ({ ...addOn, additionalCost: ruleByKey.get(`storefront.${doc.commercialOfferKey}.addon.${addOn._key}`)?.amountCents })), offerDairyFree: doc.offerDairyFree === true,
       dairyFreeCost: doc.dairyFreeCost || 0, stores: doc.stores || [], allowsDelivery: doc.allowsDelivery !== false,
       requiresDateSelection: doc.requiresDateSelection === true,
       commercialProductId: offer.product.id, commercialProductKey: offer.product.key,

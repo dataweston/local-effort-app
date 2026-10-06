@@ -10,6 +10,7 @@ const { Prisma } = require('@prisma/client');
 const { getPrisma } = require('../utils/prisma');
 const { llmJson, hasLlm } = require('./llmJson');
 const { readSourceDocument } = require('./sourceCorpus');
+const { currentAssertionSql } = require('./assertionState');
 
 const MEMORY_KINDS = Object.freeze([
   'source',
@@ -235,8 +236,7 @@ async function searchAssertions(prisma, query, pattern, limit) {
     FROM "BrainAssertion" a
     JOIN "BrainEntity" src ON src.id = a."srcId"
     JOIN "BrainEntity" dst ON dst.id = a."dstId"
-    WHERE a."retractedAt" IS NULL
-      AND (a."knownUntil" IS NULL OR a."knownUntil" > CURRENT_TIMESTAMP)
+    WHERE ${currentAssertionSql('a')}
       AND (
         to_tsvector('simple', src.name || ' ' || a."relType" || ' ' || dst.name || ' ' || COALESCE(a.metadata::text, ''))
           @@ websearch_to_tsquery('simple', ${query})
@@ -624,6 +624,46 @@ async function businessMemoryCoverage(prismaClient = null) {
   return { sources: [...sources.values()] };
 }
 
+/**
+ * Evaluate a retrieval implementation against a small, owner-curated relevance
+ * set. The search function is injected so this can run against a live corpus or
+ * a deterministic fixture without coupling evaluation to database access.
+ */
+async function evaluateRetrieval(searchFn, cases = []) {
+  if (typeof searchFn !== 'function') throw new Error('searchFn is required');
+  if (!Array.isArray(cases) || !cases.length) throw new Error('at least one retrieval case is required');
+
+  const evaluations = [];
+  for (const testCase of cases) {
+    const expectedIds = [...new Set((testCase.expectedIds || []).map(String))];
+    if (!testCase.query || !expectedIds.length) throw new Error('each retrieval case needs query and expectedIds');
+    const response = await searchFn(testCase.query, testCase.options || {});
+    const results = Array.isArray(response?.results) ? response.results : [];
+    const rankedIds = results.map(result => String(result.id));
+    const firstExpectedRank = rankedIds.findIndex(id => expectedIds.includes(id));
+    evaluations.push({
+      name: testCase.name || testCase.query,
+      query: testCase.query,
+      expectedIds,
+      returnedIds: rankedIds,
+      hit: firstExpectedRank >= 0,
+      reciprocalRank: firstExpectedRank >= 0 ? 1 / (firstExpectedRank + 1) : 0,
+      precisionAtK: expectedIds.length
+        ? rankedIds.slice(0, expectedIds.length).filter(id => expectedIds.includes(id)).length / expectedIds.length
+        : 0,
+    });
+  }
+  const hits = evaluations.filter(item => item.hit).length;
+  return {
+    cases: evaluations,
+    caseCount: evaluations.length,
+    hitRate: hits / evaluations.length,
+    meanReciprocalRank: evaluations.reduce((sum, item) => sum + item.reciprocalRank, 0) / evaluations.length,
+    meanPrecisionAtExpectedCount: evaluations.reduce((sum, item) => sum + item.precisionAtK, 0) / evaluations.length,
+  };
+}
+
+
 module.exports = {
   MEMORY_KINDS,
   searchBusinessMemory,
@@ -632,4 +672,5 @@ module.exports = {
   businessMemoryCoverage,
   excerptAroundQuery,
   validateSynthesis,
+  evaluateRetrieval,
 };

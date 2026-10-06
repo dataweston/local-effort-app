@@ -14,12 +14,21 @@ Summary for this repo:
   Budget database or use the Brain mirror as a financial fallback.
 - Local Budget now exposes a bearer-token API that replaces reading its
   `.env`/database directly:
-  - `GET /api/integration/v1/transactions` (json/csv, cursor-paged)
   - `GET /api/integration/v1/vendors` (spend rollups — what seed-brain needs)
   - `GET /api/integration/v1/pnl?year=YYYY` (same numbers as
     `scripts/generate-local-budget-pnl.cjs`)
   - `GET /api/integration/v1/cashflow-actuals?from=YYYY-MM-DD&to=YYYY-MM-DD&grain=month`
-    (planner baseline; cents, source freshness, and data-quality metadata)
+    (planner baseline; cents, source freshness, and data-quality metadata;
+    contract 2 method versions are `-v1.1` and `-v2.1`)
+  - `GET /api/integration/v1/receipt-evidence?from&to&source&updatedSince&limit&cursor`
+    (receipt evidence, including rows without a linked transaction; contract
+    version 1; restricted receipt fields are not exposed)
+  - `GET /api/integration/v1/transactions` (json/csv, cursor-paged; response
+    rows carry `lineage.kind`, `lineage.isCashPosting`, `payoutId`, and
+    `settlementPayouts`, with `lineageVersion: "transaction-lineage-v1"`)
+    Consumers must sum only `POSTED` rows with `isCashPosting: true`.
+    Until the documented paging bug is fixed, do not combine classification or
+    direction filters with paging; follow every returned `nextCursor`.
   - `GET /api/integration/v1/recurring-revenue?asOf=YYYY-MM-DD`
     (authoritative recurring invoice series; do not substitute Square
     subscription records)

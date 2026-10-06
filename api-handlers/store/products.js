@@ -1,14 +1,10 @@
 // GET /api/store/products
-// Product/page presentation comes directly from Sanity. Pricing is verified
-// separately by /api/store/price so a missing pricing-kernel table never makes
-// published CMS edits disappear from the storefront.
+// Store product prices and editorial fields are released together against the
+// published kernel snapshot. Sanity supplies only the current editorial page.
 const sanity = require('@sanity/client');
-const {
-  generatedProductToResponse,
-  getGeneratedStorePage,
-  getGeneratedSaleProducts,
-} = require('./_saleCatalog');
-const { productToResponse } = require('./_sanityStorefront');
+const { prisma } = require('../_lib/prisma');
+const { getStorefrontCatalog } = require('../../backend/api/pricing/storefrontCatalogService');
+const { getGeneratedStorePage } = require('./_saleCatalog');
 
 const projectId =
   process.env.VITE_APP_SANITY_PROJECT_ID ||
@@ -44,58 +40,6 @@ function extractPortableText(blocks) {
     .join('\n\n');
 }
 
-function fallbackFor(store) {
-  const generated = getGeneratedSaleProducts(store);
-  const products = (
-    generated.length
-      ? generated
-      : store === 'pizza-on-smith'
-        ? require('./_pizzaOnSmith').products
-        : []
-  ).map(generatedProductToResponse);
-  return {
-    products,
-    page: getGeneratedStorePage(store),
-  };
-}
-
-function uniqueProducts(products) {
-  const bySlug = new Map();
-  for (const product of products) {
-    const key = product.slug || product.id;
-    const existing = bySlug.get(key);
-    if (!existing || product.id === key) bySlug.set(key, product);
-  }
-  return [...bySlug.values()];
-}
-
-const PRODUCT_PROJECTION = `{
-  _id,
-  _rev,
-  title,
-  slug,
-  shortDescription,
-  longDescription,
-  images[]{asset->{url}},
-  price,
-  salePrice,
-  priceDisplay,
-  inventoryMode,
-  manualQty,
-  squareItemId,
-  squareVariationId,
-  variants[]{_key, name, squareVariationId, price},
-  addOns[]{_key, name, additionalCost, squareModifierId, defaultSelected},
-  offerDairyFree,
-  dairyFreeCost,
-  stores,
-  storeSortOrder,
-  commercialProductKey,
-  commercialOfferKey,
-  allowsDelivery,
-  requiresDateSelection
-}`;
-
 const PIZZA_PAGE_PROJECTION = `{
   eyebrow,
   headline,
@@ -116,16 +60,10 @@ const PIZZA_PAGE_PROJECTION = `{
 
 module.exports = async (req, res) => {
   const store = req.query?.store || 'sale';
-  const fallback = fallbackFor(store);
-  if (!client) {
-    return res.status(200).json({
-      ...fallback,
-      source: fallback.products.length ? 'generated' : 'empty',
-    });
-  }
+  const fallbackPage = getGeneratedStorePage(store);
+  if (!client) return res.status(503).json({ error: 'Catalog is temporarily unavailable.' });
 
   try {
-    const productsQuery = `*[_type == "product" && active == true && $store in stores]${PRODUCT_PROJECTION} | order(coalesce(storeSortOrder, 9999) asc, lower(title) asc)`;
     const pageQuery =
       store === 'pizza-on-smith'
         ? `*[_type == "pizzaOnSmithPage"][0]${PIZZA_PAGE_PROJECTION}`
@@ -133,12 +71,10 @@ module.exports = async (req, res) => {
           ? '*[_type == "salePage"][0]{title, subheading, intro}'
           : 'null';
     const raw = await client.fetch(
-      `{"page": ${pageQuery}, "products": ${productsQuery}}`,
+      `{"page": ${pageQuery}}`,
       { store },
     );
-    const products = Array.isArray(raw?.products)
-      ? uniqueProducts(raw.products.map((document) => productToResponse(document, store)))
-      : [];
+    const { products } = await getStorefrontCatalog({ store, prisma });
     const page =
       store === 'sale' && raw?.page
         ? {
@@ -146,21 +82,14 @@ module.exports = async (req, res) => {
             subheading: raw.page.subheading || null,
             introText: extractPortableText(raw.page.intro) || null,
           }
-        : raw?.page || fallback.page;
+        : raw?.page || fallbackPage;
 
     return res.status(200).json({
-      products: products.length ? products : fallback.products,
+      products,
       page,
-      source: products.length ? 'sanity' : 'generated',
+      source: 'pricing-kernel',
     });
   } catch (error) {
-    if (fallback.products.length) {
-      return res.status(200).json({
-        ...fallback,
-        source: 'generated',
-        warning: error.message || 'Failed to load live products',
-      });
-    }
-    return res.status(500).json({ error: error.message || 'Failed to load products' });
+    return res.status(error.statusCode || 503).json({ error: error.message || 'Failed to load products', code: error.code || 'catalog-pricing-unavailable' });
   }
 };

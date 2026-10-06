@@ -178,7 +178,7 @@
     "brevo:import": "node tools/brevo-import-csv.mjs",
     "square:to-brevo": "node tools/square-to-brevo.mjs",
     "square:import:brevo": "node tools/square-import-brevo.mjs",
-    "backend:start": "node backend/api/server.js",
+    "audit:accuracy": "node scripts/audit-accuracy.cjs",
     "hub:dev-api": "node scripts/dev-hub-api.js",
     "pm2:start": "pm2 start ecosystem.config.cjs --env production",
     "pm2:restart": "pm2 restart ecosystem.config.cjs --env production",

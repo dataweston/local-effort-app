@@ -19,9 +19,12 @@
 
 const { getPrisma } = require('../utils/prisma');
 const { bodyOf, recipientOf, classifyOffer, resolveCustomer, resolveOffer } = require('./gmailExtractCommon');
+const { currentAssertionWhere } = require('./assertionState');
 
-// "$45/person", "$45-$65/person", "$45 to 65 per guest", "$45/pp"
-const PER_GUEST = /\$\s?(\d{1,4})(?:\s?[-–]\s?\$?\s?(\d{1,4})|\s?to\s?\$?\s?(\d{1,4}))?\s?(?:\/|per\s)\s?(?:person|guest|pp\b|head)/i;
+// "$45/person", "$45-$65/person", "$45 to 65 per guest", "$45/pp". Commas
+// are accepted so a formatted per-guest amount is normalized rather than lost.
+const MONEY = '(?:\\d{1,3}(?:,\\d{3})+|\\d{1,4})';
+const PER_GUEST = new RegExp(`\\$\\s?(${MONEY})(?:\\s?[-–]\\s?\\$?\\s?(${MONEY})|\\s?to\\s?\\$?\\s?(${MONEY}))?\\s?(?:\\/|per\\s)?\\s?(?:person|guest|pp\\b|head)`, 'i');
 const GUEST_COUNT = /(\d{1,4})\s?(?:guests|people|pax|persons|ppl)\b/i;
 
 /**
@@ -33,8 +36,8 @@ function parseQuote(event) {
   const m = PER_GUEST.exec(body);
   if (!m) return null;
 
-  const low = Number(m[1]);
-  const high = m[2] || m[3] ? Number(m[2] || m[3]) : null;
+  const low = Number(m[1].replace(/,/g, ''));
+  const high = m[2] || m[3] ? Number((m[2] || m[3]).replace(/,/g, '')) : null;
   // Sanity: catering per-guest prices live in a believable band.
   if (low < 10 || low > 1000) return null;
 
@@ -109,7 +112,7 @@ async function extractMenuQuotes({ apply = false, logger } = {}) {
       // Idempotency: one QUOTED per (customer, offer, ledger event).
       // NB: the FK scalar column is `sourceId` (relation is `ledgerEvent`).
       const existing = await prisma.brainAssertion.findFirst({
-        where: { relType: 'QUOTED', srcId: customer.id, dstId: offer.id, sourceId: ev.id, retractedAt: null },
+        where: { ...currentAssertionWhere(), relType: 'QUOTED', srcId: customer.id, dstId: offer.id, sourceId: ev.id },
         select: { id: true },
       });
       if (!existing) {

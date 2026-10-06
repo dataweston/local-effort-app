@@ -192,4 +192,5 @@ export const INTERNAL_ROUTES = [
   '/brain',
   '/native-mobile-hub',
   '/meal-prep-intake',
+  '/annual-report',
 ];
