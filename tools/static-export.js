@@ -23,6 +23,10 @@ function buildSSRApp() {
   const outfile = path.join(outdir, 'StaticApp.cjs');
   fs.mkdirSync(outdir, { recursive: true });
 
+  const publicEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => key.startsWith('VITE_') || key.startsWith('NEXT_PUBLIC_'))
+  );
+
   esbuild.buildSync({
     entryPoints: [entry],
     outfile,
@@ -34,9 +38,14 @@ function buildSSRApp() {
     logLevel: 'silent',
     define: {
       'process.env.NODE_ENV': '"production"',
-      'import.meta.env.SSR': 'true',
-      // Ensure import.meta.env.DEV (and similar flags) exist during the SSR build
-      'import.meta.env.DEV': 'false',
+      'import.meta.env': JSON.stringify({
+        ...publicEnv,
+        BASE_URL: '/',
+        MODE: 'production',
+        DEV: false,
+        PROD: true,
+        SSR: true,
+      }),
     },
     loader: {
       '.svg': 'dataurl',
