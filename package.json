@@ -179,6 +179,7 @@
     "square:to-brevo": "node tools/square-to-brevo.mjs",
     "square:import:brevo": "node tools/square-import-brevo.mjs",
     "audit:accuracy": "node scripts/audit-accuracy.cjs",
+    "audit:reconciliation": "node scripts/reconciliation-audit.cjs",
     "review:reconciliation": "node scripts/reconciliation-review.cjs",
     "hub:dev-api": "node scripts/dev-hub-api.js",
     "pm2:start": "pm2 start ecosystem.config.cjs --env production",

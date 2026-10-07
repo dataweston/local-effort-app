@@ -58,32 +58,43 @@ Run these commands from the repository root, using the syntax for your shell.
 **PowerShell**
 
 ```powershell
-corepack pnpm run audit:accuracy -- --from 2026-01-01 --to 2026-10-01 --no-gmail --output .tmp/accuracy-audit/accuracy-audit-january-through-september.json
-npm run review:reconciliation -- .tmp/accuracy-audit/accuracy-audit-january-through-september.json .tmp/reconciliation-review.md
+corepack pnpm run audit:reconciliation -- --from 2026-01-01 --to 2026-10-01 --output .tmp/reconciliation-audit-january-through-september.json
+corepack pnpm run audit:accuracy -- --from 2026-01-01 --to 2026-10-01 --output .tmp/accuracy-audit/accuracy-audit-january-through-september-gmail.json
+node scripts/reconciliation-review.cjs .tmp/reconciliation-audit-january-through-september.json .tmp/reconciliation-review.md --operations .tmp/accuracy-audit/accuracy-audit-january-through-september-gmail.json
 ```
 
 **Bash**
 
 ```bash
-corepack pnpm run audit:accuracy -- --from 2026-01-01 --to 2026-10-01 --no-gmail --output .tmp/accuracy-audit/accuracy-audit-january-through-september.json
-npm run review:reconciliation -- .tmp/accuracy-audit/accuracy-audit-january-through-september.json .tmp/reconciliation-review.md
+corepack pnpm run audit:reconciliation -- --from 2026-01-01 --to 2026-10-01 --output .tmp/reconciliation-audit-january-through-september.json
+corepack pnpm run audit:accuracy -- --from 2026-01-01 --to 2026-10-01 --output .tmp/accuracy-audit/accuracy-audit-january-through-september-gmail.json
+node scripts/reconciliation-review.cjs .tmp/reconciliation-audit-january-through-september.json .tmp/reconciliation-review.md --operations .tmp/accuracy-audit/accuracy-audit-january-through-september-gmail.json
 ```
 
-Use `npm run review:reconciliation -- <input.json> <output.md>` to generate the
-review sheet in an npm environment. Do not prefix npm with `corepack`: this
-repository's `packageManager` field selects pnpm, so `corepack npm` reports a
-package-manager mismatch. The `--` separates npm's options from the script's
-file path arguments. `--no-gmail` skips Gmail; remove it when the audit should
-include Gmail evidence and the local Gmail connection is configured.
+The focused reconciliation audit reads Local Budget only and refuses to replace
+the output artifact when the source is unavailable. Its `--to` date is
+exclusive. The audit normalizes that date before
+calling Local Budget endpoints whose `to` parameter is inclusive; otherwise the
+transaction export would include the first day after the reporting period.
+The broader accuracy audit supplies event, meal prep, Gmail, and Wedge evidence.
+Passing it with `--operations` makes those lanes part of the same close decision;
+without that option the output is explicitly a cash-only review.
 
-The command compares the cashflow category total (including explicitly excluded
-transfers) with posted cash-lineage dollars, checks API availability, paging and
-split mismatches, and lists the lineage mix. It then provides a five-minute owner
-checklist for tracing one Square capture through payout/settlement to exactly one
-bank cash posting. The generated review remains under `.tmp/`, starts with an
-`OPEN` decision, and never changes `annualReportReady`; the reviewer must explain
-any difference and record a decision separately. Processor captures, fees,
-refunds, payouts, and bank settlements must never be added together as revenue.
+The review distinguishes coverage from readiness. Coverage proves that the
+cashflow buckets, including explicitly excluded transfers and personal activity,
+equal the posted cash-lineage total for the exact same period. Readiness also
+requires complete months, current bank data, disposition of every pending and
+unclassified transaction, and an amount-matched Square payout trace from
+processor settlement entries to a bank posting. The audit includes the exact
+private transaction rows needed for that review and sorts unclassified rows by
+amount.
+
+The generated review remains under `.tmp/`, starts with an `OPEN` decision, and
+never changes `annualReportReady`. A reviewer closes it only after resolving an
+exception in Local Budget and regenerating, or recording an accepted exception
+with its transaction ID, reason, amount, and report effect. Processor captures,
+fees, refunds, payouts, and bank settlements must never be added together as
+revenue.
 
 ## Candidate fields and limits
 

@@ -81,6 +81,12 @@ function dateWindow(args) {
   return { start, end };
 }
 
+function previousIsoDate(exclusiveDate) {
+  const date = new Date(`${exclusiveDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
 function parseMailbox(value) {
   const raw = String(value || '');
   const address = (raw.match(/<([^>]+)>/)?.[1] || raw.match(/[\w.+-]+@[\w.-]+/)?.[0] || '').toLowerCase();
@@ -169,7 +175,8 @@ function extractExplicitDate(text, labels = 'service|event|purchase|receipt|tran
 
 function parseWedgeReceipt(text) {
   const body = cleanText(text);
-  const date = extractExplicitDate(body, 'receipt|purchase|transaction|date');
+  const genericDate = body.match(/\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b/)?.[1] || null;
+  const date = extractExplicitDate(body, 'receipt|purchase|transaction|date') || (genericDate ? normaliseDate(genericDate) : null);
   const numberMatch = body.match(/(?:receipt|transaction|order)\s*(?:number|no\.?|#|id)\s*[:#-]?\s*([A-Z0-9-]{4,})/i);
   const money = (label) => {
     const match = body.match(new RegExp(`(?:${label})\\s*[:#-]?\\s*\\$?\\s*([0-9][0-9,]*\\.\\d{2})`, 'i'));
@@ -177,11 +184,13 @@ function parseWedgeReceipt(text) {
   };
   const subtotalCents = money('subtotal|sub-total');
   const taxCents = money('tax|sales tax');
-  const totalLabels = [...body.matchAll(/(?:grand\s+total|total\s+paid|amount\s+paid|total)\s*[:#-]?\s*\$?\s*([0-9][0-9,]*\.\d{2})/gi)];
+  const totalLabels = [...body.matchAll(/(?:^|\s)(?:grand\s+total|total\s+paid|amount\s+paid|total)(?=\s|:)\s*[:#-]?\s*\$?\s*([0-9][0-9,]*\.\d{2})/gi)];
   const totals = [...new Set(totalLabels.map((match) => parseMoney(match[1])).filter((amount) => amount !== null))];
   const amountCents = totals.length === 1 ? totals[0] : null;
-  const merchantMatch = body.match(/^(?:merchant|store|location)\s*[:#-]\s*(.+)$/im);
-  const paymentMatch = body.match(/(?:payment\s+method|paid\s+with|tender)\s*[:#-]?\s*(.+)$/im);
+  const merchantMatch = body.match(/^(?:merchant|store|location)\s*[:#-]\s*(.+)$/im)
+    || body.match(/^(Wedge(?:\s+Linden Hills)?(?:\s+Co-?op)?)/i);
+  const paymentMatch = body.match(/(?:payment\s+method|paid\s+with)\s*[:#-]?\s*([A-Za-z ]{2,30})/im)
+    || body.match(/\b(Cash|Debit|Credit|Visa|Mastercard)\s+\$?\s*[0-9][0-9,]*\.\d{2}\b/i);
   const lineItems = body.split('\n').map((line) => {
     const match = line.match(/^\s*(?:[-*•]\s*)?(\d{1,2})\s*[x×]\s+(.+?)\s+\$?([0-9][0-9,]*\.\d{2})\s*$/i)
       || line.match(/^\s*(.+?)\s{2,}\$?([0-9][0-9,]*\.\d{2})\s*$/);
@@ -197,7 +206,6 @@ function parseWedgeReceipt(text) {
   if (amountCents === null) reasons.push(totals.length ? 'multiple_distinct_totals' : 'total_missing');
   if (!merchantMatch) reasons.push('merchant_missing');
   if (!numberMatch) reasons.push('receipt_number_missing');
-  if (!lineItems.length) reasons.push('line_items_missing_or_ambiguous');
   if (subtotalCents !== null && taxCents !== null && amountCents !== null && subtotalCents + taxCents !== amountCents) reasons.push('subtotal_tax_total_mismatch');
   return {
     merchant: merchantMatch?.[1]?.trim() || null,
@@ -208,6 +216,7 @@ function parseWedgeReceipt(text) {
     amountCents,
     paymentMethod: paymentMatch?.[1]?.trim().slice(0, 80) || null,
     lineItems: lineItems.slice(0, 100),
+    lineItemState: lineItems.length ? 'parsed' : 'not_available_from_flattened_email',
     classificationClues: [...new Set(body.match(/\b(?:produce|dairy|meat|bakery|bulk|grocery|organic|local)\b/gi) || [])].map((word) => word.toLowerCase()),
     parseState: reasons.length ? 'review_required' : 'parsed',
     reasons,
@@ -378,15 +387,15 @@ function centsSum(values) {
 
 async function readCoreReports(prisma, window, inventory = { records: [] }) {
     const [estimates, commercialOrders, invoices, transactions, mealCycles, customerMenus, weeklyOrders, agreements, subscriptions, ingests, drafts, sourceLinks, dishes] = await Promise.all([
-    prisma.smallEventEstimate.findMany({ where: { OR: [{ createdAt: { gte: window.start, lt: window.end } }, { eventDate: { gte: window.start.toISOString().slice(0, 10), lt: window.end.toISOString().slice(0, 10) } }] }, select: { id: true, type: true, status: true, contactName: true, contactEmail: true, eventDate: true, estimateMinCents: true, estimateMaxCents: true, subtotalCents: true, depositAmountCents: true, depositStatus: true, createdAt: true, payments: true }, orderBy: { createdAt: 'asc' } }),
-    prisma.commercialOrder.findMany({ where: { OR: [{ createdAt: { gte: window.start, lt: window.end } }, { serviceStartAt: { gte: window.start, lt: window.end } }] }, select: { id: true, sourceSystem: true, sourceId: true, channel: true, businessLineKey: true, status: true, totalCents: true, customerId: true, customerName: true, customerEmail: true, serviceStartAt: true, createdAt: true, invoices: { select: { id: true, status: true, totalCents: true, outstandingCents: true, sourceId: true } }, paymentAttempts: { select: { id: true, status: true, requestedCents: true, externalPaymentId: true, transactions: { select: { id: true, status: true, grossCents: true, occurredAt: true } } } } } }),
-    prisma.commercialInvoice.findMany({ where: { OR: [{ issuedAt: { gte: window.start, lt: window.end } }, { createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, orderId: true, agreementId: true, status: true, totalCents: true, outstandingCents: true, sourceSystem: true, sourceId: true, issuedAt: true } }),
+    prisma.smallEventEstimate.findMany({ where: { OR: [{ eventDate: { gte: window.start.toISOString().slice(0, 10), lt: window.end.toISOString().slice(0, 10) } }, { eventDate: null, createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, type: true, status: true, contactName: true, contactEmail: true, eventDate: true, estimateMinCents: true, estimateMaxCents: true, subtotalCents: true, depositAmountCents: true, depositStatus: true, createdAt: true, payments: true }, orderBy: { createdAt: 'asc' } }),
+    prisma.commercialOrder.findMany({ where: { OR: [{ serviceStartAt: { gte: window.start, lt: window.end } }, { serviceStartAt: null, createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, sourceSystem: true, sourceId: true, channel: true, businessLineKey: true, status: true, totalCents: true, customerId: true, customerName: true, customerEmail: true, serviceStartAt: true, createdAt: true, invoices: { select: { id: true, status: true, totalCents: true, outstandingCents: true, sourceId: true } }, paymentAttempts: { select: { id: true, status: true, requestedCents: true, externalPaymentId: true, transactions: { select: { id: true, status: true, grossCents: true, occurredAt: true } } } } } }),
+    prisma.commercialInvoice.findMany({ where: { OR: [{ issuedAt: { gte: window.start, lt: window.end } }, { issuedAt: null, createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, orderId: true, agreementId: true, status: true, totalCents: true, outstandingCents: true, sourceSystem: true, sourceId: true, issuedAt: true } }),
     prisma.financePaymentTransaction.findMany({ where: { occurredAt: { gte: window.start, lt: window.end } }, select: { id: true, provider: true, externalPaymentId: true, status: true, grossCents: true, settledAt: true, occurredAt: true, allocations: { select: { targetType: true, targetId: true, amountCents: true, invoiceId: true, orderId: true } } } }),
     prisma.mealPrepMenuCycle.findMany({ where: { weekStart: { gte: window.start.toISOString().slice(0, 10), lt: window.end.toISOString().slice(0, 10) } }, include: { items: true, customerMenus: { include: { items: true } } }, orderBy: { weekStart: 'asc' } }),
     prisma.mealPrepCustomerMenu.findMany({ where: { serviceDate: { gte: window.start.toISOString().slice(0, 10), lt: window.end.toISOString().slice(0, 10) } }, select: { id: true, customerId: true, customerName: true, serviceDate: true, status: true, revenueCents: true, sourcePlannerCardId: true, sourceHash: true, sourceSnapshot: true, menuCycle: { select: { id: true, sourceDocumentId: true, sourceBodyHash: true } }, items: { select: { dishName: true, quantity: true } } } }),
-    prisma.order.findMany({ where: { OR: [{ createdAt: { gte: window.start, lt: window.end } }, { submittedAt: { gte: window.start, lt: window.end } }] }, select: { id: true, customerId: true, status: true, totalsCents: true, submittedAt: true, createdAt: true, squarePaymentId: true, menuWeek: { select: { weekStart: true } }, paymentAttempts: { select: { id: true, status: true, requestedCents: true, completedAt: true, externalPaymentId: true } } } }),
-    prisma.commercialAgreement.findMany({ where: { OR: [{ createdAt: { gte: window.start, lt: window.end } }, { effectiveAt: { gte: window.start, lt: window.end } } ] }, select: { id: true, agreementType: true, status: true, businessLineKey: true, sourceSystem: true, sourceId: true, effectiveAt: true, termEndAt: true, customerId: true, terms: true } }),
-    prisma.commercialSubscription.findMany({ where: { OR: [{ createdAt: { gte: window.start, lt: window.end } }, { startAt: { gte: window.start, lt: window.end } }] }, select: { id: true, agreementId: true, customerId: true, status: true, billingCadence: true, recurringBaseCents: true, startAt: true, currentPeriodEndAt: true, provider: true } }),
+    prisma.order.findMany({ where: { OR: [{ submittedAt: { gte: window.start, lt: window.end } }, { submittedAt: null, createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, customerId: true, status: true, totalsCents: true, submittedAt: true, createdAt: true, squarePaymentId: true, menuWeek: { select: { weekStart: true } }, paymentAttempts: { select: { id: true, status: true, requestedCents: true, completedAt: true, externalPaymentId: true } } } }),
+    prisma.commercialAgreement.findMany({ where: { OR: [{ effectiveAt: { gte: window.start, lt: window.end } }, { effectiveAt: null, createdAt: { gte: window.start, lt: window.end } }] }, select: { id: true, agreementType: true, status: true, businessLineKey: true, sourceSystem: true, sourceId: true, effectiveAt: true, termEndAt: true, customerId: true, terms: true } }),
+    prisma.commercialSubscription.findMany({ where: { startAt: { gte: window.start, lt: window.end } }, select: { id: true, agreementId: true, customerId: true, status: true, billingCadence: true, recurringBaseCents: true, startAt: true, currentPeriodEndAt: true, provider: true } }),
     prisma.recipeIngest.findMany({ where: { receivedAt: { gte: window.start, lt: window.end } }, select: { id: true, source: true, externalKey: true, receivedAt: true, drafts: { select: { id: true, title: true, status: true, confidence: true, matchedDishId: true } } } }),
     prisma.dishDraft.findMany({ where: { createdAt: { gte: window.start, lt: window.end } }, select: { id: true, title: true, status: true, confidence: true, matchedDishId: true, sourceIngestId: true } }),
     prisma.dishSourceLink.findMany({ select: { id: true, dishId: true, sourceId: true, externalKey: true } }),
@@ -626,28 +635,171 @@ function summariseLocalBudgetTransactions(rows) {
       cashPostingPostedRows += 1;
     }
   }
-  return { rowCount: rows.length, byLineageKind, cashPostingPostedRows, cashPostingPostedCents };
+  const reviewRow = (row) => ({
+    id: row.id,
+    date: row.date,
+    amountCents: Number(row.amountCents) || 0,
+    type: row.type || null,
+    status: row.status || null,
+    merchantName: row.merchantName || null,
+    effectiveClassification: row.effectiveClassification || null,
+    costBucket: row.costBucket || null,
+    categoryName: row.categoryName || null,
+    lineageKind: row.lineage?.kind || 'UNKNOWN',
+    payoutId: row.lineage?.payoutId || null,
+    settlementPayouts: row.lineage?.settlementPayouts || [],
+    splits: (row.splits || []).map((split) => ({
+      id: split.id,
+      amountCents: Number(split.amountCents) || 0,
+      effectiveClassification: split.effectiveClassification || null,
+      costBucket: split.costBucket || null,
+      categoryName: split.categoryName || null,
+    })),
+  });
+  const unclassified = rows.filter((row) => {
+    if (String(row.status || '').toUpperCase() !== 'POSTED' || row.lineage?.isCashPosting !== true) return false;
+    const lines = row.splits?.length ? row.splits : [row];
+    return lines.some((line) => line.costBucket === 'UNCLASSIFIED');
+  }).map(reviewRow).sort((a, b) => b.amountCents - a.amountCents || String(a.date).localeCompare(String(b.date)));
+  const pending = rows.filter((row) => (
+    String(row.status || '').toUpperCase() === 'PENDING' && row.lineage?.isCashPosting === true
+  )).map(reviewRow).sort((a, b) => String(a.date).localeCompare(String(b.date)) || b.amountCents - a.amountCents);
+  return {
+    rowCount: rows.length,
+    byLineageKind,
+    cashPostingPostedRows,
+    cashPostingPostedCents,
+    reviewEvidence: { unclassified, pending },
+  };
 }
 
-async function fetchLocalBudget(window) {
+async function buildSquareReconciliationTrace(baseUrl, token, rows) {
+  const bankPosting = [...rows].reverse().find((row) => (
+    String(row.status || '').toUpperCase() === 'POSTED'
+    && row.lineage?.kind === 'BANK_SETTLEMENT'
+    && row.lineage?.settlementPayouts?.length
+  ));
+  if (!bankPosting) return { available: false, reason: 'no_bank_settlement_in_period' };
+
+  const payoutIds = bankPosting.lineage.settlementPayouts.map((item) => item.payoutId);
+  const payoutRows = rows.filter((row) => (
+    row.lineage?.kind === 'SQUARE_PAYOUT' && payoutIds.includes(row.lineage?.payoutId)
+  ));
+  const details = await Promise.all(payoutRows.map((row) => (
+    fetchLocalBudgetJson(baseUrl, token, `/api/integration/v2/transactions/${encodeURIComponent(row.id)}`)
+  )));
+  const payouts = payoutRows.map((row, index) => {
+    const detail = details[index]?.ok ? details[index].body?.transaction : null;
+    const entries = (detail?.settlement?.entries || []).map((entry) => {
+      const type = entry.type || 'UNKNOWN';
+      const unsignedNetCents = Number(entry.netAmountCents) || 0;
+      const sign = ['REFUND', 'SQUARE_CAPITAL_PAYMENT'].includes(type)
+        ? -1
+        : ['CHARGE', 'SQUARE_CAPITAL_REVERSED_PAYMENT'].includes(type) ? 1 : null;
+      return {
+        id: entry.id,
+        providerEntryId: entry.providerEntryId || null,
+        type,
+        effectiveAt: entry.effectiveAt || null,
+        grossAmountCents: Number(entry.grossAmountCents) || 0,
+        feeAmountCents: Number(entry.feeAmountCents) || 0,
+        netAmountCents: unsignedNetCents,
+        signedNetAmountCents: sign === null ? null : sign * unsignedNetCents,
+        signBasis: sign === null ? 'unknown' : 'entry_type',
+      };
+    });
+    const signedEntries = entries.filter((entry) => entry.signedNetAmountCents !== null);
+    return {
+      transactionId: row.id,
+      payoutId: row.lineage.payoutId,
+      date: row.date,
+      amountCents: Number(row.amountCents) || 0,
+      detailAvailable: Boolean(detail),
+      settlementStatus: detail?.settlement?.status || null,
+      entries,
+      entryGrossCents: entries.reduce((sum, entry) => sum + entry.grossAmountCents, 0),
+      entryFeeCents: entries.reduce((sum, entry) => sum + entry.feeAmountCents, 0),
+      entryNetCents: signedEntries.reduce((sum, entry) => sum + entry.signedNetAmountCents, 0),
+      everyEntrySignKnown: signedEntries.length === entries.length,
+    };
+  });
+  const allocatedCents = bankPosting.lineage.settlementPayouts.reduce((sum, item) => sum + (Number(item.amountCents) || 0), 0);
+  return {
+    available: true,
+    bankPosting: {
+      transactionId: bankPosting.id,
+      date: bankPosting.date,
+      amountCents: Number(bankPosting.amountCents) || 0,
+      settlementPayouts: bankPosting.lineage.settlementPayouts,
+    },
+    payouts,
+    checks: {
+      bankAllocationMatchesPosting: allocatedCents === (Number(bankPosting.amountCents) || 0),
+      everyPayoutRowFound: payoutRows.length === payoutIds.length,
+      everyPayoutDetailAvailable: payouts.every((payout) => payout.detailAvailable),
+      everyPayoutEntrySignKnown: payouts.every((payout) => payout.everyEntrySignKnown),
+      everyPayoutEntryNetMatchesAmount: payouts.every((payout) => (
+        payout.entries.length > 0 && Math.abs(payout.entryNetCents) === Math.abs(payout.amountCents)
+      )),
+    },
+  };
+}
+
+function summariseReconciliationExceptions(rows, from, toExclusive, transactionRows) {
+  const lineageById = new Map(transactionRows.map((row) => [row.id, row.lineage || {}]));
+  return rows
+    .filter((row) => String(row.date || '').slice(0, 10) >= from && String(row.date || '').slice(0, 10) < toExclusive)
+    .map((row) => ({
+      id: row.id,
+      date: row.date,
+      amountCents: Number(row.amountCents) || 0,
+      type: row.type || null,
+      merchantName: row.merchantName || null,
+      accountName: row.account?.name || null,
+      reconciliationStatus: row.reconciliationStatus || null,
+      reconciliationMethod: row.reconciliationMethod || null,
+      matchedCents: Number(row.matchedCents) || 0,
+      unexplainedCents: Number(row.unexplainedCents) || 0,
+      settlementProvider: row.settlement?.provider || null,
+      settlementExternalId: row.settlement?.externalId || null,
+      allocationSystems: [...new Set((row.allocations || []).map((allocation) => allocation.externalSystem).filter(Boolean))],
+      allocationRoles: [...new Set((row.allocations || []).map((allocation) => allocation.role).filter(Boolean))],
+      lineageKind: lineageById.get(row.id)?.kind || 'UNKNOWN',
+      isCashPosting: lineageById.get(row.id)?.isCashPosting === true,
+    }))
+    .sort((a, b) => b.unexplainedCents - a.unexplainedCents || String(a.date).localeCompare(String(b.date)));
+}
+
+async function fetchLocalBudget(window, options = {}) {
   const baseUrl = String(process.env.LOCAL_BUDGET_API_URL || '').trim().replace(/\/+$/, '');
   const token = String(process.env.LOCAL_BUDGET_API_TOKEN || '').trim();
   if (!baseUrl || !token) return { available: false, reason: 'LOCAL_BUDGET_API_URL_or_TOKEN_missing' };
   const from = window.start.toISOString().slice(0, 10);
   const to = window.end.toISOString().slice(0, 10);
+  // cashflow-actuals uses an exclusive `to`; the transaction and receipt
+  // endpoints use an inclusive `to`. Normalize them to the same period.
+  const inclusiveTo = previousIsoDate(to);
   const cashflowPromise = fetchLocalBudgetJson(baseUrl, token, '/api/integration/v1/cashflow-actuals', { from, to, grain: 'month', contract: '2' });
-  const receiptsPromise = fetchLocalBudgetRows(baseUrl, token, '/api/integration/v1/receipt-evidence', { from, to });
+  const receiptsPromise = options.includeReceipts === false
+    ? Promise.resolve({ available: true, rows: [], pages: 0, truncated: false, contractVersion: null })
+    : fetchLocalBudgetRows(baseUrl, token, '/api/integration/v1/receipt-evidence', { from, to: inclusiveTo });
   // Deliberately omit classification/direction filters: Local Budget documents a
   // paging bug when those filters are combined. Follow every opaque cursor.
-  const transactionsPromise = fetchLocalBudgetRows(baseUrl, token, '/api/integration/v1/transactions', { from, to });
-  const [cashflow, receipts, transactions] = await Promise.all([cashflowPromise, receiptsPromise, transactionsPromise]);
+  const transactionsPromise = fetchLocalBudgetRows(baseUrl, token, '/api/integration/v1/transactions', { from, to: inclusiveTo });
+  const unmatchedPromise = fetchLocalBudgetRows(baseUrl, token, '/api/integration/v2/reconciliation/unmatched');
+  const [cashflow, receipts, transactions, unmatched] = await Promise.all([cashflowPromise, receiptsPromise, transactionsPromise, unmatchedPromise]);
+  const squareTrace = transactions.available
+    ? await buildSquareReconciliationTrace(baseUrl, token, transactions.rows)
+    : { available: false, reason: 'transactions_unavailable' };
   const cashflowBody = cashflow.ok ? cashflow.body : null;
   return {
-    available: cashflow.ok && receipts.available && transactions.available,
-    reason: [cashflow, receipts, transactions].find((result) => !result.ok && !result.available)?.reason || [cashflow, receipts, transactions].find((result) => result.available === false)?.reason || null,
+    available: cashflow.ok && receipts.available && transactions.available && unmatched.available,
+    reason: [cashflow, receipts, transactions, unmatched].find((result) => !result.ok && !result.available)?.reason || [cashflow, receipts, transactions, unmatched].find((result) => result.available === false)?.reason || null,
     cashActuals: cashflowBody ? {
       contractVersion: cashflowBody.contractVersion,
       methodVersion: cashflowBody.methodVersion,
+      generatedAt: cashflowBody.generatedAt || null,
+      timezone: cashflowBody.timezone || null,
       sourceMaxDate: cashflowBody.sourceMaxDate || null,
       quality: cashflowBody.quality || null,
       months: Array.isArray(cashflowBody.months) ? cashflowBody.months : [],
@@ -666,6 +818,13 @@ async function fetchLocalBudget(window) {
       truncated: transactions.truncated,
       lineageVersion: transactions.lineageVersion,
     } : { available: false, reason: transactions.reason },
+    squareReconciliationTrace: squareTrace,
+    reconciliationExceptions: unmatched.available ? {
+      available: true,
+      pages: unmatched.pages,
+      truncated: unmatched.truncated,
+      rows: summariseReconciliationExceptions(unmatched.rows, from, to, transactions.rows),
+    } : { available: false, reason: unmatched.reason },
   };
 }
 
@@ -820,4 +979,15 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
 
-module.exports = { classifyDeterministically, extractMenuCandidates, parseMenuMessage, parseWedgeReceipt, normaliseDate, buildMenuReport, buildWedgeReport, buildGmailRevenueCandidates };
+module.exports = {
+  classifyDeterministically,
+  extractMenuCandidates,
+  parseMenuMessage,
+  parseWedgeReceipt,
+  normaliseDate,
+  buildMenuReport,
+  buildWedgeReport,
+  buildGmailRevenueCandidates,
+  fetchLocalBudget,
+  loadEnv,
+};

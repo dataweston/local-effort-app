@@ -6,8 +6,9 @@ const { isAdminEmail } = require('../utils/adminVerifier');
 const router = express.Router();
 
 router.get('/', async (_req, res) => {
+  if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
   try {
-    const row = await prisma?.homeBulletin.findUnique({ where: { id: 'home' } });
+    const row = await prisma.homeBulletin.findUnique({ where: { id: 'home' } });
     return res.json({ markdown: row?.markdown || '' });
   } catch (error) {
     console.error('GET /api/home-bulletin failed:', error);

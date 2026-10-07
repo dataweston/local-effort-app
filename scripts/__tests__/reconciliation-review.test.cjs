@@ -22,7 +22,7 @@ test('passes when categorized cashflow exactly covers posted cash lineage', () =
   const review = buildReview(auditFixture(), 'audit.json');
   assert.equal(review.summary.automatedPass, true);
   assert.equal(review.summary.differenceCents, 0);
-  assert.match(review.markdown, /Automated result: PASS/);
+  assert.match(review.markdown, /Coverage result: PASS/);
   assert.match(review.markdown, /Decision: \*\*OPEN\*\*/);
 });
 
@@ -30,6 +30,6 @@ test('keeps a nonzero bridge difference open for review', () => {
   const review = buildReview(auditFixture(3700), 'audit.json');
   assert.equal(review.summary.automatedPass, false);
   assert.equal(review.summary.differenceCents, 100);
-  assert.match(review.markdown, /Difference requiring explanation: \*\*\$1\.00\*\*/);
-  assert.match(review.markdown, /REVIEW REQUIRED/);
+  assert.match(review.markdown, /Unexplained coverage difference\*\* \| \*\*\$1\.00\*\*/);
+  assert.match(review.markdown, /Coverage result: FAIL/);
 });

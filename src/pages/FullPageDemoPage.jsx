@@ -75,14 +75,30 @@ const SMALL_EVENT_CONFIG = {
 };
 
 const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
-const renderBulletinLine = (line, keyPrefix) => {
-  const tokens = String(line).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+const renderBulletinInline = (text, keyPrefix) => {
+  const tokens = String(text).split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g);
   return tokens.map((token, index) => {
-    if (token.startsWith('**') && token.endsWith('**')) return <strong key={`${keyPrefix}-${index}`}>{token.slice(2, -2)}</strong>;
-    if (token.startsWith('*') && token.endsWith('*')) return <em key={`${keyPrefix}-${index}`}>{token.slice(1, -1)}</em>;
+    const key = `${keyPrefix}-${index}`;
+    if ((token.startsWith('**') && token.endsWith('**')) || (token.startsWith('__') && token.endsWith('__'))) return <strong key={key}>{token.slice(2, -2)}</strong>;
+    if ((token.startsWith('*') && token.endsWith('*')) || (token.startsWith('_') && token.endsWith('_'))) return <em key={key}>{token.slice(1, -1)}</em>;
+    if (token.startsWith('`') && token.endsWith('`')) return <code key={key}>{token.slice(1, -1)}</code>;
+    const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (link) return <a key={key} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
     return token;
   });
 };
+const renderBulletin = (markdown) => String(markdown || '').split(/\n/).map((line, index) => {
+  const key = `bulletin-${index}`;
+  if (!line.trim()) return <div className="home-hero__spacer" key={key} />;
+  const heading = line.match(/^(#{1,3})\s+(.+)$/);
+  if (heading) {
+    const Tag = `h${heading[1].length + 1}`;
+    return <Tag key={key}>{renderBulletinInline(heading[2], key)}</Tag>;
+  }
+  if (/^\s*[-*+]\s+/.test(line)) return <div className="home-hero__list-line" key={key}>– {renderBulletinInline(line.replace(/^\s*[-*+]\s+/, ''), key)}</div>;
+  if (/^\s*>\s?/.test(line)) return <blockquote key={key}>{renderBulletinInline(line.replace(/^\s*>\s?/, ''), key)}</blockquote>;
+  return <p key={key}>{renderBulletinInline(line, key)}</p>;
+});
 const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
@@ -353,6 +369,7 @@ const FullPageDemoPage = () => {
   const [bulletinEditing, setBulletinEditing] = useState(false);
   const [bulletinSaving, setBulletinSaving] = useState(false);
   const [bulletinStatus, setBulletinStatus] = useState('');
+  const bulletinTextareaRef = useRef(null);
   const [layoutConfig, setLayoutConfig] = useState({ columns: 0, columnWidth: 0, gap: 10 });
   const containerRef = useRef(null);
   const [layoutReady, setLayoutReady] = useState(false);
@@ -1816,6 +1833,19 @@ const normalizeMealStyle = (value) =>
     }
   };
 
+  const insertBulletinMarkdown = (before, after = '', placeholder = 'text') => {
+    const input = bulletinTextareaRef.current;
+    const start = input?.selectionStart ?? bulletinDraft.length;
+    const end = input?.selectionEnd ?? start;
+    const selected = bulletinDraft.slice(start, end) || placeholder;
+    const next = `${bulletinDraft.slice(0, start)}${before}${selected}${after}${bulletinDraft.slice(end)}`;
+    setBulletinDraft(next);
+    requestAnimationFrame(() => {
+      input?.focus();
+      input?.setSelectionRange(start + before.length, start + before.length + selected.length);
+    });
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
     return () => clearTimeout(timer);
@@ -2822,19 +2852,24 @@ const normalizeMealStyle = (value) =>
                       fetchPriority="high"
                     />
                     <figcaption className="specimen-caption home-hero__caption" style={{ '--sp-caption-cells': 2 }}>
-                      <span className="specimen-caption__data">Untiedt's Sugar Melon</span>
-                      <span className="specimen-caption__data">Graham Tolbert</span>
+                      <span className="specimen-caption__data home-hero__title">Untiedt's Sugar Melon</span>
+                      <a className="specimen-caption__data home-hero__photographer" href="https://www.grahamtolbert.com/" target="_blank" rel="noreferrer">Graham Tolbert</a>
                     </figcaption>
                   </div>
                 </figure>
                 <div className="home-hero__bulletin">
                   {bulletinEditing ? (
                     <div className="home-hero__editor">
-                      <div className="home-hero__format" aria-label="Formatting">
-                        <button type="button" onClick={() => setBulletinDraft((value) => `${value}**text**`)}>Bold</button>
-                        <button type="button" onClick={() => setBulletinDraft((value) => `${value} *text*`)}>Italic</button>
+                      <div className="home-hero__format" aria-label="Formatting tools">
+                        <button type="button" aria-label="Bold" title="Bold" onClick={() => insertBulletinMarkdown('**', '**')}><strong>B</strong></button>
+                        <button type="button" aria-label="Italic" title="Italic" onClick={() => insertBulletinMarkdown('*', '*')}><em>I</em></button>
+                        <button type="button" onClick={() => insertBulletinMarkdown('## ', '', 'Heading')}>Heading</button>
+                        <button type="button" onClick={() => insertBulletinMarkdown('- ', '', 'List item')}>List</button>
+                        <button type="button" onClick={() => insertBulletinMarkdown('[', '](https://)', 'link text')}>Link</button>
                       </div>
-                      <textarea aria-label="Bulletin markdown" value={bulletinDraft} onChange={(event) => setBulletinDraft(event.target.value)} rows={9} />
+                      <textarea ref={bulletinTextareaRef} aria-label="Bulletin markdown" value={bulletinDraft} onChange={(event) => setBulletinDraft(event.target.value)} rows={9} />
+                      <div className="home-hero__preview-label">Preview</div>
+                      <div className="home-hero__note home-hero__preview">{renderBulletin(bulletinDraft)}</div>
                       <div className="home-hero__edit-actions">
                         <button type="button" onClick={saveBulletin} disabled={bulletinSaving}>{bulletinSaving ? 'Saving' : 'Save'}</button>
                         <button type="button" onClick={() => { setBulletinEditing(false); setBulletinStatus(''); }}>Cancel</button>
@@ -2844,9 +2879,7 @@ const normalizeMealStyle = (value) =>
                   ) : (
                     <>
                       <div className="home-hero__note">
-                        {bulletin.split('\n').map((line, index) => (
-                          <p key={`bulletin-${index}`}>{renderBulletinLine(line, `line-${index}`)}</p>
-                        ))}
+                        {renderBulletin(bulletin)}
                       </div>
                       {isAdmin && <button type="button" className="home-hero__edit" onClick={() => { setBulletinDraft(bulletin); setBulletinEditing(true); }}>Edit</button>}
                     </>
