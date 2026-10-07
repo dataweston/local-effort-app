@@ -1,14 +1,12 @@
-- name: Deploy to Vercel
-  run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
-  env:
-    VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 name: vercel-health
 
 on:
   pull_request:
+    branches:
+      - min
   push:
     branches:
-      - main
+      - min
 
 jobs:
   build-and-healthcheck:
@@ -55,3 +53,7 @@ jobs:
           if [ -f vercel-dev.pid ]; then
             kill $(cat vercel-dev.pid) || true
           fi
+
+      - name: Deploy production to Vercel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/min'
+        run: pnpm dlx vercel@latest --prod --yes --token "$VERCEL_TOKEN"
