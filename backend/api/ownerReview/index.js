@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { prisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { isDeepStrictEqual } = require('node:util');
+const { createHash } = require('node:crypto');
 const catalog = require('../foodOps/catalog');
 
 const CLASS_KEYS = Object.freeze({
@@ -65,6 +66,13 @@ const forbidden = (value) => {
 };
 const statusCodeError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
 const toDate = (value) => value ? new Date(value) : null;
+
+function receiptScopeVersion(row) {
+  return createHash('sha256').update(JSON.stringify([
+    row.id, row.source, row.sourceKey, new Date(row.observedAt).toISOString(), row.packCostCents,
+    row.scope ?? null, row.scopeSource ?? null, row.scopeAt ? new Date(row.scopeAt).toISOString() : null,
+  ])).digest('hex');
+}
 
 function safeRequest(request) {
   const schema = schemas[request.classKey];
@@ -230,6 +238,35 @@ function createOwnerReviewService({ prismaClient = prisma } = {}) {
     return { examined: sources.length, created };
   }
 
+  async function recordReceiptScopeDecision({ observationId, scope }) {
+    if (!['business', 'personal'].includes(scope)) throw statusCodeError(400, 'review-receipt-scope-invalid');
+    const observation = await prismaClient.costObservation.findUnique({
+      where: { id: observationId },
+      select: { id: true, source: true, sourceKey: true, observedAt: true, packCostCents: true, scope: true, scopeSource: true, scopeAt: true },
+    });
+    if (!observation || observation.scope !== null) throw statusCodeError(409, 'review-receipt-scope-stale');
+    const sourceVersion = receiptScopeVersion(observation);
+    const key = createHash('sha256').update(`${observationId}:${scope}`).digest('hex');
+    const raised = await raise({
+      domain: 'food_ops',
+      classKey: CLASS_KEYS.FOOD_RECEIPT_SCOPE,
+      questionKey: `cost-observation:${observationId}`,
+      question: { schemaVersion: 1 },
+      safeDisposition: 'leave_unassigned',
+      priorityBand: 'money',
+      raisedBy: 'food-ops-receipt-scope',
+      idempotencyKey: `receipt-scope:${key}`,
+      sourceVersion,
+      members: [{ subjectType: 'cost_observation', subjectId: observationId, evidenceRefs: [observationId] }],
+    });
+    return resolve(raised.request.id, {
+      answer: { scope },
+      expectedRevision: 1,
+      sourceVersion,
+      idempotencyKey: `receipt-scope-answer:${key}`,
+    }, false);
+  }
+
   async function list({ state = 'needs_decision', domain, classKey, limit = 50 } = {}) {
     if (!['needs_decision', 'applied_shadow', 'history'].includes(state)) throw statusCodeError(400, 'review-filter-invalid');
     const where = {};
@@ -313,6 +350,17 @@ function createOwnerReviewService({ prismaClient = prisma } = {}) {
           source.status !== 'unmapped' || source.updatedAt.toISOString() !== request.sourceVersion
         ));
       }
+      const receiptMember = request.members.find((item) => item.subjectType === 'cost_observation');
+      let receiptObservation = null;
+      if (!skip && request.classKey === CLASS_KEYS.FOOD_RECEIPT_SCOPE && receiptMember) {
+        const source = await db.costObservation.findUnique({
+          where: { id: receiptMember.subjectId },
+          select: { id: true, source: true, sourceKey: true, observedAt: true, packCostCents: true, scope: true, scopeSource: true, scopeAt: true },
+        });
+        receiptObservation = source;
+        sourceConflict = !source || request.members.filter((item) => item.subjectType === 'cost_observation').length !== 1
+          || source.scope !== null || receiptScopeVersion(source) !== request.sourceVersion;
+      }
       if (parsed.expectedRevision !== latest + 1 || (!skip && (parsed.sourceVersion ?? null) !== (request.sourceVersion ?? null)) || sourceConflict) {
         await db.ownerReviewMember.updateMany({ where: { requestId: id, state: 'open' }, data: { state: 'conflict' } });
         await db.ownerReviewAudit.create({ data: { requestId: id, eventType: 'conflict', actorType: 'owner', beforeRef: { status: request.status, sourceVersion: request.sourceVersion, revision: latest }, afterRef: { expectedRevision: parsed.expectedRevision, sourceVersion: parsed.sourceVersion ?? null }, reasonCode: 'source_version_or_revision_conflict' } });
@@ -328,6 +376,19 @@ function createOwnerReviewService({ prismaClient = prisma } = {}) {
         }
         applyState = 'applied';
       }
+      if (!skip && request.classKey === CLASS_KEYS.FOOD_RECEIPT_SCOPE && receiptObservation && ['business', 'personal'].includes(parsed.answer.scope)) {
+        const applied = await db.costObservation.updateMany({
+          where: { id: receiptObservation.id, scope: null },
+          data: { scope: parsed.answer.scope, scopeSource: 'owner', scopeAt: new Date() },
+        });
+        if (applied.count !== 1) {
+          await db.ownerReviewMember.updateMany({ where: { requestId: id, state: 'open' }, data: { state: 'conflict' } });
+          await db.ownerReviewAudit.create({ data: { requestId: id, eventType: 'conflict', actorType: 'owner', beforeRef: { status: request.status, sourceVersion: request.sourceVersion, revision: latest }, afterRef: { reason: 'source_version_changed' }, reasonCode: 'source_version_changed' } });
+          await db.ownerReviewRequest.update({ where: { id }, data: { status: 'conflict' } });
+          return { conflict: true };
+        }
+        applyState = 'applied';
+      }
       const decision = await db.ownerReviewDecision.create({ data: { requestId: id, revision: latest + 1, actorType: 'owner', answer: skip ? { skipped: true } : parsed.answer, reason: skip ? parsed.reasonCode : null, applyState, idempotencyKey: parsed.idempotencyKey } });
       await db.ownerReviewRequest.update({ where: { id }, data: { status: 'answered', resolvedAt: new Date() } });
       await db.ownerReviewMember.updateMany({ where: { requestId: id, state: 'open' }, data: { state: skip ? 'skipped' : applyState === 'applied' ? 'applied' : 'open' } });
@@ -338,7 +399,7 @@ function createOwnerReviewService({ prismaClient = prisma } = {}) {
     return result.request;
   }
 
-  return { raise, queueUnmappedVendorItems, expireDueRequests, list, answer: (id, payload) => resolve(id, payload, false), skip: (id, payload) => resolve(id, payload, true) };
+  return { raise, queueUnmappedVendorItems, recordReceiptScopeDecision, expireDueRequests, list, answer: (id, payload) => resolve(id, payload, false), skip: (id, payload) => resolve(id, payload, true) };
 }
 
 function createOwnerReviewRouter({ logger = null, prismaClient = prisma, verifyAdminRequest = createAdminVerifier(), service = null } = {}) {

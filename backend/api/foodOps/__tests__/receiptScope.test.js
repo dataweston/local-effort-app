@@ -202,6 +202,23 @@ describe('applyReceiptScope', () => {
     expect(db.rows[3].scope).toBeNull(); // gmail:aaa1 shares only a prefix with gmail:aaa
   });
 
+  it('sends a single unassigned line decision through the canonical review adapter', async () => {
+    const db = world();
+    let recorded = null;
+    const ownerReviewService = {
+      recordReceiptScopeDecision: async (decision) => { recorded = decision; },
+    };
+
+    const result = await applyReceiptScope(db, {
+      source: 'receipt_wedge', receiptKey: 'gmail:aaa',
+      lines: [{ observationId: 'a1', scope: 'business' }],
+    }, { now: NOW, ownerReviewService });
+
+    expect(result).toMatchObject({ updated: 1, heldByDefault: 0 });
+    expect(recorded).toEqual({ observationId: 'a1', scope: 'business' });
+    expect(db.calls.updateMany).toEqual([]);
+  });
+
   it('lets a receipt-level choice leave default-governed lines to their rule, but still honors an explicit line override', async () => {
     const db = world();
     db.items.get('beer').defaultScope = 'personal';

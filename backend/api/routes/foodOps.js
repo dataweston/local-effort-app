@@ -9,6 +9,7 @@ const { computeRequirements } = require('../foodOps/requirements');
 const localBudget = require('../foodOps/localBudgetClient');
 const receiptScope = require('../foodOps/receiptScope');
 const usage = require('../foodOps/usage');
+const { createOwnerReviewService } = require('../ownerReview');
 
 // Every write route previews by default and writes only with `apply: true`.
 const applyFlag = z.object({ apply: z.boolean().default(false) });
@@ -21,8 +22,10 @@ function createFoodOpsRouter({
   prismaClient = prisma,
   verifyAdminRequest = createAdminVerifier(),
   localBudgetClient = localBudget,
+  ownerReviewService = null,
 } = {}) {
   const router = express.Router();
+  const reviewService = ownerReviewService || createOwnerReviewService({ prismaClient });
 
   const guarded = (handler) => async (req, res) => {
     const admin = await verifyAdminRequest(req);
@@ -95,7 +98,7 @@ function createFoodOpsRouter({
   }));
 
   router.post('/receipts/scope', guarded(async (req, res) => {
-    const result = await receiptScope.applyReceiptScope(prismaClient, req.body || {});
+    const result = await receiptScope.applyReceiptScope(prismaClient, req.body || {}, { ownerReviewService: reviewService });
     const receipt = await receiptScope.getReceipt(prismaClient, result.source, result.receiptKey);
     res.json({ result, receipt });
   }));

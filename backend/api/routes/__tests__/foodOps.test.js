@@ -116,6 +116,76 @@ describe('food ops routes', () => {
       });
     });
 
+    it('records a single unassigned line through owner review and applies it with audit', async () => {
+      const row = observation();
+      const requests = [];
+      const members = [];
+      const decisions = [];
+      const audits = [];
+      const withRelations = (review) => ({
+        ...review,
+        members: members.filter((member) => member.requestId === review.id),
+        decisions: decisions.filter((decision) => decision.requestId === review.id),
+      });
+      const prismaClient = {
+        costObservation: {
+          findMany: vi.fn(async () => [row]),
+          findUnique: vi.fn(async () => row),
+          updateMany: vi.fn(async ({ where, data }) => {
+            if (row.id !== where.id || row.scope !== where.scope) return { count: 0 };
+            Object.assign(row, data);
+            return { count: 1 };
+          }),
+          groupBy: vi.fn().mockResolvedValue([]),
+        },
+        ownerReviewRequest: {
+          findUnique: vi.fn(async ({ where }) => {
+            const review = where.id ? requests.find((item) => item.id === where.id) : requests.find((item) => item.idempotencyKey === where.domain_idempotencyKey.idempotencyKey);
+            return review ? withRelations(review) : null;
+          }),
+          create: vi.fn(async ({ data }) => {
+            const review = { ...data, id: 'review-1', createdAt: new Date(), updatedAt: new Date(), resolvedAt: null };
+            requests.push(review);
+            for (const member of data.members.create) members.push({ ...member, id: `member-${members.length + 1}`, requestId: review.id });
+            return withRelations(review);
+          }),
+          update: vi.fn(async ({ where, data }) => {
+            const review = requests.find((item) => item.id === where.id);
+            Object.assign(review, data);
+            return withRelations(review);
+          }),
+        },
+        ownerReviewMember: {
+          updateMany: vi.fn(async ({ where, data }) => {
+            for (const member of members.filter((item) => item.requestId === where.requestId && item.state === where.state)) Object.assign(member, data);
+            return { count: 1 };
+          }),
+        },
+        ownerReviewDecision: {
+          findUnique: vi.fn(async () => decisions[0] || null),
+          create: vi.fn(async ({ data }) => {
+            const decision = { ...data, id: 'decision-1', createdAt: new Date() };
+            decisions.push(decision);
+            return decision;
+          }),
+        },
+        ownerReviewAudit: {
+          create: vi.fn(async ({ data }) => { audits.push(data); return data; }),
+        },
+        $transaction: vi.fn(async (operation) => typeof operation === 'function' ? operation(prismaClient) : Promise.all(operation)),
+      };
+      const response = await request(createApp({ prismaClient }))
+        .post('/api/food-ops/receipts/scope')
+        .send({ source: 'receipt_wedge', receiptKey: 'gmail:abc', lines: [{ observationId: 'o0', scope: 'business' }] });
+
+      expect(response.status).toBe(200);
+      expect(response.body.result).toMatchObject({ updated: 1, receiptKey: 'gmail:abc' });
+      expect(response.body.receipt.lines[0].scope).toBe('business');
+      expect(row).toMatchObject({ scope: 'business', scopeSource: 'owner' });
+      expect(decisions[0]).toMatchObject({ applyState: 'applied', answer: { scope: 'business' } });
+      expect(audits.map((audit) => audit.eventType)).toEqual(['raised', 'answered']);
+    });
+
     it('answers 422 for a line outside the receipt and 404 for an unknown receipt', async () => {
       const prismaClient = { costObservation: { findMany: vi.fn().mockResolvedValue([observation()]), groupBy: vi.fn().mockResolvedValue([]), updateMany: vi.fn() }, $transaction: vi.fn() };
       const app = createApp({ prismaClient });

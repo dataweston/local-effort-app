@@ -265,7 +265,7 @@ const decisionData = (scope, scopeSource, now) => (scope ? { scope, scopeSource,
  * default (an owner rule is not silently overridden by a receipt-level click), `lines` are explicit
  * per-line overrides that always win. `scope: null` clears. Returns counts; the caller re-reads the receipt.
  */
-async function applyReceiptScope(prisma, rawInput, { now = new Date() } = {}) {
+async function applyReceiptScope(prisma, rawInput, { now = new Date(), ownerReviewService = null } = {}) {
   const input = applyScopeSchema.parse(rawInput);
   const { observations } = await loadOneReceipt(prisma, input.source, input.receiptKey);
   const byId = new Map(observations.map((row) => [row.id, row]));
@@ -277,6 +277,15 @@ async function applyReceiptScope(prisma, rawInput, { now = new Date() } = {}) {
     }
     if (overrides.has(line.observationId)) throw httpError(422, `line ${line.observationId} listed twice`);
     overrides.set(line.observationId, line.scope);
+  }
+
+  if (ownerReviewService && input.scope === undefined && input.lines?.length === 1) {
+    const [line] = input.lines;
+    const observation = byId.get(line.observationId);
+    if (observation && observation.scope === null && ['business', 'personal'].includes(line.scope)) {
+      await ownerReviewService.recordReceiptScopeDecision({ observationId: observation.id, scope: line.scope });
+      return { source: input.source, receiptKey: input.receiptKey, updated: 1, heldByDefault: 0 };
+    }
   }
 
   const targets = new Map(); // scope|null -> ids

@@ -227,6 +227,55 @@ describe('owner review contract', () => {
     expect(db.audits.at(-1).eventType).toBe('conflict');
   });
 
+  it('records and applies a single receipt-scope decision through the canonical ledger', async () => {
+    const db = fakePrisma();
+    const observation = {
+      id: 'observation-1', source: 'receipt_wedge', sourceKey: 'wedge-2026-10-08|1',
+      observedAt: new Date('2026-10-08T00:00:00.000Z'), packCostCents: 725,
+      scope: null, scopeSource: null, scopeAt: null,
+    };
+    db.costObservation = {
+      findUnique: vi.fn(async () => observation),
+      updateMany: vi.fn(async ({ where, data }) => {
+        if (observation.id !== where.id || observation.scope !== where.scope) return { count: 0 };
+        Object.assign(observation, data);
+        return { count: 1 };
+      }),
+    };
+    const service = createOwnerReviewService({ prismaClient: db });
+
+    const result = await service.recordReceiptScopeDecision({ observationId: observation.id, scope: 'business' });
+
+    expect(observation).toMatchObject({ scope: 'business', scopeSource: 'owner' });
+    expect(result.status).toBe('answered');
+    expect(result.decisions[0]).toMatchObject({ answer: { scope: 'business' }, applyState: 'applied' });
+    expect(result.members[0]).toMatchObject({ subjectType: 'cost_observation', subjectId: observation.id, state: 'applied' });
+    expect(db.audits.map((audit) => audit.eventType)).toEqual(['raised', 'answered']);
+  });
+
+  it('records a conflict instead of changing a receipt line that changed before apply', async () => {
+    const db = fakePrisma();
+    const original = {
+      id: 'observation-2', source: 'receipt_wedge', sourceKey: 'wedge-2026-10-08|2',
+      observedAt: new Date('2026-10-08T00:00:00.000Z'), packCostCents: 725,
+      scope: null, scopeSource: null, scopeAt: null,
+    };
+    db.costObservation = {
+      findUnique: vi.fn()
+        .mockResolvedValueOnce(original)
+        .mockResolvedValueOnce({ ...original, scope: 'personal', scopeSource: 'owner', scopeAt: new Date('2026-10-09T00:00:00.000Z') }),
+      updateMany: vi.fn(),
+    };
+    const service = createOwnerReviewService({ prismaClient: db });
+
+    await expect(service.recordReceiptScopeDecision({ observationId: original.id, scope: 'business' })).rejects.toMatchObject({ statusCode: 409 });
+
+    expect(db.costObservation.updateMany).not.toHaveBeenCalled();
+    expect(db.requests[0].status).toBe('conflict');
+    expect(db.decisions).toHaveLength(0);
+    expect(db.audits.at(-1).eventType).toBe('conflict');
+  });
+
   it('expires only due queued requests and audits the transition', async () => {
     const db = fakePrisma();
     const service = createOwnerReviewService({ prismaClient: db });
