@@ -2,6 +2,15 @@
 
 This file is the fastest accurate map of the repo. Prefer it over older docs; anything in `docs/archive/` is historical and may describe retired systems.
 
+## Instruction precedence and retirement
+
+- Follow the current owner request for scope and acceptance; historical repo notes do not override it. Preserve safety, privacy, legal, and production-write controls.
+- Treat dated audits, handoffs, and task plans as snapshots. Confirm their status in the current code, configuration, or named system of record before acting; never reuse embedded production commands or credentials as standing authorization.
+- Keep volatile guidance marked with its owner, `As of` date, and `Review by` date or explicit completion condition. Revalidate it when due. Update or remove it when a task changes its evidence or next action.
+- Retire completed or superseded agent plans from active docs; retain only unique historical evidence in a clearly marked archive. `docs/archive/` is not an execution source.
+- Cross-repository status belongs to `westonsmithxyz/ops/control-plane/projects.json`; follow its system-of-record pointer before implementing.
+- Follow the shared instruction-maintenance procedure at `C:/Users/user/westonsmithxyz/docs/agent-instruction-lifecycle.md` when reviewing or retiring repo guidance.
+
 ## What this project is
 
 The production website and operations tooling for **Local Effort Cooperative** (https://www.localeffortfood.com), a Twin Cities personal chef / catering business. Goals, in priority order:

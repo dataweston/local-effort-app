@@ -22,10 +22,11 @@ function hasBrainAdminHeader(req) {
 let running = false;
 let lastRun = null;
 
-function registerTriageRoutes(app, { logger } = {}) {
+function registerTriageRoutes(app, { logger, verifyAdminRequest: verifyAdmin = verifyAdminRequest, runTriagePass: runPass = runTriagePass, withJobRun = null } = {}) {
+  const runJob = withJobRun || require('./jobRuns').withJobRun;
   const runHandler = async (req, res) => {
     try {
-      const admin = await verifyAdminRequest(req);
+      const admin = await verifyAdmin(req);
       const isCron = req.headers['x-vercel-cron'] === '1'
         || String(req.headers['user-agent'] || '').startsWith('vercel-cron');
       if (!admin && !isCron && !hasBrainAdminHeader(req)) {
@@ -36,14 +37,17 @@ function registerTriageRoutes(app, { logger } = {}) {
 
       running = true;
       try {
-        const { withJobRun } = require('./jobRuns');
-        const result = await withJobRun(
+        const result = await runJob(
           'triage-run',
-          () => runTriagePass({ logger, limit: parseInt(req.body?.limit, 10) || 30 })
+          () => runPass({ logger, limit: parseInt(req.body?.limit, 10) || 30 })
         );
-        lastRun = { completedAt: new Date().toISOString(), ...result };
-        logger?.info(lastRun, 'brain/triage: run finished');
-        return res.json({ ok: true, status: 'completed', ...result, lastRun });
+        const runStatus = result.status === 'blocked' || result.status === 'partial'
+          ? result.status
+          : result.noNewData
+            ? 'no_new_data'
+            : 'completed';
+        const ok = runStatus === 'completed' || runStatus === 'no_new_data';
+        return res.status(ok ? 200 : 503).json({ ...result, ok, status: runStatus, lastRun });
       } finally {
         running = false;
       }
@@ -59,7 +63,7 @@ function registerTriageRoutes(app, { logger } = {}) {
   // meal-prep intake ledger events. Idempotent; pass { force: true } to re-mine.
   app.post('/api/brain/constraints/mine', async (req, res) => {
     try {
-      const admin = await verifyAdminRequest(req);
+      const admin = await verifyAdmin(req);
       if (!admin && !hasBrainAdminHeader(req)) return res.status(403).json({ error: 'admin only' });
 
       const result = await runConstraintMiner({ logger, force: req.body?.force === true });

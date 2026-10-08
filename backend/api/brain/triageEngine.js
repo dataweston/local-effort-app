@@ -9,7 +9,6 @@
  *                                 triageHint for the drawer. rawContent is never mutated.
  */
 
-const { Prisma } = require('@prisma/client');
 const { getPrisma } = require('../utils/prisma');
 const { writeLedgerEvent } = require('./ledger');
 const { process: ingestProcess } = require('./ingest/engine');
@@ -22,10 +21,9 @@ const OPS_SOURCES = new Set(['gmail', 'square', 'Obsidian']);
 // item and handles inbox-status bookkeeping + Hub routing.
 
 // Mirror of brain-sidecar/hub.py post_to_space — surfaces triage activity in the hub.
-async function routeToHub(prisma, { source, action, raw, entityName }, logger) {
+async function routeToHub(prisma, { source, action }, logger) {
   try {
-    const snippet = raw.slice(0, 80).replace(/\n/g, ' ');
-    const body = `[${source} -> ${action}] ${snippet}${entityName ? ` — ${entityName}` : ''}`;
+    const body = `[${source} -> ${action}]`;
     let spaceKey = null;
     let title = null;
     if (OPS_SOURCES.has(source)) {
@@ -57,66 +55,94 @@ async function routeToHub(prisma, { source, action, raw, entityName }, logger) {
   }
 }
 
-async function runTriagePass({ logger, limit = 30 } = {}) {
-  const prisma = getPrisma();
+async function runTriagePass({ logger, limit = 30, prismaClient = null, processItem = ingestProcess, writeLedgerEventFn = writeLedgerEvent } = {}) {
+  const prisma = prismaClient || getPrisma();
 
+  const where = { status: 'pending', triageState: 'eligible' };
   const items = await prisma.brainInboxItem.findMany({
-    where: { status: 'pending', triageHint: { equals: Prisma.AnyNull } },
-    orderBy: { capturedAt: 'desc' },
+    where,
+    orderBy: { capturedAt: 'asc' },
     take: limit,
-    select: { id: true, rawContent: true, source: true },
+    select: { id: true, rawContent: true, source: true, triageHint: true },
   });
-  if (!items.length) return { acted: 0, deferred: 0, errors: [] };
 
+  let itemsProcessed = 0;
+  let itemsWritten = 0;
   let acted = 0;
   let deferred = 0;
   const errors = [];
 
   for (const item of items) {
+    itemsProcessed += 1;
     try {
-      // Single ingest engine: classify → resolve → apply (commit). The engine
-      // auto-applies confident/safe results and otherwise leaves the item
-      // pending with a triageHint (it writes nothing on needs_human/low-conf).
-      const r = await ingestProcess(item.rawContent, { source: item.source || 'node_triage', actor: 'system', noInboxFallback: true }, { commit: true });
+      const r = await processItem(item.rawContent, { source: item.source || 'node_triage', actor: 'system', noInboxFallback: true }, { commit: true });
 
-      // trash is classification-only in the engine (never applied) — handle the
-      // high-confidence auto-trash here so noise still clears the queue.
       if (r.intent === 'trash' && r.confidence >= AUTO_ACT_THRESHOLD) {
-        await prisma.brainInboxItem.update({ where: { id: item.id }, data: { status: 'trashed', processedAt: new Date() } });
-        await writeLedgerEvent({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { action: 'trash', confidence: r.confidence } });
+        await prisma.brainInboxItem.update({
+          where: { id: item.id },
+          data: { status: 'trashed', processedAt: new Date(), triageState: 'classified' },
+        });
+        itemsWritten += 1;
+        await writeLedgerEventFn({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { action: 'trash', confidence: r.confidence } });
         acted += 1;
         continue;
       }
 
       if (r.committed && r.applied && !r.applied.error) {
-        // The engine applied it. Mark this inbox item triaged + route to Hub.
         const resultEntityId = r.applied.entityId || r.applied.taskId || r.applied.noteId
           || r.applied.results?.[0]?.itemEntityId || null;
-        await prisma.brainInboxItem.update({ where: { id: item.id }, data: { status: 'triaged', processedAt: new Date(), resultEntityId } });
-        await writeLedgerEvent({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { intent: r.intent, confidence: r.confidence, applied: r.applied } });
-        await routeToHub(prisma, { source: item.source, action: r.intent, raw: item.rawContent, entityName: r.preview?.summary }, logger);
+        await prisma.brainInboxItem.update({
+          where: { id: item.id },
+          data: { status: 'triaged', processedAt: new Date(), resultEntityId, triageState: 'classified' },
+        });
+        itemsWritten += 1;
+        await writeLedgerEventFn({ eventType: 'inbox.auto_triaged', source: 'node_triage', sourceId: item.id, payload: { intent: r.intent, confidence: r.confidence, applied: r.applied } });
+        await routeToHub(prisma, { source: item.source, action: r.intent }, logger);
         acted += 1;
         continue;
       }
 
-      // Not applied: leave a structured hint for the drawer (engine already
-      // captured a fallback inbox item if commit produced one; here we annotate
-      // THIS item so the founder sees what the engine understood).
       await prisma.brainInboxItem.update({
         where: { id: item.id },
-        data: { triageHint: { intent: r.intent, confidence: r.confidence, preview: r.preview, reason: r.needsConfirmReason, fields: r.fields, via: r.via } },
+        data: {
+          triageState: 'classified',
+          triageHint: {
+            ...(item.triageHint && typeof item.triageHint === 'object' && !Array.isArray(item.triageHint) ? item.triageHint : {}),
+            intent: r.intent,
+            confidence: r.confidence,
+            preview: r.preview,
+            reason: r.needsConfirmReason,
+            fields: r.fields,
+            via: r.via,
+          },
+        },
       });
-      await routeToHub(prisma, { source: item.source, action: r.intent, raw: item.rawContent, entityName: r.preview?.summary }, logger);
+      itemsWritten += 1;
+      await routeToHub(prisma, { source: item.source, action: r.intent }, logger);
       deferred += 1;
     } catch (err) {
       errors.push(`${item.id}: ${err.message}`);
       logger?.warn({ err, itemId: item.id }, 'brain/triage: item failed');
-      deferred += 1;
     }
   }
 
-  logger?.info({ acted, deferred, errors: errors.length }, 'brain/triage: pass complete');
-  return { acted, deferred, errors };
+  const eligibleBacklog = await prisma.brainInboxItem.count({ where });
+  const noNewData = eligibleBacklog === 0 && itemsProcessed === 0;
+  const blocked = eligibleBacklog > 0 && itemsWritten === 0 && errors.length === 0;
+  const status = blocked ? 'blocked' : errors.length > 0 ? 'partial' : undefined;
+  logger?.info({ itemsProcessed, itemsWritten, eligibleBacklog, acted, deferred, errors: errors.length }, 'brain/triage: pass complete');
+  return {
+    itemsProcessed,
+    itemsWritten,
+    eligibleBacklog,
+    acted,
+    deferred,
+    errors,
+    ...(noNewData ? { noNewData: true } : {}),
+    ...(blocked ? { blocked: true } : {}),
+    ...(status ? { status } : {}),
+  };
+
 }
 
 module.exports = { runTriagePass };

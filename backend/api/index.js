@@ -110,6 +110,7 @@ const { createMetaProductFeedsRouter } = require('./routes/metaProductFeeds');
 const { createSupportRouter } = require('./routes/support');
 const { createDecisionRouter } = require('./routes/decision');
 const { createProductPricingRouter } = require('./routes/productPricing');
+const { createOwnerReviewRouter } = require('./ownerReview');
 const { createThumbtackRouter } = require('./routes/thumbtack');
 const {
   CHECKOUT_SCOPES,
@@ -126,6 +127,7 @@ const { prisma: financePrisma } = require('./utils/prisma');
 const { recordSquarePaymentEvidence } = require('./finance/squarePaymentEvidence');
 const { createFinanceRouter } = require('./routes/finance');
 const { createSalesRouter } = require('./routes/sales');
+const { createFoodOpsRouter } = require('./routes/foodOps');
 const {
   loadPublishedCrowdfundingSummary,
 } = require('../../packages/lib/crowdfundingFallbacks');
@@ -1090,7 +1092,9 @@ app.use('/api/home-bulletin', createHomeBulletinRouter());
 app.use('/api/venues', createVenuesRouter({ logger }));
 app.use('/api/finance', createFinanceRouter({ logger }));
 app.use('/api/product-pricing', createProductPricingRouter({ logger }));
+app.use('/api/admin/reviews', createOwnerReviewRouter({ logger }));
 app.use('/api/sales', createSalesRouter({ logger }));
+app.use('/api/food-ops', createFoodOpsRouter({ logger }));
 app.post('/api/internal/catalog/sanity-sync', async (req, res, next) => {
   try { await sanityCommerceSyncHandler(req, res); } catch (err) { next(err); }
 });

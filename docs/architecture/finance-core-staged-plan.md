@@ -60,6 +60,8 @@ Add these only after the `now` spine has reliable coverage and an accountable ow
 - finance-grade inventory valuation and borrowing-base snapshots after physical-count accuracy, material balances, and lender eligibility are measured;
 - double-entry journal projections, closed periods, and financial statements only after a CPA/bookkeeper chooses whether this repo or an accounting product owns the official ledger.
 
+Operational stock (catalog, recipes, locations, counts, movements) is planned separately in `docs/architecture/food-operations-core-plan.md`, which the owner authorized on 2026-10-07. It does not change the deferrals above: no accounts payable, no inventory valuation, no ledger, and no `InventoryLot` until its Phase 8 triggers fire. It reads Local Budget through the integration API only and emits modeled material cost with join keys, never margin.
+
 `InventoryLot`, `InventoryMovement`, valuation, and borrowing-base work are strategically plausible. They are later because Local Budget's margin work should first establish the cost evidence and join contract. The operational inventory system may advance sooner for availability, food safety, and waste measurement without claiming GAAP valuation.
 
 ## Local Budget margin integration contract

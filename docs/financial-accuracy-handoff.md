@@ -1,6 +1,11 @@
 # Financial accuracy handoff
 
 Prepared October 6, 2026 for the next agent improving the annual report data.
+Status: Active
+Owner: Next agent assigned to the financial-accuracy audit
+As of: 2026-10-06
+Review by: Completion of the acceptance criteria below
+Authority: `westonsmithxyz/ops/control-plane/projects.json` → `evidence-ingestion`; read-only Local Budget integration API
 
 ## Delivered
 

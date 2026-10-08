@@ -43,6 +43,9 @@ const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsA
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
+const AdminFoodOpsReceiptsPage = lazy(() => import('./pages/AdminFoodOpsReceiptsPage'));
+const AdminOwnerReviewPage = lazy(() => import('./pages/AdminOwnerReviewPage'));
+
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const MealPrepIntakePage = lazy(() => import('./pages/MealPrepIntakePage'));
 const CatherineSchedulePage = lazy(() => import('./pages/CatherineSchedulePage'));
@@ -357,6 +360,23 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route
+                  path="/admin/food-ops/receipts"
+                  element={
+                    <AnimatedPage>
+                      <AdminFoodOpsReceiptsPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/admin/reviews"
+                  element={
+                    <AnimatedPage>
+                      <AdminOwnerReviewPage />
+                    </AnimatedPage>
+                  }
+                />
+
                 {/* Subscriber Portal retired — superseded by the Hub customer
                     view (profile, this-week menu + feedback, intake, chat).
                     Redirect old bookmarks to /hub. Archived page in docs/archive. */}

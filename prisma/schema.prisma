@@ -1822,10 +1822,11 @@ model BrainInboxItem {
   processedAt    DateTime?
   resultEntityId String?
   triageHint     Json?
+  triageState    String    @default("eligible")
 
   resultEntity BrainEntity? @relation(fields: [resultEntityId], references: [id])
 
-  @@index([status, capturedAt])
+  @@index([status, triageState, capturedAt])
 }
 
 model BrainApiToken {
@@ -2091,4 +2092,250 @@ model MembershipEntitlementGrant {
   @@unique([membershipId, entitlementCode, periodKey])
   @@index([membershipId, status])
   @@index([entitlementCode, periodKey])
+}
+
+// ============================================================================
+// FOOD OPERATIONS CORE (docs/architecture/food-operations-core-plan.md)
+//
+// Stock catalog, vendor-item mapping, cost evidence, and versioned recipes.
+// Costs here are MODELED: last-paid pack cost / pack base quantity. They are
+// not margin and not inventory valuation. Quantities are in the stock
+// product's base unit (g / ml / each). Names deliberately avoid `Inventory*`,
+// which already means quote-time capacity (InventoryResource).
+// ============================================================================
+
+model StockProduct {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  name          String
+  kind          String   @default("raw")
+  dimension     String
+  densityGPerMl Decimal? @db.Decimal(12, 6)
+  aliases       String[]
+  status        String   @default("active")
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vendorItems      VendorItem[]
+  recipeComponents RecipeComponent[]
+  outputRecipes    Recipe[]
+
+  @@index([kind, status])
+}
+
+model VendorItem {
+  id                    String    @id @default(uuid())
+  identityKey           String    @unique
+  vendorKey             String
+  vendorName            String
+  localBudgetVendorId   String?
+  vendorSku             String?
+  description           String
+  normalizedDescription String
+  packText              String?
+  packBaseQuantity      Decimal?  @db.Decimal(18, 6)
+  packDimension         String?
+  stockProductId        String?
+  status                String    @default("unmapped")
+  // Owner rule: 'business' | 'personal' = always that scope for this item (NULL = no rule).
+  defaultScope          String?
+  lastPackCostCents     Int?
+  lastPurchasedAt       DateTime?
+  localBudgetItemId     String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  stockProduct     StockProduct?     @relation(fields: [stockProductId], references: [id], onDelete: Restrict)
+  costObservations CostObservation[]
+
+  @@index([status, vendorKey])
+  @@index([stockProductId])
+}
+
+// Append-only price evidence. Cost per base unit is derived at read time from
+// the vendor item's CURRENT pack conversion, so correcting a pack size fixes
+// history instead of leaving stale denormalized numbers.
+model CostObservation {
+  id             String   @id @default(uuid())
+  vendorItemId   String
+  source         String
+  sourceKey      String
+  observedAt     DateTime
+  packCostCents  Int
+  quantity       Decimal? @db.Decimal(18, 6)
+  lineTotalCents Int?
+  note           String?
+  // Personal vs business purchase scope. NULL = unassigned (the vendor item's
+  // defaultScope may still apply at read time). Price evidence is valid either
+  // way; scope only drives spend and usage reporting.
+  scope          String?
+  scopeSource    String?   // 'owner' (explicit decision) | 'rule' (accepted suggestion)
+  scopeAt        DateTime?
+  createdAt      DateTime @default(now())
+
+  vendorItem VendorItem @relation(fields: [vendorItemId], references: [id], onDelete: Cascade)
+
+  @@unique([source, sourceKey])
+  @@index([source, observedAt])
+  @@index([vendorItemId, observedAt])
+}
+
+model Recipe {
+  id                   String   @id @default(uuid())
+  key                  String   @unique
+  name                 String
+  kind                 String   @default("prep")
+  outputStockProductId String?
+  dishEntityId         String?
+  commercialProductId  String?
+  status               String   @default("active")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  outputStockProduct StockProduct?     @relation(fields: [outputStockProductId], references: [id], onDelete: Restrict)
+  versions           RecipeVersion[]
+  usedAsSubRecipe    RecipeComponent[]
+
+  @@index([dishEntityId])
+  @@index([kind, status])
+}
+
+// A version is editable only while status = 'draft'. A database trigger blocks
+// changes to active/retired versions and their components.
+model RecipeVersion {
+  id            String    @id @default(uuid())
+  recipeId      String
+  version       Int
+  status        String    @default("draft")
+  yieldQuantity Decimal   @db.Decimal(18, 6)
+  yieldUnit     String
+  servings      Int?
+  contentHash   String
+  notes         String?
+  activatedAt   DateTime?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+
+  recipe     Recipe            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  components RecipeComponent[]
+
+  @@unique([recipeId, version])
+  @@index([recipeId, status])
+}
+
+model RecipeComponent {
+  id              String  @id @default(uuid())
+  recipeVersionId String
+  lineNo          Int
+  stockProductId  String?
+  subRecipeId     String?
+  quantity        Decimal @db.Decimal(18, 6)
+  unit            String
+  wastePct        Decimal @default(0) @db.Decimal(6, 3)
+  note            String?
+
+  recipeVersion RecipeVersion @relation(fields: [recipeVersionId], references: [id], onDelete: Cascade)
+  stockProduct  StockProduct? @relation(fields: [stockProductId], references: [id], onDelete: Restrict)
+  subRecipe     Recipe?       @relation(fields: [subRecipeId], references: [id], onDelete: Restrict)
+
+  @@unique([recipeVersionId, lineNo])
+  @@index([stockProductId])
+  @@index([subRecipeId])
+}
+
+model OwnerReviewRule {
+  id          String   @id @default(uuid())
+  domain      String
+  classKey    String
+  ruleKey     String
+  version     Int
+  status      String   @default("disabled")
+  conditions  Json
+  answer      Json
+  validFrom   DateTime?
+  validUntil  DateTime?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([domain, classKey, ruleKey, version])
+  @@index([domain, classKey, status])
+  @@index([status, validUntil])
+}
+
+model OwnerReviewRequest {
+  id             String   @id @default(uuid())
+  domain         String
+  classKey       String
+  questionKey    String
+  status         String   @default("queued")
+  priorityBand   String
+  question       Json
+  candidateSet   Json?
+  safeDisposition String
+  raisedBy       String
+  idempotencyKey String
+  sourceVersion  String?
+  dueAt          DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  members        OwnerReviewMember[]
+  decisions      OwnerReviewDecision[]
+  audits         OwnerReviewAudit[]
+
+  @@unique([domain, idempotencyKey])
+  @@index([status, priorityBand, dueAt])
+  @@index([domain, classKey, status])
+}
+
+model OwnerReviewMember {
+  id           String   @id @default(uuid())
+  requestId    String
+  subjectType  String
+  subjectId    String
+  evidenceRefs String[] @default([])
+  valueCents   Int?
+  state        String   @default("open")
+  createdAt    DateTime @default(now())
+  request      OwnerReviewRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+
+  @@unique([requestId, subjectType, subjectId])
+  @@index([subjectType, subjectId, state])
+}
+
+model OwnerReviewDecision {
+  id             String   @id @default(uuid())
+  requestId      String
+  revision       Int
+  actorType      String
+  answer         Json
+  reason         String?
+  applyState     String   @default("not_requested")
+  idempotencyKey String
+  createdAt      DateTime @default(now())
+  request        OwnerReviewRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  audits         OwnerReviewAudit[]
+
+  @@unique([requestId, revision])
+  @@unique([requestId, idempotencyKey])
+  @@index([requestId, createdAt])
+}
+
+model OwnerReviewAudit {
+  id         String   @id @default(uuid())
+  requestId  String
+  decisionId String?
+  eventType  String
+  actorType  String
+  beforeRef  Json?
+  afterRef   Json?
+  reasonCode String?
+  createdAt  DateTime @default(now())
+  request    OwnerReviewRequest  @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  decision   OwnerReviewDecision? @relation(fields: [decisionId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@index([decisionId])
 }

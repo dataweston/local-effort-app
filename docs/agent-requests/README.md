@@ -2,4 +2,6 @@
 
 Current active request spec: `2026-08-capital-growth-requests.md`.
 
+Research request (not an execution blocker): `brain-review-system-overhaul-research-prompt.md` (review-system overhaul; evidence as of 2026-10-08).
+
 Use these files for execution blockers and required owner inputs. Do not duplicate financial source-of-truth data here; the current Capital Master Record and Local Budget control those facts.
