@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CartProvider, useCart } from '../store/cart/CartContext';
@@ -122,18 +122,49 @@ function PizzaShop() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [products, setProducts] = useState(uniqueProducts(generatedCatalog.products));
   const [page, setPage] = useState(() => mergePage(generatedCatalog.page));
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const checkoutLinkHandled = useRef(false);
   useEffect(() => {
     let alive = true;
     fetch('/api/store/products?store=pizza-on-smith')
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
-        if (!alive || !data) return;
-        if (Array.isArray(data.products) && data.products.length) setProducts(uniqueProducts(data.products));
-        if (data.page) setPage(mergePage(data.page));
+        if (!alive) return;
+        if (Array.isArray(data?.products) && data.products.length) setProducts(uniqueProducts(data.products));
+        if (data?.page) setPage(mergePage(data.page));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (alive) setCatalogLoaded(true);
+      });
     return () => { alive = false; };
   }, []);
+  useEffect(() => {
+    if (!catalogLoaded || checkoutLinkHandled.current || typeof window === 'undefined') return;
+    const productId = new URLSearchParams(window.location.search).get('add_to_cart');
+    if (!productId) return;
+    checkoutLinkHandled.current = true;
+    const product = products.find((item) => item.id === productId);
+    const outOfStock = product?.inventoryManaged === true && Number(product.inventory) <= 0;
+    if (!product || outOfStock) return;
+    clear();
+    add({
+      productId: product.id,
+      title: product.title,
+      qty: 1,
+      unitPrice: product.price,
+      image: productImage(product),
+      allowsDelivery: product.allowsDelivery !== false,
+    });
+    window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`);
+    trackEvent('checkout.started', {
+      store: catalog.store,
+      amountCents: product.price,
+      itemCount: 1,
+      source: 'google_checkout_link',
+    });
+    openCart();
+  }, [add, catalogLoaded, clear, openCart, products]);
   const oliveOil = products.find((product) =>
     product.id === 'smith-olive-oil' ||
     product.slug === 'smith-olive-oil' ||
@@ -189,6 +220,7 @@ function PizzaShop() {
           price: (product.price / 100).toFixed(2),
           priceCurrency: 'USD',
           url: `${SITE_URL}/pizza-on-smith`,
+          checkoutPageURLTemplate: `${SITE_URL}/pizza-on-smith?add_to_cart=${encodeURIComponent(product.id)}`,
           availableDeliveryMethod: 'https://schema.org/OnSitePickup',
         },
       },

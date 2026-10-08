@@ -21,7 +21,7 @@ const express = require('express');
 const storeProductsHandler = require('../../../api-handlers/store/products');
 
 // Storefronts that are public and orderable. A store not listed here is not fed.
-const FEED_STORES = ['sale', 'chez-garage'];
+const FEED_STORES = ['sale', 'chez-garage', 'pizza-on-smith'];
 
 const BRAND = 'Local Effort Cooperative';
 
@@ -30,8 +30,9 @@ const BRAND = 'Local Effort Cooperative';
 const GOOGLE_PRODUCT_CATEGORY = 'Food, Beverages & Tobacco > Food Items';
 
 const STORE_META = {
-  'sale': { path: '/sale', productType: 'Prepared Food > Seasonal Drops' },
-  'chez-garage': { path: '/chez-garage', productType: 'Prepared Food > Chez Garage Pop-Up' },
+  sale: { path: '/sale', productType: 'Prepared Food > Seasonal Drops', delivery: true },
+  'chez-garage': { path: '/chez-garage', productType: 'Prepared Food > Chez Garage Pop-Up', delivery: true },
+  'pizza-on-smith': { path: '/pizza-on-smith', productType: 'Prepared Food > Pizza on Smith', delivery: false },
 };
 
 function escapeXml(value = '') {
@@ -84,13 +85,13 @@ function loadStoreProducts(store) {
  * item_group_id, which is how Google models the same thing.
  */
 function itemsForProduct(product, store, siteUrl) {
-  const meta = STORE_META[store] || { path: `/${store}`, productType: 'Prepared Food' };
-  const link = `${siteUrl}${meta.path}#${product.slug || product.id}`;
+  const meta = STORE_META[store] || { path: `/${store}`, productType: 'Prepared Food', delivery: true };
+  const checkoutUrl = `${siteUrl}${meta.path}?add_to_cart=${encodeURIComponent(product.id)}`;
   const images = (Array.isArray(product.images) ? product.images : []).filter(Boolean);
 
   // Google requires an image that shows the product itself. Substituting a
-  // storefront photo would be a policy violation, so imageless products are
-  // reported out rather than padded.
+  // storefront photo would misrepresent the item, so imageless products are
+  // withheld rather than padded.
   if (!images.length) return { items: [], skipped: [`${product.title}: no image`] };
 
   const managed = product.inventoryManaged === true;
@@ -99,14 +100,20 @@ function itemsForProduct(product, store, siteUrl) {
 
   const base = {
     description: plainText(product),
-    link,
+    link: `${siteUrl}${meta.path}#order`,
+    ...(store === 'pizza-on-smith' ? { checkoutLinkTemplate: checkoutUrl } : {}),
     imageLink: images[0],
     additionalImages: images.slice(1, 11),
     availability,
     productType: meta.productType,
-    // Local delivery only; nothing here ships by carrier. Free at the cart's
-    // minimum, which is the storefront's own rule.
-    shipping: { country: 'US', region: 'MN', price: '0.00 USD' },
+    ...(meta.delivery ? {
+      // These storefronts use local delivery; nothing here ships by carrier.
+      shipping: { country: 'US', region: 'MN', price: '0.00 USD' },
+    } : {
+      // Smith is pickup-only; do not publish a false shipping offer.
+      pickupMethod: 'buy',
+      pickupSla: '7-day',
+    }),
   };
 
   const variants = (product.variants || []).filter(
@@ -117,13 +124,17 @@ function itemsForProduct(product, store, siteUrl) {
   if (!basePrice && variants.length) {
     const groupId = String(product.id);
     return {
-      items: variants.map((variant, idx) => ({
-        ...base,
-        id: variant.squareVariationId || `${groupId}-v${idx + 1}`,
-        itemGroupId: groupId,
-        title: `${product.title} — ${variant.name}`,
-        price: money(variant.price),
-      })),
+      items: variants.map((variant, idx) => {
+        const id = variant.squareVariationId || `${groupId}-v${idx + 1}`;
+        return {
+          ...base,
+          id,
+          checkoutLinkTemplate: `${siteUrl}${meta.path}?add_to_cart=${encodeURIComponent(product.id)}&variation=${encodeURIComponent(id)}`,
+          itemGroupId: groupId,
+          title: `${product.title} — ${variant.name}`,
+          price: money(variant.price),
+        };
+      }),
       skipped: [],
     };
   }
@@ -145,12 +156,14 @@ function itemsForProduct(product, store, siteUrl) {
   };
 }
 
+
 function renderItem(item) {
   const parts = [
     `<g:id>${escapeXml(item.id)}</g:id>`,
     `<g:title>${escapeXml(item.title)}</g:title>`,
     `<g:description>${escapeXml(item.description)}</g:description>`,
     `<g:link>${escapeXml(item.link)}</g:link>`,
+    ...(item.checkoutLinkTemplate ? [`<g:checkout_link_template>${escapeXml(item.checkoutLinkTemplate)}</g:checkout_link_template>`] : []),
     `<g:image_link>${escapeXml(item.imageLink)}</g:image_link>`,
     ...item.additionalImages.map((url) => `<g:additional_image_link>${escapeXml(url)}</g:additional_image_link>`),
     `<g:availability>${item.availability}</g:availability>`,
@@ -162,11 +175,15 @@ function renderItem(item) {
     `<g:google_product_category>${escapeXml(GOOGLE_PRODUCT_CATEGORY)}</g:google_product_category>`,
     `<g:product_type>${escapeXml(item.productType)}</g:product_type>`,
     ...(item.itemGroupId ? [`<g:item_group_id>${escapeXml(item.itemGroupId)}</g:item_group_id>`] : []),
-    '<g:shipping>'
-      + `<g:country>${item.shipping.country}</g:country>`
-      + `<g:region>${item.shipping.region}</g:region>`
-      + `<g:price>${item.shipping.price}</g:price>`
-      + '</g:shipping>',
+    ...(item.pickupMethod ? [`<g:pickup_method>${item.pickupMethod}</g:pickup_method>`] : []),
+    ...(item.pickupSla ? [`<g:pickup_sla>${item.pickupSla}</g:pickup_sla>`] : []),
+    ...(item.shipping ? [
+      '<g:shipping>'
+        + `<g:country>${item.shipping.country}</g:country>`
+        + `<g:region>${item.shipping.region}</g:region>`
+        + `<g:price>${item.shipping.price}</g:price>`
+        + '</g:shipping>',
+    ] : []),
   ];
   return `    <item>\n      ${parts.join('\n      ')}\n    </item>`;
 }

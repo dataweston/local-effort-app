@@ -138,10 +138,7 @@ The sync above is read-only and the write path needs account-side work that is
 still outstanding, so products reach Google two other ways — neither of which
 needs OAuth or Merchant API registration.
 
-**1. Product structured data.** `/sale` and `/chez-garage` are prerendered with
-complete `Product` JSON-LD (offer, price, `priceValidUntil`, availability,
-condition, `hasMerchantReturnPolicy`, `shippingDetails`). Merchant Center's
-automatic feeds and free listings read it straight off the page.
+**1. Product structured data.** `/sale` and `/chez-garage` expose product offers; `/pizza-on-smith` now includes a product-specific `checkoutPageURLTemplate` for Google’s checkout-link crawl feature.
 
 **2. A scheduled-fetch feed.** `backend/api/routes/productFeeds.js` serves an
 RSS 2.0 feed in Google's `g:` namespace:
@@ -149,6 +146,7 @@ RSS 2.0 feed in Google's `g:` namespace:
 ```text
 https://www.localeffortfood.com/api/feeds/google-merchant.xml
 https://www.localeffortfood.com/api/feeds/google-merchant.xml?store=chez-garage
+https://www.localeffortfood.com/api/feeds/google-merchant.xml?store=pizza-on-smith
 ```
 
 Add it once under **Merchant Center → Data sources → Add product source →
@@ -162,6 +160,23 @@ Products with **no image are withheld** rather than padded with a storefront
 photo, which Google treats as a policy violation. The feed states which ones in
 an XML comment on the channel and logs them at `warn`. Fixing those means adding
 a photo in Sanity — nothing in the code can substitute for it.
+
+The Pizza on Smith listing is pickup-only: its feed items omit shipping, declare
+online purchase with pickup, and use a seven-day maximum pickup SLA for its
+Tuesday cadence. Its product link opens the shop; its product-level
+`checkout_link_template` adds one catalog item to the cart. Google requires a
+working GET URL with no sign-in and may choose when to show the checkout option.
+The annotation is limited to supported mobile/tablet surfaces and is not
+guaranteed. See [Google's checkout-link requirements](https://support.google.com/merchants/answer/13945960?hl=en).
+
+**External setup is still required.** An authorized operator must add the Smith
+feed in Merchant Center, verify its pickup/business-location configuration,
+resolve any item-policy diagnostics, and confirm Google has accepted the
+checkout URL. Because Google allows either product-level or account-level
+checkout links (not both), choose product-level links for this feed and remove
+any account-level checkout URL before enabling it. This code does not create
+or modify Merchant Center account settings. The scheduled feed is a projection,
+not an inventory reservation.
 
 ## Google Ads
 

@@ -106,6 +106,7 @@ const { createVenuesRouter } = require('./routes/venues');
 const { createPlannerRouter } = require('./routes/planner');
 const { createPublicContextRouter } = require('./routes/publicContext');
 const { createProductFeedsRouter } = require('./routes/productFeeds');
+const { createMetaProductFeedsRouter } = require('./routes/metaProductFeeds');
 const { createSupportRouter } = require('./routes/support');
 const { createDecisionRouter } = require('./routes/decision');
 const { createProductPricingRouter } = require('./routes/productPricing');
@@ -2283,6 +2284,7 @@ app.use('/api', createSupportRouter({ logger }));
 app.use('/api', createDecisionRouter({ logger }));
 app.use('/api', createThumbtackRouter({ logger, rateLimit: webhookRateLimit }));
 app.use('/api', createProductFeedsRouter({ logger, siteUrl: publicSiteUrl }));
+app.use('/api', createMetaProductFeedsRouter({ logger, siteUrl: publicSiteUrl }));
 
 // Diagnostic endpoint (safe): reports whether required env vars are present
 // and attempts a lightweight Cloudinary ping if configured. Do NOT expose
