@@ -1,4 +1,5 @@
 const { prisma } = require('./prisma');
+const { queueEventConfirmations } = require('../services/saleConfirmations');
 const { fifoOrder } = require('../finance/receivables');
 const { projectEstimate, projectPayments } = require('../finance/smallEventsProjection');
 
@@ -22,10 +23,10 @@ const resolveEstimateFromOrder = async (payment) => {
   return match?.estimateId || null;
 };
 
-async function applySmallEventPayment(payment, { logger } = {}) {
+async function applySmallEventPayment(payment, { logger, emailOutboxService } = {}) {
   try {
     if (!prisma) return false;
-    if (!payment?.id) return false;
+    if (!payment?.id || String(payment.status || '').toUpperCase() !== 'COMPLETED') return false;
     const paymentId = payment.id;
     const amountCents = Number(payment?.amount_money?.amount ?? payment?.amountMoney?.amount ?? 0);
     let estimateId = extractEstimateId(payment);
@@ -48,7 +49,7 @@ async function applySmallEventPayment(payment, { logger } = {}) {
       },
     });
 
-    await prisma.smallEventEstimate.update({
+    const confirmedEstimate = await prisma.smallEventEstimate.update({
       where: { id: estimateId },
       data: {
         depositStatus: 'paid',
@@ -84,10 +85,11 @@ async function applySmallEventPayment(payment, { logger } = {}) {
       if (logger?.warn) logger.warn({ err: projectionError, estimateId }, 'small-events finance projection deferred');
     }
 
+    await queueEventConfirmations({ estimate: confirmedEstimate, amountCents, emailOutboxService });
     return true;
   } catch (error) {
     if (logger?.error) logger.error({ err: error }, 'small-events payment apply error');
-    return false;
+    throw error; // Acknowledge only after confirmation jobs are durable; Square will retry.
   }
 }
 

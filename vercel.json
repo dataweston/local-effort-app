@@ -22,6 +22,7 @@
     }
   ],
   "crons": [
+    { "path": "/api/email/sale-confirmations/process", "schedule": "*/5 * * * *" },
     {
       "path": "/api/venues/sync",
       "schedule": "0 7 * * *"

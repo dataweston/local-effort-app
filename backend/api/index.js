@@ -534,7 +534,7 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     // no payment depends on a downstream handler recognising it.
     const financeEvidence = await recordSquarePaymentEvidence(payment, { prisma: financePrisma, logger });
 
-    const handledSmallEvent = await applySmallEventPayment(payment, { logger });
+    const handledSmallEvent = await applySmallEventPayment(payment, { logger, emailOutboxService });
     if (handledSmallEvent) {
       return res.status(200).json({ ok: true, handled: 'small-events', finance: financeEvidence.outcome });
     }
@@ -3930,14 +3930,15 @@ app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
   }
 });
 
-app.post('/api/email/outbox/process', webhookRateLimit, async (req, res) => {
+app.all(['/api/email/outbox/process', '/api/email/sale-confirmations/process'], webhookRateLimit, async (req, res) => {
   try {
     const token = req.get('X-Job-Token') || req.query?.token || req.body?.token;
     const expected = process.env.EMAIL_OUTBOX_JOB_TOKEN || '';
-    let authorized = false;
+    const cronSecret = process.env.CRON_SECRET || '';
+    let authorized = Boolean(cronSecret && timingSafeEqualString(req.get('Authorization') || '', `Bearer ${cronSecret}`));
     if (expected && token && timingSafeEqualString(String(token), String(expected))) {
       authorized = true;
-    } else {
+    } else if (!authorized) {
       const auth = await authenticateAllowedUser(req);
       authorized = !!auth.ok;
       if (authorized) req.user = auth.user;
@@ -3946,7 +3947,7 @@ app.post('/api/email/outbox/process', webhookRateLimit, async (req, res) => {
 
     const limit = Math.max(1, Math.min(100, Number(req.body?.limit || req.query?.limit || 20)));
     const maxAttempts = Math.max(1, Math.min(10, Number(req.body?.maxAttempts || req.query?.maxAttempts || 5)));
-    const result = await emailOutboxService.processBatch({ limit, maxAttempts });
+    const result = await emailOutboxService.processBatch({ limit, maxAttempts, source: req.path === '/api/email/sale-confirmations/process' ? 'sale-confirmation' : null });
     auditLog(req, 'email.outbox.process', result);
     return res.json({ ok: true, ...result });
   } catch (err) {

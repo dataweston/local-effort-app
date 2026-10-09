@@ -30,6 +30,7 @@ import {
 } from '../../config/eventPricing';
 
 const ERROR_COPY = {
+  'invalid-event-time': 'Choose an event start time (Central time).',
   'date-not-open': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
   'date-taken': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
   'rate-limit-exceeded': 'Too many tries from here. Give it a few minutes, or email us and we’ll do it by hand.',
@@ -51,6 +52,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [eventTime, setEventTime] = useState('');
   const [notes, setNotes] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +97,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         date: selectedDate,
+        eventTime,
         serviceStyle,
         guestCount,
         contactName,
@@ -132,6 +135,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
         venue: venue.nickname,
         notes: [
           `Venue enquiry from /${venue.slug}.`,
+          eventTime ? `Requested start: ${eventTime} Central time.` : null,
           quote ? `Estimate ${usd(quote.estimateMinCents)}–${usd(quote.estimateMaxCents)}.` : null,
           selectedDate ? `Date ${selectedDate} is not published as open.` : null,
           notes,
@@ -293,6 +297,10 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
            uses (slipForms.jsx:161-213), so this form inherits the house input
            styling rather than growing a second one. ── */}
       <div className="venue-book__who">
+        <div>
+          <label className="ht-label" htmlFor={`venue-time-${venue.slug}`}>event start time (Central)</label>
+          <input id={`venue-time-${venue.slug}`} className="ht-input" type="time" required value={eventTime} onChange={(event) => setEventTime(event.target.value)} />
+        </div>
         <div>
           <label className="ht-label" htmlFor={`venue-name-${venue.slug}`}>your name</label>
           <input

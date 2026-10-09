@@ -45,7 +45,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     throw new Error('createEmailOutboxService requires getSanityClient and brevoService');
   }
 
-  async function getSuppressedEmailSet(emails) {
+  async function getSuppressedEmailSet(emails, isSaleConfirmation = false) {
     const normalized = Array.from(new Set(safeArray(emails).map(normalizeEmail).filter(Boolean)));
     if (!normalized.length) return new Set();
 
@@ -55,7 +55,8 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
       '*[_type == "emailSubscriber" && email in $emails]{ email, status }',
       { emails: normalized }
     );
-    const suppressedStatuses = new Set(['unsubscribed', 'bounced', 'complained', 'suppressed']);
+    // Marketing opt-out does not opt a buyer out of their purchase receipt.
+    const suppressedStatuses = new Set(isSaleConfirmation ? ['bounced', 'complained', 'suppressed'] : ['unsubscribed', 'bounced', 'complained', 'suppressed']);
     const suppressed = safeArray(rows)
       .filter((row) => suppressedStatuses.has(String(row?.status || '').toLowerCase()))
       .map((row) => normalizeEmail(row?.email));
@@ -74,7 +75,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
       return { id: outboxId, deduped: true, status: existing.status || 'queued' };
     }
 
-    await sc.create({
+    await sc.createIfNotExists({
       _id: outboxId,
       _type: 'emailOutbox',
       status: 'queued',
@@ -91,14 +92,15 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     return { id: outboxId, deduped: false, status: 'queued' };
   }
 
-  async function processBatch({ limit = 20, maxAttempts = 5 } = {}) {
+  async function processBatch({ limit = 20, maxAttempts = 5, ids = null, source = null } = {}) {
     const sc = getSanityClient();
     if (!sc) throw new Error('sanity-not-configured');
 
     const now = toIsoNow();
+    const staleBefore = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const docs = await sc.fetch(
-      '*[_type == "emailOutbox" && status in ["queued","retry"] && (!defined(nextAttemptAt) || nextAttemptAt <= $now)] | order(createdAt asc)[0...200]{ _id, _rev, status, attempts, payload, idempotencyKey, category, source, context }',
-      { now }
+      '*[_type == "emailOutbox" && ($all || _id in $ids) && ($anySource || source == $source) && ((status in ["queued","retry"] && (!defined(nextAttemptAt) || nextAttemptAt <= $now)) || (status == "processing" && processingStartedAt < $staleBefore))] | order(createdAt asc)[0...200]{ _id, _rev, status, attempts, payload, idempotencyKey, category, source, context }',
+      { now, staleBefore, all: !ids, ids: ids || [], anySource: !source, source: source || '' }
     );
     const batch = safeArray(docs).slice(0, Math.max(1, Math.min(200, Number(limit) || 20)));
     if (!batch.length) return { picked: 0, sent: 0, retried: 0, deadLetter: 0, skippedSuppressed: 0 };
@@ -128,7 +130,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
       try {
         const payload = doc?.payload || {};
         const recipients = extractRecipients(payload);
-        const suppressed = await getSuppressedEmailSet(recipients);
+        const suppressed = await getSuppressedEmailSet(recipients, doc.source === 'sale-confirmation');
         const filteredTo = safeArray(payload.to).filter((entry) => !suppressed.has(normalizeEmail(entry?.email)));
         if (!filteredTo.length) {
           skippedSuppressed += 1;
@@ -142,11 +144,13 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
           continue;
         }
 
-        const finalPayload = { ...payload, to: filteredTo };
-        await brevoService.sendEmail(finalPayload);
+        const finalPayload = { ...payload, to: filteredTo, headers: { ...payload.headers, idempotencyKey: doc._id } };
+        const response = await brevoService.sendEmail(finalPayload);
+        const receipt = await response?.json?.().catch(() => ({}));
         sent += 1;
         await sc.patch(doc._id).set({
           status: 'sent',
+          providerMessageId: receipt?.messageId || null,
           updatedAt: toIsoNow(),
           finishedAt: toIsoNow(),
           sentAt: toIsoNow(),
