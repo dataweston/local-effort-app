@@ -213,7 +213,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
   const gaps = missingFacts(venue);
   // Rooms first, then food. Order is the composition: see the note on
   // `tile` in venues.json — each band of spans sums to six.
-  const gallery = [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || [])];
+  const gallery = [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || []), ...(venue.photos?.food || [])];
 
   return (
     <div className={`venue-scope venue-scope--${venue.accent} venue-scope--${venue.slug}`}>
@@ -381,7 +381,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
               <GalleryTile
                 key={item.publicId || item.src}
                 item={item}
-                slot={venue.slug === 'firehouse' ? FIREHOUSE_GALLERY_SLOTS[index] : null}
+                slot={venue.slug === 'firehouse' ? (item.slot || FIREHOUSE_GALLERY_SLOTS[index]) : null}
               />
             ))}
           </div>

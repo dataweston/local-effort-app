@@ -226,6 +226,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       {/* ── the service ── ruled rows, never three cards ── */}
       {selectedDate && (
         <div className="venue-book__details">
+          <div className="venue-book__event">
       <fieldset className="venue-book__field">
         <legend className="venue-book__legend">How it’s served</legend>
         <div className="venue-book__styles">
@@ -273,11 +274,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
             <dt className="venue-ledger__term">to hold the date</dt>
             <dd className="venue-ledger__value">
               {usd(quote.depositCents)}
-              <i>
-                {' '}
-                — {quote.depositPercent}% of {usd(quote.estimateMinCents)}, credited against the
-                final invoice
-              </i>
+
             </dd>
           </div>
         </dl>
@@ -285,10 +282,13 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
 
       <p className="venue-book__basis">
         {payable || !selectedDate
-          ? 'The estimate holds the date. Your chef sets the final menu price from what you actually choose to eat, and the deposit comes off it. If the total lands lower, we refund the difference.'
-          : 'We haven’t published this night yet, so we won’t take your money for it. Send it over with the details above and we’ll confirm by hand — usually the same day.'}
+          ? `${quote?.depositPercent}% of the low estimate, credited toward your final invoice. Your chef confirms the menu price with you. If the total is lower, we refund the difference.`
+          : 'This date needs confirmation. Send your details and we’ll check availability — usually the same day. No payment is taken.'}
       </p>
 
+          </div>
+          <div className="venue-book__contact">
+            <h3 className="venue-book__legend">Your details</h3>
       {/* ── who ── the same field primitives every other slip on the site
            uses (slipForms.jsx:161-213), so this form inherits the house input
            styling rather than growing a second one. ── */}
@@ -384,6 +384,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
           ? 'Card step is handled by Square. The night is held for 24 hours while you pay, and released if you don’t.'
           : 'No card, and nothing held — this one comes back to you by email.'}
       </p>
+          </div>
         </div>
       )}
     </form>

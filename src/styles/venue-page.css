@@ -662,57 +662,12 @@
   background-color: color-mix(in srgb, var(--sp-ink) 8%, transparent);
 }
 
-/* The unfinished state, said plainly. Dashed because every provisional mark in
-   this system is dashed — the same language the held calendar state and the
-   dev nag already use. */
-.venue-guest-sheet__pending {
-  margin: 1rem 0 1.2rem;
-  padding: 0.6rem 0.8rem;
-  border: 1px dashed var(--venue-accent);
+.venue-guest-sheet__description {
+  margin: 0.9rem 0 0;
   font-family: var(--font-body);
-  font-size: 0.86rem;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.5;
   color: var(--color-text-secondary);
-}
-
-.venue-guest-sheet__soon,
-.venue-guest-sheet__slot-label {
-  font-family: var(--font-office-code, monospace);
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
-  color: color-mix(in srgb, var(--sp-ink) 50%, transparent);
-}
-
-.venue-guest-sheet__form {
-  margin-top: 1.1rem;
-  display: grid;
-  gap: 0.6rem;
-}
-
-.venue-guest-sheet__slot {
-  margin: 0;
-  display: grid;
-  grid-template-columns: minmax(4rem, 7rem) 1fr;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.venue-guest-sheet__slot input {
-  width: 100%;
-  border: 1px solid var(--sp-rule-hair);
-  border-radius: 0;
-  background-color: color-mix(in srgb, var(--brand-mount) 55%, transparent);
-  padding: 0.45rem 0.6rem;
-  font-family: var(--font-office-code, monospace);
-  font-size: 0.8rem;
-  color: color-mix(in srgb, var(--sp-ink) 45%, transparent);
-}
-
-@media (max-width: 34rem) {
-  .venue-guest-sheet__slot {
-    grid-template-columns: 1fr;
-    gap: 0.2rem;
-  }
 }
 
 /* ── The booking panel ───────────────────────────────────────────────────
@@ -1190,7 +1145,99 @@
 
   .venue-scope--firehouse .venue-void {
     grid-column: 1 / -1;
-    grid-row: 7;
+    grid-row: 8;
     margin-top: 0;
+  }
+}
+
+/* Short, readable booking columns; naturally stacked on smaller screens. */
+.venue-scope--firehouse .venue-book__details {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+.venue-scope--firehouse .venue-book__event,
+.venue-scope--firehouse .venue-book__contact,
+.venue-scope--firehouse .venue-book__field {
+  min-width: 0;
+}
+.venue-scope--firehouse .venue-book__contact > .venue-book__legend {
+  margin: 0 0 0.75rem;
+}
+.venue-scope--firehouse .venue-book .ht-label,
+.venue-scope--firehouse .venue-book__legend {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.venue-scope--firehouse .venue-book__style {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  padding: 0.65rem 0.5rem;
+}
+.venue-scope--firehouse .venue-book__style-name {
+  line-height: 1.35;
+}
+.venue-scope--firehouse .venue-book__style-rate {
+  grid-column: 2;
+  line-height: 1.4;
+}
+.venue-scope--firehouse .venue-book__ledger .venue-ledger__row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.venue-scope--firehouse .venue-book__ledger .venue-ledger__value {
+  text-align: right;
+}
+.venue-scope--firehouse .venue-book__ledger i {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-style: normal;
+}
+.venue-scope--firehouse .venue-book__basis {
+  margin-bottom: 0;
+  line-height: 1.55;
+}
+.venue-scope--firehouse .venue-book__contact .ht-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+.venue-scope--firehouse .venue-book__submit .ht-submit {
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.5;
+}
+.venue-scope--firehouse .venue-book__contact .ht-footnote {
+  font-family: var(--font-body);
+  line-height: 1.5;
+  margin: 0.85rem 0 0;
+}
+@media (min-width: 75rem) {
+  .venue-scope--firehouse .venue-ask {
+    grid-template-columns: minmax(16rem, 0.85fr) minmax(0, 2fr);
+  }
+  .venue-scope--firehouse .venue-book__details {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 2vw, 2rem);
+  }
+  .venue-scope--firehouse .venue-book__contact {
+    padding-left: clamp(1.25rem, 2vw, 2rem);
+    border-left: 1px solid var(--sp-rule-hair);
+  }
+}
+@media (min-width: 64.0625rem) {
+  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-asparagus'] {
+    grid-column: 1 / span 4;
+    grid-row: 7;
+  }
+  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-service'] {
+    grid-column: 5 / span 4;
+    grid-row: 7;
+  }
+  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-cannoli'] {
+    grid-column: 9 / -1;
+    grid-row: 7;
   }
 }
