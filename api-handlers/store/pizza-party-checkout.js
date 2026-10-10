@@ -41,7 +41,7 @@ try {
   // swallow; handled later
 }
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -74,6 +74,32 @@ module.exports = async (req, res) => {
   if (!name || !phone || !(address && address.line1 && address.city && address.postal)) {
     return res.status(400).json({ error: 'Missing required contact information' });
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim())) {
+    return res.status(400).json({ error: 'A valid email address is required for the booking confirmation' });
+  }
+  const queueConfirmations = async (paymentId, amountCents, guestsInt) => {
+    const { queuePizzaPartyConfirmations } = require('../../backend/api/services/storeConfirmations');
+    try {
+      return await queuePizzaPartyConfirmations({
+        paymentId,
+        emailOutboxService,
+        date,
+        email: String(email).trim(),
+        name,
+        phone,
+        address,
+        mealTime,
+        pizzaRequests,
+        addOnGuests: guestsInt,
+        amountCents,
+      });
+    } catch (error) {
+      console.error('[pizza-party.checkout] confirmation enqueue failed after successful payment', {
+        paymentId, error: error?.message || error,
+      });
+      return { queued: false, processingPending: true, queueError: error?.message || String(error) };
+    }
+  };
   try {
     const idempotencyKey =
       sanitizeIdempotencyKey(checkoutAttemptId) ||
@@ -113,21 +139,28 @@ module.exports = async (req, res) => {
       lines,
       orderMetadata: {
         offer: 'pizza-party',
-        // Free-text date ("Oct 2"), kept as the customer wrote it. Parsing it
-        // into serviceStartAt would invent precision the booking never had.
+        // Preserve free-text booking facts for payment replay/reconciliation.
         requestedDate: date,
         mealTime: mealTime || null,
         addOnGuests: guestsInt,
-        contactPhone: phone || null,
+        contactName: name,
+        contactEmail: String(email).trim(),
+        contactPhone: phone,
+        contactAddress: address,
+        pizzaRequests: pizzaRequests || null,
       },
       attemptMetadata: { channel: 'store', offer: 'pizza-party' },
     });
 
     if (checkout.replay === 'succeeded') {
+      const replayConfirmations = await queueConfirmations(
+        checkout.attempt.externalPaymentId, amount, guestsInt,
+      );
       return res.status(200).json({
         ok: true,
         paymentId: checkout.attempt.externalPaymentId,
         orderId: checkout.order?.id || null,
+        ...(replayConfirmations.processingPending ? { confirmationQueuePending: true } : {}),
         idempotentReplay: true,
       });
     }
@@ -174,6 +207,12 @@ module.exports = async (req, res) => {
     const payment = resp.result.payment;
     const paymentId = payment?.id;
     if (!paymentId) throw new Error('Payment failed');
+    if (String(payment.status || '').toUpperCase() !== 'COMPLETED') {
+      console.warn('[pizza-party.checkout] payment returned before successful completion', {
+        commercialOrderId, paymentId, status: payment.status || 'unknown',
+      });
+      return res.status(202).json({ ok: true, paymentId, orderId: commercialOrderId, paymentPending: true });
+    }
 
     let reconciliationPending = false;
     try {
@@ -249,11 +288,13 @@ module.exports = async (req, res) => {
         console.warn('[pizza-party.checkout] failed to persist booking', err?.message);
       }
     }
+    const confirmations = await queueConfirmations(paymentId, amount, guestsInt);
     return res.status(200).json({
       ok: true,
       paymentId,
       orderId: commercialOrderId,
       ...(reconciliationPending ? { reconciliationPending: true } : {}),
+      ...(confirmations.processingPending ? { confirmationQueuePending: true } : {}),
     });
   } catch (e) {
     const squareErrors = e?.errors ? e.errors.map(er => ({ code: er.code, detail: er.detail })).slice(0,3) : null;

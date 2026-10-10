@@ -545,7 +545,7 @@ setInterval(() => {
   })();
 }, 60_000).unref();
 
-async function invokeCheckoutHandler(handler, payload, headers = {}) {
+async function invokeCheckoutHandler(handler, payload, headers = {}, options = {}) {
   let statusCode = 200;
   let body = null;
   let ended = false;
@@ -575,11 +575,11 @@ async function invokeCheckoutHandler(handler, payload, headers = {}) {
       return this;
     },
   };
-  await handler(req, res);
+  await handler(req, res, { emailOutboxService: options.emailOutboxService });
   return { statusCode, body };
 }
 
-async function completeViaFlow(flowId, session, requestBody, logger) {
+async function completeViaFlow(flowId, session, requestBody, logger, emailOutboxService) {
   const metadataPayload = session.metadata?.checkoutPayload;
   const requestPayload = requestBody?.checkout_payload;
   const payload = (requestPayload && typeof requestPayload === 'object')
@@ -601,11 +601,11 @@ async function completeViaFlow(flowId, session, requestBody, logger) {
 
   let result = null;
   if (flowId === 'psyche') {
-    result = await invokeCheckoutHandler(psycheCheckoutHandler, payload);
+    result = await invokeCheckoutHandler(psycheCheckoutHandler, payload, {}, { emailOutboxService });
   } else if (flowId === 'february') {
-    result = await invokeCheckoutHandler(februaryCheckoutHandler, payload);
+    result = await invokeCheckoutHandler(februaryCheckoutHandler, payload, {}, { emailOutboxService });
   } else if (flowId === 'weekly-order') {
-    result = await invokeCheckoutHandler(weeklyOrderCheckoutHandler, payload);
+    result = await invokeCheckoutHandler(weeklyOrderCheckoutHandler, payload, {}, { emailOutboxService });
   } else {
     return {
       ok: false,
@@ -866,7 +866,7 @@ async function completeCheckoutSession(checkoutSessionId, requestBody = {}, opti
     }
   }
 
-  const completion = await completeViaFlow(session.flowId, session, requestBody || {}, options.logger);
+  const completion = await completeViaFlow(session.flowId, session, requestBody || {}, options.logger, options.emailOutboxService);
   if (!completion.ok) {
     session.status = completion.escalation ? 'requires_escalation' : 'incomplete';
     session.messages = completion.escalation
@@ -941,7 +941,7 @@ function resolveRequestAuth(req) {
   });
 }
 
-function createUcpRouter({ logger } = {}) {
+function createUcpRouter({ logger, emailOutboxService } = {}) {
   const router = express.Router();
 
   router.post('/checkout-sessions', async (req, res) => {
@@ -974,7 +974,7 @@ function createUcpRouter({ logger } = {}) {
     const result = await completeCheckoutSession(req.params.id, req.body, {
       idempotencyKey: req.headers['idempotency-key'],
       logger,
-      auth: resolveRequestAuth(req),
+      emailOutboxService,
       requireAuth: false,
     });
     return res.status(result.statusCode).json(result.body);

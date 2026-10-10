@@ -89,6 +89,25 @@ describe('linking a Square capture back to its attempt', () => {
     ]);
   });
 
+  it('maps hosted Square order ids back to persisted attempt metadata', async () => {
+    const prisma = {
+      financePaymentAttempt: {
+        findFirst: vi.fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce({ id: 'attempt-hosted-link' }),
+      },
+    };
+    const attempt = await findAttemptForPayment(prisma, {
+      id: 'square-payment-hosted',
+      order_id: 'square-order-hosted',
+    });
+    expect(attempt.id).toBe('attempt-hosted-link');
+    expect(prisma.financePaymentAttempt.findFirst.mock.calls[1][0].where).toEqual({
+      provider: 'square',
+      metadata: { path: ['squareOrderId'], equals: 'square-order-hosted' },
+    });
+  });
+
   it('reports no attempt when the capture carries no reference of ours', async () => {
     const prisma = {
       financePaymentAttempt: { findFirst: vi.fn().mockResolvedValue(null) },

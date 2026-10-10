@@ -1,5 +1,5 @@
 // POST /api/store/chez-garage-at-home-checkout
-// Charges the server-authoritative $200 date-hold deposit and sends a Brevo receipt.
+// Charges the server-authoritative $200 date-hold deposit and queues durable confirmations.
 
 const { Client, Environment } = require('square');
 const { prisma } = require('../_lib/prisma');
@@ -20,9 +20,6 @@ const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 const ENV_NAME = ((process.env.SQUARE_ENVIRONMENT || 'production').toLowerCase() === 'sandbox')
   ? 'Sandbox'
   : 'Production';
-const BREVO_API_KEY = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY;
-const FROM_EMAIL = process.env.RECEIPTS_FROM_EMAIL || process.env.SUPPORT_INBOX_EMAIL || 'no-reply@localeffort.app';
-const FROM_NAME = process.env.RECEIPTS_FROM_NAME || 'Local Effort';
 
 let squareClient = null;
 try {
@@ -37,12 +34,6 @@ try {
 }
 
 const cleanText = (value, max = 500) => String(value || '').trim().slice(0, max);
-const escapeHtml = (value) => cleanText(value, 2000)
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#039;');
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanText(value, 254));
 
@@ -71,66 +62,8 @@ const sanitizeIdempotencyKey = (value) => {
   return cleaned || `chez-home-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
-const formatDate = (value) => {
-  try {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(`${value}T12:00:00Z`));
-  } catch (_) {
-    return value;
-  }
-};
 
-const sendReceipt = async ({ paymentId, date, name, email, phone, address, guestCount, notes }) => {
-  if (!BREVO_API_KEY || typeof fetch !== 'function') return { sent: false, skipped: true };
-
-  const formattedDate = formatDate(date);
-  const addressLine = [
-    address.line1,
-    address.line2,
-    [address.city, address.state, address.postal].filter(Boolean).join(', '),
-  ].filter(Boolean).join('<br>');
-  const htmlContent = `
-    <p>Hi ${escapeHtml(name)},</p>
-    <p>Thanks for bringing <strong>Chez Garage by Local Effort</strong> to your home.</p>
-    <p>We received your <strong>$200 date-hold deposit</strong> for <strong>${escapeHtml(formattedDate)}</strong>.</p>
-    <p><strong>Event address</strong><br>${addressLine.split('<br>').map(escapeHtml).join('<br>')}</p>
-    ${guestCount ? `<p><strong>Estimated guests:</strong> ${escapeHtml(guestCount)}</p>` : ''}
-    ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
-    ${notes ? `<p><strong>Your notes:</strong><br>${escapeHtml(notes).replace(/\n/g, '<br>')}</p>` : ''}
-    <p>A chef will reach out directly to help make your menu and plan the event. Estimated final costs depend on your menu choices; anticipate $25–$45 per person. Chez Garage is intended for a maximum of 40 guests, so please contact us directly if your group may be larger.</p>
-    <p><strong>Payment reference:</strong> ${escapeHtml(paymentId)}</p>
-    <p>Questions? Reply to this email and the Local Effort team will help.</p>
-  `;
-
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'api-key': BREVO_API_KEY,
-      'content-type': 'application/json',
-      accept: 'application/json',
-    },
-    body: JSON.stringify({
-      sender: { email: FROM_EMAIL, name: FROM_NAME },
-      to: [{ email, name }],
-      subject: `Chez Garage deposit confirmed — ${formattedDate}`,
-      htmlContent,
-    }),
-  });
-
-  if (!response.ok) {
-    const responseText = await response.text().catch(() => '');
-    console.error('[chez-garage-at-home] Brevo receipt failed', response.status, responseText.slice(0, 500));
-    return { sent: false, skipped: false };
-  }
-  return { sent: true, skipped: false };
-};
-
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -183,13 +116,26 @@ module.exports = async (req, res) => {
   if (!address.line1 || !address.city || !address.state || !address.postal) {
     return res.status(400).json({ error: 'Please enter the event address.' });
   }
+  const queueConfirmations = async (paymentId) => {
+    const { queueChezGarageConfirmations } = require('../../backend/api/services/storeConfirmations');
+    try {
+      return await queueChezGarageConfirmations({
+        paymentId, emailOutboxService, date, name, email, phone, address, guestCount, notes,
+        amountCents: DEPOSIT_CENTS,
+      });
+    } catch (error) {
+      console.error('[chez-garage-at-home] confirmation enqueue failed after successful payment', {
+        paymentId, error: error?.message || error,
+      });
+      return { queued: false, processingPending: true, queueError: error?.message || String(error) };
+    }
+  };
 
   try {
     const idempotencyKey = sanitizeIdempotencyKey(body.checkoutAttemptId);
 
-    // The deposit books a private event. It is the first money against a job
-    // whose balance is invoiced later, so it is an events-line commercial order
-    // from the start rather than a bare payment with an email receipt.
+    // The deposit books a private event, with contact facts retained for
+    // payment replay and confirmation reconciliation.
     const checkout = await startCommercialCheckout({
       prisma,
       idempotencyKey,
@@ -213,18 +159,23 @@ module.exports = async (req, res) => {
         offer: 'chez-garage-at-home',
         eventDate: date,
         guestCount: guestCount || null,
+        contactName: name,
+        contactEmail: email,
         contactPhone: phone,
+        contactAddress: address,
+        customerNotes: notes || null,
       },
       attemptMetadata: { channel: 'store', offer: 'chez-garage-at-home' },
     });
 
     if (checkout.replay === 'succeeded') {
+      const replayConfirmations = await queueConfirmations(checkout.attempt.externalPaymentId);
       return res.status(200).json({
         ok: true,
         paymentId: checkout.attempt.externalPaymentId,
         orderId: checkout.order?.id || null,
         amountCents: DEPOSIT_CENTS,
-        receiptSent: false,
+        ...(replayConfirmations.processingPending ? { confirmationQueuePending: true } : {}),
         idempotentReplay: true,
       });
     }
@@ -265,6 +216,17 @@ module.exports = async (req, res) => {
     const payment = paymentResponse.result.payment;
     const paymentId = payment?.id;
     if (!paymentId) throw new Error('Square did not return a payment ID.');
+    if (String(payment.status || '').toUpperCase() !== 'COMPLETED') {
+      console.warn('[chez-garage-at-home] payment returned before successful completion', {
+        commercialOrderId, paymentId, status: payment.status || 'unknown',
+      });
+      return res.status(202).json({
+        ok: true,
+        paymentId,
+        orderId: commercialOrderId,
+        paymentPending: true,
+      });
+    }
 
     let reconciliationPending = false;
     try {
@@ -284,29 +246,14 @@ module.exports = async (req, res) => {
       });
     }
 
-    let receipt = { sent: false, skipped: false };
-    try {
-      receipt = await sendReceipt({
-        paymentId,
-        date,
-        name,
-        email,
-        phone,
-        address,
-        guestCount,
-        notes,
-      });
-    } catch (receiptError) {
-      console.error('[chez-garage-at-home] receipt exception after successful payment', receiptError?.message);
-    }
-
+    const confirmations = await queueConfirmations(paymentId);
     return res.status(200).json({
       ok: true,
       paymentId,
       orderId: commercialOrderId,
       amountCents: DEPOSIT_CENTS,
-      receiptSent: receipt.sent,
       ...(reconciliationPending ? { reconciliationPending: true } : {}),
+      ...(confirmations.processingPending ? { confirmationQueuePending: true } : {}),
     });
   } catch (error) {
     const squareErrors = Array.isArray(error?.errors)

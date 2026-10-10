@@ -1,5 +1,7 @@
 const { Client, Environment } = require('square');
 const crypto = require('crypto');
+const { prisma } = require('../_lib/prisma');
+const { markPaymentAttemptSucceeded } = require('../../backend/api/finance/paymentAttempts');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -41,6 +43,7 @@ const mapAddress = (address = {}) => ({
   state: (address.state || '').trim(),
   postal: (address.postal || '').trim(),
 });
+const { queueSaleConfirmations } = require('./sale-confirmation-outbox');
 const { buildRecipientHtml, buildRecipientText, buildBuyerText, buildTeamText } = require('./gift-card-email');
 
 const upsertBrevoContact = async ({ email, attributes }) => {
@@ -66,7 +69,243 @@ const upsertBrevoContact = async ({ email, attributes }) => {
   }
 };
 
-const giftCardCheckout = async (req, res) => {
+const completeGiftCardPurchase = async ({
+  attempt, payment, emailOutboxService, squareClient = sq, database = prisma,
+  requireConfirmationQueue = false,
+}) => {
+  if (payment?.status !== 'COMPLETED') throw new Error('gift-card-payment-not-completed');
+  let confirmationAttempt = attempt;
+  const facts = attempt?.metadata?.saleConfirmationFacts;
+  if (facts?.confirmationReady === true) {
+    try {
+      await queueSaleConfirmations({
+        emailOutboxService, payment, paymentId: payment.id,
+        confirmations: facts.confirmationTemplates,
+      });
+    } catch (confirmationError) {
+      if (requireConfirmationQueue) throw confirmationError;
+      console.error('[gift-card] payment captured; confirmation queue reconciliation pending', {
+        paymentId: payment.id,
+        error: confirmationError?.message || confirmationError,
+      });
+    }
+    return {
+      ok: true, code: facts.code, amount: facts.amountCents, paymentId: payment.id,
+      orderId: facts.orderId, giftCardId: facts.giftCardId,
+      giftCardActivityId: facts.giftCardActivityId,
+      cardType: facts.details.cardType, sendOn: facts.details.sendOn,
+    };
+  }
+  const source = facts?.sourcePayload;
+  if (!source || !facts.orderId || !facts.giftCardLineItemUid) {
+    throw new Error('gift-card-fulfillment-source-not-found');
+  }
+  if (!squareClient || !database) throw new Error('gift-card-recovery-unavailable');
+  const sq = squareClient;
+  const prisma = database;
+  const attemptKey = attempt.idempotencyKey;
+  const paymentId = payment.id;
+  const amountCents = facts.amountCents;
+  const amountLabel = formatUsd(amountCents);
+  const order = { id: facts.orderId };
+  const giftCardLineItemUid = facts.giftCardLineItemUid;
+  const { buyer, recipient, buyerName, buyerEmail, buyerPhone, recipientName,
+    recipientEmail, recipientPhone, deliveryTarget, note, shippingAddress,
+    shipTo, wantsPhysical, sendOn, locationId, senderEmail, teamEmail,
+    confirmationsEnabled } = source;
+  const LOCATION_ID = locationId;
+  const SENDER_EMAIL = senderEmail;
+  const TEAM_EMAIL = teamEmail;
+  const sendOnDate = sendOn ? new Date(sendOn) : null;
+  const isDigital = !wantsPhysical;
+    // Square generates the redeemable GAN. The optional leather version is a
+    // Local Effort fulfillment layer around the same digital Square card.
+    const giftCardResp = await sq.giftCardsApi.createGiftCard({
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'card'),
+      locationId: LOCATION_ID,
+      giftCard: { type: 'DIGITAL' },
+    });
+    const giftCard = giftCardResp?.result?.giftCard;
+    if (!giftCard?.id) throw new Error('Failed to create gift card');
+
+    const activityResp = await sq.giftCardActivitiesApi.createGiftCardActivity({
+      idempotencyKey: stepIdempotencyKey(attemptKey, 'activate'),
+      giftCardActivity: {
+        locationId: LOCATION_ID,
+        giftCardId: giftCard.id,
+        type: 'ACTIVATE',
+        activateActivityDetails: {
+          orderId: order.id,
+          lineItemUid: giftCardLineItemUid,
+        },
+      },
+    });
+    const activity = activityResp?.result?.giftCardActivity;
+    if (!activity?.id) throw new Error('Failed to activate the Square gift card');
+
+    const code = giftCard.gan || 'Generated';
+    const activatedFacts = {
+      ...confirmationAttempt.metadata.saleConfirmationFacts,
+      paymentId,
+      orderId: order.id,
+      giftCardId: giftCard.id,
+      giftCardActivityId: activity.id,
+      code,
+      confirmationReady: false,
+    };
+    confirmationAttempt = await prisma.financePaymentAttempt.update({
+      where: { id: confirmationAttempt.id },
+      data: {
+        metadata: {
+          ...confirmationAttempt.metadata,
+          saleConfirmationFacts: activatedFacts,
+        },
+      },
+    });
+
+    const instructions = [
+      'Reach out to hello@localeffortfood.com or reply to this email to book your experience.',
+      'Share this gift card code so we can apply it when we send your Square invoice.',
+      'Enjoy a seasonal menu crafted just for you and your crew.',
+    ];
+
+    const physicalDetails = wantsPhysical
+      ? `We will mail the leather gift card package to ${shipTo === 'recipient' ? 'the recipient' : 'you'} at ${shippingAddress.line1}${shippingAddress.line2 ? ', ' + shippingAddress.line2 : ''}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postal}.`
+      : null;
+
+    const deliveryEmail = deliveryTarget === 'recipient' ? recipientEmail : buyerEmail;
+
+    const payload = {
+      amountLabel,
+      buyerName,
+      buyerEmail,
+      buyerPhone,
+      recipientName,
+      recipientEmail,
+      recipientPhone,
+      deliveryTarget,
+      cardType: wantsPhysical ? 'physical' : 'digital',
+      shipping: wantsPhysical ? { shipTo, address: shippingAddress } : null,
+      note,
+      paymentId,
+      orderId: order.id,
+      giftCardId: giftCard.id,
+      giftCardActivityId: activity.id,
+      code,
+      sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+    };
+
+    if (confirmationsEnabled) {
+      const recipientHtml = buildRecipientHtml({
+        amountLabel,
+        recipientName,
+        buyerName,
+        code,
+        note,
+        deliveryTarget,
+        cardType: payload.cardType,
+        instructions,
+        physicalDetails,
+        sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+      });
+      const recipientText = buildRecipientText({ amountLabel, recipientName, buyerName, code, instructions, note, cardType: payload.cardType, physicalDetails, sendOn: sendOnDate ? sendOnDate.toISOString() : null });
+
+      const buyerText = buildBuyerText({ amountLabel, buyerName, recipientName, code, cardType: payload.cardType, shippingSummary: physicalDetails, sendOn: sendOnDate ? sendOnDate.toISOString() : null, deliveryTarget });
+
+      const teamText = buildTeamText({ amountLabel, buyer, recipient, note, deliveryTarget, cardType: payload.cardType, shipping: payload.shipping, paymentId, giftCardId: giftCard.id, code, sendOn: sendOnDate ? sendOnDate.toISOString() : null });
+      const scheduledAt = sendOnDate && isDigital && deliveryTarget === 'recipient' ? sendOnDate.toISOString() : null;
+      const confirmations = [
+        ...(deliveryEmail ? [{
+          role: 'recipient',
+          payload: {
+            to: [{ email: deliveryEmail, name: deliveryTarget === 'recipient' ? recipientName || buyerName : buyerName || recipientName }],
+            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+            subject: `${buyerName || 'A friend'} sent you a Local Effort gift card`,
+            htmlContent: recipientHtml,
+            textContent: recipientText,
+            ...(scheduledAt ? { scheduledAt } : {}),
+          },
+        }] : []),
+        { role: 'buyer', payload: { to: [{ email: buyerEmail, name: buyerName }], sender: { email: SENDER_EMAIL, name: 'Local Effort' }, subject: 'Thanks for gifting Local Effort', textContent: buyerText } },
+        { role: 'owner', payload: { to: [{ email: TEAM_EMAIL }], sender: { email: SENDER_EMAIL, name: 'Local Effort Gift Cards' }, subject: `Gift card purchase ${amountLabel}`, textContent: teamText } },
+      ];
+      const readyFacts = {
+        ...activatedFacts,
+        confirmationTemplates: confirmations,
+        confirmationReady: true,
+      };
+      confirmationAttempt = await prisma.financePaymentAttempt.update({
+        where: { id: confirmationAttempt.id },
+        data: {
+          metadata: {
+            ...confirmationAttempt.metadata,
+            saleConfirmationFacts: readyFacts,
+          },
+        },
+      });
+      try {
+        await queueSaleConfirmations({ emailOutboxService, payment, paymentId, confirmations });
+      } catch (confirmationError) {
+        if (requireConfirmationQueue) throw confirmationError;
+        console.error('[gift-card] payment captured; confirmation queue reconciliation pending', {
+          paymentId,
+          error: confirmationError?.message || confirmationError,
+        });
+      }
+
+      await upsertBrevoContact({
+        email: buyerEmail,
+        attributes: {
+          FIRSTNAME: buyerName.split(' ')[0] || buyerName,
+          LASTNAME: buyerName.split(' ').slice(1).join(' ') || '',
+          PHONE: buyerPhone || '',
+          LASTGIFTAMOUNT: amountLabel,
+        },
+      });
+
+      if (deliveryTarget === 'recipient' && recipientEmail) {
+        await upsertBrevoContact({
+          email: recipientEmail,
+          attributes: {
+            FIRSTNAME: recipientName.split(' ')[0] || recipientName,
+            LASTNAME: recipientName.split(' ').slice(1).join(' ') || '',
+            PHONE: recipientPhone || '',
+            LASTGIFTAMOUNT: amountLabel,
+            GIFTBUYER: buyerName,
+          },
+        });
+      }
+    } else {
+      const readyFacts = {
+        ...activatedFacts,
+        confirmationTemplates: [],
+        confirmationReady: true,
+      };
+      await prisma.financePaymentAttempt.update({
+        where: { id: confirmationAttempt.id },
+        data: {
+          metadata: {
+            ...confirmationAttempt.metadata,
+            saleConfirmationFacts: readyFacts,
+          },
+        },
+      });
+    }
+
+    return {
+      ok: true,
+      code,
+      amount: amountCents,
+      paymentId,
+      orderId: order.id,
+      giftCardId: giftCard.id,
+      giftCardActivityId: activity.id,
+      cardType: wantsPhysical ? 'physical' : 'digital',
+      sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+    };
+};
+
+const giftCardCheckout = async (req, res, { emailOutboxService } = {}) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -74,6 +313,9 @@ const giftCardCheckout = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!sq) return res.status(500).json({ error: 'Square not configured' });
   if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
+  if (!prisma) {
+    return res.status(503).json({ error: 'Ordering database unavailable. No payment was taken; please try again shortly.' });
+  }
 
   try {
     const {
@@ -137,6 +379,53 @@ const giftCardCheckout = async (req, res) => {
     // retrying after a partial failure resumes the same sale instead of
     // charging twice or minting a second card.
     const attemptKey = sanitizeIdempotencyKey(checkoutAttemptId) || createKey();
+    const saleConfirmationFacts = {
+      flow: 'gift-card',
+      title: 'Local Effort gift card',
+      amountCents,
+      customer: { name: buyerName, email: buyerEmail },
+      buyer: { name: buyerName, email: buyerEmail },
+      recipient: { name: recipientName, email: recipientEmail },
+      deliveryTarget,
+      details: {
+        cardType: wantsPhysical ? 'physical' : 'digital',
+        deliveryTarget,
+        note,
+        sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+        shipping: wantsPhysical ? { shipTo, address: shippingAddress } : null,
+      },
+      sourcePayload: {
+        buyer, recipient, buyerName, buyerEmail, buyerPhone, recipientName,
+        recipientEmail, recipientPhone, deliveryTarget, note, shippingAddress,
+        shipTo, wantsPhysical, sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+        locationId: LOCATION_ID, senderEmail: SENDER_EMAIL || null,
+        teamEmail: TEAM_EMAIL || null,
+        confirmationsEnabled: Boolean(SENDER_EMAIL && TEAM_EMAIL),
+      },
+      confirmationReady: false,
+    };
+    const financeAttempt = await prisma.financePaymentAttempt.upsert({
+      where: { provider_idempotencyKey: { provider: 'square', idempotencyKey: attemptKey } },
+      update: {},
+      create: {
+        provider: 'square',
+        idempotencyKey: attemptKey,
+        status: 'pending',
+        requestedCents: amountCents,
+        currency: 'USD',
+        metadata: { channel: 'gift_card', saleConfirmationFacts },
+      },
+    });
+    if (financeAttempt.requestedCents !== amountCents) {
+      return res.status(409).json({ error: 'Checkout attempt was already used for a different gift card amount' });
+    }
+    let confirmationAttempt = financeAttempt;
+    if (!confirmationAttempt.metadata?.saleConfirmationFacts) {
+      confirmationAttempt = await prisma.financePaymentAttempt.update({
+        where: { id: financeAttempt.id },
+        data: { metadata: { ...financeAttempt.metadata, saleConfirmationFacts } },
+      });
+    }
     const orderResp = await sq.ordersApi.createOrder({
       idempotencyKey: stepIdempotencyKey(attemptKey, 'order'),
       order: {
@@ -154,6 +443,20 @@ const giftCardCheckout = async (req, res) => {
     const order = orderResp?.result?.order;
     const giftCardLineItemUid = order?.lineItems?.[0]?.uid;
     if (!order?.id || !giftCardLineItemUid) throw new Error('Failed to create the Square gift card order');
+    confirmationAttempt = await prisma.financePaymentAttempt.update({
+      where: { id: confirmationAttempt.id },
+      data: {
+        metadata: {
+          ...confirmationAttempt.metadata,
+          squareOrderId: order.id,
+          saleConfirmationFacts: {
+            ...confirmationAttempt.metadata.saleConfirmationFacts,
+            orderId: order.id,
+            giftCardLineItemUid,
+          },
+        },
+      },
+    });
 
     const paymentResp = await sq.paymentsApi.createPayment({
       sourceId: token,
@@ -163,6 +466,7 @@ const giftCardCheckout = async (req, res) => {
       orderId: order.id,
       buyerEmailAddress: buyerEmail,
       note: `Gift card for ${recipientName || 'recipient'} (${amountLabel})`.slice(0, 60),
+      referenceId: financeAttempt.id,
       metadata: {
         gift_card_amount_cents: String(amountCents),
         gift_card_buyer_name: buyerName.slice(0, 60),
@@ -172,183 +476,28 @@ const giftCardCheckout = async (req, res) => {
       },
       verificationToken: verificationToken || undefined,
     });
-    const paymentId = paymentResp?.result?.payment?.id;
+    const payment = paymentResp?.result?.payment;
+    const paymentId = payment?.id;
     if (!paymentId) throw new Error('Payment processing failed');
-
-    // Square generates the redeemable GAN. The optional leather version is a
-    // Local Effort fulfillment layer around the same digital Square card.
-    const giftCardResp = await sq.giftCardsApi.createGiftCard({
-      idempotencyKey: stepIdempotencyKey(attemptKey, 'card'),
-      locationId: LOCATION_ID,
-      giftCard: { type: 'DIGITAL' },
-    });
-    const giftCard = giftCardResp?.result?.giftCard;
-    if (!giftCard?.id) throw new Error('Failed to create gift card');
-
-    const activityResp = await sq.giftCardActivitiesApi.createGiftCardActivity({
-      idempotencyKey: stepIdempotencyKey(attemptKey, 'activate'),
-      giftCardActivity: {
-        locationId: LOCATION_ID,
-        giftCardId: giftCard.id,
-        type: 'ACTIVATE',
-        activateActivityDetails: {
-          orderId: order.id,
-          lineItemUid: giftCardLineItemUid,
-        },
-      },
-    });
-    const activity = activityResp?.result?.giftCardActivity;
-    if (!activity?.id) throw new Error('Failed to activate the Square gift card');
-
-    const code = giftCard.gan || 'Generated';
-
-    const instructions = [
-      'Reach out to hello@localeffortfood.com or reply to this email to book your experience.',
-      'Share this gift card code so we can apply it when we send your Square invoice.',
-      'Enjoy a seasonal menu crafted just for you and your crew.',
-    ];
-
-    const physicalDetails = wantsPhysical
-      ? `We will mail the leather gift card package to ${shipTo === 'recipient' ? 'the recipient' : 'you'} at ${shippingAddress.line1}${shippingAddress.line2 ? ', ' + shippingAddress.line2 : ''}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postal}.`
-      : null;
-
-    const deliveryEmail = deliveryTarget === 'recipient' ? recipientEmail : buyerEmail;
-
-    const payload = {
-      amountLabel,
-      buyerName,
-      buyerEmail,
-      buyerPhone,
-      recipientName,
-      recipientEmail,
-      recipientPhone,
-      deliveryTarget,
-      cardType: wantsPhysical ? 'physical' : 'digital',
-      shipping: wantsPhysical ? { shipTo, address: shippingAddress } : null,
-      note,
-      paymentId,
-      orderId: order.id,
-      giftCardId: giftCard.id,
-      giftCardActivityId: activity.id,
-      code,
-      sendOn: sendOnDate ? sendOnDate.toISOString() : null,
-    };
-
-    if (BREVO_API_KEY && SENDER_EMAIL && TEAM_EMAIL) {
-      const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
-
-      const recipientHtml = buildRecipientHtml({
-        amountLabel,
-        recipientName,
-        buyerName,
-        code,
-        note,
-        deliveryTarget,
-        cardType: payload.cardType,
-        instructions,
-        physicalDetails,
-        sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: confirmationAttempt.id,
+        provider: 'square',
+        payment,
+        amountCents,
       });
-      const recipientText = buildRecipientText({ amountLabel, recipientName, buyerName, code, instructions, note, cardType: payload.cardType, physicalDetails, sendOn: sendOnDate ? sendOnDate.toISOString() : null });
-
-      const buyerText = buildBuyerText({ amountLabel, buyerName, recipientName, code, cardType: payload.cardType, shippingSummary: physicalDetails, sendOn: sendOnDate ? sendOnDate.toISOString() : null, deliveryTarget });
-
-      const teamText = buildTeamText({ amountLabel, buyer, recipient, note, deliveryTarget, cardType: payload.cardType, shipping: payload.shipping, paymentId, giftCardId: giftCard.id, code, sendOn: sendOnDate ? sendOnDate.toISOString() : null });
-
-      // Send to recipient/buyer target
-      if (deliveryEmail) {
-        try {
-          const scheduledAt = sendOnDate && isDigital && deliveryTarget === 'recipient' ? sendOnDate.toISOString() : null;
-          await fetch('https://api.brevo.com/v3/smtp/email', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              to: [{ email: deliveryEmail, name: deliveryTarget === 'recipient' ? recipientName || buyerName : buyerName || recipientName }],
-              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-              subject: `${buyerName || 'A friend'} sent you a Local Effort gift card`,
-              htmlContent: recipientHtml,
-              textContent: recipientText,
-              ...(scheduledAt ? { scheduledAt } : {}),
-            }),
-          });
-        } catch (err) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn('[gift-card] recipient email failed', err?.message);
-          }
-        }
-      }
-
-      // Send receipt/summary to buyer
-      try {
-        await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            to: [{ email: buyerEmail, name: buyerName }],
-            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-            subject: 'Thanks for gifting Local Effort',
-            textContent: buyerText,
-          }),
-        });
-      } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[gift-card] buyer email failed', err?.message);
-        }
-      }
-
-      // Team notification
-      try {
-        await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            to: [{ email: TEAM_EMAIL }],
-            sender: { email: SENDER_EMAIL, name: 'Local Effort Gift Cards' },
-            subject: `Gift card purchase ${amountLabel}`,
-            textContent: teamText,
-          }),
-        });
-      } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[gift-card] team email failed', err?.message);
-        }
-      }
-
-      await upsertBrevoContact({
-        email: buyerEmail,
-        attributes: {
-          FIRSTNAME: buyerName.split(' ')[0] || buyerName,
-          LASTNAME: buyerName.split(' ').slice(1).join(' ') || '',
-          PHONE: buyerPhone || '',
-          LASTGIFTAMOUNT: amountLabel,
-        },
+    } catch (stateError) {
+      console.error('[gift-card] payment captured; attempt reconciliation pending', {
+        paymentId,
+        error: stateError?.message || stateError,
       });
-
-      if (deliveryTarget === 'recipient' && recipientEmail) {
-        await upsertBrevoContact({
-          email: recipientEmail,
-          attributes: {
-            FIRSTNAME: recipientName.split(' ')[0] || recipientName,
-            LASTNAME: recipientName.split(' ').slice(1).join(' ') || '',
-            PHONE: recipientPhone || '',
-            LASTGIFTAMOUNT: amountLabel,
-            GIFTBUYER: buyerName,
-          },
-        });
-      }
     }
 
-    return res.status(200).json({
-      ok: true,
-      code,
-      amount: amountCents,
-      paymentId,
-      orderId: order.id,
-      giftCardId: giftCard.id,
-      giftCardActivityId: activity.id,
-      cardType: wantsPhysical ? 'physical' : 'digital',
-      sendOn: sendOnDate ? sendOnDate.toISOString() : null,
+    const result = await completeGiftCardPurchase({
+      attempt: confirmationAttempt, payment, emailOutboxService,
     });
+    return res.status(200).json(result);
   } catch (err) {
     const details = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Gift card checkout failed';
     if (process.env.NODE_ENV !== 'production') {
@@ -359,3 +508,5 @@ const giftCardCheckout = async (req, res) => {
 };
 
 module.exports = giftCardCheckout;
+module.exports.queueSaleConfirmations = queueSaleConfirmations;
+module.exports.completeGiftCardPurchase = completeGiftCardPurchase;

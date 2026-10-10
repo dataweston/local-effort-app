@@ -144,7 +144,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
           continue;
         }
 
-        const finalPayload = { ...payload, to: filteredTo, headers: { ...payload.headers, idempotencyKey: doc._id } };
+        const finalPayload = { ...payload, to: filteredTo, headers: { ...payload.headers, 'Idempotency-Key': doc._id } };
         const response = await brevoService.sendEmail(finalPayload);
         const receipt = await response?.json?.().catch(() => ({}));
         sent += 1;

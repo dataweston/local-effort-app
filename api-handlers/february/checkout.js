@@ -5,6 +5,11 @@
 const { getSquareClient } = require('../_lib/squareClient');
 const { createBrevoService } = require('../../backend/api/services/brevo');
 const { getSupabase } = require('../../backend/api/supabaseClient');
+const { queueSaleConfirmations, buildDirectSaleConfirmations } = require('../store/sale-confirmation-outbox');
+const { buildFebruaryConfirmationFacts } = require('./confirmation-facts');
+const { prisma } = require('../_lib/prisma');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const { markPaymentAttemptSucceeded } = require('../../backend/api/finance/paymentAttempts');
 
 const MIN_GUESTS = 4;
 const MAX_GUESTS = 12;
@@ -56,15 +61,8 @@ const parseFebruaryDate = (isoDate) => {
   return { date, isAvailable };
 };
 
-const formatDateLabel = (dateObj) =>
-  dateObj.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -119,8 +117,32 @@ module.exports = async (req, res) => {
   const idempotencyKey =
     sanitizeIdempotencyKey(checkoutAttemptId) ||
     `february-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const saleConfirmationFacts = buildFebruaryConfirmationFacts({ date, guests, amountCents, preferredTime, dietaryNotes, notes, customer, address });
+
 
   try {
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'february',
+      sourceId: `february:${idempotencyKey}`,
+      channel: 'small_events',
+      businessLineKey: 'events',
+      customerName: customer.name,
+      customerEmail: customer.email,
+      totalCents: amountCents,
+      orderMetadata: { saleConfirmationFacts },
+      attemptMetadata: { saleConfirmationFacts },
+    });
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        amountCents,
+        emailStatus: { customer: false, admin: false, contact: false },
+        idempotentReplay: true,
+      });
+    }
     const paymentBody = {
       sourceId: token,
       idempotencyKey,
@@ -129,7 +151,7 @@ module.exports = async (req, res) => {
       autocomplete: true,
       buyerEmailAddress: customer.email,
       note: `February in-home dinner ${date} for ${guests} guests`.slice(0, 500),
-      referenceId: `february-${Date.now()}`,
+      referenceId: checkout.order.id,
       metadata: {
         booking_date: date,
         guest_count: String(guests),
@@ -143,11 +165,27 @@ module.exports = async (req, res) => {
     }
 
     const paymentResp = await squareClient.paymentsApi.createPayment(paymentBody);
-    const paymentId = paymentResp?.result?.payment?.id;
+    const payment = paymentResp?.result?.payment;
+    const paymentId = payment?.id;
 
     if (!paymentId) {
       throw new Error('Payment failed');
     }
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: checkout.attempt.id,
+        provider: 'square',
+        payment,
+        amountCents,
+      });
+    } catch (stateError) {
+      console.warn('[february.checkout] payment captured; payment attempt reconciliation pending', {
+        paymentId,
+        error: stateError?.message || stateError,
+      });
+    }
+
 
     // Save booking to Supabase
     if (supabase) {
@@ -179,8 +217,6 @@ module.exports = async (req, res) => {
     }
 
     const emailStatus = { customer: false, admin: false, contact: false };
-    const formattedDate = formatDateLabel(parsedDate.date);
-    const fullAddress = `${address.line1}${address.line2 ? `, ${address.line2}` : ''}, ${address.city}, ${address.state} ${address.postal}`;
 
     try {
       const nameParts = customer.name.split(' ');
@@ -199,63 +235,35 @@ module.exports = async (req, res) => {
 
     if (SENDER_EMAIL && customer.email) {
       try {
-        const customerBody = [
-          `Thanks for booking your February in-home chef dinner.`,
-          '',
-          `Date: ${formattedDate}`,
-          `Preferred time: ${preferredTime || 'Not specified'}`,
-          `Guest count: ${guests}`,
-          `Address: ${fullAddress}`,
-          `Dietary notes: ${dietaryNotes || 'None'}`,
-          `Additional notes: ${notes || 'None'}`,
-          '',
-          `Payment ID: ${paymentId}`,
-          `Total: $${(amountCents / 100).toFixed(2)}`,
-          '',
-          'We will follow up within 24 hours to confirm menu details and logistics.',
-        ].join('\n');
-
-        await brevoService.sendEmail({
-          to: [{ email: customer.email, name: customer.name }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          subject: `February dinner confirmed - ${formattedDate}`,
-          textContent: customerBody,
+        await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: buildDirectSaleConfirmations('february', { ...saleConfirmationFacts, paymentId }).filter(({ role }) => role === 'customer'),
         });
-        emailStatus.customer = true;
+        emailStatus.customer = payment?.status === 'COMPLETED';
       } catch (err) {
-        console.warn('[february.checkout] customer email failed', err?.message);
+        console.warn('[february.checkout] payment captured; customer confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
     if (SENDER_EMAIL && TEAM_EMAIL) {
       try {
-        const adminBody = [
-          'NEW FEBRUARY DINNER BOOKING',
-          '',
-          `Date: ${formattedDate}`,
-          `Preferred time: ${preferredTime || 'Not specified'}`,
-          `Guest count: ${guests}`,
-          `Total: $${(amountCents / 100).toFixed(2)}`,
-          '',
-          `Customer: ${customer.name}`,
-          `Email: ${customer.email}`,
-          `Phone: ${customer.phone}`,
-          `Address: ${fullAddress}`,
-          `Dietary notes: ${dietaryNotes || 'None'}`,
-          `Additional notes: ${notes || 'None'}`,
-          '',
-          `Payment ID: ${paymentId}`,
-        ].join('\n');
-
-        await brevoService.sendEmail({
-          to: [{ email: TEAM_EMAIL }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          subject: `February dinner booked - ${customer.name}`,
-          textContent: adminBody,
+        await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: buildDirectSaleConfirmations('february', { ...saleConfirmationFacts, paymentId }).filter(({ role }) => role === 'owner'),
         });
-        emailStatus.admin = true;
+        emailStatus.admin = payment?.status === 'COMPLETED';
       } catch (err) {
-        console.warn('[february.checkout] admin email failed', err?.message);
+        console.warn('[february.checkout] payment captured; admin confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
@@ -274,3 +282,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: msg });
   }
 };
+module.exports.queueSaleConfirmations = queueSaleConfirmations;

@@ -1,5 +1,6 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
+const { prisma } = require('../utils/prisma');
+const { createHostedPaymentLink } = require('../finance/hostedPaymentLinks');
 const {
   resolveCrowdfundDiscount,
 } = require('../../../api-handlers/crowdfund/_lib/discountCodes');
@@ -82,40 +83,41 @@ function createCrowdfundingRouter({ db, squareClient, logger }) {
   });
 
   router.post('/contribute', async (req, res) => {
-    const { items } = req.body || {};
+    const { items, customer = {}, checkoutAttemptId } = req.body || {};
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Cart is empty.' });
     }
 
     try {
-      const lineItems = items.map((item) => ({
-        name: item.name,
-        quantity: String(item.quantity && item.quantity > 0 ? item.quantity : item.pizzaCount || 1),
-        basePriceMoney: {
-          amount: item.price * 100,
-          currency: 'USD',
-        },
-      }));
+      const lines = items.map((item) => {
+        const quantity = Number(item.quantity && item.quantity > 0 ? item.quantity : item.pizzaCount || 1);
+        const unitPriceCents = Math.round(Number(item.price) * 100);
+        return { name: item.name, quantity, unitPriceCents, totalCents: quantity * unitPriceCents };
+      });
+      const totalCents = lines.reduce((sum, line) => sum + line.totalCents, 0);
 
       if (!squareClient) {
         return res.status(500).json({ error: 'Payment provider not configured on this server.' });
       }
 
-      const response = await squareClient.checkoutApi.createPaymentLink({
-        idempotencyKey: uuidv4(),
-        order: {
-          locationId: process.env.SQUARE_LOCATION_ID,
-          lineItems,
-        },
+      if (!prisma) return res.status(503).json({ error: 'Payment records unavailable' });
+      // This legacy cart has no event date/location or fulfillment promise.
+      // Confirm only the paid contribution and the actual purchased items.
+      const facts = {
+        flow: 'crowdfunding', title: 'Your crowdfunding contribution', amountCents: totalCents, customer,
+        details: { Items: lines.map((line) => `${line.quantity} × ${line.name}`).join('; ') },
+      };
+      const url = await createHostedPaymentLink({
+        prisma, squareClient, locationId: process.env.SQUARE_LOCATION_ID, flow: 'crowdfunding',
+        checkoutAttemptId, customer, totalCents, lines, facts, basket: { lines, customer },
         checkoutOptions: {
           redirectUrl: 'https://localeffortfood.com/#/crowdfunding?payment=success',
           askForShippingAddress: true,
         },
       });
-
-      return res.json({ url: response.result.paymentLink.url });
+      return res.json({ url });
     } catch (error) {
-      if (logger) logger.error({ err: error }, 'square create payment link error');
+      if (logger) logger.error('square create payment link error');
       return res.status(500).json({ error: 'Failed to create payment link.' });
     }
   });
