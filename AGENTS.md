@@ -91,6 +91,16 @@ docs/                     Current docs. docs/archive/ = historical, do not trust
 
 When adding/retiring a public page: update `src/config/routes.js`, `App.jsx`, `public/ai.txt`, `public/llms.txt`, and `public/ai/manifest.json` together.
 
+## Sales confirmation emails — mandatory, no exceptions
+
+Every sales module must send a transactional confirmation through Brevo to the purchaser after server-verified successful payment, plus an owner notification. This includes deposits, events/venues, storefronts, gift cards, subscriptions, invoices, and every future sales flow. Square receipts and success-page text do not satisfy this requirement. An email is part of the sale's definition of done, never optional follow-up work.
+
+- Collect and persist the customer's email before payment. Confirm only verified payment success, never a browser return URL or an unpaid reservation.
+- Persist idempotent email jobs with separate customer/owner keys. Retry failures, retain delivery evidence, and surface dead letters; webhook replay must not create duplicate confirmations. Do not acknowledge a handled payment before its confirmation jobs are durable.
+- Include actual purchased/booked details, date/time/place or fulfillment details where relevant, amount paid, a reference, and a reply/contact path. Never invent missing facts or append sales copy. Marketing opt-out does not remove the receipt requirement; provider bounces/complaints must be surfaced for resolution, not bypassed.
+- Test both versions through the real Brevo sender to yum@localeffortfood.com first, following the communications rules below. Cover success, failed payment, replay, and delivery failure in tests.
+- Every sales-related PR must explicitly identify its confirmation implementation and verification. Missing confirmation or an unverified send is a release blocker. This rule also applies to existing modules when touched; do not treat older modules as exempt.
+
 ## Human-facing communications (hard rules)
 
 Any email, SMS, or notification that reaches a real customer or staff member is a production deployment with no rollback. This is a live business; a confusing or spammy message costs trust that code fixes can't recover. These rules exist because of a real incident (July 2026: Supabase-default password-reset emails went to a staff member and customers — spam-filtered, zero identifying info, and the link dumped recipients on the homepage instead of /hub; everyone was confused).

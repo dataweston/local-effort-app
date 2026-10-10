@@ -29,6 +29,7 @@ const {
   normalizePickupWindow,
   storeUsesUnifiedFulfillment,
 } = require('./_fulfillment');
+const { buildDirectSaleConfirmations, queueSaleConfirmations } = require('./sale-confirmation-outbox');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -219,7 +220,7 @@ const normalizeAddress = (address) => {
   };
 };
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     if (!sq) return res.status(500).json({ error: 'Square not configured' });
@@ -320,6 +321,91 @@ module.exports = async (req, res) => {
       sanitizeIdempotencyKey(checkoutAttemptId) ||
       `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const storeLabel = pickupDetails.name || store || 'Local Effort';
+    const TEAM_EMAIL = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+    const SENDER_EMAIL = process.env.SENDER_EMAIL || TEAM_EMAIL;
+    const customerEmail = customer?.email;
+    const factsLines = pricedLines.map((line) => {
+      const options = line.optionSummary ? ` (${line.optionSummary})` : '';
+      const selectedDate = line.selectedDate ? ` — Date: ${line.selectedDate}` : '';
+      return `- ${line.title}${options}${selectedDate} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
+    }).join('\n');
+    const pickupWhen = store === 'chez-garage'
+      ? pickupDetails.date
+      : resolvedPickupWindow
+        ? `${pickupDetails.date} ${resolvedPickupWindow}`
+        : `${pickupDetails.date}${pickupDetails.time ? ` at ${pickupDetails.time}` : ''}`;
+    const deliveryAddress = normalizedAddress
+      ? [
+          normalizedAddress.line1,
+          normalizedAddress.line2,
+          [normalizedAddress.city, normalizedAddress.state, normalizedAddress.postal].filter(Boolean).join(', '),
+        ].filter(Boolean).join('\n')
+      : '';
+    const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
+    const fulfillmentInfo = pickup
+      ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`
+      : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nLOCAL DELIVERY:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}\n`;
+    const subtotalUsd = (subtotal / 100).toFixed(2);
+    const totalUsd = (amount / 100).toFixed(2);
+    const totalsBlock = deliveryFee > 0
+      ? `Subtotal: $${subtotalUsd}\nLocal delivery: $${(deliveryFee / 100).toFixed(2)}\nTotal: $${totalUsd}`
+      : `Total: $${totalUsd}`;
+    const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${factsLines}\n\n${totalsBlock}${fulfillmentInfo}\nWe'll be in touch.\n\n- Local Effort`;
+    const teamBody = `NEW ORDER - ${pickupDetails.name.toUpperCase()}\nStore: ${store}\n\nPayment: {{paymentId}}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${factsLines}\n\n${totalsBlock}${fulfillmentInfo}`;
+    const saleConfirmationFacts = {
+      flow: 'store',
+      title: `Thanks for your order from ${pickupDetails.name}`,
+      customer: {
+        name: customer?.name || 'Unknown',
+        email: customer?.email || '',
+        phone: customer?.phone || '',
+      },
+      store,
+      storeName: pickupDetails.name,
+      fulfillment,
+      pickupWindow: resolvedPickupWindow,
+      pickup: pickupDetails,
+      deliveryAddress: normalizedAddress,
+      deliveryInstructions: typeof deliveryInstructions === 'string' ? deliveryInstructions.slice(0, 1000) : '',
+      customerNotes: trimmedCustomerNotes,
+      subtotalCents: subtotal,
+      deliveryFeeCents: deliveryFee,
+      totalCents: amount,
+      lines: pricedLines,
+      details: {
+        Store: pickupDetails.name,
+        Items: factsLines,
+        Subtotal: `$${(subtotal / 100).toFixed(2)}`,
+        'Local delivery': deliveryFee > 0 ? `$${(deliveryFee / 100).toFixed(2)}` : 'None',
+        Total: `$${(amount / 100).toFixed(2)}`,
+        Fulfillment: pickup
+          ? `Pickup at ${pickupDetails.name}${pickupWhen ? ` — ${pickupWhen}` : ''}${pickupDetails.address ? `\n${pickupDetails.address}` : ''}`
+          : `Local delivery\n${deliveryAddress || 'Address not provided'}`,
+        'Delivery notes': typeof deliveryInstructions === 'string' ? deliveryInstructions.slice(0, 1000) : '',
+        Notes: trimmedCustomerNotes,
+        Phone: customer?.phone || '',
+      },
+      confirmationTemplates: [
+        ...(TEAM_EMAIL && SENDER_EMAIL ? [{
+          role: 'owner',
+          payload: {
+            to: [{ email: TEAM_EMAIL }],
+            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+            subject: `New Order - ${pickupDetails.name}`,
+            textContent: teamBody,
+          },
+        }] : []),
+        ...(customerEmail && SENDER_EMAIL ? [{
+          role: 'customer',
+          payload: {
+            to: [{ email: customerEmail }],
+            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+            subject: `Thanks for your order from ${pickupDetails.name}!`,
+            textContent: friendly,
+          },
+        }] : []),
+      ],
+    };
 
     // Finance Core: book the commercial order and a pending payment attempt
     // before the processor is called. Firestore below is now a downstream
@@ -344,8 +430,8 @@ module.exports = async (req, res) => {
         pickupWindow: resolvedPickupWindow,
         deliveryFeeCents: deliveryFee,
         itemCount: pricedLines.reduce((sum, line) => sum + line.qty, 0),
+        saleConfirmationFacts,
       },
-      attemptMetadata: { channel: 'store', store },
       basket: {
         store,
         fulfillment,
@@ -495,74 +581,24 @@ module.exports = async (req, res) => {
       }
     }
 
-    const BREVO_API_KEY = process.env.BREVO_API_KEY;
-    const TEAM_EMAIL = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
-    const SENDER_EMAIL = process.env.SENDER_EMAIL || TEAM_EMAIL;
-    const customerEmail = customer?.email;
 
-    if (BREVO_API_KEY && TEAM_EMAIL && SENDER_EMAIL) {
-      const summary = pricedLines.map((line) => {
-        const options = line.optionSummary ? ` (${line.optionSummary})` : '';
-        const selectedDate = line.selectedDate ? ` — Date: ${line.selectedDate}` : '';
-        return `- ${line.title}${options}${selectedDate} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
-      }).join('\n');
-      const subtotalUsd = (subtotal / 100).toFixed(2);
-      const totalUsd = (amount / 100).toFixed(2);
-      // Show a delivery-fee line only when one was charged.
-      const totalsBlock = deliveryFee > 0
-        ? `Subtotal: $${subtotalUsd}\nLocal delivery: $${(deliveryFee / 100).toFixed(2)}\nTotal: $${totalUsd}`
-        : `Total: $${totalUsd}`;
-      const deliveryAddress = normalizedAddress
-        ? [
-            normalizedAddress.line1,
-            normalizedAddress.line2,
-            [normalizedAddress.city, normalizedAddress.state, normalizedAddress.postal].filter(Boolean).join(', '),
-          ].filter(Boolean).join('\n')
-        : '';
-      // Pickup "When" prefers the customer's chosen Wednesday window.
-      const pickupWhen = store === 'chez-garage'
-        ? pickupDetails.date
-        : resolvedPickupWindow
-          ? `${pickupDetails.date} ${resolvedPickupWindow}`
-          : `${pickupDetails.date}${pickupDetails.time ? ` at ${pickupDetails.time}` : ''}`;
-      const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
-      const fulfillmentInfo = pickup
-        ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`
-        : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nLOCAL DELIVERY:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}\n`;
-      const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${summary}\n\n${totalsBlock}${fulfillmentInfo}\nWe'll be in touch.\n\n- Local Effort`;
-      const teamBody = `NEW ORDER - ${pickupDetails.name.toUpperCase()}\nStore: ${store}\n\nPayment: ${paymentId || ''}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${summary}\n\n${totalsBlock}${fulfillmentInfo}`;
-      const headers = { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' };
-
+    if (TEAM_EMAIL && SENDER_EMAIL) {
       try {
-        await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            to: [{ email: TEAM_EMAIL }],
-            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-            subject: `New Order - ${pickupDetails.name}`,
-            textContent: teamBody,
-          }),
+        await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: buildDirectSaleConfirmations(
+            'store',
+            { ...saleConfirmationFacts, paymentId },
+            { ownerEmail: TEAM_EMAIL, senderEmail: SENDER_EMAIL },
+          ),
         });
-      } catch (_) {
-        // Email is best effort.
-      }
-
-      if (customerEmail) {
-        try {
-          await fetch('https://api.brevo.com/v3/smtp/email', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              to: [{ email: customerEmail }],
-              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-              subject: `Thanks for your order from ${pickupDetails.name}!`,
-              textContent: friendly,
-            }),
-          });
-        } catch (_) {
-          // Email is best effort.
-        }
+      } catch (confirmationError) {
+        console.error('[store.checkout] payment captured; confirmation queue reconciliation pending', {
+          paymentId,
+          error: confirmationError?.message || confirmationError,
+        });
       }
     }
 
@@ -584,3 +620,4 @@ module.exports = async (req, res) => {
     });
   }
 };
+module.exports.queueSaleConfirmations = queueSaleConfirmations;

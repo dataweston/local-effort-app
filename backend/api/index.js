@@ -124,7 +124,10 @@ const {
 } = require('../../packages/lib/crowdfundingPipeline');
 const { applySmallEventPayment } = require('./utils/smallEventsPayments');
 const { prisma: financePrisma } = require('./utils/prisma');
-const { recordSquarePaymentEvidence } = require('./finance/squarePaymentEvidence');
+const { recoverSaleConfirmations } = require('../../api-handlers/store/sale-confirmation-outbox');
+const { findAttemptForPayment, recordSquarePaymentEvidence } = require('./finance/squarePaymentEvidence');
+const { queuePizzaPartyConfirmations, queueChezGarageConfirmations } = require('./services/storeConfirmations');
+const { queueWeeklyOrderConfirmations } = require('./services/weeklyOrderConfirmations');
 const { createFinanceRouter } = require('./routes/finance');
 const { createSalesRouter } = require('./routes/sales');
 const { createFoodOpsRouter } = require('./routes/foodOps');
@@ -535,8 +538,86 @@ app.post('/api/square/webhook', express.raw({ type: '*/*', limit: '2mb' }), asyn
     // attempt (or recorded as an orphan) before channel-specific handling, so
     // no payment depends on a downstream handler recognising it.
     const financeEvidence = await recordSquarePaymentEvidence(payment, { prisma: financePrisma, logger });
+    if (financeEvidence.outcome === 'error') {
+      logger.error({ paymentId: payment.id, error: financeEvidence.error }, 'square payment evidence recording failed');
+      return res.status(500).json({ ok: false, error: 'square-payment-evidence-failed' });
+    }
 
-    const handledSmallEvent = await applySmallEventPayment(payment, { logger });
+    // A verified Square webhook repairs confirmation enqueueing if the
+    // request process died after capture/state recording.
+    try {
+      const attempt = await findAttemptForPayment(financePrisma, payment);
+      if (attempt?.weeklyOrderId) {
+        const order = await financePrisma.order.findUnique({
+          where: { id: attempt.weeklyOrderId },
+          include: {
+            menuWeek: true,
+            customer: { include: { users: true } },
+            items: { include: { dish: true } },
+          },
+        });
+        if (order) await queueWeeklyOrderConfirmations({ order, payment, emailOutboxService });
+      }
+      if (attempt?.commercialOrderId) {
+        const order = await financePrisma.commercialOrder.findUnique({
+          where: { id: attempt.commercialOrderId },
+        });
+        const metadata = order?.metadata || {};
+        const amountCents = Number(payment.amountMoney?.amount ?? payment.amount_money?.amount ?? 0);
+        if (metadata.offer === 'pizza-party') {
+          await queuePizzaPartyConfirmations({
+            paymentId: payment.id,
+            emailOutboxService,
+            date: metadata.requestedDate,
+            mealTime: metadata.mealTime,
+            addOnGuests: metadata.addOnGuests,
+            email: metadata.contactEmail,
+            name: metadata.contactName,
+            phone: metadata.contactPhone,
+            address: metadata.contactAddress,
+            pizzaRequests: metadata.pizzaRequests,
+            amountCents,
+          });
+        } else if (metadata.offer === 'chez-garage-at-home') {
+          await queueChezGarageConfirmations({
+            paymentId: payment.id,
+            emailOutboxService,
+            date: metadata.eventDate,
+            guestCount: metadata.guestCount,
+            email: metadata.contactEmail,
+            name: metadata.contactName,
+            phone: metadata.contactPhone,
+            address: metadata.contactAddress,
+            notes: metadata.customerNotes,
+            amountCents,
+          });
+        } else if (metadata.saleConfirmationFacts || attempt?.metadata?.saleConfirmationFacts) {
+          await recoverSaleConfirmations({
+            attempt,
+            order,
+            payment,
+            emailOutboxService,
+            ownerEmail: process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL,
+            senderEmail: process.env.SENDER_EMAIL,
+          });
+        }
+      }
+      if (!attempt?.commercialOrderId && attempt?.metadata?.saleConfirmationFacts) {
+        await recoverSaleConfirmations({
+          attempt,
+          payment,
+          emailOutboxService,
+          prisma: financePrisma,
+          ownerEmail: process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL,
+          senderEmail: process.env.SENDER_EMAIL,
+        });
+      }
+    } catch (confirmationError) {
+      logger.error({ err: confirmationError, paymentId: payment.id }, 'sale confirmation webhook recovery failed');
+      return res.status(500).json({ ok: false, error: 'sale-confirmation-recovery-failed' });
+    }
+
+    const handledSmallEvent = await applySmallEventPayment(payment, { logger, emailOutboxService });
     if (handledSmallEvent) {
       return res.status(200).json({ ok: true, handled: 'small-events', finance: financeEvidence.outcome });
     }
@@ -1099,7 +1180,7 @@ app.post('/api/internal/catalog/sanity-sync', async (req, res, next) => {
   try { await sanityCommerceSyncHandler(req, res); } catch (err) { next(err); }
 });
 app.use('/api/planner', createPlannerRouter());
-app.use('/ucp/v1', createUcpRouter({ logger }));
+app.use('/ucp/v1', createUcpRouter({ logger, emailOutboxService }));
 app.all('/api/crowdfund/checkout', async (req, res, next) => {
   try {
     await crowdfundCheckoutHandler(req, res);
@@ -1169,7 +1250,7 @@ app.all('/api/sales-proxy', async (req, res, next) => {
 
 app.all('/api/store/checkout', async (req, res, next) => {
   try {
-    await storeCheckoutHandler(req, res);
+    await storeCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'store checkout handler failed');
     next(err);
@@ -1178,7 +1259,7 @@ app.all('/api/store/checkout', async (req, res, next) => {
 
 app.all('/api/store/gift-card-checkout', async (req, res, next) => {
   try {
-    await giftCardCheckoutHandler(req, res);
+    await giftCardCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'gift-card checkout handler failed');
     next(err);
@@ -1187,7 +1268,7 @@ app.all('/api/store/gift-card-checkout', async (req, res, next) => {
 
 app.all('/api/store/pizza-party-checkout', async (req, res, next) => {
   try {
-    await pizzaPartyCheckoutHandler(req, res);
+    await pizzaPartyCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'pizza-party checkout handler failed');
     next(err);
@@ -1232,7 +1313,7 @@ app.all('/api/store/pizza-party-bookings', async (req, res, next) => {
 
 app.all('/api/store/chez-garage-at-home-checkout', async (req, res, next) => {
   try {
-    await chezGarageAtHomeCheckoutHandler(req, res);
+    await chezGarageAtHomeCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'chez-garage-at-home checkout handler failed');
     next(err);
@@ -1318,7 +1399,7 @@ app.all('/api/paikka/resend', (req, res) => res.status(410).json({ error: 'paikk
 
 app.all('/api/winter-dinner/checkout', async (req, res, next) => {
   try {
-    await winterDinnerCheckoutHandler(req, res);
+    await winterDinnerCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'winter dinner checkout handler failed');
     next(err);
@@ -1345,7 +1426,7 @@ app.all('/api/february/booked-dates', async (req, res, next) => {
 
 app.all('/api/february/checkout', async (req, res, next) => {
   try {
-    await februaryCheckoutHandler(req, res);
+    await februaryCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'february checkout handler failed');
     next(err);
@@ -1363,7 +1444,7 @@ app.all('/api/february/payment-link', async (req, res, next) => {
 
 app.all('/api/psyche/checkout', async (req, res, next) => {
   try {
-    await psycheCheckoutHandler(req, res);
+    await psycheCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'psyche checkout handler failed');
     next(err);
@@ -1381,7 +1462,7 @@ app.all('/api/july-dinner/event', async (req, res, next) => {
 
 app.all('/api/july-dinner/checkout', async (req, res, next) => {
   try {
-    await julyDinnerCheckoutHandler(req, res);
+    await julyDinnerCheckoutHandler(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'july dinner checkout handler failed');
     next(err);
@@ -1824,7 +1905,7 @@ for (const [name, replacement] of Object.entries(RETIRED_PORTAL_ROUTES)) {
 
 app.all('/api/weekly-order/checkout', async (req, res, next) => {
   try {
-    await require('../../api-handlers/weekly-order/checkout')(req, res);
+    await require('../../api-handlers/weekly-order/checkout')(req, res, { emailOutboxService });
   } catch (err) {
     logger.error({ err, method: req.method }, 'weekly order checkout handler failed');
     next(err);
@@ -3934,14 +4015,15 @@ app.post('/api/webhooks/brevo/events', webhookRateLimit, async (req, res) => {
   }
 });
 
-app.post('/api/email/outbox/process', webhookRateLimit, async (req, res) => {
+app.all(['/api/email/outbox/process', '/api/email/sale-confirmations/process'], webhookRateLimit, async (req, res) => {
   try {
     const token = req.get('X-Job-Token') || req.query?.token || req.body?.token;
     const expected = process.env.EMAIL_OUTBOX_JOB_TOKEN || '';
-    let authorized = false;
+    const cronSecret = process.env.CRON_SECRET || '';
+    let authorized = Boolean(cronSecret && timingSafeEqualString(req.get('Authorization') || '', `Bearer ${cronSecret}`));
     if (expected && token && timingSafeEqualString(String(token), String(expected))) {
       authorized = true;
-    } else {
+    } else if (!authorized) {
       const auth = await authenticateAllowedUser(req);
       authorized = !!auth.ok;
       if (authorized) req.user = auth.user;
@@ -3950,7 +4032,7 @@ app.post('/api/email/outbox/process', webhookRateLimit, async (req, res) => {
 
     const limit = Math.max(1, Math.min(100, Number(req.body?.limit || req.query?.limit || 20)));
     const maxAttempts = Math.max(1, Math.min(10, Number(req.body?.maxAttempts || req.query?.maxAttempts || 5)));
-    const result = await emailOutboxService.processBatch({ limit, maxAttempts });
+    const result = await emailOutboxService.processBatch({ limit, maxAttempts, source: req.path === '/api/email/sale-confirmations/process' ? 'sale-confirmation' : null });
     auditLog(req, 'email.outbox.process', result);
     return res.json({ ok: true, ...result });
   } catch (err) {

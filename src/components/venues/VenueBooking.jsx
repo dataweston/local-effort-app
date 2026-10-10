@@ -30,6 +30,7 @@ import {
 } from '../../config/eventPricing';
 
 const ERROR_COPY = {
+  'invalid-event-time': 'Choose an event start time (Central time).',
   'date-not-open': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
   'date-taken': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
   'rate-limit-exceeded': 'Too many tries from here. Give it a few minutes, or email us and we’ll do it by hand.',
@@ -51,6 +52,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [eventTime, setEventTime] = useState('');
   const [notes, setNotes] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +97,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         date: selectedDate,
+        eventTime,
         serviceStyle,
         guestCount,
         contactName,
@@ -132,6 +135,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
         venue: venue.nickname,
         notes: [
           `Venue enquiry from /${venue.slug}.`,
+          eventTime ? `Requested start: ${eventTime} Central time.` : null,
           quote ? `Estimate ${usd(quote.estimateMinCents)}–${usd(quote.estimateMaxCents)}.` : null,
           selectedDate ? `Date ${selectedDate} is not published as open.` : null,
           notes,
@@ -226,6 +230,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
       {/* ── the service ── ruled rows, never three cards ── */}
       {selectedDate && (
         <div className="venue-book__details">
+          <div className="venue-book__event">
       <fieldset className="venue-book__field">
         <legend className="venue-book__legend">How it’s served</legend>
         <div className="venue-book__styles">
@@ -273,11 +278,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
             <dt className="venue-ledger__term">to hold the date</dt>
             <dd className="venue-ledger__value">
               {usd(quote.depositCents)}
-              <i>
-                {' '}
-                — {quote.depositPercent}% of {usd(quote.estimateMinCents)}, credited against the
-                final invoice
-              </i>
+
             </dd>
           </div>
         </dl>
@@ -285,14 +286,21 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
 
       <p className="venue-book__basis">
         {payable || !selectedDate
-          ? 'The estimate holds the date. Your chef sets the final menu price from what you actually choose to eat, and the deposit comes off it. If the total lands lower, we refund the difference.'
-          : 'We haven’t published this night yet, so we won’t take your money for it. Send it over with the details above and we’ll confirm by hand — usually the same day.'}
+          ? `${quote?.depositPercent}% of the low estimate, credited toward your final invoice. Your chef confirms the menu price with you. If the total is lower, we refund the difference.`
+          : 'This date needs confirmation. Send your details and we’ll check availability — usually the same day. No payment is taken.'}
       </p>
 
+          </div>
+          <div className="venue-book__contact">
+            <h3 className="venue-book__legend">Your details</h3>
       {/* ── who ── the same field primitives every other slip on the site
            uses (slipForms.jsx:161-213), so this form inherits the house input
            styling rather than growing a second one. ── */}
       <div className="venue-book__who">
+        <div>
+          <label className="ht-label" htmlFor={`venue-time-${venue.slug}`}>event start time (Central)</label>
+          <input id={`venue-time-${venue.slug}`} className="ht-input" type="time" required value={eventTime} onChange={(event) => setEventTime(event.target.value)} />
+        </div>
         <div>
           <label className="ht-label" htmlFor={`venue-name-${venue.slug}`}>your name</label>
           <input
@@ -384,6 +392,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
           ? 'Card step is handled by Square. The night is held for 24 hours while you pay, and released if you don’t.'
           : 'No card, and nothing held — this one comes back to you by email.'}
       </p>
+          </div>
         </div>
       )}
     </form>

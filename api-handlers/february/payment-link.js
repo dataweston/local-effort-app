@@ -1,4 +1,6 @@
-const crypto = require('crypto');
+const { prisma } = require('../_lib/prisma');
+const { createHostedPaymentLink } = require('../../backend/api/finance/hostedPaymentLinks');
+const { buildFebruaryConfirmationFacts } = require('./confirmation-facts');
 const { getSquareClient } = require('../_lib/squareClient');
 
 const MIN_GUESTS = 4;
@@ -33,7 +35,6 @@ const parseFebruaryDate = (isoDate) => {
   return { date, isAvailable };
 };
 
-const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -45,7 +46,8 @@ module.exports = async (req, res) => {
   if (!squareClient) return res.status(500).json({ error: 'Square not configured' });
   if (!locationId) return res.status(500).json({ error: 'Square location missing' });
 
-  const { date, guestCount, preferredTime } = req.body || {};
+  if (!prisma) return res.status(503).json({ error: 'Payment records unavailable' });
+  const { date, guestCount, preferredTime, dietaryNotes, notes, customer = {}, address = {}, checkoutAttemptId } = req.body || {};
   if (!date) return res.status(400).json({ error: 'Missing date' });
 
   const parsedDate = parseFebruaryDate(date);
@@ -57,29 +59,17 @@ module.exports = async (req, res) => {
   const amountCents = getPartyPrice(guests);
 
   try {
-    const note = `February dinner ${date} for ${guests} guests${preferredTime ? ` @ ${preferredTime}` : ''}`.slice(0, 500);
-    const response = await squareClient.checkoutApi.createPaymentLink({
-      idempotencyKey: createKey(),
-      order: {
-        locationId,
-        lineItems: [
-          {
-            name: `February chef dinner (${guests} guests)`,
-            quantity: '1',
-            basePriceMoney: { amount: amountCents, currency: 'USD' },
-          },
-        ],
-        note,
-      },
-      checkoutOptions: {
-        redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/february` : undefined,
-      },
+    const facts = buildFebruaryConfirmationFacts({ date, guests, amountCents, preferredTime, dietaryNotes, notes, customer, address });
+    const url = await createHostedPaymentLink({
+      prisma, squareClient, locationId, flow: 'february', checkoutAttemptId, customer, totalCents: amountCents,
+      lines: [{ name: `February chef dinner (${guests} guests)`, quantity: 1, unitPriceCents: amountCents, totalCents: amountCents }],
+      facts,
+      basket: { date, guests, amountCents, preferredTime: preferredTime || '', dietaryNotes: dietaryNotes || '', notes: notes || '', customer, address },
+      note: `February dinner ${date} for ${guests} guests${preferredTime ? ` @ ${preferredTime}` : ''}`.slice(0, 500),
+      checkoutOptions: { redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/february` : undefined },
     });
-    const url = response?.result?.paymentLink?.url;
-    if (!url) return res.status(500).json({ error: 'Failed to create payment link' });
     return res.status(200).json({ url });
   } catch (err) {
-    const msg = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Failed to create payment link';
-    return res.status(500).json({ error: msg });
+    return res.status(err?.statusCode === 409 ? 409 : 500).json({ error: 'Failed to create payment link' });
   }
 };

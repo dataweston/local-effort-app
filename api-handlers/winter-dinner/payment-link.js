@@ -1,4 +1,6 @@
-const crypto = require('crypto');
+const { prisma } = require('../_lib/prisma');
+const { createHostedPaymentLink } = require('../../backend/api/finance/hostedPaymentLinks');
+const { buildWinterDinnerConfirmationFacts } = require('./confirmation-facts');
 const { Client, Environment } = require('square');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
@@ -15,7 +17,6 @@ try {
   sq = null;
 }
 
-const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -30,7 +31,8 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Square location missing' });
   }
 
-  const { customer = {}, dietaryRestrictions, drinkMenu, amount, quantity } = req.body || {};
+  if (!prisma) return res.status(503).json({ error: 'Payment records unavailable' });
+  const { customer = {}, dietaryRestrictions, drinkMenu, amount, quantity, checkoutAttemptId } = req.body || {};
   const ticketCount = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
   const ticketPrice = Number(amount) || 7500;
   if (!ticketPrice || ticketPrice <= 0) {
@@ -45,29 +47,18 @@ module.exports = async (req, res) => {
     if (dietaryRestrictions) noteParts.push(`Dietary: ${String(dietaryRestrictions).slice(0, 120)}`);
     const note = `Winter dinner tickets x${ticketCount} - ${noteParts.join(' | ')}`.slice(0, 500);
 
-    const response = await sq.checkoutApi.createPaymentLink({
-      idempotencyKey: createKey(),
-      order: {
-        locationId: LOCATION_ID,
-        lineItems: [
-          {
-            name: `Winter Dinner (${ticketCount} ticket${ticketCount > 1 ? 's' : ''})`,
-            quantity: '1',
-            basePriceMoney: { amount: Math.round(ticketPrice), currency: 'USD' },
-          },
-        ],
-        note,
-      },
-      checkoutOptions: {
-        redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/winter-dinner` : undefined,
-      },
+    const amountCents = Math.round(ticketPrice);
+    const facts = buildWinterDinnerConfirmationFacts({ customer, dietaryRestrictions, drinkMenu, ticketPrice: amountCents, ticketCount });
+    const url = await createHostedPaymentLink({
+      prisma, squareClient: sq, locationId: LOCATION_ID, flow: 'winter-dinner', checkoutAttemptId, customer, totalCents: amountCents,
+      lines: [{ name: `Winter Dinner (${ticketCount} ticket${ticketCount > 1 ? 's' : ''})`, quantity: 1, unitPriceCents: amountCents, totalCents: amountCents }],
+      facts,
+      basket: { customer, dietaryRestrictions: dietaryRestrictions || '', drinkMenu: drinkMenu || '', amountCents, ticketCount },
+      note,
+      checkoutOptions: { redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/winter-dinner` : undefined },
     });
-
-    const url = response?.result?.paymentLink?.url;
-    if (!url) return res.status(500).json({ error: 'Failed to create payment link' });
     return res.status(200).json({ url });
   } catch (err) {
-    const msg = err?.errors ? JSON.stringify(err.errors) : err?.message || 'Failed to create payment link';
-    return res.status(500).json({ error: msg });
+    return res.status(err?.statusCode === 409 ? 409 : 500).json({ error: 'Failed to create payment link' });
   }
 };

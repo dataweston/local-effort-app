@@ -46,22 +46,31 @@ async function findAttemptForPayment(prisma, payment) {
   }
 
   const reference = field(payment, 'referenceId', 'reference_id');
-  if (!reference) return null;
-  const referenceId = String(reference);
+  if (reference) {
+    const referenceId = String(reference);
+    // The reference is one of ours in exactly one of three roles.
+    const byReference = await prisma.financePaymentAttempt.findFirst({
+      where: {
+        provider: PROVIDER,
+        OR: [
+          { id: referenceId },
+          { commercialOrderId: referenceId },
+          { weeklyOrderId: referenceId },
+        ],
+      },
+      orderBy: { startedAt: 'desc' },
+    });
+    if (byReference) return byReference;
+  }
 
-  // The reference is one of ours in exactly one of three roles.
-  const byReference = await prisma.financePaymentAttempt.findFirst({
+  const externalOrderId = field(payment, 'orderId', 'order_id');
+  if (!externalOrderId) return null;
+  return prisma.financePaymentAttempt.findFirst({
     where: {
       provider: PROVIDER,
-      OR: [
-        { id: referenceId },
-        { commercialOrderId: referenceId },
-        { weeklyOrderId: referenceId },
-      ],
+      metadata: { path: ['squareOrderId'], equals: String(externalOrderId) },
     },
-    orderBy: { startedAt: 'desc' },
   });
-  return byReference || null;
 }
 
 /**

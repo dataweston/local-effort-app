@@ -5,6 +5,7 @@ const {
   markPaymentAttemptFailed,
   markPaymentAttemptSucceeded,
 } = require('../../backend/api/finance/paymentAttempts');
+const { queueWeeklyOrderConfirmations } = require('../../backend/api/services/weeklyOrderConfirmations');
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -39,6 +40,25 @@ const summarizeCounts = (items) => items.reduce(
   },
   { entrees: 0, addOns: 0, total: 0, bySection: {} }
 );
+async function enqueueWeeklyConfirmation({ orderId, payment, paymentId = payment?.id, paidCents, emailOutboxService }) {
+  if (!emailOutboxService || !orderId || !paymentId) return;
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        menuWeek: true,
+        customer: { include: { users: true } },
+        items: { include: { dish: true } },
+      },
+    });
+    if (!order) throw new Error('weekly-order-confirmation-order-not-found');
+    await queueWeeklyOrderConfirmations({ order, payment, paymentId, paidCents, emailOutboxService });
+  } catch (error) {
+    console.error('[weekly-order] confirmation enqueue failed after successful payment', {
+      orderId, paymentId, error: error?.message || error,
+    });
+  }
+}
 
 const normalizeSectionRules = (rawRules) => {
   if (!rawRules) return {};
@@ -67,7 +87,7 @@ const normalizeSectionRules = (rawRules) => {
   return rules;
 };
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
@@ -255,6 +275,12 @@ module.exports = async (req, res) => {
       return res.status(409).json({ error: 'Checkout attempt amount changed. Please start checkout again.' });
     }
     if (paymentAttempt?.status === 'succeeded' && paymentAttempt.externalPaymentId) {
+      await enqueueWeeklyConfirmation({
+        orderId: paymentAttempt.weeklyOrderId,
+        paymentId: paymentAttempt.externalPaymentId,
+        paidCents: amountCents,
+        emailOutboxService,
+      });
       return res.status(200).json({
         ok: true,
         paymentId: paymentAttempt.externalPaymentId,
@@ -373,6 +399,9 @@ module.exports = async (req, res) => {
       });
     }
 
+    if (String(payment?.status || '').toUpperCase() === 'COMPLETED') {
+      await enqueueWeeklyConfirmation({ orderId, payment, paidCents: amountCents, emailOutboxService });
+    }
     return res.status(200).json({
       ok: true,
       paymentId,

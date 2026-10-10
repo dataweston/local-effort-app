@@ -17,7 +17,7 @@ try {
 }
 
 
-const createKey = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
+const createKey = (identity) => `wo-${crypto.createHash('sha256').update(identity).digest('hex').slice(0, 40)}`;
 
 const summarizeCounts = (items) => items.reduce(
   (acc, item) => {
@@ -89,6 +89,9 @@ module.exports = async (req, res) => {
   }
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'No items submitted' });
+  }
+  if (!prisma) {
+    return res.status(503).json({ error: 'Payment records unavailable' });
   }
 
   let resolvedItems = items.map((item) => ({
@@ -221,12 +224,85 @@ module.exports = async (req, res) => {
   if (!amountCents || amountCents <= 0) {
     return res.status(400).json({ error: 'Invalid total amount' });
   }
+  const identity = JSON.stringify({
+    menuWeekId,
+    customerId,
+    customerSlug: customerSlug || customerId,
+    tier: tier || null,
+    basePriceCents: Math.round(Number(resolvedPlan.basePriceCents) || 0),
+    deliveryFeeCents: Math.round(Number(resolvedPlan.deliveryFeeCents) || 0),
+    items: resolvedItems.map((item) => ({
+      dishId: item.dishId,
+      quantity: Math.round(Number(item.quantity) || 0),
+      unitPriceCents: Math.round(Number(item.unitPriceCents) || 0),
+      isAddon: Boolean(item.isAddon),
+      includedInPlan: Boolean(item.includedInPlan),
+    })).sort((left, right) => String(left.dishId).localeCompare(String(right.dishId))),
+  });
+  const idempotencyKey = createKey(identity);
 
   try {
+    let paymentAttempt = await prisma.financePaymentAttempt.findUnique({
+      where: { provider_idempotencyKey: { provider: 'square', idempotencyKey } },
+      include: { weeklyOrder: true },
+    });
+    if (paymentAttempt && paymentAttempt.requestedCents !== Math.round(amountCents)) {
+      return res.status(409).json({ error: 'Checkout attempt amount changed. Please start checkout again.' });
+    }
+    if (!paymentAttempt) {
+      try {
+        const pendingOrder = await prisma.order.create({
+          data: {
+            menuWeekId,
+            customerId,
+            status: 'payment_pending',
+            totalsCents: Math.round(amountCents),
+            basePriceCents: resolvedPlan.basePriceCents || 0,
+            deliveryFeeCents: resolvedPlan.deliveryFeeCents || 0,
+            tier: tier || null,
+            items: {
+              createMany: {
+                data: resolvedItems.map((item) => ({
+                  dishId: item.dishId,
+                  quantity: Math.round(Number(item.quantity) || 0),
+                  unitPriceCents: Math.round(Number(item.unitPriceCents) || 0),
+                  isAddon: Boolean(item.isAddon),
+                  includedInPlan: Boolean(item.includedInPlan),
+                })),
+              },
+            },
+            paymentAttempts: {
+              create: {
+                provider: 'square',
+                idempotencyKey,
+                status: 'pending',
+                requestedCents: Math.round(amountCents),
+                currency: 'USD',
+                metadata: { channel: 'weekly_order_hosted_link', menuWeekId, customerId },
+              },
+            },
+          },
+          include: { paymentAttempts: true },
+        });
+        paymentAttempt = pendingOrder.paymentAttempts[0];
+      } catch (error) {
+        if (error?.code !== 'P2002') throw error;
+        paymentAttempt = await prisma.financePaymentAttempt.findUnique({
+          where: { provider_idempotencyKey: { provider: 'square', idempotencyKey } },
+          include: { weeklyOrder: true },
+        });
+        if (!paymentAttempt) throw error;
+      }
+    }
+
+    const orderId = paymentAttempt.weeklyOrderId;
+    if (!orderId) throw new Error('Weekly order anchor missing');
     const response = await squareClient.checkoutApi.createPaymentLink({
-      idempotencyKey: createKey(),
+      idempotencyKey,
       order: {
         locationId: LOCATION_ID,
+        referenceId: orderId,
+        metadata: { channel: 'weekly_order', weeklyOrderId: orderId },
         lineItems: [
           {
             name: `Weekly order (${tier || 'member'})`,
@@ -239,6 +315,12 @@ module.exports = async (req, res) => {
       checkoutOptions: {
         redirectUrl: process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/weekly-order` : undefined,
       },
+    });
+    const squareOrderId = response?.result?.paymentLink?.orderId;
+    if (!squareOrderId) throw new Error('Square payment link order anchor missing');
+    await prisma.financePaymentAttempt.update({
+      where: { id: paymentAttempt.id },
+      data: { metadata: { ...(paymentAttempt.metadata || {}), squareOrderId } },
     });
 
     const url = response?.result?.paymentLink?.url;

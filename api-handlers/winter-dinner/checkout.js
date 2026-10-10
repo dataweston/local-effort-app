@@ -9,6 +9,12 @@ const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 const ENV_NAME = process.env.SQUARE_ENVIRONMENT || 'Production';
 const TEAM_EMAIL = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || TEAM_EMAIL;
+const { queueSaleConfirmations, buildDirectSaleConfirmations } = require('../store/sale-confirmation-outbox');
+const { buildWinterDinnerConfirmationFacts } = require('./confirmation-facts');
+const { prisma } = require('../_lib/prisma');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const { markPaymentAttemptSucceeded } = require('../../backend/api/finance/paymentAttempts');
+
 const sanitizeIdempotencyKey = (value) => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -28,7 +34,7 @@ try {
 
 const brevoService = createBrevoService();
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
@@ -54,6 +60,30 @@ module.exports = async (req, res) => {
     const ticketCount = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
     const ticketPrice = amount || 7500; // Default $75.00 total for the order
 
+    const totalCents = Number(ticketPrice);
+    const saleConfirmationFacts = buildWinterDinnerConfirmationFacts({ customer, dietaryRestrictions, drinkMenu, ticketPrice, ticketCount });
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'winter-dinner',
+      sourceId: `winter-dinner:${idempotencyKey}`,
+      channel: 'small_events',
+      businessLineKey: 'events',
+      customerName: customer.name,
+      customerEmail: customer.email,
+      totalCents,
+      orderMetadata: { saleConfirmationFacts },
+      attemptMetadata: { saleConfirmationFacts },
+    });
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        registrationId: null,
+        idempotentReplay: true,
+      });
+    }
+
     // Process Square payment
     const paymentBody = {
       sourceId: token,
@@ -63,14 +93,31 @@ module.exports = async (req, res) => {
       autocomplete: true,
       buyerEmailAddress: customer.email,
       note: `Winter Dinner Ticket${ticketCount > 1 ? 's' : ''} x${ticketCount} - ${customer.name} (${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'})`,
-      referenceId: `winter-dinner-${Date.now()}`,
+      referenceId: checkout.order.id,
     };
     if (verificationToken) {
       paymentBody.verificationToken = verificationToken;
     }
 
     const paymentResp = await sq.paymentsApi.createPayment(paymentBody);
-    const paymentId = paymentResp.result.payment?.id;
+    const payment = paymentResp?.result?.payment;
+    const paymentId = payment?.id;
+    if (paymentId) {
+      try {
+        await markPaymentAttemptSucceeded({
+          prisma,
+          attemptId: checkout.attempt.id,
+          provider: 'square',
+          payment,
+          amountCents: totalCents,
+        });
+      } catch (stateError) {
+        console.warn('[winter-dinner.checkout] payment captured; payment attempt reconciliation pending', {
+          paymentId,
+          error: stateError?.message || stateError,
+        });
+      }
+    }
 
     // Store in Supabase
     const supabase = getSupabase();
@@ -125,111 +172,59 @@ module.exports = async (req, res) => {
       console.error('⚠️  Brevo contact upsert failed:', err.message);
     }
 
-    // Event details
-    const eventDate = 'December 21, 2025';
-    const eventTime = '6:00 PM';
-    const eventLocation = 'Local Effort Space';
-    const eventAddress = '1024 E 38th St, Minneapolis, MN';
+    const registeredFacts = buildWinterDinnerConfirmationFacts({ customer, dietaryRestrictions, drinkMenu, ticketPrice, ticketCount, registrationId });
+    if (registrationId) {
+      try {
+        await prisma.$transaction(async (tx) => {
+          await tx.financePaymentAttempt.update({
+            where: { id: checkout.attempt.id },
+            data: { metadata: { ...checkout.attempt.metadata, saleConfirmationFacts: registeredFacts } },
+          });
+          await tx.commercialOrder.update({
+            where: { id: checkout.order.id },
+            data: { metadata: { ...checkout.order.metadata, saleConfirmationFacts: registeredFacts } },
+          });
+        });
+      } catch (stateError) {
+        console.warn('[winter-dinner.checkout] registration confirmation reconciliation pending', { paymentId });
+      }
+    }
 
     // Send customer confirmation email
     if (customer.email && SENDER_EMAIL) {
       try {
-        const beverageText = drinkMenu === 'wine'
-          ? 'with curated wine pairings'
-          : 'with artisanal non-alcoholic beverage pairings';
-
-        const dietaryText = dietaryRestrictions
-          ? `\n\nDietary Restrictions/Allergies: ${dietaryRestrictions}`
-          : '';
-
-        const customerEmailBody = `Dear ${customer.name},
-
-Thank you for purchasing a ticket to our Winter Dinner! We're thrilled to have you join us for an unforgettable evening.
-
-═══════════════════════════════════════
-EVENT DETAILS
-═══════════════════════════════════════
-
-Date: ${eventDate}
-Time: ${eventTime}
-Location: ${eventLocation}
-Address: ${eventAddress}
-
-Your ticket includes a multi-course seasonal dinner ${beverageText}.${dietaryText}
-
-═══════════════════════════════════════
-YOUR CONFIRMATION
-═══════════════════════════════════════
-
-Name: ${customer.name}
-Email: ${customer.email}
-Phone: ${customer.phone}
-Quantity: ${ticketCount}
-Ticket Price: $${(ticketPrice / 100).toFixed(2)}
-Payment ID: ${paymentId}
-
-═══════════════════════════════════════
-
-If you have any questions or need to update your dietary restrictions, please reply to this email or call us.
-
-We look forward to seeing you!
-
-Warmly,
-The Local Effort Team`;
-
-        await brevoService.sendEmail({
-          to: [{ email: customer.email, name: customer.name }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          subject: '✨ Your Winter Dinner Ticket Confirmation',
-          textContent: customerEmailBody,
+        const result = await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: buildDirectSaleConfirmations('winter-dinner', { ...registeredFacts, paymentId }).filter(({ role }) => role === 'customer'),
         });
 
-        console.log(`✅ Confirmation email sent to ${customer.email}`);
+        if (result.queued) console.log('Winter dinner customer confirmation queued');
       } catch (err) {
-        console.error('⚠️  Failed to send customer email:', err.message);
+        console.error('[winter-dinner.checkout] payment captured; customer confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
     // Send admin notification email
     if (TEAM_EMAIL && SENDER_EMAIL) {
       try {
-        const adminEmailBody = `🎫 NEW WINTER DINNER TICKET PURCHASED
-
-═══════════════════════════════════════
-CUSTOMER INFORMATION
-═══════════════════════════════════════
-
-Name: ${customer.name}
-Email: ${customer.email}
-Phone: ${customer.phone}
-
-═══════════════════════════════════════
-TICKET DETAILS
-═══════════════════════════════════════
-
-Price: $${(ticketPrice / 100).toFixed(2)}
-Quantity: ${ticketCount}
-Beverage Pairing: ${drinkMenu === 'wine' ? 'Wine Pairing' : 'Non-Alcoholic Pairing'}
-Dietary Restrictions: ${dietaryRestrictions || 'None specified'}
-
-Payment ID: ${paymentId}
-${registrationId ? `Registration ID: ${registrationId}` : ''}
-
-═══════════════════════════════════════
-
-Event: ${eventDate} at ${eventTime}
-Location: ${eventLocation}`;
-
-        await brevoService.sendEmail({
-          to: [{ email: TEAM_EMAIL }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort Winter Dinner' },
-          subject: `🎫 New Ticket: ${customer.name} - Winter Dinner`,
-          textContent: adminEmailBody,
+        const result = await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: buildDirectSaleConfirmations('winter-dinner', { ...registeredFacts, paymentId }).filter(({ role }) => role === 'owner'),
         });
 
-        console.log(`✅ Admin notification sent to ${TEAM_EMAIL}`);
+        if (result.queued) console.log('Winter dinner owner confirmation queued');
       } catch (err) {
-        console.error('⚠️  Failed to send admin email:', err.message);
+        console.error('[winter-dinner.checkout] payment captured; admin confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
@@ -245,3 +240,4 @@ Location: ${eventLocation}`;
     res.status(500).json({ error: msg });
   }
 };
+module.exports.queueSaleConfirmations = queueSaleConfirmations;

@@ -450,14 +450,6 @@ const PizzaPartyPage = () => {
       setJustBooked(true);
       closeModal();
       clearCheckoutAttempt();
-      // Fire-and-forget receipt email
-      try {
-        fetch('/api/store/pizza-party-receipt', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ paymentId: data.paymentId, date, email: email.trim(), addOnGuests: addOnEnabled ? guestCount : 0 })
-        }).catch(() => {});
-      } catch (_) { /* ignore */ }
       setTimeout(() => setJustBooked(false), 6000);
     } catch (e) {
       // Retire the attempt id so a retry is a new payment rather than a replay

@@ -4,6 +4,10 @@
 
 const { getSquareClient } = require('../_lib/squareClient');
 const { createBrevoService } = require('../../backend/api/services/brevo');
+const { queueSaleConfirmations } = require('../store/sale-confirmation-outbox');
+const { prisma } = require('../_lib/prisma');
+const { startCommercialCheckout } = require('../../backend/api/finance/commercialOrders');
+const { markPaymentAttemptSucceeded } = require('../../backend/api/finance/paymentAttempts');
 
 const PRODUCT_PRICE_CENTS = 7000;
 const MAX_QUANTITY = 1;
@@ -37,7 +41,7 @@ const parseQuantity = (value) => {
   return parsed;
 };
 
-module.exports = async (req, res) => {
+module.exports = async (req, res, { emailOutboxService } = {}) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -89,6 +93,94 @@ module.exports = async (req, res) => {
           ? 'Delivery (10+ miles)'
           : 'Delivery (within 10 miles)';
 
+    const saleConfirmationFacts = {
+      flow: 'psyche',
+      title: 'Psyche olive oil order',
+      amountCents,
+      customer: { name: customer.name, email: customer.email, phone: customer.phone },
+      details: {
+        Fulfillment: fulfillmentLabel,
+        Quantity: quantity,
+        Subtotal: `$${((PRODUCT_PRICE_CENTS * quantity) / 100).toFixed(2)}`,
+        'Fulfillment fee': `$${(feeCents / 100).toFixed(2)}`,
+        Total: `$${(amountCents / 100).toFixed(2)}`,
+        Address: `${address.line1}${address.line2 ? `, ${address.line2}` : ''}, ${address.city}, ${address.state} ${address.postal}`,
+        Notes: deliveryNotes || 'None',
+      },
+      confirmationTemplates: [
+        {
+          role: 'customer',
+          payload: {
+            to: [{ email: customer.email, name: customer.name }],
+            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+            subject: 'Psyche olive oil order confirmed',
+            textContent: [
+              'Thanks for your Psyche olive oil purchase.',
+              '',
+              `Fulfillment: ${fulfillmentLabel}`,
+              `Address: ${address.line1}${address.line2 ? `, ${address.line2}` : ''}, ${address.city}, ${address.state} ${address.postal}`,
+              `Delivery/shipping notes: ${deliveryNotes || 'None'}`,
+              '',
+              `Product: Psyche olive oil (x${quantity})`,
+              `Subtotal: $${((PRODUCT_PRICE_CENTS * quantity) / 100).toFixed(2)}`,
+              `Fulfillment fee: $${(feeCents / 100).toFixed(2)}`,
+              `Total: $${(amountCents / 100).toFixed(2)}`,
+              '',
+              'Payment ID: {{paymentId}}',
+            ].join('\n'),
+          },
+        },
+        {
+          role: 'owner',
+          payload: {
+            to: [{ email: TEAM_EMAIL }],
+            sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+            subject: `Psyche order - ${customer.name}`,
+            textContent: [
+              'NEW PSYCHE OLIVE OIL ORDER',
+              '',
+              `Fulfillment: ${fulfillmentLabel}`,
+              `Quantity: ${quantity}`,
+              `Subtotal: $${((PRODUCT_PRICE_CENTS * quantity) / 100).toFixed(2)}`,
+              `Fulfillment fee: $${(feeCents / 100).toFixed(2)}`,
+              `Total: $${(amountCents / 100).toFixed(2)}`,
+              '',
+              `Customer: ${customer.name}`,
+              `Email: ${customer.email}`,
+              `Phone: ${customer.phone}`,
+              `Address: ${address.line1}${address.line2 ? `, ${address.line2}` : ''}, ${address.city}, ${address.state} ${address.postal}`,
+              `Notes: ${deliveryNotes || 'None'}`,
+              '',
+              'Payment ID: {{paymentId}}',
+            ].join('\n'),
+          },
+        },
+      ].filter(({ payload }) => payload?.to?.[0]?.email && payload.sender?.email),
+    };
+    const checkout = await startCommercialCheckout({
+      prisma,
+      idempotencyKey,
+      sourceSystem: 'psyche',
+      sourceId: `psyche:${idempotencyKey}`,
+      channel: 'store',
+      businessLineKey: 'store',
+      customerName: customer.name,
+      customerEmail: customer.email,
+      subtotalCents: PRODUCT_PRICE_CENTS * quantity,
+      totalCents: amountCents,
+      orderMetadata: { saleConfirmationFacts },
+      attemptMetadata: { saleConfirmationFacts },
+    });
+    if (checkout.replay === 'succeeded') {
+      return res.status(200).json({
+        ok: true,
+        paymentId: checkout.attempt.externalPaymentId,
+        amountCents,
+        emailStatus: { customer: false, admin: false },
+        idempotentReplay: true,
+      });
+    }
+
     const paymentBody = {
       sourceId: token,
       idempotencyKey,
@@ -97,7 +189,7 @@ module.exports = async (req, res) => {
       autocomplete: true,
       buyerEmailAddress: customer.email,
       note: `Psyche olive oil x${quantity} - ${fulfillmentLabel}`.slice(0, 500),
-      referenceId: `psyche-${Date.now()}`,
+      referenceId: checkout.order.id,
       metadata: {
         fulfillment: fulfillment || 'delivery',
         delivery_zone: deliveryZone || '',
@@ -112,10 +204,25 @@ module.exports = async (req, res) => {
     }
 
     const paymentResp = await squareClient.paymentsApi.createPayment(paymentBody);
-    const paymentId = paymentResp?.result?.payment?.id;
+    const payment = paymentResp?.result?.payment;
+    const paymentId = payment?.id;
 
     if (!paymentId) {
       throw new Error('Payment failed');
+    }
+    try {
+      await markPaymentAttemptSucceeded({
+        prisma,
+        attemptId: checkout.attempt.id,
+        provider: 'square',
+        payment,
+        amountCents,
+      });
+    } catch (stateError) {
+      console.warn('[psyche.checkout] payment captured; payment attempt reconciliation pending', {
+        paymentId,
+        error: stateError?.message || stateError,
+      });
     }
 
     const emailStatus = { customer: false, admin: false };
@@ -138,15 +245,26 @@ module.exports = async (req, res) => {
           `Payment ID: ${paymentId}`,
         ].join('\n');
 
-        await brevoService.sendEmail({
-          to: [{ email: customer.email, name: customer.name }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          subject: 'Psyche olive oil order confirmed',
-          textContent: customerBody,
+        await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: [{
+            role: 'customer',
+            payload: {
+              to: [{ email: customer.email, name: customer.name }],
+              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+              subject: 'Psyche olive oil order confirmed',
+              textContent: customerBody,
+            },
+          }],
         });
-        emailStatus.customer = true;
+        emailStatus.customer = payment?.status === 'COMPLETED';
       } catch (err) {
-        console.warn('[psyche.checkout] customer email failed', err?.message);
+        console.warn('[psyche.checkout] payment captured; customer confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
@@ -170,15 +288,26 @@ module.exports = async (req, res) => {
           `Payment ID: ${paymentId}`,
         ].join('\n');
 
-        await brevoService.sendEmail({
-          to: [{ email: TEAM_EMAIL }],
-          sender: { email: SENDER_EMAIL, name: 'Local Effort' },
-          subject: `Psyche order - ${customer.name}`,
-          textContent: adminBody,
+        await queueSaleConfirmations({
+          emailOutboxService,
+          payment,
+          paymentId,
+          confirmations: [{
+            role: 'owner',
+            payload: {
+              to: [{ email: TEAM_EMAIL }],
+              sender: { email: SENDER_EMAIL, name: 'Local Effort' },
+              subject: `Psyche order - ${customer.name}`,
+              textContent: adminBody,
+            },
+          }],
         });
-        emailStatus.admin = true;
+        emailStatus.admin = payment?.status === 'COMPLETED';
       } catch (err) {
-        console.warn('[psyche.checkout] admin email failed', err?.message);
+        console.warn('[psyche.checkout] payment captured; admin confirmation reconciliation pending', {
+          paymentId,
+          error: err?.message || err,
+        });
       }
     }
 
@@ -197,3 +326,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: msg });
   }
 };
+module.exports.queueSaleConfirmations = queueSaleConfirmations;

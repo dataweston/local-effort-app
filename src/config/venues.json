@@ -220,6 +220,35 @@
         "galleryTags": [
           "event",
           "dinner"
+        ],
+        "food": [
+          {
+            "publicId": "auto_uploads/tableware/2025/08/img9843-a2676b0c",
+            "alt": "Green and white asparagus arranged on a blue-rimmed plate on a wooden table.",
+            "slot": "food-asparagus",
+            "tile": {
+              "cols": 2,
+              "rows": 3
+            }
+          },
+          {
+            "publicId": "q16cdqxp4yhxde5a8rjb",
+            "alt": "A small plated bite held out during dinner service.",
+            "slot": "food-service",
+            "tile": {
+              "cols": 2,
+              "rows": 3
+            }
+          },
+          {
+            "publicId": "auto_uploads/food/2025/08/img2047-7dadebad",
+            "alt": "Freshly filled cannoli with chocolate-dipped ends on parchment.",
+            "slot": "food-cannoli",
+            "tile": {
+              "cols": 2,
+              "rows": 3
+            }
+          }
         ]
       },
       "timezone": "America/Chicago",

@@ -416,6 +416,8 @@ function createVenuesRouter({ logger } = {}) {
     }
 
     const date = normalizeString(req.body?.date, 10);
+    const eventTime = normalizeString(req.body?.eventTime, 5);
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(eventTime)) return res.status(400).json({ error: 'invalid-event-time' });
     const contactName = normalizeString(req.body?.contactName, 120);
     const contactPhone = normalizeString(req.body?.contactPhone, 40);
     const notes = normalizeString(req.body?.notes, 1000);
@@ -472,6 +474,7 @@ function createVenuesRouter({ logger } = {}) {
             serviceStyle: quote.serviceStyle,
             guestCount: quote.guestCount,
             eventDate: date,
+            eventTime,
             contactName,
             contactEmail,
             contactPhone: contactPhone || null,
