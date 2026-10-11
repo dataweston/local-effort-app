@@ -20,8 +20,8 @@ jobs:
       - name: Process due sale confirmations
         shell: bash
         run: |
-          if [[ -z "$CRON_SECRET" ]]; then
-            echo "::error::Configure the CRON_SECRET Actions secret to match the Vercel environment variable."
+          if [[ -z "$EMAIL_OUTBOX_JOB_TOKEN" ]]; then
+            echo "::error::Configure the EMAIL_OUTBOX_JOB_TOKEN Actions secret from Vercel's production value."
             exit 1
           fi
 
