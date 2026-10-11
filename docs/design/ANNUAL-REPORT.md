@@ -11,6 +11,26 @@ cost, what remained after unresolved outflows and founder draws — and can
 check every figure against the statement at the end. Reading and checking are
 the whole job. There is no call to action.
 
+### Cash categories (snapshot refreshed October 10, 2026)
+
+- Income excludes **loans and investments**: $90,036.70 of income and
+  $21,011.03 of financing. Financing uses posted cash rows in Local Budget's
+  Investments category, including Square loans; transfer-classified movements
+  remain excluded.
+- The cost bridge and monthly statement break operating costs into Rent, Car,
+  Amazon, Gas, Software & Tools, Marketing, Debt, Licensing and Permits,
+  Delivery, and Utilities. Keep source labels rather than guessing purchase
+  details or treating the Debt category as interest-only expense.
+- The ten categories reconcile to each monthly operating subtotal and
+  $38,983.06 overall. Operating remainder excludes financing ($14,442.05);
+  tracked cash adds financing back ($12,214.18 after unresolved outflow and
+  founder draws). Chart percentages use total cash inflow of $111,047.73.
+- Verification: all nine monthly category totals reconciled to the authenticated
+  cashflow and transaction APIs, counting only posted cash rows and respecting
+  the source's split and classification semantics. A standalone bundle of the
+  actual page passed desktop/mobile browser smoke checks; the full Vite app
+  preview timed out. External images were blocked during the browser smoke.
+
 ## Thesis
 
 Read off the repo: the site already has a measured material system, taken from
@@ -59,15 +79,15 @@ for small text. Parentheses carry the meaning; colour only reinforces it.
 ## Choreography
 
 1. **Cover.** A plate and its caption strip. Above the fold, so it never waits.
-2. **Summary.** Five figures in a ledger beside the month chart. Two hand notes
-   mark the two months the text mentions.
-3. **Where the money went.** A waterfall from net revenue to operating income.
-   Each deduction starts where the last one stopped.
-4. **The dark band — the climax.** Operating income, over Coorte's asparagus,
+2. **Summary.** Six figures in a ledger beside the income-by-month chart.
+   Income and the operating remainder exclude financing.
+3. **Where the money went.** A waterfall from income plus financing to tracked
+   cash, with each operating-cost category drawn separately.
+4. **The dark band — the climax.** Operating remainder, over Coorte's asparagus,
    with the raking light. The only dark surface on the page.
-5. **Release.** Where revenue came from, then Happy Monday, each with its own
-   photographs and the caveats stated in plain sentences.
-6. **The statement.** Full income statement, ruled and tabular.
+5. **Release.** Audit coverage and data quality, with their caveats stated plainly.
+6. **The statement.** Full monthly cashflow statement, including operating-cost
+   detail and financing below the operating remainder, ruled and tabular.
 7. **Notes.** Terms, what is still open, sources.
 
 ## Motion

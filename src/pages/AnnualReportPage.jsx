@@ -10,21 +10,52 @@ import '../styles/annual-report.css';
 const ANNUAL_REPORT_PASSWORD = 'nofryeroil';
 const ANNUAL_REPORT_STORAGE_KEY = 'le:annualReportAccess';
 
+// Aggregate-only snapshot of posted cash activity, refreshed October 10, 2026.
+// Financing follows the source Investments category (including Square loans);
+// transfer-classified movements remain excluded.
 const MONTHS = [
-  { key: '2026-01', label: "Jan '26", income: 11085.47, inventory: 1815.23, labor: 0, operating: 8146.30, reimbursable: 0, personal: 533.54, transfer: 9175.84, unclassified: 30.46, operatingIncome: 1123.94, cashFlow: 559.94, transactionCount: 149, pending: 3, complete: false },
-  { key: '2026-02', label: "Feb '26", income: 7979.21, inventory: 3486.39, labor: 40, operating: 2320.54, reimbursable: 0, personal: 1201.30, transfer: 6237.51, unclassified: 30.46, operatingIncome: 2132.28, cashFlow: 900.52, transactionCount: 164, pending: 6, complete: false },
-  { key: '2026-03', label: "Mar '26", income: 12445.60, inventory: 2630.47, labor: 0, operating: 5716.75, reimbursable: 0, personal: 1677.76, transfer: 22165.25, unclassified: 144.02, operatingIncome: 4098.38, cashFlow: 2276.60, transactionCount: 220, pending: 0, complete: true },
-  { key: '2026-04', label: "Apr '26", income: 15638.40, inventory: 3784.26, labor: 0, operating: 3622.93, reimbursable: 0, personal: 3862.46, transfer: 24608.12, unclassified: 226.98, operatingIncome: 8231.21, cashFlow: 4141.77, transactionCount: 272, pending: 0, complete: true },
-  { key: '2026-05', label: "May '26", income: 15270.75, inventory: 3526.97, labor: 560, operating: 4477.61, reimbursable: 0, personal: 5007.43, transfer: 63142.96, unclassified: 568.26, operatingIncome: 6706.17, cashFlow: 1130.48, transactionCount: 399, pending: 0, complete: true },
-  { key: '2026-06', label: "Jun '26", income: 12500.42, inventory: 3325.58, labor: 2566, operating: 5134.80, reimbursable: 0, personal: 3297.57, transfer: 25386.17, unclassified: 126.03, operatingIncome: 1474.04, cashFlow: -1949.56, transactionCount: 359, pending: 0, complete: true },
-  { key: '2026-07', label: "Jul '26", income: 13338.23, inventory: 4312.22, labor: 1279, operating: 5181.88, reimbursable: 0, personal: 1432.52, transfer: 37148.37, unclassified: 293.93, operatingIncome: 2565.13, cashFlow: 838.68, transactionCount: 454, pending: 9, complete: false },
-  { key: '2026-08', label: "Aug '26", income: 13055.57, inventory: 4126.80, labor: 1642, operating: 2402.81, reimbursable: 0, personal: 1837.94, transfer: 26874.51, unclassified: 553.98, operatingIncome: 4883.96, cashFlow: 2492.04, transactionCount: 389, pending: 0, complete: true },
-  { key: '2026-09', label: "Sep '26", income: 9734.08, inventory: 3326.67, labor: 190, operating: 1979.44, reimbursable: 0, personal: 2020.71, transfer: 17810.79, unclassified: 393.55, operatingIncome: 4237.97, cashFlow: 1823.71, transactionCount: 343, pending: 0, complete: true },
-];
+  { key: '2026-01', label: "Jan '26", income: 11085.47, financing: 5550, inventory: 1815.23, labor: 0, operating: 8146.30, reimbursable: 0, personal: 533.54, transfer: 9175.84, unclassified: 30.46, transactionCount: 149, pending: 3, complete: false },
+  { key: '2026-02', label: "Feb '26", income: 7979.21, financing: 1080, inventory: 3486.39, labor: 40, operating: 2320.54, reimbursable: 0, personal: 1201.30, transfer: 6237.51, unclassified: 30.46, transactionCount: 164, pending: 6, complete: false },
+  { key: '2026-03', label: "Mar '26", income: 12445.60, financing: 0, inventory: 2630.47, labor: 0, operating: 5716.75, reimbursable: 0, personal: 1677.76, transfer: 22165.25, unclassified: 144.02, transactionCount: 220, pending: 0, complete: true },
+  { key: '2026-04', label: "Apr '26", income: 15638.40, financing: 0, inventory: 3784.26, labor: 0, operating: 3622.93, reimbursable: 0, personal: 3862.46, transfer: 24608.12, unclassified: 226.98, transactionCount: 272, pending: 0, complete: true },
+  { key: '2026-05', label: "May '26", income: 15270.75, financing: 9000, inventory: 3526.97, labor: 560, operating: 4477.61, reimbursable: 0, personal: 5007.43, transfer: 63142.96, unclassified: 568.26, transactionCount: 399, pending: 0, complete: true },
+  { key: '2026-06', label: "Jun '26", income: 12500.42, financing: 2110, inventory: 3325.58, labor: 2566, operating: 5134.80, reimbursable: 0, personal: 3297.57, transfer: 25386.17, unclassified: 126.03, transactionCount: 359, pending: 0, complete: true },
+  { key: '2026-07', label: "Jul '26", income: 13338.23, financing: 0, inventory: 4312.22, labor: 1279, operating: 5181.88, reimbursable: 0, personal: 1432.52, transfer: 37148.37, unclassified: 293.93, transactionCount: 454, pending: 9, complete: false },
+  { key: '2026-08', label: "Aug '26", income: 13055.57, financing: 2732.27, inventory: 4126.80, labor: 1642, operating: 2402.81, reimbursable: 0, personal: 1837.94, transfer: 26874.51, unclassified: 553.98, transactionCount: 389, pending: 0, complete: true },
+  { key: '2026-09', label: "Sep '26", income: 9734.08, financing: 538.76, inventory: 3326.67, labor: 190, operating: 1979.44, reimbursable: 0, personal: 2020.71, transfer: 17810.79, unclassified: 393.55, transactionCount: 343, pending: 0, complete: true },
+].map((month) => {
+  const cents = (value) => Math.round(value * 100);
+  const income = cents(month.income) - cents(month.financing);
+  const operatingIncome = income - cents(month.inventory) - cents(month.labor) - cents(month.operating);
+  return {
+    ...month,
+    income: income / 100,
+    operatingIncome: operatingIncome / 100,
+    cashFlow: (operatingIncome + cents(month.financing) - cents(month.unclassified) - cents(month.personal)) / 100,
+  };
+});
+
+// Keep source category names: Amazon does not establish what was purchased.
+const OPERATING_COSTS = [
+  { label: 'Rent', values: [6350, 1538, 1889, 2180, 1163.33, 1525, 3849.50, 1133.83, 1179.02] },
+  { label: 'Car', values: [572.53, 0, 2000, 0, 1565.02, 287.18, 0, 0, 240.69] },
+  { label: 'Amazon', values: [213.59, 278.79, 579.34, 415.90, 375.07, 812.39, 595.80, 217.20, 130.71] },
+  { label: 'Gas', values: [270.19, 109.95, 235.26, 232.86, 283.44, 321.77, 276.27, 452.12, 254.96] },
+  { label: 'Software & Tools', values: [124.16, 127.35, 304.34, 351.20, 389.65, 140.32, 143.23, 246.37, 139.81] },
+  { label: 'Marketing', values: [260.35, 171.68, 414.25, 205.43, 213.05, 228.01, 132.43, 293.29, 0] },
+  { label: 'Debt', values: [252.73, 0, 116.44, 0, 0, 1090, 0, 0, 0] },
+  { label: 'Licensing and Permits', values: [99.75, 94.77, 34.25, 130, 119.25, 646.50, 34.25, 34.25, 34.25] },
+  { label: 'Delivery', values: [3, 0, 143.87, 107.54, 68.80, 83.63, 150.40, 25.75, 0] },
+  { label: 'Utilities', values: [0, 0, 0, 0, 300, 0, 0, 0, 0] },
+].map((cost) => ({
+  ...cost,
+  total: cost.values.reduce((total, value) => total + Math.round(value * 100), 0) / 100,
+}));
 
 const sum = (field) => MONTHS.reduce((total, month) => total + month[field], 0);
 const TOTALS = {
   income: sum('income'),
+  financing: sum('financing'),
   inventory: sum('inventory'),
   labor: sum('labor'),
   operating: sum('operating'),
@@ -43,9 +74,9 @@ const QUALITY = {
   unclassifiedCents: 236767,
   splitMismatchCount: 0,
   pendingTransactionCount: 18,
-  latestBankSyncAt: '2026-10-03T03:59:07.038Z',
-  sourceMaxDate: '2026-10-02',
-  transactionRows: 3303,
+  latestBankSyncAt: '2026-10-07T22:21:53.658Z',
+  sourceMaxDate: '2026-10-06',
+  transactionRows: 3275,
   transactionPages: 17,
   lineageVersion: 'transaction-lineage-v1',
   receiptRows: 0,
@@ -59,7 +90,7 @@ const MAX_INCOME = Math.max(...MONTHS.map((month) => month.income));
 const AVERAGE_INCOME = TOTALS.income / MONTHS.length;
 const POSITIVE_MONTHS = MONTHS.filter((month) => month.operatingIncome > 0).length;
 const PEAK_INDEX = MONTHS.findIndex((month) => month.income === MAX_INCOME);
-const LOSS_INDEX = MONTHS.findIndex((month) => month.operatingIncome < 0);
+const LOSS_MONTHS = MONTHS.filter((month) => month.operatingIncome < 0).map((month) => month.label);
 const NEGATIVE_CASH_MONTHS = MONTHS.filter((month) => month.cashFlow < 0).map((month) => month.label);
 const NEGATIVE_CASH_VERB = NEGATIVE_CASH_MONTHS.length === 1 ? 'shows' : 'show';
 
@@ -79,32 +110,37 @@ const cell = (value) => {
   return rounded < 0 ? `(${nf2.format(-rounded)})` : nf2.format(rounded);
 };
 
-// Cashflow bridge. Unclassified outflow stays visible instead of being folded
-// into operating expense, and transfers remain excluded from business cash.
+// Financing is added separately, never counted in operating income.
+// Cost details reconcile to the operating subtotal without double-counting it.
 const FALL = (() => {
-  let remaining = TOTALS.income;
-  const steps = [{ key: 'income', label: 'Income', value: TOTALS.income, left: 0, kind: 'whole' }];
+  const totalInflow = TOTALS.income + TOTALS.financing;
+  let remaining = totalInflow;
+  const steps = [
+    { key: 'income', label: 'Income', value: TOTALS.income, left: 0, kind: 'whole' },
+    { key: 'financing', label: 'Loans and investments', value: TOTALS.financing, left: (TOTALS.income / totalInflow) * 100, kind: 'in' },
+    { key: 'totalInflow', label: 'Total cash inflow', value: totalInflow, left: 0, kind: 'whole' },
+  ];
   [
     { key: 'inventory', label: 'Inventory', value: TOTALS.inventory },
     { key: 'labor', label: 'Labor', value: TOTALS.labor },
-    { key: 'operating', label: 'Operating costs', value: TOTALS.operating },
+    ...OPERATING_COSTS.map((cost) => ({ key: cost.label, label: cost.label, value: cost.total })),
   ].forEach((step) => {
     remaining -= step.value;
-    steps.push({ ...step, left: (remaining / TOTALS.income) * 100, kind: 'out' });
+    steps.push({ ...step, left: (remaining / totalInflow) * 100, kind: 'out' });
   });
-  steps.push({ key: 'operatingIncome', label: 'Operating remainder', value: TOTALS.operatingIncome, left: 0, kind: 'whole' });
+  steps.push({ key: 'afterCosts', label: 'Cash after business costs', value: remaining, left: 0, kind: 'whole' });
   [
     { key: 'unclassified', label: 'Unclassified outflow', value: TOTALS.unclassified },
     { key: 'personal', label: 'Founder draws', value: TOTALS.personal },
   ].forEach((step) => {
     remaining -= step.value;
-    steps.push({ ...step, left: (remaining / TOTALS.income) * 100, kind: 'out' });
+    steps.push({ ...step, left: (remaining / totalInflow) * 100, kind: 'out' });
   });
   steps.push({ key: 'cashFlow', label: 'Tracked cash remainder', value: TOTALS.cashFlow, left: 0, kind: 'whole' });
   return steps.map((step) => ({
     ...step,
-    width: (step.value / TOTALS.income) * 100,
-    share: (step.value / TOTALS.income) * 100,
+    width: (step.value / totalInflow) * 100,
+    share: (step.value / totalInflow) * 100,
   }));
 })();
 
@@ -258,9 +294,10 @@ function Report() {
                 {' '}{NEGATIVE_CASH_MONTHS.join(' and ')} {NEGATIVE_CASH_VERB} negative tracked cash.
               </p>
               <dl className="ar-ledger">
-                <div><dt>Income</dt><dd>{usd(TOTALS.income)}</dd><dd className="ar-ledger__note">Posted cash inflow in the January–September window</dd></div>
-                <div><dt>Operating remainder</dt><dd>{usd(TOTALS.operatingIncome)}</dd><dd className="ar-ledger__note">After inventory, labor and operating costs</dd></div>
-                <div><dt>Tracked cash remainder</dt><dd>{usd(TOTALS.cashFlow)}</dd><dd className="ar-ledger__note">After unclassified outflow and founder draws</dd></div>
+                <div><dt>Income</dt><dd>{usd(TOTALS.income)}</dd><dd className="ar-ledger__note">Posted income excluding loans and investments</dd></div>
+                <div><dt>Loans and investments</dt><dd>{usd(TOTALS.financing)}</dd><dd className="ar-ledger__note">Financing inflows, not operating income</dd></div>
+                <div><dt>Operating remainder</dt><dd>{usd(TOTALS.operatingIncome)}</dd><dd className="ar-ledger__note">After inventory, labor and operating costs; excludes financing</dd></div>
+                <div><dt>Tracked cash remainder</dt><dd>{usd(TOTALS.cashFlow)}</dd><dd className="ar-ledger__note">Includes financing; after unclassified outflow and founder draws</dd></div>
                 <div><dt>Unclassified outflow</dt><dd>{usd(TOTALS.unclassified)}</dd><dd className="ar-ledger__note">{QUALITY.unclassifiedTransactionCount} posted transactions still need classification</dd></div>
                 <div><dt>Founder draws</dt><dd>{usd(TOTALS.personal)}</dd><dd className="ar-ledger__note">Excluded from operating costs</dd></div>
               </dl>
@@ -288,7 +325,7 @@ function Report() {
                 {MONTHS.map((month, index) => (
                   <li key={month.key} className={month.operatingIncome < 0 ? 'is-negative' : undefined}>
                     {thousands(month.operatingIncome)}
-                    {index === LOSS_INDEX && <span className="ar-months__note">the only loss</span>}
+                    {index === MONTHS.findIndex((m) => m.operatingIncome < 0) && <span className="ar-months__note">{LOSS_MONTHS.length === 1 ? 'the only loss' : 'first loss'}</span>}
                   </li>
                 ))}
               </ol>
@@ -305,13 +342,16 @@ function Report() {
             <div className="ar-costs__text">
               <h2>Where the money went</h2>
               <p>
-                Of {usd(TOTALS.income)} in posted income, {usd(TOTALS.inventory)} went to inventory,
-                {' '}{usd(TOTALS.labor)} to labor and {usd(TOTALS.operating)} to operating costs.
-                {' '}{usd(TOTALS.operatingIncome)} remained before unresolved outflows.
+                Of {usd(TOTALS.income)} in income and {usd(TOTALS.financing)} in loans and investments,
+                {' '}{usd(TOTALS.inventory)} went to inventory, {usd(TOTALS.labor)} to labor
+                and {usd(TOTALS.operating)} to the operating costs broken out here.
+                The operating remainder, excluding financing, was {usd(TOTALS.operatingIncome)}.
               </p>
               <p className="ar-small">
                 {usd(TOTALS.unclassified)} of outflow remains unclassified. Transfers ({usd(TOTALS.transfer)}) are excluded
                 from business cash, and founder draws appear below the operating remainder.
+                {' '}Cost labels follow the source categories; Amazon purchases and debt payments are not further inferred.
+                Chart percentages use total cash inflow, including financing.
               </p>
               <figure className="ar-plate ar-plate--tile">
                 <img
@@ -326,7 +366,7 @@ function Report() {
                 <figcaption className="ar-credit">Tile with fruit basket, c. 1640–1660 · Rijksmuseum BK-1955-287</figcaption>
               </figure>
             </div>
-            <ol className="ar-fall" aria-label="Income to tracked cash remainder">
+            <ol className="ar-fall" aria-label="Income and financing to tracked cash remainder">
               {FALL.map((step, index) => (
                 <li key={step.key} className={`ar-fall__row ar-fall__row--${step.kind}`} style={{ '--i': index }}>
                   <span className="ar-fall__label">{step.label}{step.note && <small>{step.note}</small>}</span>
@@ -354,7 +394,7 @@ function Report() {
             <p className="ar-void__line">
               Operating remainder, {REPORT_WINDOW}, before unclassified outflow and founder draws.
             </p>
-            <p className="ar-void__aside">The tracked cash remainder after both was {usd(TOTALS.cashFlow)}.</p>
+            <p className="ar-void__aside">With {usd(TOTALS.financing)} in loans and investments, the tracked cash remainder after both was {usd(TOTALS.cashFlow)}.</p>
           </div>
           <figure className="ar-void__plate">
             <img
@@ -378,8 +418,9 @@ function Report() {
               <h2>What the audit covers</h2>
               <p>
                 This report is built from Local Budget cashflow actuals, not order-level sales reporting.
-                The API classifies posted bank activity into income, inventory, labor, operating costs,
-                founder draws and transfers excluded from business cash.
+                Posted income is separated from loans and investments using the source Investments category,
+                including Square loans. Operating costs retain the source category names.
+                Founder draws and transfers remain separate from business operating costs.
               </p>
             </div>
             <ol className="ar-channels">
@@ -395,7 +436,7 @@ function Report() {
               </li>
               <li className="ar-channels__row" style={{ '--i': 2 }}>
                 <span className="ar-channels__name">Transfer excluded<small>Not subtracted from business operating cash</small></span>
-                <span className="ar-channels__track" aria-hidden="true"><i style={{ width: `${(TOTALS.transfer / (TOTALS.transfer + TOTALS.income)) * 100}%` }} /></span>
+                <span className="ar-channels__track" aria-hidden="true"><i style={{ width: `${(TOTALS.transfer / (TOTALS.transfer + TOTALS.income + TOTALS.financing)) * 100}%` }} /></span>
                 <span className="ar-channels__value">{usd(TOTALS.transfer)}<small>excluded</small></span>
               </li>
             </ol>
@@ -459,15 +500,20 @@ function Report() {
                   </thead>
                   <tbody>
                     <StatementSectionRow>Posted cashflow</StatementSectionRow>
-                    <LedgerRow label="Income" values={MONTHS.map((m) => m.income)} total={TOTALS.income} kind="total" />
+                    <LedgerRow label="Income (excluding financing)" values={MONTHS.map((m) => m.income)} total={TOTALS.income} kind="total" />
 
                     <StatementSectionRow>Direct cash costs</StatementSectionRow>
                     <LedgerRow label="Inventory" values={MONTHS.map((m) => m.inventory)} total={TOTALS.inventory} />
                     <LedgerRow label="Labor" values={MONTHS.map((m) => m.labor)} total={TOTALS.labor} />
-                    <LedgerRow label="Operating costs" values={MONTHS.map((m) => m.operating)} total={TOTALS.operating} />
+                    <StatementSectionRow>Operating costs</StatementSectionRow>
+                    {OPERATING_COSTS.map((cost) => <LedgerRow key={cost.label} label={cost.label} values={cost.values} total={cost.total} />)}
+                    <LedgerRow label="Total operating costs" values={MONTHS.map((m) => m.operating)} total={TOTALS.operating} kind="total" />
                     <LedgerRow label="Operating remainder" values={MONTHS.map((m) => m.operatingIncome)} total={TOTALS.operatingIncome} kind="result" />
 
-                    <StatementSectionRow>Below the operating remainder</StatementSectionRow>
+                    <StatementSectionRow>Financing inflows</StatementSectionRow>
+                    <LedgerRow label="Loans and investments" values={MONTHS.map((m) => m.financing)} total={TOTALS.financing} kind="total" />
+
+                    <StatementSectionRow>Other cash activity</StatementSectionRow>
                     <LedgerRow label="Unclassified outflow" values={MONTHS.map((m) => m.unclassified)} total={TOTALS.unclassified} kind="quiet" />
                     <LedgerRow label="Reimbursable" values={MONTHS.map((m) => m.reimbursable)} total={TOTALS.reimbursable} kind="quiet" />
                     <LedgerRow label="Founder draws" values={MONTHS.map((m) => m.personal)} total={TOTALS.personal} />
@@ -502,9 +548,11 @@ function Report() {
 
               <h3>Terms</h3>
               <dl className="ar-terms">
-                <div><dt>Operating remainder</dt><dd>Posted income less inventory, labor and operating costs. It is a cashflow measure, not an accrual profit claim.</dd></div>
+                <div><dt>Operating remainder</dt><dd>Posted income excluding loans and investments, less inventory, labor and operating costs. It is a cashflow measure, not an accrual profit claim.</dd></div>
+                <div><dt>Loans and investments</dt><dd>Posted income in the source Investments category, including Square loan proceeds. Transfer-classified movements stay excluded to avoid counting the same cash twice.</dd></div>
+                <div><dt>Operating costs</dt><dd>Source-category amounts on the same basis as Local Budget cashflow actuals. Debt is the source cash-payment category, not a claim that all payments are interest expense.</dd></div>
                 <div><dt>Founder draws</dt><dd>Personal outflows shown below the operating remainder, not inside operating costs.</dd></div>
-                <div><dt>Tracked cash remainder</dt><dd>Operating remainder less unresolved outflow and founder draws. Transfers are excluded.</dd></div>
+                <div><dt>Tracked cash remainder</dt><dd>Operating remainder plus loans and investments, less unresolved outflow and founder draws. Transfers are excluded.</dd></div>
               </dl>
 
               <h3>Still open</h3>
@@ -518,7 +566,7 @@ function Report() {
               <ul className="ar-sources">
                 <li>Local Budget cashflow actuals API · {REPORT_WINDOW} · contract v2 · method cashflow-actuals-v2.1</li>
                 <li>Local Budget transaction lineage API · {QUALITY.transactionRows.toLocaleString('en-US')} rows across {QUALITY.transactionPages} pages · {QUALITY.lineageVersion}</li>
-                <li>Read-only audit artifact · .tmp/accuracy-audit/accuracy-audit-january-through-september.json</li>
+                <li>Aggregate snapshot refreshed October 10, 2026 · posted cash rows only · monthly financing and cost categories reconciled to cashflow actuals</li>
               </ul>
               <p className="ar-small">Prepared October 2026. Internal working draft; not a closed January–September statement.</p>
               <a className="ar-top" href="#top">Back to the top</a>
