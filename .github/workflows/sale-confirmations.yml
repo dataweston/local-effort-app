@@ -1,0 +1,36 @@
+name: sale-confirmations
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+permissions: {}
+
+concurrency:
+  group: sale-confirmations-outbox
+  cancel-in-progress: false
+
+jobs:
+  process-outbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      EMAIL_OUTBOX_JOB_TOKEN: ${{ secrets.EMAIL_OUTBOX_JOB_TOKEN }}
+    steps:
+      - name: Process due sale confirmations
+        shell: bash
+        run: |
+          if [[ -z "$CRON_SECRET" ]]; then
+            echo "::error::Configure the CRON_SECRET Actions secret to match the Vercel environment variable."
+            exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error \
+            --retry 2 \
+            --retry-delay 5 \
+            --max-time 180 \
+            --request POST \
+            --header "X-Job-Token: $EMAIL_OUTBOX_JOB_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"limit":100,"maxAttempts":5}' \
+            https://www.localeffortfood.com/api/email/sale-confirmations/process
