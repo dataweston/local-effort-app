@@ -8,13 +8,15 @@
  *
  * Copy, drop window, fulfillment text, prices and product text come from the
  * live Sanity-backed storefront record (/api/store/products?store=pizza-on-smith),
- * the same record the page and checkout read, including the product photos.
+ * the same record the page and checkout read. Photos come from the generated CMS
+ * snapshot (src/store/data/generatedPizzaOnSmithPageData.json), as on the page.
  * Nothing here restates a CMS fact.
  * Values for colour come from src/styles/brand-tokens.css; email clients cannot
  * resolve CSS variables, so the hex values are inlined.
  */
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('../shared/cloudinary.json');
 
 const ROOT = path.join(__dirname, '..');
 const SITE = 'https://www.localeffortfood.com';
@@ -63,11 +65,9 @@ const dayFmt = new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, weekday: 
 const timeFmt = new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
 const moment = (ms) => `${dayFmt.format(ms)} · ${timeFmt.format(ms)}`;
 
-// Sanity image CDN: crop to ratio at delivery, JPEG for email clients.
-const photo = (url, width, ratio) => {
-  const [w, h] = ratio.split(':').map(Number);
-  return `${url.split('?')[0]}?w=${width}&h=${Math.round((width * h) / w)}&fit=crop&fm=jpg&q=80`;
-};
+// Same delivery transform as src/store/pizzaPhotos.js, with JPEG for email clients.
+const cloudinaryUrl = (publicId, width, ratio) =>
+  `https://res.cloudinary.com/${cloudinary.cloudName}/image/upload/c_fill,ar_${ratio},g_auto,w_${width},f_jpg,q_auto/${publicId}`;
 
 const font = (family, size, color, extra = '') =>
   `font-family:${family};font-size:${size}px;color:${color};${extra}`;
@@ -81,7 +81,7 @@ function rule(color = C.line) {
   return `<tr><td style="padding:0 28px;"><div style="border-top:1px solid ${color};font-size:0;line-height:0;">&nbsp;</div></td></tr>`;
 }
 
-function build({ page, products }) {
+function build({ page, products }, photos) {
   const opens = Date.parse(page.dropOpensAt);
   const closes = Date.parse(page.dropClosesAt);
   const now = Date.now();
@@ -139,12 +139,17 @@ ${p.shortDescription ? `<div style="margin-top:4px;${font(BODY, 15, C.muted, 'li
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(page.pickupAddress)}`;
 
-  // Photos are the product images Sanity serves with the live record (CMS-owned).
-  const withImage = pizzas.filter((p, i, all) => p.images && p.images[0] && all.findIndex((q) => q.images && q.images[0] === p.images[0]) === i);
-  const main = withImage[0] ? { url: withImage[0].images[0], alt: withImage[0].title } : null;
-  const second = withImage[1] ? { url: withImage[1].images[0], alt: withImage[1].title } : null;
+  // Photos are chosen in Sanity Studio and stored as Cloudinary public IDs; the
+  // page reads them from this generated CMS snapshot, so the email does too.
+  const usable = (list) => (Array.isArray(list) ? list : []).filter((p) => p && p.publicId && p.alt);
+  const gallery = usable(photos.galleryPhotos);
+  const journal = usable(photos.journalPhotos);
+  const main = gallery[0];
+  const second = usable([photos.detailPhoto])[0];
+  const wide = journal[0];
+  const pair = journal.slice(1, 3);
   const img = (p, w, ratio, displayW) =>
-    `<img src="${esc(photo(p.url, w, ratio))}" width="${displayW}" alt="${esc(p.alt)}" style="display:block;width:100%;max-width:${displayW}px;height:auto;border:0;">`;
+    `<img src="${esc(cloudinaryUrl(p.publicId, w, ratio))}" width="${displayW}" alt="${esc(p.alt)}" style="display:block;width:100%;max-width:${displayW}px;height:auto;border:0;">`;
 
   const preheader = esc(plain(page.introduction).slice(0, 140));
 
@@ -190,6 +195,8 @@ ${second ? `<tr><td style="padding:40px 28px 0;">${img(second, 1088, '3:2', 544)
 
 ${state === 'open' && page.returnToOrderLabel ? `<tr><td style="padding:24px 28px 0;"><a href="${ORDER_URL}" style="${font(MONO, 13, C.oxide, 'text-decoration:underline;')}">${esc(page.returnToOrderLabel)}</a></td></tr>` : ''}
 
+${wide ? `<tr><td style="padding:36px 28px 0;">${img(wide, 1088, '3:2', 544)}</td></tr>` : ''}
+${pair.length === 2 ? `<tr><td style="padding:12px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:6px;">${img(pair[0], 544, '3:4', 272)}</td><td width="50%" valign="top" style="padding-left:6px;">${img(pair[1], 544, '3:4', 272)}</td></tr></table></td></tr>` : ''}
 <tr><td style="padding:36px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${notes}<tr><td style="border-top:1px solid ${C.line};font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
 
 <tr><td style="padding:28px 28px 40px;${font(BODY, 13, C.muted, 'line-height:1.6;')}">
@@ -255,7 +262,8 @@ async function saveDraft({ html, subject }) {
 
 (async () => {
   const record = await fetchRecord();
-  const out = build(record);
+  const photos = require('../src/store/data/generatedPizzaOnSmithPageData.json').page;
+  const out = build(record, photos);
   const file = path.join(ROOT, '.tmp', 'pizza-drop-email.html');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, out.html);
