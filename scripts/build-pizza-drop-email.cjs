@@ -193,10 +193,10 @@ ${state === 'open' ? `<tr><td style="padding:24px 28px 0;"><table role="presenta
 ${second ? `<tr><td style="padding:40px 28px 0;">${img(second, 1088, '3:2', 544)}</td></tr>` : ''}
 <tr><td style="padding:28px 28px 0;"><h2 style="margin:0 0 12px;${font(DISPLAY, 26, C.ink, 'font-weight:650;line-height:1.12;letter-spacing:-0.02em;')}">${esc(String(page.storyHeading).trim())}</h2>${story}</td></tr>
 
-${state === 'open' && page.returnToOrderLabel ? `<tr><td style="padding:24px 28px 0;"><a href="${ORDER_URL}" style="${font(MONO, 13, C.oxide, 'text-decoration:underline;')}">${esc(page.returnToOrderLabel)}</a></td></tr>` : ''}
-
-${wide ? `<tr><td style="padding:36px 28px 0;">${img(wide, 1088, '3:2', 544)}</td></tr>` : ''}
-${pair.length === 2 ? `<tr><td style="padding:12px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:6px;">${img(pair[0], 544, '3:4', 272)}</td><td width="50%" valign="top" style="padding-left:6px;">${img(pair[1], 544, '3:4', 272)}</td></tr></table></td></tr>` : ''}
+${page.journalHeading && (wide || pair.length) ? `<tr><td style="padding:40px 28px 16px;"><h2 style="margin:0;${font(DISPLAY, 28, C.ink, 'font-weight:650;line-height:1.1;letter-spacing:-0.02em;')}">${esc(page.journalHeading)}</h2></td></tr>` : ''}
+${wide ? `<tr><td style="padding:0 28px 8px;">${img(wide, 1088, '3:2', 544)}</td></tr>` : ''}
+${pair.length === 2 ? `<tr><td style="padding:12px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="top" style="padding-right:6px;">${img(pair[0], 544, '3:4', 266)}</td><td width="50%" valign="top" style="padding-left:6px;">${img(pair[1], 544, '3:4', 266)}</td></tr></table></td></tr>` : ''}
+${state === 'open' && page.returnToOrderLabel ? `<tr><td style="padding:16px 28px 0;"><a href="${ORDER_URL}" style="${font(MONO, 13, C.oxide, 'text-decoration:underline;')}">${esc(page.returnToOrderLabel)}</a></td></tr>` : ''}
 <tr><td style="padding:36px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${notes}<tr><td style="border-top:1px solid ${C.line};font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
 
 <tr><td style="padding:28px 28px 40px;${font(BODY, 13, C.muted, 'line-height:1.6;')}">
