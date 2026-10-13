@@ -100,6 +100,7 @@ Every sales module must send a transactional confirmation through Brevo to the p
 - Include actual purchased/booked details, date/time/place or fulfillment details where relevant, amount paid, a reference, and a reply/contact path. Never invent missing facts or append sales copy. Marketing opt-out does not remove the receipt requirement; provider bounces/complaints must be surfaced for resolution, not bypassed.
 - Test both versions through the real Brevo sender to yum@localeffortfood.com first, following the communications rules below. Cover success, failed payment, replay, and delivery failure in tests.
 - Every sales-related PR must explicitly identify its confirmation implementation and verification. Missing confirmation or an unverified send is a release blocker. This rule also applies to existing modules when touched; do not treat older modules as exempt.
+- **Owner-authorized worker-outage exception:** When the owner explicitly instructs the agent to deploy despite a disclosed missing or unverified sale-confirmation worker schedule, proceed with the requested commit and deployment without requiring repeated approval or expanding scope to repair the scheduler. Record the known outage in the release result. This exception does not remove required confirmation jobs, authorize customer testing or a separate message send, or permit claiming that scheduled retries or end-to-end sale confirmations are verified.
 
 ## Human-facing communications (hard rules)
 
