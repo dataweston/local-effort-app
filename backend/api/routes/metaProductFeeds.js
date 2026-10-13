@@ -6,9 +6,8 @@
  * condition, price, link and image_link; brand is also a documented attribute.
  * See https://www.facebook.com/business/help/120325381656392 . This feed emits
  * only those catalog attributes. The specifications do not define a pickup
- * fulfillment attribute for this product feed, so pickup-only is stated in the
- * supported description field; no shipping, pickup address, or pickup SLA is
- * asserted.
+ * fulfillment attribute for this product feed, and fulfillment options and dates
+ * change with each drop, so none are asserted here; the product page states them.
  *
  * Mount createMetaProductFeedsRouter() wherever desired; the router exposes
  * GET /feeds/meta-commerce.csv for a scheduled feed in Commerce Manager.
@@ -38,7 +37,7 @@ function productDescription(product) {
     .join(' ');
   const source = fromBlocks || product.longDescription || product.shortDescription || '';
   const description = String(source).replace(/\s+/g, ' ').trim();
-  return `Pickup only. ${description || product.title}`;
+  return description || product.title;
 }
 
 function pricedItems(product) {

@@ -7,7 +7,7 @@ export const PUBLIC_ROUTES = [
   {
     path: '/pizza-on-smith',
     title: 'Pizza on Smith | Local Effort Cooperative',
-    description: 'Neapolitan-inspired pizzas made with Midwest ingredients. Order October 13–28 for pickup, metro delivery, or shipping during the week of November 2. Pickup in West St. Paul.',
+    description: 'Limited-time drops of Neapolitan-inspired frozen pizza made with Midwest ingredients. Pickup in West St. Paul, metro delivery, or shipping after each order window closes.',
     prerender: true,
   },
   {

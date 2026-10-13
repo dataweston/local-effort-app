@@ -1,38 +1,37 @@
 {
-  "generatedAt": "2026-10-13T11:08:29.029Z",
+  "generatedAt": "2026-10-13T18:27:51.815Z",
   "store": "pizza-on-smith",
   "page": {
-    "eyebrow": "Frozen pizza · Tuesday pickup",
     "headline": "Home-oven pizzas, available on Smith Ave.",
-    "introduction": "Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.",
-    "storyHeading": "A little Naples.\nAll Midwest.",
-    "storyText": "Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection. Keep a few on hand for the nights you’d rather just turn on the oven.",
+    "introduction": "Neapolitan-inspired frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.",
+    "seoDescription": "Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients, sold in limited-time drops for pickup, delivery or shipping.",
+    "dropOpensAt": "2026-10-13T00:00:00-05:00",
+    "dropClosesAt": "2026-10-28T23:59:59-05:00",
+    "fulfillmentLabel": "Week of November 2, 2026",
+    "storyHeading": "All Midwest.",
+    "storyText": "Every ingredient in this pizza is grown or produced in the Midwest. Our pizza is agri-cultural. It's also fun and delicious, and a little rough around the edges. ",
     "orderHeading": "Stock your freezer.",
     "orderIntroduction": "Choose your packs. Mix as you like.",
-    "pickupHeading": "Pick up on Tuesday.",
+    "pickupHeading": "Fulfillment the week of November 2.",
     "pickupAddress": "608 Smith Ave S, West St. Paul, MN",
     "oliveOilDescription": "The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.",
     "checkoutFootnote": "Secure payment with Square · No account needed",
-    "journalEyebrow": "A few pictures from around here",
-    "journalHeading": "This is local pizza.",
+    "journalHeading": "This is Local Pizza.",
     "returnToOrderLabel": "Fill your freezer ↗",
     "notes": [
       {
-        "_key": "pickup",
-        "heading": "Your Tuesday stop.",
-        "label": "01 / pick up",
-        "text": "Collect your order at 608 Smith Ave S in West St. Paul. These pizzas are for local pickup only."
+        "_key": "order",
+        "heading": "During the order window.",
+        "text": "Choose pickup, Twin Cities metro delivery, or shipping within 100 miles."
       },
       {
-        "_key": "frozen",
-        "heading": "Dinner, on standby.",
-        "label": "02 / keep frozen",
-        "text": "Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking directions on the package."
+        "_key": "fulfillment",
+        "heading": "Week of November 2.",
+        "text": "All pickups and deliveries are scheduled for the week of November 2."
       },
       {
         "_key": "finish",
         "heading": "Don’t forget the crust.",
-        "label": "03 / finish well",
         "text": "After the bake, brush a little olive oil over the crust. A small step that makes a better pizza."
       }
     ]

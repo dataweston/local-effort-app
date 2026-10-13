@@ -22,10 +22,8 @@ const {
   resolveFulfillmentFee,
   normalizePickupWindow,
   storeUsesUnifiedFulfillment,
-  PIZZA_ORDER_START,
-  PIZZA_ORDER_END,
-  PIZZA_FULFILLMENT_DATE,
 } = require('./_fulfillment');
+const { getPizzaDrop, pizzaDropStatus } = require('./_pizzaDrop');
 const { buildPizzaCustomerConfirmationHtml } = require('./_confirmation-email');
 const { getManualInventoryRequirements, reserveManualInventory, releaseManualInventory } = require('./_manualInventory');
 const { buildDirectSaleConfirmations, queueSaleConfirmations } = require('./sale-confirmation-outbox');
@@ -195,8 +193,13 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
 
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
-    if (store === 'pizza-on-smith' && (Date.now() < Date.parse(PIZZA_ORDER_START) || Date.now() >= Date.parse(PIZZA_ORDER_END))) {
-      return res.status(409).json({ error: 'Pizza on Smith orders are open October 13–28, 2026.', code: 'ordering-window-closed' });
+    const pizzaDrop = store === 'pizza-on-smith' ? await getPizzaDrop() : null;
+    const pizzaDropState = pizzaDrop ? pizzaDropStatus(pizzaDrop) : null;
+    if (pizzaDropState && pizzaDropState !== 'open') {
+      return res.status(409).json({
+        error: pizzaDropState === 'upcoming' ? 'Pizza on Smith ordering has not opened yet.' : 'Pizza on Smith ordering is closed.',
+        code: 'ordering-window-closed',
+      });
     }
     if (store === 'pizza-on-smith' && fulfillmentMethod !== 'pickup' && fulfillmentAreaConfirmed !== true) {
       return res.status(422).json({ error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
@@ -280,7 +283,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       return `- ${line.title}${options}${selectedDate} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
     }).join('\n');
     const pickupWhen = store === 'pizza-on-smith'
-      ? PIZZA_FULFILLMENT_DATE
+      ? pizzaDrop.fulfillmentLabel
       : store === 'chez-garage'
         ? pickupDetails.date
         : resolvedPickupWindow
@@ -299,7 +302,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       : 'LOCAL DELIVERY';
     const fulfillmentInfo = pickup
       ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`
-      : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\n${fulfillmentLabel}:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}${store === 'pizza-on-smith' ? `\nFulfillment: ${PIZZA_FULFILLMENT_DATE}` : ''}\n`;
+      : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\n${fulfillmentLabel}:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}${store === 'pizza-on-smith' ? `\nFulfillment: ${pizzaDrop.fulfillmentLabel}` : ''}\n`;
     const subtotalUsd = (subtotal / 100).toFixed(2);
     const totalUsd = (amount / 100).toFixed(2);
     const feeLabel = fulfillmentMethod === 'shipping' ? 'Shipping' : 'Delivery';
@@ -354,7 +357,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
         Total: `$${(amount / 100).toFixed(2)}`,
         Fulfillment: pickup
           ? `Pickup at ${pickupDetails.name}${pickupWhen ? ` — ${pickupWhen}` : ''}${pickupDetails.address ? `\n${pickupDetails.address}` : ''}`
-          : `${fulfillmentLabel}${store === 'pizza-on-smith' ? ` — ${PIZZA_FULFILLMENT_DATE}` : ''}\n${deliveryAddress || 'Address not provided'}`,
+          : `${fulfillmentLabel}${store === 'pizza-on-smith' ? ` — ${pizzaDrop.fulfillmentLabel}` : ''}\n${deliveryAddress || 'Address not provided'}`,
         'Delivery notes': typeof deliveryInstructions === 'string' ? deliveryInstructions.slice(0, 1000) : '',
         Notes: trimmedCustomerNotes,
         Phone: customer?.phone || '',

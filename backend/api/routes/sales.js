@@ -24,6 +24,8 @@ const crypto = require('crypto');
 const { prisma } = require('../utils/prisma');
 const { createAdminVerifier } = require('../utils/adminVerifier');
 const { BUSINESS_LINES } = require('../finance/businessLines');
+const { getPizzaDrop, pizzaDropStatus } = require('../../../api-handlers/store/_pizzaDrop');
+const { buildPizzaReadyNotice, methodOf, REPLY_EMAIL } = require('../../../api-handlers/store/_pizzaReadyNotice');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -129,59 +131,79 @@ function createSalesRouter({
     sourceSystem: 'store',
     metadata: { path: ['store'], equals: 'pizza-on-smith' },
   };
+  const pizzaOrderSelect = {
+    id: true, sourceId: true, customerName: true, customerEmail: true,
+    totalCents: true, currency: true, createdAt: true, bookedAt: true,
+    fulfilledAt: true, metadata: true,
+    lines: {
+      where: { lineType: 'item' },
+      select: { id: true, name: true, quantity: true, unitPriceCents: true, totalCents: true },
+    },
+    paymentAttempts: {
+      select: { status: true, externalPaymentId: true, provider: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 1,
+    },
+  };
+  // The business sells in Central time, so "a day of sales" is a Central day.
+  const centralDay = (value) => new Date(value).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
 
   router.get('/pizza-on-smith/report', ownerGuarded(async (_req, res) => {
-    const orders = await prismaClient.commercialOrder.findMany({
-      where: pizzaOrderWhere,
-      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-      select: {
-        id: true, sourceId: true, customerName: true, customerEmail: true,
-        totalCents: true, currency: true, createdAt: true, bookedAt: true,
-        serviceStartAt: true, fulfilledAt: true, metadata: true,
-        lines: {
-          where: { lineType: 'item' },
-          select: { id: true, name: true, quantity: true, unitPriceCents: true, totalCents: true },
-        },
-        paymentAttempts: {
-          select: { status: true, externalPaymentId: true, provider: true, updatedAt: true },
-          orderBy: { updatedAt: 'desc' },
-          take: 1,
-        },
-      },
-    });
+    const [orders, drop] = await Promise.all([
+      prismaClient.commercialOrder.findMany({
+        where: pizzaOrderWhere,
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        select: pizzaOrderSelect,
+      }),
+      getPizzaDrop(),
+    ]);
     const daily = new Map();
     const productCounts = new Map();
+    const methodCounts = new Map();
     for (const order of orders) {
-      const day = new Date(order.bookedAt || order.createdAt).toISOString().slice(0, 10);
+      const day = centralDay(order.bookedAt || order.createdAt);
+      const method = methodOf(order.metadata);
       const entry = daily.get(day) || { date: day, grossSalesCents: 0, orderCount: 0, units: 0 };
       entry.grossSalesCents += order.totalCents;
       entry.orderCount += 1;
+      const byMethod = methodCounts.get(method) || { method, orderCount: 0, units: 0, readyCount: 0 };
+      byMethod.orderCount += 1;
+      if (order.metadata?.pizzaOnSmithReady?.queuedAt) byMethod.readyCount += 1;
       for (const line of order.lines || []) {
         entry.units += line.quantity;
-        const product = productCounts.get(line.name) || { name: line.name, units: 0, orderIds: new Set(), grossSalesCents: 0 };
+        byMethod.units += line.quantity;
+        const product = productCounts.get(line.name) || { name: line.name, units: 0, orderIds: new Set(), grossSalesCents: 0, byMethod: {} };
         product.units += line.quantity;
         product.orderIds.add(order.id);
         product.grossSalesCents += line.totalCents;
+        product.byMethod[method] = (product.byMethod[method] || 0) + line.quantity;
         productCounts.set(line.name, product);
       }
       daily.set(day, entry);
+      methodCounts.set(method, byMethod);
     }
     const reportOrders = orders.map((order) => {
       const metadata = order.metadata || {};
-      const fulfillment = metadata.fulfillment || metadata.saleConfirmationFacts?.fulfillment || null;
+      const facts = metadata.saleConfirmationFacts || {};
+      const fulfillment = metadata.fulfillment || facts.fulfillment || null;
       return {
         id: order.id,
         reference: order.paymentAttempts?.[0]?.externalPaymentId || order.sourceId,
-        customer: { name: order.customerName, email: order.customerEmail },
+        customer: {
+          name: order.customerName,
+          email: order.customerEmail,
+          phone: facts.customer?.phone || '',
+          smsReleaseOptIn: Boolean(metadata.smsReleaseOptIn ?? facts.customer?.smsReleaseOptIn),
+        },
         totalCents: order.totalCents,
         currency: order.currency,
         createdAt: order.createdAt,
-        fulfillmentDate: order.serviceStartAt || metadata.fulfillmentDate || null,
+        method: methodOf(metadata),
         fulfillment,
         fulfillmentDetails: {
-          ...(metadata.saleConfirmationFacts?.details || {}),
+          ...(facts.details || {}),
           ...(metadata.deliveryAddress ? { 'Delivery address': formatAddress(metadata.deliveryAddress) } : {}),
-          ...(metadata.saleConfirmationFacts?.deliveryAddress ? { 'Delivery address': formatAddress(metadata.saleConfirmationFacts.deliveryAddress) } : {}),
+          ...(facts.deliveryAddress ? { 'Delivery address': formatAddress(facts.deliveryAddress) } : {}),
         },
         lines: order.lines,
         ready: Boolean(metadata.pizzaOnSmithReady?.queuedAt),
@@ -191,103 +213,113 @@ function createSalesRouter({
     return res.json({
       ok: true,
       generatedAt: new Date().toISOString(),
+      drop: {
+        status: pizzaDropStatus(drop),
+        opensAt: drop.opensAt ? new Date(drop.opensAt).toISOString() : null,
+        closesAt: drop.closesAt ? new Date(drop.closesAt).toISOString() : null,
+        fulfillmentLabel: drop.fulfillmentLabel,
+      },
       totals: {
         grossSalesCents: orders.reduce((sum, order) => sum + order.totalCents, 0),
         orderCount: orders.length,
         units: orders.reduce((sum, order) => sum + (order.lines || []).reduce((n, line) => n + line.quantity, 0), 0),
+        readyCount: reportOrders.filter((order) => order.ready).length,
       },
+      byMethod: [...methodCounts.values()].sort((a, b) => a.method.localeCompare(b.method)),
       daily: [...daily.values()].sort((a, b) => b.date.localeCompare(a.date)),
       products: [...productCounts.values()].map(({ orderIds, ...product }) => ({ ...product, orderCount: orderIds.size })).sort((a, b) => a.name.localeCompare(b.name)),
       orders: reportOrders,
     });
   }));
 
+  // Owner marks an order ready / shipped. The customer notice is queued in the
+  // durable outbox before the order is flagged, so a provider outage can never
+  // leave an order marked ready without a recoverable message. Calling again on
+  // a failed or dead-lettered notice re-queues it; a sent notice is never resent.
   router.post('/pizza-on-smith/orders/:orderId/ready', ownerGuarded(async (req, res) => {
     if (!emailOutboxService) return res.status(503).json({ error: 'email service unavailable' });
-    const order = await prismaClient.commercialOrder.findFirst({
-      where: { ...pizzaOrderWhere, id: req.params.orderId },
-      select: {
-        id: true, sourceId: true, customerName: true, customerEmail: true,
-        totalCents: true, currency: true, createdAt: true, serviceStartAt: true,
-        metadata: true, lines: { where: { lineType: 'item' }, select: { name: true, quantity: true, unitPriceCents: true, totalCents: true } },
-        paymentAttempts: { select: { externalPaymentId: true }, orderBy: { updatedAt: 'desc' }, take: 1 },
-      },
-    });
+    const where = { ...pizzaOrderWhere, id: req.params.orderId };
+    const order = await prismaClient.commercialOrder.findFirst({ where, select: pizzaOrderSelect });
     if (!order) return res.status(404).json({ error: 'paid-pizza-order-not-found' });
     if (!order.customerEmail) return res.status(409).json({ error: 'customer-email-missing' });
-    const paymentReference = order.paymentAttempts?.[0]?.externalPaymentId || order.sourceId;
-    const idempotencyKey = `square-payment-${paymentReference}-pizza-on-smith-ready`;
+
     const metadata = order.metadata || {};
     const facts = metadata.saleConfirmationFacts || {};
-    const fields = facts.fields || {};
-    const lineText = (order.lines || []).map((line) =>
-      `${line.quantity} × ${line.name} — $${(line.totalCents / 100).toFixed(2)}`
-    ).join('\n');
-    const fulfillment = metadata.fulfillment || facts.fulfillment || '';
-    const fulfillmentDate = order.serviceStartAt || metadata.fulfillmentDate || '';
-    const address = formatAddress(metadata.deliveryAddress || facts.deliveryAddress || fields.Address);
-    const details = [
-      `Order: ${paymentReference}`,
-      `Items:\n${lineText}`,
-      `Total: $${(order.totalCents / 100).toFixed(2)} ${order.currency}`,
-      `Fulfillment: ${fulfillment || 'See your order details'}`,
-      fulfillmentDate ? `Fulfillment date: ${new Date(fulfillmentDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}` : '',
-      address ? `Address: ${address}` : '',
-    ].filter(Boolean).join('\n\n');
+    const method = methodOf(metadata);
+    const trackingNumber = String(req.body?.trackingNumber || '').trim().slice(0, 80);
+    const carrier = String(req.body?.carrier || '').trim().slice(0, 40);
+    if (method === 'shipping' && !trackingNumber) {
+      return res.status(422).json({ error: 'tracking-number-required' });
+    }
+
+    const drop = await getPizzaDrop();
+    const paymentReference = order.paymentAttempts?.[0]?.externalPaymentId || order.sourceId;
+    const idempotencyKey = `square-payment-${paymentReference}-pizza-on-smith-ready`;
+    const notice = buildPizzaReadyNotice({
+      order,
+      method,
+      paymentReference,
+      fulfillmentLabel: drop.fulfillmentLabel,
+      pickupAddress: metadata.pickup?.address || facts.pickup?.address || '',
+      deliveryAddress: formatAddress(metadata.deliveryAddress || facts.deliveryAddress),
+      tracking: { number: trackingNumber, carrier },
+    });
     const queued = await emailOutboxService.enqueue({
       idempotencyKey,
       category: 'transactional',
       source: 'pizza-on-smith-ready',
-      context: { orderId: order.id, paymentReference, role: 'customer-ready' },
+      context: { orderId: order.id, paymentReference, role: 'customer-ready', method },
       payload: {
         to: [{ email: order.customerEmail, name: order.customerName || 'Pizza on Smith customer' }],
         sender: {
-          email: process.env.SENDER_EMAIL || process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || 'yum@localeffortfood.com',
+          email: process.env.SENDER_EMAIL || process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || REPLY_EMAIL,
           name: 'Pizza on Smith',
         },
-        replyTo: { email: 'yum@localeffortfood.com', name: 'Pizza on Smith' },
-        subject: 'Your Pizza on Smith order is ready',
-        textContent: `Hi ${order.customerName || 'there'},\n\nYour Pizza on Smith order is now ready.\n\n${details}\n\nQuestions? Reply to this email.\n\n- Local Effort`,
-        htmlContent: `<p>Hi ${escapeHtml(order.customerName || 'there')},</p><p>Your Pizza on Smith order is now ready.</p><pre>${escapeHtml(details)}</pre><p>Questions? Reply to this email.</p><p>- Local Effort</p>`,
+        replyTo: { email: REPLY_EMAIL, name: 'Pizza on Smith' },
+        subject: notice.subject,
+        textContent: `Hi ${order.customerName || 'there'},\n\n${notice.headline}\n\n${notice.details}\n\n${notice.contact}\n\n- Local Effort`,
+        htmlContent: `<p>Hi ${escapeHtml(order.customerName || 'there')},</p><p>${escapeHtml(notice.headline)}</p><pre style="font-family:inherit;white-space:pre-wrap">${escapeHtml(notice.details)}</pre><p>${escapeHtml(notice.contact)}</p><p>- Local Effort</p>`,
       },
     });
-    const queuedAt = metadata.pizzaOnSmithReady?.queuedAt || new Date().toISOString();
+
+    let requeued = false;
+    if (queued.deduped && ['retry', 'dead_letter'].includes(queued.status) && emailOutboxService.requeue) {
+      requeued = (await emailOutboxService.requeue(idempotencyKey)).requeued;
+    }
+    let delivery = { picked: 0, sent: 0, retried: 0, deadLetter: 0, skippedSuppressed: 0 };
+    if (!queued.deduped || requeued || queued.status === 'queued') {
+      delivery = await emailOutboxService.processBatch({ ids: [queued.id], limit: 1, source: 'pizza-on-smith-ready' });
+    }
+    const status = delivery.sent ? 'sent'
+      : delivery.deadLetter || delivery.skippedSuppressed ? 'dead_letter'
+        : delivery.retried ? 'retry' : queued.deduped && !requeued ? queued.status || 'queued' : 'queued';
+
+    // One write, from a fresh read, so a webhook that touched metadata while the
+    // email was sending is not overwritten by this request's earlier copy.
+    const fresh = await prismaClient.commercialOrder.findFirst({ where, select: { metadata: true } });
+    const current = fresh?.metadata || metadata;
+    const previous = current.pizzaOnSmithReady || {};
+    const now = new Date().toISOString();
     await prismaClient.commercialOrder.update({
       where: { id: order.id },
       data: {
         metadata: {
-          ...metadata,
+          ...current,
           pizzaOnSmithReady: {
-            ...(metadata.pizzaOnSmithReady || {}),
-            queuedAt,
+            ...previous,
+            queuedAt: previous.queuedAt || now,
             outboxId: queued.id,
-            status: queued.status || 'queued',
-          },
-        },
-      },
-    });
-    const delivery = await emailOutboxService.processBatch({ ids: [queued.id], limit: 1, source: 'pizza-on-smith-ready' });
-    const deliveryStatus = delivery.sent ? 'sent'
-      : delivery.deadLetter ? 'dead_letter'
-        : delivery.retried ? 'retry' : queued.status || 'queued';
-    await prismaClient.commercialOrder.update({
-      where: { id: order.id },
-      data: {
-        metadata: {
-          ...(order.metadata || {}),
-          pizzaOnSmithReady: {
-            ...(order.metadata?.pizzaOnSmithReady || {}),
-            queuedAt,
-            outboxId: queued.id,
-            status: deliveryStatus,
-            lastDeliveryAttemptAt: new Date().toISOString(),
-            ...(delivery.sent ? { sentAt: new Date().toISOString() } : {}),
+            method,
+            status,
+            ...(method === 'shipping' ? { trackingNumber, carrier } : {}),
+            lastDeliveryAttemptAt: now,
+            ...(delivery.sent ? { sentAt: now } : {}),
             delivery,
           },
         },
       },
     });
-    return res.json({ ok: true, orderId: order.id, ready: true, deduped: queued.deduped, outboxId: queued.id, delivery });
+    return res.json({ ok: true, orderId: order.id, ready: true, method, status, deduped: queued.deduped, requeued, outboxId: queued.id, delivery });
   }));
   /**
    * GET /api/sales/pipeline

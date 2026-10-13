@@ -12,7 +12,7 @@ const smithPizza = {
 };
 
 describe('Google Merchant feed for Pizza on Smith', () => {
-  it('offers an accurate pickup listing and a direct checkout URL without shipping claims', () => {
+  it('publishes only the always-available pickup offer and a direct checkout URL', () => {
     const result = itemsForProduct(smithPizza, 'pizza-on-smith', 'https://www.localeffortfood.com');
     expect(result.items).toHaveLength(1);
     const [item] = result.items;

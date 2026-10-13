@@ -41,9 +41,12 @@ function extractPortableText(blocks) {
 }
 
 const PIZZA_PAGE_PROJECTION = `{
-  eyebrow,
   headline,
   introduction,
+  seoDescription,
+  dropOpensAt,
+  dropClosesAt,
+  fulfillmentLabel,
   storyHeading,
   storyText,
   orderHeading,
@@ -52,10 +55,9 @@ const PIZZA_PAGE_PROJECTION = `{
   pickupAddress,
   oliveOilDescription,
   checkoutFootnote,
-  journalEyebrow,
   journalHeading,
   returnToOrderLabel,
-  notes[]{_key, label, heading, text}
+  notes[]{_key, heading, text}
 }`;
 
 module.exports = async (req, res) => {
@@ -82,7 +84,13 @@ module.exports = async (req, res) => {
             subheading: raw.page.subheading || null,
             introText: extractPortableText(raw.page.intro) || null,
           }
-        : raw?.page || fallbackPage;
+        : store === 'pizza-on-smith' && raw?.page
+          ? {
+              ...fallbackPage,
+              ...Object.fromEntries(Object.entries(raw.page).filter(([, value]) => value != null && value !== '')),
+              notes: raw.page.notes?.length ? raw.page.notes : fallbackPage?.notes || [],
+            }
+          : fallbackPage;
 
     return res.status(200).json({
       products,

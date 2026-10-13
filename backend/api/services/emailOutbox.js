@@ -40,12 +40,16 @@ function extractRecipients(payload) {
     .filter(Boolean);
 }
 
+// Receipts and fulfillment notices are transactional: a marketing opt-out must
+// not stop a buyer from learning that their paid order is ready.
+const TRANSACTIONAL_SOURCES = new Set(['sale-confirmation', 'pizza-on-smith-ready']);
+
 function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoService, logger }) {
   if (!getSanityClient || !brevoService) {
     throw new Error('createEmailOutboxService requires getSanityClient and brevoService');
   }
 
-  async function getSuppressedEmailSet(emails, isSaleConfirmation = false) {
+  async function getSuppressedEmailSet(emails, isTransactional = false) {
     const normalized = Array.from(new Set(safeArray(emails).map(normalizeEmail).filter(Boolean)));
     if (!normalized.length) return new Set();
 
@@ -56,7 +60,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
       { emails: normalized }
     );
     // Marketing opt-out does not opt a buyer out of their purchase receipt.
-    const suppressedStatuses = new Set(isSaleConfirmation ? ['bounced', 'complained', 'suppressed'] : ['unsubscribed', 'bounced', 'complained', 'suppressed']);
+    const suppressedStatuses = new Set(isTransactional ? ['bounced', 'complained', 'suppressed'] : ['unsubscribed', 'bounced', 'complained', 'suppressed']);
     const suppressed = safeArray(rows)
       .filter((row) => suppressedStatuses.has(String(row?.status || '').toLowerCase()))
       .map((row) => normalizeEmail(row?.email));
@@ -130,7 +134,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
       try {
         const payload = doc?.payload || {};
         const recipients = extractRecipients(payload);
-        const suppressed = await getSuppressedEmailSet(recipients, doc.source === 'sale-confirmation');
+        const suppressed = await getSuppressedEmailSet(recipients, TRANSACTIONAL_SOURCES.has(doc.source));
         const filteredTo = safeArray(payload.to).filter((entry) => !suppressed.has(normalizeEmail(entry?.email)));
         if (!filteredTo.length) {
           skippedSuppressed += 1;
@@ -195,6 +199,21 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     return { picked: batch.length, sent, retried, deadLetter, skippedSuppressed };
   }
 
+  // Manual owner retry: puts a failed or dead-lettered job back in the queue
+  // with a fresh attempt budget. Sent jobs are never re-queued.
+  async function requeue(idempotencyKey) {
+    const sc = getSanityClient();
+    if (!sc) throw new Error('sanity-not-configured');
+    const outboxId = stableOutboxId(idempotencyKey);
+    const existing = outboxId ? await sc.getDocument(outboxId).catch(() => null) : null;
+    if (!existing) return { id: outboxId, requeued: false, status: null };
+    if (!['retry', 'dead_letter'].includes(existing.status)) return { id: outboxId, requeued: false, status: existing.status };
+    const now = toIsoNow();
+    await sc.patch(outboxId).set({ status: 'queued', attempts: 0, nextAttemptAt: now, updatedAt: now })
+      .unset(['deadLetterReason', 'finishedAt']).commit();
+    return { id: outboxId, requeued: true, status: 'queued' };
+  }
+
   async function getStats() {
     const readClient = (getSanityReadClient && getSanityReadClient()) || getSanityClient();
     if (!readClient) throw new Error('sanity-not-configured');
@@ -212,6 +231,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
 
   return {
     enqueue,
+    requeue,
     processBatch,
     getStats,
     stableOutboxId,

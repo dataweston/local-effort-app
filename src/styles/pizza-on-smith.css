@@ -1,10 +1,19 @@
+/* Design thesis (art-page-design; house system is docs/design/SPECIMEN.md).
+   The page is a sheet (--brand-sheet) with one dark band, the order window,
+   spent once under the raking light (specimen.css .specimen-void). The venue
+   sheets (venue-page.css) supply the grammar: ruled ledger rows in mono for
+   data, display type only for the countdown and headings, square corners,
+   cast shadow. Oxide appears as a rule or dashed focus ring, never a fill.
+   No eyebrows, numbered markers, pill badges or uniform fade-ups
+   (AGENTS.md "Design rules"). Motion: one rule draw (2400ms, --le-ease),
+   transform only; reduced motion shows the finished rule. */
 .pizza-smith {
   --ps-paper: var(--brand-sheet, #f3ebe5);
   --ps-mount: var(--brand-mount, #e4e4d8);
   --ps-ink: var(--brand-ink, #3a2e3f);
   --ps-muted: rgba(58, 46, 63, 0.72);
   --ps-line: rgba(58, 46, 63, 0.22);
-  --ps-accent: var(--brand-hearth, #f35c2b);
+  --ps-accent: var(--brand-oxide, #a26354);
   background: var(--ps-paper);
   color: var(--ps-ink);
   font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
@@ -78,48 +87,144 @@
 }
 .ps-hero {
   position: relative;
-  padding: 40px 0 36px;
-  border-bottom: 1px solid var(--ps-line);
-  margin-bottom: 32px;
-}
-.ps-hero::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: clamp(72px, 9vw, 120px);
-  height: 2px;
-  background: var(--ps-accent);
-}
-.ps-eyebrow {
-  font-family: var(--font-yomogi, cursive);
-  font-size: 16px;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--brand-hearth-deep, #c4441c);
-  margin: 0 0 12px;
+  padding: 40px 0 0;
+  margin-bottom: 48px;
 }
 .ps-hero h1 {
   font-family: var(--font-display, sans-serif);
-  max-width: 1100px;
+  max-width: 15ch;
   color: var(--ps-ink);
   font-weight: 650;
-  font-size: clamp(42px, 5.2vw, 66px);
-  line-height: 1.02;
-  letter-spacing: -0.045em;
+  font-size: clamp(42px, 6vw, 78px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
   text-wrap: balance;
-  margin: 0 0 15px;
+  margin: 0 0 18px;
 }
-.ps-hero > p:not(.ps-eyebrow):not(.ps-hero-details) {
-  font-size: 17px;
+.ps-hero > p {
+  font-size: 18px;
   line-height: 1.55;
   color: var(--ps-muted);
+  max-width: 36rem;
   text-wrap: pretty;
   margin: 0;
 }
-.ps-hero strong {
-  font-weight: 500;
+/* The order window is the page's one dark band (SPECIMEN.md, "the dark band":
+   Coorte's void under a raking light, spent once). Fields and light come from
+   specimen.css; the countdown is the only large type, the three dates are
+   ruled ledger rows as on the venue sheets (venue-page.css). */
+.ps-drop {
+  --ps-drop-fill: var(--brand-linen);
+  margin-top: 36px;
+  padding: clamp(22px, 3.4vw, 40px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: end;
+  overflow: hidden;
+  box-shadow: var(--specimen-shadow);
 }
+.ps-drop-closing { --ps-drop-fill: color-mix(in srgb, var(--brand-oxide) 55%, var(--brand-linen)); }
+.ps-drop-closed,
+.ps-drop-soldout { --ps-drop-fill: color-mix(in srgb, var(--brand-linen) 45%, transparent); }
+.ps-drop-count {
+  margin: 0;
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(32px, 5.2vw, 62px);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-linen);
+  text-wrap: balance;
+}
+.ps-drop-closed .ps-drop-count,
+.ps-drop-soldout .ps-drop-count {
+  color: color-mix(in srgb, var(--brand-linen) 72%, transparent);
+}
+.ps-drop-rule {
+  position: relative;
+  height: 2px;
+  margin: 22px 0 16px;
+  background: color-mix(in srgb, var(--brand-linen) 24%, transparent);
+}
+.ps-drop-rule span {
+  position: absolute;
+  inset: 0;
+  background: var(--ps-drop-fill);
+  transform-origin: left center;
+  transform: scaleX(var(--ps-drop-progress, 0));
+  animation: ps-drop-draw var(--le-dur-3, 2400ms) var(--le-ease, ease) both;
+}
+@keyframes ps-drop-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(var(--ps-drop-progress, 0)); }
+}
+.ps-drop-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.ps-drop-note {
+  margin: 0;
+  font-family: var(--font-yomogi, cursive);
+  font-size: 18px;
+  color: color-mix(in srgb, var(--brand-linen) 78%, transparent);
+}
+.pizza-smith .ps-drop-cta {
+  display: inline-block;
+  padding: 12px 20px;
+  background: var(--brand-linen);
+  color: var(--brand-void);
+  font-family: var(--font-display, sans-serif);
+  font-size: 16px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background-color var(--le-dur-1, 240ms) var(--le-ease, ease);
+}
+.pizza-smith .ps-drop-cta:hover {
+  background: color-mix(in srgb, var(--brand-linen) 82%, var(--brand-void));
+}
+.pizza-smith .ps-drop :focus-visible {
+  outline-color: var(--brand-linen);
+}
+.ps-drop-ledger {
+  margin: 0;
+}
+.ps-drop-ledger > div {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid color-mix(in srgb, var(--brand-linen) 26%, transparent);
+}
+.ps-drop-ledger dt {
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  font-size: 13px;
+  color: color-mix(in srgb, var(--brand-linen) 68%, transparent);
+}
+.ps-drop-ledger dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--brand-linen);
+}
+.ps-drop-ledger [data-done='true'] dd {
+  color: color-mix(in srgb, var(--brand-linen) 58%, transparent);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.ps-stock {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--font-office-code, 'Office Code Pro', monospace);
+  font-size: 12px;
+  color: var(--ps-ink);
+  border-bottom: 1px dashed var(--ps-accent);
+}
+.ps-stock-out { color: var(--ps-muted); border-bottom-style: solid; }
 .ps-shop {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
@@ -259,22 +364,12 @@
   font-family: var(--font-office-code, 'Office Code Pro', monospace);
   font-variant-numeric: tabular-nums;
 }
-.ps-special-label {
-  display: block;
-  color: var(--ps-accent);
-  font-family: var(--font-office-code, 'Office Code Pro', monospace);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
 .ps-oil {
   display: flex;
   gap: 13px;
   padding: 20px 16px;
   background: color-mix(in srgb, var(--ps-mount) 72%, transparent);
   border: 1px solid var(--ps-line);
-  border-radius: 3px;
   cursor: pointer;
   margin: 8px 0 22px;
 }
@@ -309,10 +404,6 @@
   gap: 15px;
   font-size: 14px;
   line-height: 1.5;
-}
-.ps-pickup > span {
-  font-size: 25px;
-  color: var(--ps-accent);
 }
 .ps-pickup strong {
   font-weight: 600;
@@ -350,21 +441,22 @@
   justify-content: space-between;
   align-items: center;
   background: var(--ps-ink);
-  color: white;
+  color: var(--ps-paper);
   border: 0;
-  border-radius: 125px 10px 115px 10px / 10px 115px 10px 125px;
+  border-radius: 0;
   padding: 17px 20px;
   min-height: 58px;
   font-size: 17px;
   font-family: var(--font-display, 'General Sans', sans-serif);
   font-weight: 650;
-  transition:
-    background var(--le-dur-1, 240ms) var(--le-ease, ease),
-    transform var(--le-dur-1, 240ms) var(--le-ease, ease);
+  transition: box-shadow var(--le-dur-1, 240ms) var(--le-ease, ease);
 }
-.ps-checkout:hover {
-  background: var(--ps-accent);
-  transform: translateY(-1px);
+.ps-checkout:hover:not(:disabled) {
+  box-shadow: var(--specimen-shadow);
+}
+.ps-checkout:focus-visible {
+  outline: 2px dashed var(--ps-accent);
+  outline-offset: 4px;
 }
 .ps-checkout:disabled {
   opacity: 0.45;
@@ -378,31 +470,28 @@
   font-family: var(--font-office-code, 'Office Code Pro', monospace);
 }
 .ps-notes {
+  margin: 36px 0 0;
+  padding: 0 0 44px;
+  border-top: 1px solid var(--specimen-rule, var(--ps-line));
+}
+.ps-notes > div {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 40px;
-  border-top: 1px solid var(--ps-line);
-  padding: 36px 0 44px;
-  margin-top: 36px;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+  gap: 8px 32px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--ps-line);
 }
-.ps-notes span {
-  font-family: var(--font-office-code, 'Office Code Pro', monospace);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--ps-muted);
-}
-.ps-notes h2 {
+.ps-notes dt {
   font-family: var(--font-display, 'General Sans', sans-serif);
   color: var(--ps-ink);
   font-size: 19px;
   font-weight: 650;
-  margin: 12px 0 9px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
-.ps-notes p {
-  font-size: 14px;
-  line-height: 1.6;
+.ps-notes dd {
   margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--ps-muted);
 }
 .ps-footer {
@@ -426,10 +515,10 @@
   letter-spacing: 0;
 }
 .pizza-smith .le-checkout-submit {
-  border-radius: 3px;
+  border-radius: 0;
 }
 .pizza-smith .le-checkout-input {
-  border-radius: 3px;
+  border-radius: 0;
 }
 @media (min-width: 900px) {
   .ps-order {
@@ -454,12 +543,19 @@
     padding: 25px 0 23px;
     margin-bottom: 22px;
   }
-  .ps-hero > p:not(.ps-eyebrow):not(.ps-hero-details) {
-    font-size: 15px;
+  .ps-hero > p {
+    font-size: 16px;
     max-width: 340px;
   }
-  .ps-eyebrow {
-    font-size: 15px;
+  .ps-drop {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .ps-drop-ledger > div {
+    grid-template-columns: 1fr;
+  }
+  .ps-notes > div {
+    grid-template-columns: 1fr;
   }
   .ps-shop {
     grid-template-columns: 1fr;
@@ -751,5 +847,11 @@
 @media (max-width: 700px) {
   .ps-buy {
     position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-drop-rule span {
+    animation: none;
   }
 }

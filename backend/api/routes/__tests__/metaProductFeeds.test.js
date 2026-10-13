@@ -36,7 +36,7 @@ describe('Meta Commerce Manager CSV feed for Pizza on Smith', () => {
     const response = await request(createApp()).get('/feeds/meta-commerce.csv').expect(200);
     const lines = response.text.trimEnd().split('\r\n');
     expect(lines[0]).toBe('"id","title","description","availability","condition","price","link","image_link","brand"');
-    expect(lines[1]).toContain('"smith-cheese","Cheese Pizza","Pickup only. A prepared cheese pizza","in stock","new","34.00 USD"');
+    expect(lines[1]).toContain('"smith-cheese","Cheese Pizza","A prepared cheese pizza","in stock","new","34.00 USD"');
     expect(lines[1]).toContain('"https://shop.example.test/pizza-on-smith#order"');
     expect(lines[1]).toContain('"https://cdn.example.test/pizza.jpg"');
     expect(lines[1]).toContain('"Local Effort Cooperative"');
@@ -71,7 +71,7 @@ describe('Meta Commerce Manager CSV feed for Pizza on Smith', () => {
     expect(response.headers['cache-control']).toContain('s-maxage=1800');
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.text).toContain('"Pie, ""special""\n<seasonal>"');
-    expect(response.text).toContain('"Pickup only. Fresh & ready, pickup only </description>"');
+    expect(response.text).toContain('"Fresh & ready, pickup only </description>"');
     expect(response.text).toContain('"https://cdn.example.test/image?a=1&b=2"');
   });
 

@@ -93,3 +93,24 @@ test('payment handler ignores failed payments; verified payment queues emails an
   vm.runInNewContext(fs.readFileSync(require.resolve('../backend/api/utils/smallEventsPayments'),'utf8'),sandbox);
   const apply=sandbox.module.exports.applySmallEventPayment;assert.equal(await apply({id:'p',status:'FAILED'}),false);assert.equal(paid,0);await apply({id:'p',status:'COMPLETED',order_id:'o'});assert.equal(queued,1);fail=true;await assert.rejects(apply({id:'p',status:'COMPLETED',order_id:'o'}),/queue-down/);
 });
+test('pizza-on-smith ready notice reaches a buyer who unsubscribed from marketing', async () => {
+  const f = fixture();
+  const payload = { to: [{ email: estimate.contactEmail }], subject: 'ready', textContent: 'ready' };
+  await f.service.enqueue({ payload, idempotencyKey: 'ready-1', category: 'transactional', source: 'pizza-on-smith-ready' });
+  await f.service.enqueue({ payload, idempotencyKey: 'newsletter-1', category: 'marketing', source: 'newsletter' });
+  await f.service.processBatch({});
+  assert.equal(f.sends(), 1);
+  const byKey = Object.fromEntries([...f.docs.values()].map(d => [d.idempotencyKey, d.status]));
+  assert.deepEqual(byKey, { 'ready-1': 'sent', 'newsletter-1': 'dead_letter' });
+});
+test('requeue revives a dead-lettered notice once and never re-sends a sent one', async () => {
+  const f = fixture();
+  const payload = { to: [{ email: 'buyer@example.com' }], subject: 'ready', textContent: 'ready' };
+  const { id } = await f.service.enqueue({ payload, idempotencyKey: 'ready-2', source: 'pizza-on-smith-ready' });
+  f.docs.get(id).status = 'dead_letter';
+  assert.equal((await f.service.processBatch({ ids: [id] })).picked, 0);
+  assert.equal((await f.service.requeue('ready-2')).requeued, true);
+  assert.equal((await f.service.processBatch({ ids: [id] })).sent, 1);
+  assert.deepEqual(await f.service.requeue('ready-2'), { id, requeued: false, status: 'sent' });
+  assert.equal(f.sends(), 1);
+});

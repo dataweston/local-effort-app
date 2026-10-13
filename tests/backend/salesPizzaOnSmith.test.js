@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 const { createSalesRouter } = require('../../backend/api/routes/sales');
 const { buildPizzaCustomerConfirmationHtml } = require('../../api-handlers/store/_confirmation-email');
 const { buildDirectSaleConfirmations } = require('../../api-handlers/store/sale-confirmation-outbox');
+const { getGeneratedStorePage } = require('../../api-handlers/store/_saleCatalog');
 
 describe('Pizza on Smith customer confirmation email', () => {
   it('renders the order image, paid amount, fulfillment details, and reply contact safely', () => {
@@ -66,9 +67,12 @@ function setup() {
     {
       id: 'pizza-paid', sourceId: 'square-order-1', customerName: 'A Buyer', customerEmail: 'buyer@example.test',
       totalCents: 4200, currency: 'USD', createdAt: new Date('2026-10-13T12:00:00Z'), bookedAt: new Date('2026-10-13T12:00:00Z'),
-      serviceStartAt: new Date('2026-10-15T00:00:00Z'), metadata: {
-        store: 'pizza-on-smith', fulfillment: 'pickup', saleConfirmationFacts: {
-          fulfillment: 'pickup', pickup: { name: 'Smith Street' }, details: { Fulfillment: 'Pickup at Smith Street' },
+      metadata: {
+        store: 'pizza-on-smith', fulfillment: 'pickup', fulfillmentMethod: 'pickup', smsReleaseOptIn: true,
+        pickup: { name: 'Smith Street', address: '608 Smith Ave S, West St. Paul, MN' },
+        saleConfirmationFacts: {
+          fulfillment: 'pickup', customer: { phone: '612-555-0100', smsReleaseOptIn: true },
+          pickup: { name: 'Smith Street' }, details: { Fulfillment: 'Pickup at Smith Street' },
         },
       },
       lines: [{ id: 'line-1', name: 'Cheese Pizza', quantity: 2, unitPriceCents: 2100, totalCents: 4200 }],
@@ -129,10 +133,22 @@ describe('Pizza on Smith owner sales report and ready email', () => {
   it('aggregates paid Pizza on Smith orders by date and product', async () => {
     const { app } = setup();
     const response = await request(app).get('/api/sales/pizza-on-smith/report').set('Authorization', 'Bearer owner').expect(200);
-    expect(response.body.totals).toEqual({ grossSalesCents: 4200, orderCount: 1, units: 2 });
+    expect(response.body.totals).toEqual({ grossSalesCents: 4200, orderCount: 1, units: 2, readyCount: 0 });
     expect(response.body.daily).toEqual([{ date: '2026-10-13', grossSalesCents: 4200, orderCount: 1, units: 2 }]);
-    expect(response.body.products).toEqual([{ name: 'Cheese Pizza', units: 2, grossSalesCents: 4200, orderCount: 1 }]);
-    expect(response.body.orders[0]).toMatchObject({ id: 'pizza-paid', ready: false, fulfillment: 'pickup' });
+    expect(response.body.products).toEqual([{ name: 'Cheese Pizza', units: 2, grossSalesCents: 4200, orderCount: 1, byMethod: { pickup: 2 } }]);
+    expect(response.body.orders[0]).toMatchObject({ id: 'pizza-paid', ready: false, fulfillment: 'pickup', method: 'pickup' });
+    expect(response.body.orders[0].customer).toMatchObject({ phone: '612-555-0100', smsReleaseOptIn: true });
+    expect(response.body.byMethod).toEqual([{ method: 'pickup', orderCount: 1, units: 2, readyCount: 0 }]);
+    expect(response.body.products[0].byMethod).toEqual({ pickup: 2 });
+    expect(response.body.drop.fulfillmentLabel).toBe(getGeneratedStorePage('pizza-on-smith').fulfillmentLabel);
+  });
+
+  it('buckets sales by Central calendar day, not UTC', async () => {
+    const { app, orders } = setup();
+    // 03:30 UTC on Oct 14 is 22:30 on Oct 13 in Central time.
+    orders[0].bookedAt = new Date('2026-10-14T03:30:00Z');
+    const response = await request(app).get('/api/sales/pizza-on-smith/report').set('Authorization', 'Bearer owner').expect(200);
+    expect(response.body.daily.map((day) => day.date)).toEqual(['2026-10-13']);
   });
 
   it('queues one durable customer ready email with order details and attempts delivery', async () => {
@@ -149,10 +165,56 @@ describe('Pizza on Smith owner sales report and ready email', () => {
     expect(job.idempotencyKey).toBe('square-payment-payment-1-pizza-on-smith-ready');
     expect(job.payload.to).toEqual([{ email: 'buyer@example.test', name: 'A Buyer' }]);
     expect(job.payload.replyTo.email).toBe('yum@localeffortfood.com');
-    expect(job.payload.textContent).toContain('Your Pizza on Smith order is now ready');
+    expect(job.payload.textContent).toContain('Your Pizza on Smith order is ready for pickup.');
     expect(job.payload.textContent).toContain('2 × Cheese Pizza — $42.00');
-    expect(job.payload.textContent).toContain('Fulfillment date: 10/15/2026');
-    expect(emailOutboxService.processBatch).toHaveBeenCalledTimes(2);
-    expect(orders[0].metadata.pizzaOnSmithReady).toMatchObject({ status: 'sent', outboxId: 'outbox-1' });
+    expect(job.payload.subject).toBe('Your Pizza on Smith order is ready for pickup');
+    expect(job.payload.textContent).toContain('Pick up at: 608 Smith Ave S, West St. Paul, MN');
+    expect(job.payload.textContent).toContain(`Fulfillment: ${getGeneratedStorePage('pizza-on-smith').fulfillmentLabel}`);
+    expect(emailOutboxService.processBatch).toHaveBeenCalledTimes(1);
+    expect(orders[0].metadata.pizzaOnSmithReady).toMatchObject({ status: 'sent', outboxId: 'outbox-1', method: 'pickup' });
+  });
+
+  it('words delivery orders as delivery and keeps the address', async () => {
+    const { app, orders, jobs } = setup();
+    orders[0].metadata = { ...orders[0].metadata, fulfillment: 'metro_delivery', fulfillmentMethod: 'delivery', deliveryAddress: { line1: '122 Smith Ave', city: 'West St. Paul', state: 'MN', postal: '55118' } };
+    await request(app).post('/api/sales/pizza-on-smith/orders/pizza-paid/ready').set('Authorization', 'Bearer owner').send({}).expect(200);
+    const { payload } = [...jobs.values()][0];
+    expect(payload.subject).toBe('Your Pizza on Smith order is on its way');
+    expect(payload.textContent).toContain('Delivering to: 122 Smith Ave, West St. Paul MN 55118');
+    expect(payload.textContent).not.toContain('Pick up at');
+  });
+
+  it('requires a tracking number to ship and puts it in the notice', async () => {
+    const { app, orders, jobs, emailOutboxService } = setup();
+    orders[0].metadata = { ...orders[0].metadata, fulfillment: 'shipping', fulfillmentMethod: 'shipping', deliveryAddress: { line1: '1 Main St', city: 'Duluth', state: 'MN', postal: '55802' } };
+    const send = (body) => request(app).post('/api/sales/pizza-on-smith/orders/pizza-paid/ready').set('Authorization', 'Bearer owner').send(body);
+    await send({}).expect(422);
+    expect(emailOutboxService.enqueue).not.toHaveBeenCalled();
+    expect(orders[0].metadata.pizzaOnSmithReady).toBeUndefined();
+    await send({ trackingNumber: '1Z999', carrier: 'UPS' }).expect(200);
+    const { payload } = [...jobs.values()][0];
+    expect(payload.subject).toBe('Your Pizza on Smith order has shipped');
+    expect(payload.textContent).toContain('Tracking number: 1Z999');
+    expect(payload.textContent).toContain('Carrier: UPS');
+    expect(orders[0].metadata.pizzaOnSmithReady).toMatchObject({ trackingNumber: '1Z999', carrier: 'UPS' });
+  });
+
+  it('re-queues a dead-lettered notice instead of reporting it as done', async () => {
+    const { app, orders, emailOutboxService } = setup();
+    emailOutboxService.enqueue.mockResolvedValueOnce({ id: 'outbox-9', deduped: true, status: 'dead_letter' });
+    emailOutboxService.requeue = vi.fn(async () => ({ id: 'outbox-9', requeued: true, status: 'queued' }));
+    emailOutboxService.processBatch.mockResolvedValueOnce({ picked: 1, sent: 1, retried: 0, deadLetter: 0, skippedSuppressed: 0 });
+    const res = await request(app).post('/api/sales/pizza-on-smith/orders/pizza-paid/ready').set('Authorization', 'Bearer owner').send({}).expect(200);
+    expect(emailOutboxService.requeue).toHaveBeenCalledWith('square-payment-payment-1-pizza-on-smith-ready');
+    expect(res.body).toMatchObject({ requeued: true, status: 'sent' });
+    expect(orders[0].metadata.pizzaOnSmithReady.status).toBe('sent');
+  });
+
+  it('records a failed first attempt as retry so the owner can see it', async () => {
+    const { app, orders, emailOutboxService } = setup();
+    emailOutboxService.processBatch.mockResolvedValueOnce({ picked: 1, sent: 0, retried: 1, deadLetter: 0, skippedSuppressed: 0 });
+    const res = await request(app).post('/api/sales/pizza-on-smith/orders/pizza-paid/ready').set('Authorization', 'Bearer owner').send({}).expect(200);
+    expect(res.body.status).toBe('retry');
+    expect(orders[0].metadata.pizzaOnSmithReady).toMatchObject({ status: 'retry', outboxId: 'outbox-1' });
   });
 });

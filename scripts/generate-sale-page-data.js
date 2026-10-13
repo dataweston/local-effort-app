@@ -31,21 +31,27 @@ const STORES = [
     outputFile: 'src/store/data/generatedPizzaOnSmithPageData.json',
     usesSalePageDoc: false,
     fallbackPage: {
-      eyebrow: 'Frozen pizza · Tuesday pickup',
       headline: 'Home-oven pizzas, available on Smith Ave.',
-      introduction: 'Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.',
+      introduction: 'Neapolitan-inspired frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.',
+      seoDescription: 'Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients, sold in limited-time drops for pickup, delivery or shipping.',
+      dropOpensAt: '2026-10-13T00:00:00-05:00',
+      dropClosesAt: '2026-10-28T23:59:59-05:00',
+      fulfillmentLabel: 'Week of November 2, 2026',
       storyHeading: 'A little Naples.\nAll Midwest.',
-      storyText: 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection.',
+      storyText: 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection. Keep a few on hand for the nights you’d rather just turn on the oven.',
       orderHeading: 'Stock your freezer.',
       orderIntroduction: 'Choose your packs. Mix as you like.',
-      pickupHeading: 'Pick up on Tuesday.',
-      pickupAddress: '608 Smith Ave S, West St. Paul, MN',
-      oliveOilDescription: 'Brush a little olive oil on the crusts after baking. They’re better that way.',
+      pickupHeading: 'Fulfillment the week of November 2.',
+      pickupAddress: 'Pickup at 608 Smith Ave S, West St. Paul, MN · delivery and shipping options at checkout',
+      oliveOilDescription: 'The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.',
       checkoutFootnote: 'Secure payment with Square · No account needed',
-      journalEyebrow: 'A few pictures from around here',
       journalHeading: 'This is local pizza.',
       returnToOrderLabel: 'Fill your freezer ↗',
-      notes: [],
+      notes: [
+        {_key: 'order', heading: 'During the order window.', text: 'Choose pickup, Twin Cities metro delivery, or shipping within 100 miles.'},
+        {_key: 'fulfillment', heading: 'Week of November 2.', text: 'All pickups and deliveries are scheduled for the week of November 2.'},
+        {_key: 'finish', heading: 'Don’t forget the crust.', text: 'After the bake, brush a little olive oil over the crust. A small step that makes a better pizza.'},
+      ],
     },
   },
   {
@@ -125,10 +131,11 @@ async function fetchStoreData(client, store) {
     },`
     : store.slug === 'pizza-on-smith'
       ? `"page": *[_type == "pizzaOnSmithPage"][0]{
-          eyebrow, headline, introduction, storyHeading, storyText,
+          headline, introduction, seoDescription, dropOpensAt, dropClosesAt,
+          fulfillmentLabel, storyHeading, storyText,
           orderHeading, orderIntroduction, pickupHeading, pickupAddress,
-          oliveOilDescription, checkoutFootnote, journalEyebrow, journalHeading,
-          returnToOrderLabel, notes[]{_key, label, heading, text}
+          oliveOilDescription, checkoutFootnote, journalHeading,
+          returnToOrderLabel, notes[]{_key, heading, text}
         },`
       : '"page": null,';
 
@@ -179,7 +186,11 @@ async function fetchStoreData(client, store) {
         introText: extractPortableText(page.intro) || store.fallbackPage.introText,
       }
     : store.slug === 'pizza-on-smith'
-      ? {...store.fallbackPage, ...page, notes: page.notes?.length ? page.notes : store.fallbackPage.notes}
+      ? {
+          ...store.fallbackPage,
+          ...Object.fromEntries(Object.entries(page).filter(([, value]) => value != null && value !== '')),
+          notes: page.notes?.length ? page.notes : store.fallbackPage.notes,
+        }
       : store.fallbackPage;
 
   return {

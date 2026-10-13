@@ -424,7 +424,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
             <p className="le-checkout-success-copy">
               {orderResult.pickup
                 ? store === smithCatalog.store
-                  ? `Pickup is on Tuesdays at ${smithCatalog.pickup.address}.`
+                  ? `Pickup is at ${smithCatalog.pickup.address}.`
                   : store === CHEZ_GARAGE_STORE
                   ? `Pickup is at ${CHEZ_GARAGE_PICKUP_ADDRESS}.`
                   : `Pickup is at Neon Kitchens, 2103 W Broadway, Minneapolis${orderResult.pickupWindow ? ` on Wednesday ${orderResult.pickupWindow}` : ''}.`

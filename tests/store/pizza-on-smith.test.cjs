@@ -42,22 +42,23 @@ test('server prices all offers and ignores client price/total tampering', async 
   assert.equal(result.body.total, 30800);
   assert.equal(result.body.fulfillmentFee, 0);
 });
-test('rejects delivery, mixed-store orders, unknown products and unoffered modifiers', async () => {
+test('rejects mismatched fulfillment, mixed-store orders, unknown products and unoffered modifiers', async () => {
   const items = [{ productId: 'smith-cheese-3', qty: 1 }];
-  for (const extra of [{ pickup: false }, { store: 'sale' }])
+  for (const extra of [{ pickup: false, fulfillmentMethod: 'pickup' }, { fulfillmentMethod: 'drone' }, { store: 'sale' }])
     assert.equal((await quote(items, extra)).status, 422);
-  assert.equal((await quote([...items, { productId: 'unrelated', qty: 1 }])).status, 422);
+  assert.equal((await quote(items, { pickup: false, fulfillmentMethod: 'delivery' })).status, 200);
+  assert.equal((await quote([...items, { productId: 'unrelated', qty: 1 }])).status, 409);
   assert.equal((await quote([{ ...items[0], variationId: 'fake' }])).status, 422);
   assert.equal((await quote([{ ...items[0], addOnIndices: [0] }])).status, 422);
   assert.equal(validateSmithOrder([{ productId: 'regular-sale' }], 'sale', false), null);
 });
 test('invalid quantities cannot reach payment pricing', async () => {
   for (const qty of [0, -1, 0.5, 'bad'])
-    assert.equal((await quote([{ productId: 'smith-cheese-6', qty }])).status, 400);
+    assert.equal((await quote([{ productId: 'smith-cheese-6', qty }])).status, 422);
 });
 test('same canonical products serve checkout without adding Smith products to the sale catalog', () => {
   assert.equal(getGeneratedSaleProductMap(['smith-cheese-6'])['smith-cheese-6'].price, 5900);
   assert.ok(getGeneratedSaleProducts().every((p) => !p.id.startsWith('smith-')));
-  assert.equal(pickupByStore['pizza-on-smith'].date, 'Tuesdays');
-  assert.equal(pickupByStore['pizza-on-smith'].address, '604 Smith Ave S, West St. Paul, MN');
+  assert.equal(pickupByStore['pizza-on-smith'].date, '');
+  assert.equal(pickupByStore['pizza-on-smith'].address, '608 Smith Ave S, West St. Paul, MN');
 });

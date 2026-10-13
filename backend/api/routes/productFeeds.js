@@ -32,7 +32,7 @@ const GOOGLE_PRODUCT_CATEGORY = 'Food, Beverages & Tobacco > Food Items';
 const STORE_META = {
   sale: { path: '/sale', productType: 'Prepared Food > Seasonal Drops', delivery: true },
   'chez-garage': { path: '/chez-garage', productType: 'Prepared Food > Chez Garage Pop-Up', delivery: true },
-  'pizza-on-smith': { path: '/pizza-on-smith', productType: 'Prepared Food > Pizza on Smith', delivery: true },
+  'pizza-on-smith': { path: '/pizza-on-smith', productType: 'Prepared Food > Pizza on Smith', delivery: false },
 };
 
 function escapeXml(value = '') {
@@ -110,7 +110,8 @@ function itemsForProduct(product, store, siteUrl) {
       // These storefronts use local delivery; nothing here ships by carrier.
       shipping: { country: 'US', region: 'MN', price: '0.00 USD' },
     } : {
-      // Smith is pickup-only; do not publish a false shipping offer.
+      // Smith offers free pickup in West St. Paul plus paid delivery and shipping whose
+      // fees depend on the destination; only the pickup offer is published here.
       pickupMethod: 'buy',
       pickupSla: '7-day',
     }),
