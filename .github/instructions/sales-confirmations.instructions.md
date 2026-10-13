@@ -12,3 +12,4 @@ Implementation contract:
 - Gift-card recovery must resume the original idempotent card creation/activation before queueing code-bearing confirmations. Never recharge a captured payment to repair fulfillment.
 - Verify the worker schedule against the hosting plan before release. A configured cron is not evidence that retries actually run.
 - Owner-approved sample appearance does not authorize customer delivery or deployment. Report remaining approval/configuration blockers separately from local test results.
+- A sales change is not complete until its owner/admin counterpart and every customer-facing message (wording, address, time and timezone, pickup vs delivery vs shipping, contact preferences) are reviewed, and CMS-owned copy and dates are read from the CMS rather than hard-coded. Follow AGENTS.md “Content ownership” and “Definition of done”; list known gaps in the handoff.
