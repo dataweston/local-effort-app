@@ -55,7 +55,7 @@ const SmallEventsPage = () => {
                   category: 'Event Catering',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '85',
                   unitText: 'per guest (estimated starting rate)',
@@ -71,7 +71,7 @@ const SmallEventsPage = () => {
                   category: 'Event Catering',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '45',
                   unitText: 'per guest (estimated starting rate)',
@@ -87,7 +87,7 @@ const SmallEventsPage = () => {
                   category: 'Event Catering',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '45',
                   unitText: 'per guest (estimated starting rate)',
@@ -115,11 +115,6 @@ const SmallEventsPage = () => {
   return (
     <div className="fullpage-demo-scope service-page">
       <Helmet>
-        <title>Private Event Catering in Minneapolis–St. Paul | {SITE_NAME}</title>
-        <meta
-          name="description"
-          content="Private chef catering for dinner parties, showers, weddings, and office parties across Minneapolis–St. Paul. Seasonal menus from 100% Midwest ingredients, 4–75 guests. Dinner parties from $850 — request your date."
-        />
         <link rel="canonical" href={`${SITE_URL}/small-events`} />
         <script type="application/ld+json">{structuredData}</script>
       </Helmet>
@@ -160,7 +155,7 @@ const SmallEventsPage = () => {
             <blockquote className="m-0">&ldquo;Local Effort is truly top tier.&rdquo;</blockquote>
             <figcaption className="ht-quote-attr">
               —{' '}
-              <a href="https://soupsistersmn.com" target="_blank" rel="noreferrer">
+              <a href="https://www.soupsistersmn.com/" target="_blank" rel="noreferrer">
                 Alyssa Andes
               </a>
             </figcaption>

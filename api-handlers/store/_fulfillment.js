@@ -2,17 +2,21 @@
 // Single source of truth so /api/store/price and /api/store/checkout never
 // disagree on the local-delivery fee or pickup windows.
 
-// Main-store local delivery fee, in cents.
+// Pizza on Smith runs a seasonal three-way fulfillment offer.
+const PIZZA_DELIVERY_FEE_CENTS = 1200;
+const PIZZA_SHIPPING_FEE_CENTS = 2200;
+const PIZZA_SHIPPING_MINIMUM_CENTS = 10000;
+const PIZZA_ORDER_START = '2026-10-13T00:00:00-05:00';
+const PIZZA_ORDER_END = '2026-10-29T00:00:00-05:00';
+const PIZZA_FULFILLMENT_DATE = 'Week of November 2, 2026';
+
 const LOCAL_DELIVERY_FEE_CENTS = 600;
 const CHEZ_GARAGE_DELIVERY_FEE_CENTS = 1000;
 const CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS = 7500;
-
-// Valid pickup time windows for the /sale store (Wednesdays).
 const PICKUP_TIME_WINDOWS = ['2pm-4pm', '4pm-6pm'];
 const DEFAULT_PICKUP_TIME_WINDOW = PICKUP_TIME_WINDOWS[0];
 
-// Stores that use the unified pickup/delivery model (Wednesday windows + $6
-// local delivery). Other stores keep their own dated pickup notices.
+// Stores that use the unified Wednesday pickup windows + flat local-delivery fee.
 const UNIFIED_FULFILLMENT_STORES = new Set(['sale']);
 
 // Pickup details shown on the page and in confirmation emails.
@@ -47,28 +51,33 @@ const pickupByStore = {
 
 const storeUsesUnifiedFulfillment = (store) => UNIFIED_FULFILLMENT_STORES.has(store);
 
-// Normalize an incoming pickup time window to a known-good value, or null.
 const normalizePickupWindow = (value) => {
   const trimmed = String(value || '').trim();
   return PICKUP_TIME_WINDOWS.includes(trimmed) ? trimmed : null;
 };
 
-// The fee added to an order for the chosen fulfillment method, in cents.
-// Local delivery costs a flat fee; pickup is always free.
-const resolveFulfillmentFee = (store, pickup) => {
-  if (pickup) return 0;
+const resolveFulfillmentFee = (store, pickup, method = pickup ? 'pickup' : 'delivery') => {
+  if (pickup || method === 'pickup') return 0;
+  if (store === 'pizza-on-smith') return method === 'shipping' ? PIZZA_SHIPPING_FEE_CENTS : PIZZA_DELIVERY_FEE_CENTS;
   if (store === 'chez-garage') return CHEZ_GARAGE_DELIVERY_FEE_CENTS;
-  if (!storeUsesUnifiedFulfillment(store)) return 0;
-  return LOCAL_DELIVERY_FEE_CENTS;
+  return storeUsesUnifiedFulfillment(store) ? LOCAL_DELIVERY_FEE_CENTS : 0;
 };
 
-const resolveDeliveryMinimum = (store) =>
-  store === 'chez-garage' ? CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS : 0;
+const resolveDeliveryMinimum = (store, method = 'delivery') =>
+  store === 'chez-garage' ? CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS
+    : store === 'pizza-on-smith' && method === 'shipping' ? PIZZA_SHIPPING_MINIMUM_CENTS
+      : 0;
 
 module.exports = {
   CHEZ_GARAGE_DELIVERY_FEE_CENTS,
   CHEZ_GARAGE_DELIVERY_MINIMUM_CENTS,
   LOCAL_DELIVERY_FEE_CENTS,
+  PIZZA_DELIVERY_FEE_CENTS,
+  PIZZA_SHIPPING_FEE_CENTS,
+  PIZZA_SHIPPING_MINIMUM_CENTS,
+  PIZZA_ORDER_START,
+  PIZZA_ORDER_END,
+  PIZZA_FULFILLMENT_DATE,
   PICKUP_TIME_WINDOWS,
   DEFAULT_PICKUP_TIME_WINDOW,
   pickupByStore,

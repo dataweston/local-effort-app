@@ -2,6 +2,7 @@ import React from 'react';
 import imageUrlBuilder from '@sanity/image-url';
 
 import sanityClient from '../sanityClient';
+import { sanityImageUrl } from './sanityImageUrl';
 
 const accentLinkClass = 'text-[var(--color-accent)] underline underline-offset-4 decoration-[var(--color-accent)] hover:opacity-80 transition-colors';
 
@@ -80,7 +81,7 @@ try {
 
 function resolveImageUrl(value) {
   if (value?.asset?.url) {
-    return value.asset.url;
+    return sanityImageUrl(value.asset.url, 1600);
   }
 
   if (!value?.asset?._ref || !imageBuilder) {
@@ -88,7 +89,7 @@ function resolveImageUrl(value) {
   }
 
   try {
-    return imageBuilder.image(value).width(1600).quality(80).fit('max').url();
+    return imageBuilder.image(value).width(1600).quality(80).fit('max').auto('format').url();
   } catch (error) {
     return '';
   }

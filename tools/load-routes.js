@@ -23,7 +23,7 @@ function loadRoutes() {
   esbuild.buildSync({
     entryPoints: [entry],
     outfile,
-    bundle: false,
+    bundle: true,
     platform: 'node',
     format: 'cjs',
     sourcemap: false,

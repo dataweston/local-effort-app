@@ -5,6 +5,8 @@ import { PortableText } from '@portabletext/react'
 import { motion } from 'framer-motion'
 import { portableTextComponents } from '../utils/portableTextComponents'
 import { SITE_URL } from '../config/siteMetadata'
+import { sanityImageUrl } from '../utils/sanityImageUrl'
+import { readPublicPageData } from '../ssr/publicPageData'
 
 const formatDate = (value) => {
   if (!value) return ''
@@ -24,9 +26,9 @@ const ErrorState = ({ children }) => (
   </div>
 )
 
-const BlogPost = () => {
+const BlogPost = ({ initialPost = null }) => {
   const { slug } = useParams()
-  const [post, setPost] = useState(null)
+  const [post, setPost] = useState(() => initialPost || readPublicPageData('blog', slug))
   const [error, setError] = useState('')
   const [statusCode, setStatusCode] = useState(0)
 
@@ -62,11 +64,19 @@ const BlogPost = () => {
     )
   }
 
-  const canonicalUrl = post.canonicalUrl || `${SITE_URL}/blog/${slug}`
+  const canonical = new URL(post.canonicalUrl || `${SITE_URL}/blog/${encodeURIComponent(slug)}`, SITE_URL)
+  if (canonical.hostname === 'localeffortfood.com' || canonical.hostname === 'www.localeffortfood.com') {
+    canonical.protocol = 'https:'
+    canonical.host = new URL(SITE_URL).host
+    canonical.pathname = canonical.pathname.replace(/\/+$/, '') || '/'
+    canonical.search = ''
+    canonical.hash = ''
+  }
+  const canonicalUrl = canonical.href
   const pageTitle = post.metaTitle || (post.title ? `${post.title} | Local Report | Local Effort` : 'Local Report | Local Effort')
   const description = post.metaDescription || post.excerpt || ''
-  const ogImage = post.ogImageUrl || ''
-  const heroSrc = post.mainImageUrl || post.ogImageUrl || ''
+  const ogImage = sanityImageUrl(post.ogImageUrl || '', 1200)
+  const heroSrc = sanityImageUrl(post.mainImageUrl || post.ogImageUrl || '', 1600)
   const heroAlt = post.mainImageAlt || post.ogImageAlt || post.title || ''
 
   const blogPostingJsonLd = {
@@ -102,6 +112,9 @@ const BlogPost = () => {
         {description && <meta property="og:description" content={description} />}
         <meta property="og:url" content={canonicalUrl} />
         {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta name="twitter:title" content={pageTitle} />
+        {description && <meta name="twitter:description" content={description} />}
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
         <link rel="canonical" href={canonicalUrl} />
         {post.slug && (
           <link rel="alternate" type="application/activity+json" href={`/api/activitypub/objects/${encodeURIComponent(post.slug)}`} />
@@ -113,7 +126,7 @@ const BlogPost = () => {
         <Link to="/blog" className="blog-post-back">← Local Report</Link>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, ease: 'easeOut' }}
         >

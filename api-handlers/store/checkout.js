@@ -6,7 +6,7 @@ const { Client, Environment } = require('square');
 const sanity = require('@sanity/client');
 const { resolveCommercialProductRef } = require('../../backend/api/pricing/commercialCatalogBridge');
 const { priceStorefrontCart } = require('../../backend/api/pricing/storefrontCatalogService');
-const { productMap: smithProducts, validateSmithOrder } = require('./_pizzaOnSmith');
+const { validateSmithOrder } = require('./_pizzaOnSmith');
 const { getFirebaseAdmin } = require('../_lib/firebaseAdmin');
 const { prisma } = require('../_lib/prisma');
 const { businessLineForStore } = require('../../backend/api/finance/businessLines');
@@ -15,21 +15,21 @@ const {
   markPaymentAttemptFailed,
   markPaymentAttemptSucceeded,
 } = require('../../backend/api/finance/paymentAttempts');
-const { getGeneratedSaleProductMap } = require('./_saleCatalog');
-const { isRealIsoDate, isSelectableDate } = require('./_dateSelection');
-const {
-  getManualInventoryRequirements,
-  releaseManualInventory,
-  reserveManualInventory,
-} = require('./_manualInventory');
+const { isRealIsoDate } = require('./_dateSelection');
 const {
   pickupByStore,
   resolveDeliveryMinimum,
   resolveFulfillmentFee,
   normalizePickupWindow,
   storeUsesUnifiedFulfillment,
+  PIZZA_ORDER_START,
+  PIZZA_ORDER_END,
+  PIZZA_FULFILLMENT_DATE,
 } = require('./_fulfillment');
+const { buildPizzaCustomerConfirmationHtml } = require('./_confirmation-email');
+const { getManualInventoryRequirements, reserveManualInventory, releaseManualInventory } = require('./_manualInventory');
 const { buildDirectSaleConfirmations, queueSaleConfirmations } = require('./sale-confirmation-outbox');
+const PIZZA_EMAIL_IMAGE_URL = 'https://res.cloudinary.com/dokyhfvyd/image/upload/f_jpg,q_85,w_900,c_limit/v1769659841/b4eqpmf6wiusuziyxaly.heic';
 
 const ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
 const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
@@ -57,6 +57,12 @@ const sanityClient =
       })
     : null;
 
+const confirmationHtml = (text) => {
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+  const paragraphs = String(text || '').split('\n').map((line) => `<p style="margin:0 0 12px;line-height:1.55">${escapeHtml(line) || '&nbsp;'}</p>`).join('');
+  return `<!doctype html><html><body style="margin:0;background:#f7f5f1;color:#28231e;font:15px/1.55 Arial,sans-serif"><main style="max-width:600px;margin:24px auto;padding:28px;background:#fff;border:1px solid #e7e1d8"><p style="margin:0 0 20px;color:#8b4b31;letter-spacing:.08em;text-transform:uppercase;font-size:12px">Local Effort Cooperative</p>${paragraphs}<p style="margin-top:24px;padding-top:16px;border-top:1px solid #e7e1d8;font-size:13px;color:#625c55">Questions? Reply to this email or contact yum@localeffortfood.com.</p></main></body></html>`;
+};
+
 const sanitizeIdempotencyKey = (value) => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -74,71 +80,6 @@ try {
   sq = null;
 }
 
-const normalizeAddOnIndices = (value) => {
-  if (!Array.isArray(value)) return [];
-  return [...new Set(
-    value
-      .map((idx) => Number(idx))
-      .filter((idx) => Number.isInteger(idx) && idx >= 0)
-  )].sort((a, b) => a - b);
-};
-
-const fetchProducts = async (ids) => {
-  const fallback = getGeneratedSaleProductMap(ids);
-  if (!sanityClient || !ids.length) return fallback;
-
-  const query = `*[_type == "product" && _id in $ids]{
-    _id, title, price, salePrice,
-    variants[]{name, squareVariationId, price},
-    addOns[]{name, additionalCost},
-    offerDairyFree, dairyFreeCost,
-    inventoryMode, manualQty,
-    commercialProductKey,
-    commercialOfferKey,
-    allowsDelivery,
-    requiresDateSelection
-  }`;
-
-  try {
-    const docs = await sanityClient.fetch(query, { ids });
-    return {
-      ...fallback,
-      ...Object.fromEntries((docs || []).map((doc) => [doc._id, doc])),
-    };
-  } catch (error) {
-    if (ids.every((id) => fallback[id])) return fallback;
-    throw error;
-  }
-};
-
-const resolveUnitPrice = (doc, variationId, addOnIndices, dairyFree) => {
-  let base = doc.salePrice ?? doc.price ?? 0;
-  if (variationId && Array.isArray(doc.variants)) {
-    const variant = doc.variants.find((entry) => entry.squareVariationId === variationId);
-    if (variant && typeof variant.price === 'number') base = variant.price;
-  }
-
-  const addOnTotal = addOnIndices.reduce(
-    (sum, idx) => sum + (doc.addOns?.[idx]?.additionalCost || 0),
-    0
-  );
-  const dairyFreeCost = dairyFree && doc.offerDairyFree ? (doc.dairyFreeCost || 0) : 0;
-  return base + addOnTotal + dairyFreeCost;
-};
-
-const buildOptionSummary = (doc, variationId, addOnIndices, dairyFree) => {
-  const labels = [];
-  if (variationId && Array.isArray(doc.variants)) {
-    const variant = doc.variants.find((entry) => entry.squareVariationId === variationId);
-    if (variant?.name) labels.push(variant.name);
-  }
-  addOnIndices.forEach((idx) => {
-    const name = doc.addOns?.[idx]?.name;
-    if (name) labels.push(name);
-  });
-  if (dairyFree && doc.offerDairyFree) labels.push('Dairy-free');
-  return labels.join(', ');
-};
 
 // Commercial sale lines for Finance Core. Each priced basket line becomes one
 // order line keyed by its Sanity product id, and a charged delivery fee becomes
@@ -240,6 +181,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       token,
       store = 'sale',
       pickup = true,
+      fulfillmentMethod = pickup ? 'pickup' : 'delivery',
       address,
       deliveryInstructions = '',
       pickupWindow,
@@ -247,10 +189,18 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       verificationToken,
       checkoutAttemptId,
       pricingVersion,
+      smsReleaseOptIn = false,
+      fulfillmentAreaConfirmed = false,
     } = req.body || {};
 
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
     if (!token) return res.status(400).json({ error: 'Missing payment token' });
+    if (store === 'pizza-on-smith' && (Date.now() < Date.parse(PIZZA_ORDER_START) || Date.now() >= Date.parse(PIZZA_ORDER_END))) {
+      return res.status(409).json({ error: 'Pizza on Smith orders are open October 13–28, 2026.', code: 'ordering-window-closed' });
+    }
+    if (store === 'pizza-on-smith' && fulfillmentMethod !== 'pickup' && fulfillmentAreaConfirmed !== true) {
+      return res.status(422).json({ error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
+    }
     if (!pricingVersion) return res.status(409).json({ error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
 
     for (const item of items) {
@@ -259,7 +209,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ error: 'Invalid qty' });
     }
 
-    const smithError = validateSmithOrder(items, store, pickup);
+    const smithError = validateSmithOrder(items, store, pickup, fulfillmentMethod);
     if (smithError) return res.status(422).json({ error: smithError });
 
     const priced = await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
@@ -283,10 +233,10 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
           {statusCode: 409, code: 'pickup-only-product'},
         );
       }
-      const deliveryMinimum = resolveDeliveryMinimum(store);
+      const deliveryMinimum = resolveDeliveryMinimum(store, fulfillmentMethod);
       if (deliveryMinimum && subtotal < deliveryMinimum) {
         throw Object.assign(
-          new Error(`Chez Garage delivery requires a $${(deliveryMinimum / 100).toFixed(0)} merchandise minimum. Add $${((deliveryMinimum - subtotal) / 100).toFixed(2)} more or choose pickup. No payment was taken.`),
+          new Error(`${store === 'pizza-on-smith' ? 'Pizza on Smith shipping' : 'Chez Garage delivery'} requires a $${(deliveryMinimum / 100).toFixed(0)} merchandise minimum. Add $${((deliveryMinimum - subtotal) / 100).toFixed(2)} more or choose pickup. No payment was taken.`),
           {statusCode: 409, code: 'delivery-minimum'},
         );
       }
@@ -306,11 +256,11 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
 
     // Local delivery adds a flat fee, recomputed server-side from the same
     // helper the pricing endpoint uses so the charge matches what was shown.
-    const deliveryFee = resolveFulfillmentFee(store, pickup);
+    const deliveryFee = resolveFulfillmentFee(store, pickup, fulfillmentMethod);
     amount = subtotal + deliveryFee;
 
     const pickupDetails = pickupByStore[store] || pickupByStore.sale;
-    const fulfillment = pickup ? 'pickup' : 'local_delivery';
+    const fulfillment = pickup ? 'pickup' : fulfillmentMethod === 'shipping' ? 'shipping' : store === 'pizza-on-smith' ? 'metro_delivery' : 'local_delivery';
     const normalizedAddress = pickup ? null : normalizeAddress(address);
     // Resolve the chosen Wednesday pickup window for unified-fulfillment stores.
     const resolvedPickupWindow =
@@ -329,11 +279,13 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       const selectedDate = line.selectedDate ? ` — Date: ${line.selectedDate}` : '';
       return `- ${line.title}${options}${selectedDate} x${line.qty} - $${(line.unitPrice / 100).toFixed(2)}`;
     }).join('\n');
-    const pickupWhen = store === 'chez-garage'
-      ? pickupDetails.date
-      : resolvedPickupWindow
-        ? `${pickupDetails.date} ${resolvedPickupWindow}`
-        : `${pickupDetails.date}${pickupDetails.time ? ` at ${pickupDetails.time}` : ''}`;
+    const pickupWhen = store === 'pizza-on-smith'
+      ? PIZZA_FULFILLMENT_DATE
+      : store === 'chez-garage'
+        ? pickupDetails.date
+        : resolvedPickupWindow
+          ? `${pickupDetails.date} ${resolvedPickupWindow}`
+          : `${pickupDetails.date}${pickupDetails.time ? ` at ${pickupDetails.time}` : ''}`;
     const deliveryAddress = normalizedAddress
       ? [
           normalizedAddress.line1,
@@ -342,15 +294,36 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
         ].filter(Boolean).join('\n')
       : '';
     const notesLine = trimmedCustomerNotes ? `\nNotes: ${trimmedCustomerNotes}` : '';
+    const fulfillmentLabel = store === 'pizza-on-smith'
+      ? fulfillmentMethod === 'shipping' ? 'SHIPPING' : 'METRO DELIVERY'
+      : 'LOCAL DELIVERY';
     const fulfillmentInfo = pickup
       ? `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nPICKUP:\nWhen: ${pickupWhen}\nWhere: ${pickupDetails.name}\n${pickupDetails.address}${notesLine}\n`
-      : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\nLOCAL DELIVERY:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}\n`;
+      : `\n\nSTORE: ${pickupDetails.name.toUpperCase()}\n${fulfillmentLabel}:\n${deliveryAddress || 'Address not provided'}${deliveryInstructions ? `\nDelivery notes: ${deliveryInstructions}` : ''}${notesLine}${store === 'pizza-on-smith' ? `\nFulfillment: ${PIZZA_FULFILLMENT_DATE}` : ''}\n`;
     const subtotalUsd = (subtotal / 100).toFixed(2);
     const totalUsd = (amount / 100).toFixed(2);
+    const feeLabel = fulfillmentMethod === 'shipping' ? 'Shipping' : 'Delivery';
     const totalsBlock = deliveryFee > 0
-      ? `Subtotal: $${subtotalUsd}\nLocal delivery: $${(deliveryFee / 100).toFixed(2)}\nTotal: $${totalUsd}`
+      ? `Subtotal: $${subtotalUsd}\n${feeLabel}: $${(deliveryFee / 100).toFixed(2)}\nTotal: $${totalUsd}`
       : `Total: $${totalUsd}`;
-    const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${factsLines}\n\n${totalsBlock}${fulfillmentInfo}\nWe'll be in touch.\n\n- Local Effort`;
+    const friendly = `Hi ${customer?.name || 'there'},\n\nThanks for your order! Here's a summary:\n\n${factsLines}\n\n${totalsBlock}${fulfillmentInfo}\nPayment reference: {{paymentId}}\nWe'll be in touch.\n\n- Local Effort`;
+    const pizzaCustomerHtml = store === 'pizza-on-smith'
+      ? buildPizzaCustomerConfirmationHtml({
+          imageUrl: PIZZA_EMAIL_IMAGE_URL,
+          customerName: customer?.name || '',
+          items: pricedLines.map((line) => ({
+            title: line.title,
+            optionSummary: line.optionSummary,
+            qty: line.qty,
+            unitPrice: line.unitPrice,
+          })),
+          subtotal,
+          feeLabel,
+          fee: deliveryFee,
+          total: amount,
+          fulfillment: fulfillmentInfo.trim(),
+        })
+      : null;
     const teamBody = `NEW ORDER - ${pickupDetails.name.toUpperCase()}\nStore: ${store}\n\nPayment: {{paymentId}}\nCustomer: ${customer?.name || 'Unknown'}\nEmail: ${customerEmail || 'N/A'}\nPhone: ${customer?.phone || 'N/A'}\n\n${factsLines}\n\n${totalsBlock}${fulfillmentInfo}`;
     const saleConfirmationFacts = {
       flow: 'store',
@@ -359,6 +332,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
         name: customer?.name || 'Unknown',
         email: customer?.email || '',
         phone: customer?.phone || '',
+        smsReleaseOptIn: store === 'pizza-on-smith' && smsReleaseOptIn === true,
       },
       store,
       storeName: pickupDetails.name,
@@ -376,11 +350,11 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
         Store: pickupDetails.name,
         Items: factsLines,
         Subtotal: `$${(subtotal / 100).toFixed(2)}`,
-        'Local delivery': deliveryFee > 0 ? `$${(deliveryFee / 100).toFixed(2)}` : 'None',
+        [fulfillmentMethod === 'shipping' ? 'Shipping' : 'Delivery']: deliveryFee > 0 ? `$${(deliveryFee / 100).toFixed(2)}` : 'None',
         Total: `$${(amount / 100).toFixed(2)}`,
         Fulfillment: pickup
           ? `Pickup at ${pickupDetails.name}${pickupWhen ? ` — ${pickupWhen}` : ''}${pickupDetails.address ? `\n${pickupDetails.address}` : ''}`
-          : `Local delivery\n${deliveryAddress || 'Address not provided'}`,
+          : `${fulfillmentLabel}${store === 'pizza-on-smith' ? ` — ${PIZZA_FULFILLMENT_DATE}` : ''}\n${deliveryAddress || 'Address not provided'}`,
         'Delivery notes': typeof deliveryInstructions === 'string' ? deliveryInstructions.slice(0, 1000) : '',
         Notes: trimmedCustomerNotes,
         Phone: customer?.phone || '',
@@ -392,7 +366,9 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
             to: [{ email: TEAM_EMAIL }],
             sender: { email: SENDER_EMAIL, name: 'Local Effort' },
             subject: `New Order - ${pickupDetails.name}`,
+            replyTo: { email: TEAM_EMAIL, name: 'Local Effort' },
             textContent: teamBody,
+            htmlContent: confirmationHtml(teamBody),
           },
         }] : []),
         ...(customerEmail && SENDER_EMAIL ? [{
@@ -401,7 +377,9 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
             to: [{ email: customerEmail }],
             sender: { email: SENDER_EMAIL, name: 'Local Effort' },
             subject: `Thanks for your order from ${pickupDetails.name}!`,
+            replyTo: { email: TEAM_EMAIL || SENDER_EMAIL, name: 'Local Effort' },
             textContent: friendly,
+            htmlContent: pizzaCustomerHtml || confirmationHtml(friendly),
           },
         }] : []),
       ],
@@ -427,6 +405,9 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
         store,
         storeName: pickupDetails.name,
         fulfillment,
+        smsReleaseOptIn: store === 'pizza-on-smith' && smsReleaseOptIn === true,
+        fulfillmentMethod: store === 'pizza-on-smith' ? fulfillmentMethod : pickup ? 'pickup' : 'delivery',
+        fulfillmentAreaConfirmed: store === 'pizza-on-smith' && fulfillmentAreaConfirmed === true,
         pickupWindow: resolvedPickupWindow,
         deliveryFeeCents: deliveryFee,
         itemCount: pricedLines.reduce((sum, line) => sum + line.qty, 0),

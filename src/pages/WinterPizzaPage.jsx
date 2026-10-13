@@ -97,8 +97,6 @@ const WinterPizzaPage = () => {
   return (
     <>
       <Helmet>
-        <title>Winter Pizza | Local Effort</title>
-        <meta name="description" content="Winter Pizza" />
         <link rel="canonical" href="https://www.localeffortfood.com/winterpizza" />
       </Helmet>
 

@@ -93,7 +93,7 @@ const ReleasesPage = () => {
 
   const pageDescription = useMemo(() => {
     if (releases[0]?.metaDescription) return releases[0].metaDescription;
-    return 'Press releases and media resources from Local Effort Cooperative.';
+    return 'Find Local Effort Cooperative press releases, business updates, media contacts, and resources for coverage of our Minneapolis food cooperative.';
   }, [releases]);
 
   const schema = useMemo(() => {
@@ -130,8 +130,10 @@ const ReleasesPage = () => {
   return (
     <div className="bg-neutral-50 py-16">
       <Helmet>
-        <title>Releases | Local Effort</title>
+        <title>Press & Releases - Local Effort Cooperative</title>
         <meta name="description" content={pageDescription} />
+        <meta property="og:description" content={pageDescription} />
+        <meta name="twitter:description" content={pageDescription} />
         <link rel="canonical" href={`${SITE_URL}/releases`} />
         <link rel="alternate" type="application/rss+xml" title="Local Effort Releases RSS" href="/api/feeds/releases.rss" />
         <link rel="alternate" type="application/atom+xml" title="Local Effort Releases Atom" href="/api/feeds/releases.atom" />
@@ -145,6 +147,7 @@ const ReleasesPage = () => {
           </div>
         )}
 
+        {!primaryRelease && <h1 className="heading-xl mb-6">Press & Releases</h1>}
         {!error && releases.length === 0 && (
           <div className="rounded-md border border-neutral-200 bg-white p-4 text-neutral-700">
             No releases have been published yet.

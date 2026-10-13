@@ -52,7 +52,7 @@
     }
   ],
   "llmNotes": [
-    "Primary public machine-readable endpoints are /api/public/site, /api/support/search, /sitemap.xml, /api/sitemap.xml, /.well-known/ucp, and /.well-known/mcp.",
+    "Primary public machine-readable endpoints are /api/public/site, /api/support/search, /sitemap.xml, /.well-known/ucp, and /.well-known/mcp.",
     "Home-page service sections live at /#small-events and /#for-businesses; those are anchors on the home document, not standalone pages.",
     "Core commerce pages include /sale, /book, /pizza-party, /psyche, /february, and /weekly-order.",
     "The standard United States return and exchange policy is published at /return-policy.",
@@ -140,7 +140,6 @@
   ],
   "feeds": [
     { "type": "sitemap", "url": "https://www.localeffortfood.com/sitemap.xml" },
-    { "type": "sitemap", "url": "https://www.localeffortfood.com/api/sitemap.xml" },
     { "type": "rss", "url": "https://www.localeffortfood.com/api/feeds/releases.rss" },
     { "type": "atom", "url": "https://www.localeffortfood.com/api/feeds/releases.atom" },
     { "type": "text", "url": "https://www.localeffortfood.com/ai.txt" },

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { Button } from '../components/ui/button';
 import { SITE_URL, CONTACT_EMAIL } from '../config/siteMetadata';
+import { PUBLIC_ROUTES } from '../config/routes';
 import {
   OFFICE_POLICIES,
   OFFICE_MENU_ITEMS,
@@ -17,9 +18,7 @@ import {
 } from '../features/paikka/officeMenu';
 
 const CANONICAL = `${SITE_URL}/office-catering`;
-const SEO_TITLE = 'Office Catering Minneapolis - Sandwich Trays, Salads & Baked Goods | Local Effort Cooperative';
-const SEO_DESCRIPTION =
-  'Order office catering in Minneapolis-St. Paul from Local Effort Cooperative: sandwich trays, big-bowl salads, and baked goods by the dozen. $150 minimum, 48-hour lead time, $40 delivery (free at $750+). Invoice-friendly for corporate teams.';
+const { title: SEO_TITLE, description: SEO_DESCRIPTION } = PUBLIC_ROUTES.find(route => route.path === '/office-catering');
 
 const LAST_ORDER_KEY = 'le:officeCatering:lastOrder';
 

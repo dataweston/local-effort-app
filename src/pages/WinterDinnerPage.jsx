@@ -60,7 +60,7 @@ const WinterDinnerPage = () => {
         'addressCountry': 'US'
       }
     },
-    'image': `${SITE_URL}/images/sprite_flicker.gif`,
+    'image': `${SITE_URL}/images/sprite_flicker.webp`,
     'organizer': {
       '@type': 'Organization',
       'name': SITE_NAME,
@@ -120,19 +120,14 @@ const WinterDinnerPage = () => {
         {/* Google Fonts - Cardo & Special Gothic Expanded One */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <noscript>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Special+Gothic+Expanded+One&display=swap"
-            rel="stylesheet"
-          />
-        </noscript>
+        <noscript>{'<link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&amp;family=Special+Gothic+Expanded+One&amp;display=swap" rel="stylesheet" />'}</noscript>
 
         {/* Open Graph */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={canonical} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={`${SITE_URL}/images/sprite_flicker.gif`} />
+        <meta property="og:image" content={`${SITE_URL}/images/sprite_flicker.webp`} />
         <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:locale" content="en_US" />
 
@@ -140,7 +135,7 @@ const WinterDinnerPage = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:image" content={`${SITE_URL}/images/sprite_flicker.gif`} />
+        <meta name="twitter:image" content={`${SITE_URL}/images/sprite_flicker.webp`} />
         <meta name="twitter:site" content="@localeffortfood" />
 
         {/* Additional SEO */}
@@ -186,7 +181,7 @@ const WinterDinnerPage = () => {
             className="relative w-full h-full"
           >
             <img
-              src="/images/sprite_flicker.gif"
+              src="/images/sprite_flicker.webp"
               alt="Winter Dinner - Flickering candlelight ambiance"
               className="absolute inset-0 w-full h-full object-contain"
               style={{
@@ -195,7 +190,7 @@ const WinterDinnerPage = () => {
             />
             <style>{`
               @media (max-width: 768px) {
-                img[src="/images/sprite_flicker.gif"] {
+                img[src="/images/sprite_flicker.webp"] {
                   width: 150% !important;
                   object-fit: cover !important;
                   object-position: left center !important;

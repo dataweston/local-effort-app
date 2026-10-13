@@ -19,7 +19,7 @@ const products = catalog.products.map((p) => {
     commercialOfferKey: productRef.offerKey,
     sourceSystem: productRef.sourceSystem,
     businessLineKey: productRef.businessLineKey,
-    allowsDelivery: false,
+    allowsDelivery: true,
     inventoryMode: 'unmanaged',
     variants: [],
     addOns: [],
@@ -28,14 +28,12 @@ const products = catalog.products.map((p) => {
 });
 const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 // Never let a Smith order inherit another shop's address or fulfillment terms.
-function validateSmithOrder(items, store, pickup) {
+function validateSmithOrder(items, store, pickup, fulfillmentMethod = pickup ? 'pickup' : 'delivery') {
   const hasSmith = items.some((item) => !!productMap[item.productId]);
   if (!hasSmith && store !== catalog.store) return null;
-  if (store !== catalog.store) {
-    return 'Please check out Pizza on Smith items separately at /pizza-on-smith.';
-  }
-  if (pickup !== true)
-    return 'Pizza on Smith is pickup only: Tuesdays at 608 Smith Ave S, West St. Paul.';
+  if (store !== catalog.store) return 'Please check out Pizza on Smith items separately at /pizza-on-smith.';
+  if (!['pickup', 'delivery', 'shipping'].includes(fulfillmentMethod)) return 'Choose a valid pickup, delivery, or shipping option.';
+  if (pickup !== (fulfillmentMethod === 'pickup')) return 'The fulfillment choice changed. Please refresh checkout.';
   if (items.some((item) => item.variationId || item.dairyFree || item.addOnIndices?.length)) {
     return 'These pizzas have no selectable modifiers. Please refresh your order.';
   }

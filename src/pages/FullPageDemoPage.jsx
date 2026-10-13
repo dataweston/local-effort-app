@@ -2604,10 +2604,9 @@ const normalizeMealStyle = (value) =>
                   category: 'Event Catering',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '55',
-                  minPrice: '850',
                   unitText: 'per guest ($850 party minimum)',
                 },
               },
@@ -2823,6 +2822,7 @@ const normalizeMealStyle = (value) =>
       </AnimatePresence>
 
       {/* Full Page Container */}
+      <h1 className="sr-only">Local Effort Cooperative — Personal Chef in Minneapolis and the Twin Cities</h1>
       <FullPageContainer
         pages={pages}
         enableKeyboard={true}
@@ -2959,7 +2959,11 @@ const normalizeMealStyle = (value) =>
             </div>
             <div className="relative min-h-[560px]">
               <img
-                src="/gallery/5Z0A5737-Edit.jpg"
+                src="/gallery/local-pizza-1600.webp"
+                srcSet="/gallery/local-pizza-800.webp 800w, /gallery/local-pizza-1600.webp 1600w"
+                sizes="100vw"
+                loading="lazy"
+                decoding="async"
                 alt="Local pizza"
                 className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: 'center' }}
@@ -3606,7 +3610,7 @@ const normalizeMealStyle = (value) =>
           <DialogHeader>
             <DialogTitle>Happy Monday Coffee</DialogTitle>
             <img
-              src="/gallery/hmw%20(1).png"
+              src="/gallery/happy-monday-map.webp"
               alt="Happy Monday Coffee"
               className="announcement-map-image"
               loading="lazy"
@@ -3614,7 +3618,7 @@ const normalizeMealStyle = (value) =>
             <DialogDescription>
               Our favorite coffee shop,{' '}
               <a
-                href="https://www.happymonday.company"
+                href="https://happymonday.company/"
                 target="_blank"
                 rel="noreferrer"
                 className="underline underline-offset-4"

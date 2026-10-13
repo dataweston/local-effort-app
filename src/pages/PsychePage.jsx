@@ -379,8 +379,8 @@ const PsychePage = () => {
               We're offering this olive oil cheaper than his website because... we can.
             </p>
             <p>
-              <a href="https://www.aboutoliveoil.org/extra-virgin-alliance/eva-psyche" target="_blank" rel="noreferrer">
-                EVA certification
+              <a href="https://www.aboutoliveoil.org/extra-virgin-alliance" target="_blank" rel="noreferrer">
+                About EVA certification
               </a>
               {' · '}
               <a href="https://www.instagram.com/psycheoliveoil" target="_blank" rel="noreferrer">

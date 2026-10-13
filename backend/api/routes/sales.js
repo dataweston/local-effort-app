@@ -34,6 +34,32 @@ function hasAdminKeyHeader(req) {
   return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[character]));
+}
+function formatAddress(value) {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return '';
+  return [value.line1, value.line2, [value.city, value.state, value.postal].filter(Boolean).join(' ')]
+    .filter(Boolean).join(', ');
+}
+
+function createOwnerGuarded({ logger, prismaClient, verifyAdminRequestImpl }, handler) {
+  return async (req, res) => {
+    const admin = await verifyAdminRequestImpl(req);
+    if (!admin) return res.status(403).json({ error: 'admin only' });
+    if (!prismaClient) return res.status(503).json({ error: 'database unavailable' });
+    try {
+      return await handler(req, res);
+    } catch (error) {
+      logger?.error?.({ err: error, path: req.path }, 'sales view failed');
+      return res.status(500).json({ error: 'internal-error' });
+    }
+  };
+}
+
 const DAY_MS = 86_400_000;
 const DEFAULT_WINDOWS = [7, 30, 90];
 const OPEN_INVOICE_STATUSES = ['issued', 'partially_paid', 'draft'];
@@ -71,15 +97,20 @@ function modeledDuesInWindow(subscription, days) {
   return 0;
 }
 
-function createSalesRouter({ logger = null } = {}) {
+function createSalesRouter({
+  logger = null,
+  emailOutboxService = null,
+  prismaClient = prisma,
+  verifyAdminRequestImpl = verifyAdminRequest,
+} = {}) {
   const router = express.Router();
 
   const guarded = (handler) => async (req, res) => {
     const admin = req.method === 'GET' && hasAdminKeyHeader(req)
       ? { service: 'brain-admin-key' }
-      : await verifyAdminRequest(req);
+      : await verifyAdminRequestImpl(req);
     if (!admin) return res.status(403).json({ error: 'admin only' });
-    if (!prisma) return res.status(503).json({ error: 'database unavailable' });
+    if (!prismaClient) return res.status(503).json({ error: 'database unavailable' });
     try {
       return await handler(req, res);
     } catch (error) {
@@ -87,7 +118,177 @@ function createSalesRouter({ logger = null } = {}) {
       return res.status(500).json({ error: 'internal-error' });
     }
   };
+  const ownerGuarded = (handler) => createOwnerGuarded(
+    { logger, prismaClient, verifyAdminRequestImpl },
+    handler,
+  );
 
+
+  const pizzaOrderWhere = {
+    status: 'paid',
+    sourceSystem: 'store',
+    metadata: { path: ['store'], equals: 'pizza-on-smith' },
+  };
+
+  router.get('/pizza-on-smith/report', ownerGuarded(async (_req, res) => {
+    const orders = await prismaClient.commercialOrder.findMany({
+      where: pizzaOrderWhere,
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+      select: {
+        id: true, sourceId: true, customerName: true, customerEmail: true,
+        totalCents: true, currency: true, createdAt: true, bookedAt: true,
+        serviceStartAt: true, fulfilledAt: true, metadata: true,
+        lines: {
+          where: { lineType: 'item' },
+          select: { id: true, name: true, quantity: true, unitPriceCents: true, totalCents: true },
+        },
+        paymentAttempts: {
+          select: { status: true, externalPaymentId: true, provider: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    const daily = new Map();
+    const productCounts = new Map();
+    for (const order of orders) {
+      const day = new Date(order.bookedAt || order.createdAt).toISOString().slice(0, 10);
+      const entry = daily.get(day) || { date: day, grossSalesCents: 0, orderCount: 0, units: 0 };
+      entry.grossSalesCents += order.totalCents;
+      entry.orderCount += 1;
+      for (const line of order.lines || []) {
+        entry.units += line.quantity;
+        const product = productCounts.get(line.name) || { name: line.name, units: 0, orderIds: new Set(), grossSalesCents: 0 };
+        product.units += line.quantity;
+        product.orderIds.add(order.id);
+        product.grossSalesCents += line.totalCents;
+        productCounts.set(line.name, product);
+      }
+      daily.set(day, entry);
+    }
+    const reportOrders = orders.map((order) => {
+      const metadata = order.metadata || {};
+      const fulfillment = metadata.fulfillment || metadata.saleConfirmationFacts?.fulfillment || null;
+      return {
+        id: order.id,
+        reference: order.paymentAttempts?.[0]?.externalPaymentId || order.sourceId,
+        customer: { name: order.customerName, email: order.customerEmail },
+        totalCents: order.totalCents,
+        currency: order.currency,
+        createdAt: order.createdAt,
+        fulfillmentDate: order.serviceStartAt || metadata.fulfillmentDate || null,
+        fulfillment,
+        fulfillmentDetails: {
+          ...(metadata.saleConfirmationFacts?.details || {}),
+          ...(metadata.deliveryAddress ? { 'Delivery address': formatAddress(metadata.deliveryAddress) } : {}),
+          ...(metadata.saleConfirmationFacts?.deliveryAddress ? { 'Delivery address': formatAddress(metadata.saleConfirmationFacts.deliveryAddress) } : {}),
+        },
+        lines: order.lines,
+        ready: Boolean(metadata.pizzaOnSmithReady?.queuedAt),
+        readyEmail: metadata.pizzaOnSmithReady || null,
+      };
+    });
+    return res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      totals: {
+        grossSalesCents: orders.reduce((sum, order) => sum + order.totalCents, 0),
+        orderCount: orders.length,
+        units: orders.reduce((sum, order) => sum + (order.lines || []).reduce((n, line) => n + line.quantity, 0), 0),
+      },
+      daily: [...daily.values()].sort((a, b) => b.date.localeCompare(a.date)),
+      products: [...productCounts.values()].map(({ orderIds, ...product }) => ({ ...product, orderCount: orderIds.size })).sort((a, b) => a.name.localeCompare(b.name)),
+      orders: reportOrders,
+    });
+  }));
+
+  router.post('/pizza-on-smith/orders/:orderId/ready', ownerGuarded(async (req, res) => {
+    if (!emailOutboxService) return res.status(503).json({ error: 'email service unavailable' });
+    const order = await prismaClient.commercialOrder.findFirst({
+      where: { ...pizzaOrderWhere, id: req.params.orderId },
+      select: {
+        id: true, sourceId: true, customerName: true, customerEmail: true,
+        totalCents: true, currency: true, createdAt: true, serviceStartAt: true,
+        metadata: true, lines: { where: { lineType: 'item' }, select: { name: true, quantity: true, unitPriceCents: true, totalCents: true } },
+        paymentAttempts: { select: { externalPaymentId: true }, orderBy: { updatedAt: 'desc' }, take: 1 },
+      },
+    });
+    if (!order) return res.status(404).json({ error: 'paid-pizza-order-not-found' });
+    if (!order.customerEmail) return res.status(409).json({ error: 'customer-email-missing' });
+    const paymentReference = order.paymentAttempts?.[0]?.externalPaymentId || order.sourceId;
+    const idempotencyKey = `square-payment-${paymentReference}-pizza-on-smith-ready`;
+    const metadata = order.metadata || {};
+    const facts = metadata.saleConfirmationFacts || {};
+    const fields = facts.fields || {};
+    const lineText = (order.lines || []).map((line) =>
+      `${line.quantity} × ${line.name} — $${(line.totalCents / 100).toFixed(2)}`
+    ).join('\n');
+    const fulfillment = metadata.fulfillment || facts.fulfillment || '';
+    const fulfillmentDate = order.serviceStartAt || metadata.fulfillmentDate || '';
+    const address = formatAddress(metadata.deliveryAddress || facts.deliveryAddress || fields.Address);
+    const details = [
+      `Order: ${paymentReference}`,
+      `Items:\n${lineText}`,
+      `Total: $${(order.totalCents / 100).toFixed(2)} ${order.currency}`,
+      `Fulfillment: ${fulfillment || 'See your order details'}`,
+      fulfillmentDate ? `Fulfillment date: ${new Date(fulfillmentDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}` : '',
+      address ? `Address: ${address}` : '',
+    ].filter(Boolean).join('\n\n');
+    const queued = await emailOutboxService.enqueue({
+      idempotencyKey,
+      category: 'transactional',
+      source: 'pizza-on-smith-ready',
+      context: { orderId: order.id, paymentReference, role: 'customer-ready' },
+      payload: {
+        to: [{ email: order.customerEmail, name: order.customerName || 'Pizza on Smith customer' }],
+        sender: {
+          email: process.env.SENDER_EMAIL || process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || 'yum@localeffortfood.com',
+          name: 'Pizza on Smith',
+        },
+        replyTo: { email: 'yum@localeffortfood.com', name: 'Pizza on Smith' },
+        subject: 'Your Pizza on Smith order is ready',
+        textContent: `Hi ${order.customerName || 'there'},\n\nYour Pizza on Smith order is now ready.\n\n${details}\n\nQuestions? Reply to this email.\n\n- Local Effort`,
+        htmlContent: `<p>Hi ${escapeHtml(order.customerName || 'there')},</p><p>Your Pizza on Smith order is now ready.</p><pre>${escapeHtml(details)}</pre><p>Questions? Reply to this email.</p><p>- Local Effort</p>`,
+      },
+    });
+    const queuedAt = metadata.pizzaOnSmithReady?.queuedAt || new Date().toISOString();
+    await prismaClient.commercialOrder.update({
+      where: { id: order.id },
+      data: {
+        metadata: {
+          ...metadata,
+          pizzaOnSmithReady: {
+            ...(metadata.pizzaOnSmithReady || {}),
+            queuedAt,
+            outboxId: queued.id,
+            status: queued.status || 'queued',
+          },
+        },
+      },
+    });
+    const delivery = await emailOutboxService.processBatch({ ids: [queued.id], limit: 1, source: 'pizza-on-smith-ready' });
+    const deliveryStatus = delivery.sent ? 'sent'
+      : delivery.deadLetter ? 'dead_letter'
+        : delivery.retried ? 'retry' : queued.status || 'queued';
+    await prismaClient.commercialOrder.update({
+      where: { id: order.id },
+      data: {
+        metadata: {
+          ...(order.metadata || {}),
+          pizzaOnSmithReady: {
+            ...(order.metadata?.pizzaOnSmithReady || {}),
+            queuedAt,
+            outboxId: queued.id,
+            status: deliveryStatus,
+            lastDeliveryAttemptAt: new Date().toISOString(),
+            ...(delivery.sent ? { sentAt: new Date().toISOString() } : {}),
+            delivery,
+          },
+        },
+      },
+    });
+    return res.json({ ok: true, orderId: order.id, ready: true, deduped: queued.deduped, outboxId: queued.id, delivery });
+  }));
   /**
    * GET /api/sales/pipeline
    * Everything promised but not finished, by stage, with its value and age.

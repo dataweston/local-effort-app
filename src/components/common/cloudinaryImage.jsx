@@ -82,6 +82,10 @@ const CloudinaryImage = ({ publicId, alt, width, height, className, containerCla
     } else {
       myImage.resize(fill(width, height).gravity(autoGravity()));
     }
+  } else if (width) {
+    // Width-only callers retain their natural aspect ratio without fetching
+    // the original full-resolution asset before the responsive plugin runs.
+    myImage.resize(fit().width(width));
   }
 
   // use effect to attach a load handler to the AdvancedImage internal <img>

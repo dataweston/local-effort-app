@@ -74,7 +74,7 @@ const buildCartPayload = (items) => items.map((item) => ({
   title: item.title,
 }));
 
-function useServerPricing(items, localSubtotal, store, pickup) {
+function useServerPricing(items, localSubtotal, store, pickup, fulfillmentMethod) {
   const [pricing, setPricing] = useState({
     loading: false,
     error: '',
@@ -86,8 +86,8 @@ function useServerPricing(items, localSubtotal, store, pickup) {
   });
 
   const payloadKey = useMemo(
-    () => JSON.stringify({ items: buildCartPayload(items), store, pickup }),
-    [items, store, pickup],
+    () => JSON.stringify({ items: buildCartPayload(items), store, pickup, fulfillmentMethod }),
+    [items, store, pickup, fulfillmentMethod],
   );
 
   useEffect(() => {
@@ -102,7 +102,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
     fetch('/api/store/price', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: buildCartPayload(items), store, pickup }),
+      body: JSON.stringify({ items: buildCartPayload(items), store, pickup, fulfillmentMethod }),
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -132,7 +132,7 @@ function useServerPricing(items, localSubtotal, store, pickup) {
       });
 
     return () => controller.abort();
-  }, [payloadKey, items, store, pickup]);
+  }, [payloadKey, items, store, pickup, fulfillmentMethod]);
 
   const resolvedSubtotal = pricing.subtotal ?? localSubtotal;
   return {
@@ -151,10 +151,13 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const [pickup, setPickup] = useState(
     store === smithCatalog.store ? true : store === CHEZ_GARAGE_STORE ? false : loadedProfile.pickup,
   );
+  const [fulfillmentMethod, setFulfillmentMethod] = useState('pickup');
   const [address, setAddress] = useState(loadedProfile.address);
   const [deliveryInstructions, setDeliveryInstructions] = useState(loadedProfile.deliveryInstructions);
   const [pickupWindow, setPickupWindow] = useState(loadedProfile.pickupWindow);
   const [customerNotes, setCustomerNotes] = useState(loadedProfile.customerNotes);
+  const [smsReleaseOptIn, setSmsReleaseOptIn] = useState(false);
+  const [fulfillmentAreaConfirmed, setFulfillmentAreaConfirmed] = useState(false);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [orderResult, setOrderResult] = useState(null);
@@ -162,7 +165,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   const attemptStorageKey = `le:checkoutAttempt:store:${store}`;
 
   const usesUnifiedFulfillment = UNIFIED_FULFILLMENT_STORES.has(store);
-  const pricing = useServerPricing(items, subtotal, store, pickup);
+  const effectiveFulfillmentMethod = store === smithCatalog.store ? fulfillmentMethod : pickup ? 'pickup' : 'delivery';
+  const pricing = useServerPricing(items, subtotal, store, pickup, effectiveFulfillmentMethod);
   const amountCents = pricing.total;
   const deliveryAvailable = useMemo(() => items.every((item) => !!item.allowsDelivery), [items]);
   const enabled = open && items.length > 0 && status !== 'success';
@@ -206,13 +210,15 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     if (!customer.name.trim()) return false;
     if (!isValidEmail(customer.email)) return false;
     if (customer.phone && normalizePhone(customer.phone).length < 10) return false;
+    if (smsReleaseOptIn && normalizePhone(customer.phone).length < 10) return false;
+    if (store === smithCatalog.store && fulfillmentMethod !== 'pickup' && !fulfillmentAreaConfirmed) return false;
     if (!pickup) {
       if (!address.line1.trim() || !address.city.trim()) return false;
       if (!address.state.trim() || address.postal.trim().replace(/\D/g, '').length < 5) return false;
     }
     if (requireCard && !cardLoaded) return false;
     return true;
-  }, [address, cardLoaded, customer, items.length, pickup, pricing]);
+  }, [address, cardLoaded, customer, fulfillmentAreaConfirmed, fulfillmentMethod, items.length, pickup, pricing, smsReleaseOptIn, store]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -276,6 +282,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
           phone: formatPhone(customer.phone),
         },
         pickup,
+        fulfillmentMethod: store === smithCatalog.store ? fulfillmentMethod : pickup ? 'pickup' : 'delivery',
         address: pickup ? null : address,
         deliveryInstructions,
         pickupWindow: pickup && usesUnifiedFulfillment ? pickupWindow : undefined,
@@ -285,6 +292,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
         verificationToken,
         checkoutAttemptId,
         pricingVersion: pricing.pricingVersion,
+        smsReleaseOptIn: store === smithCatalog.store && smsReleaseOptIn,
+        fulfillmentAreaConfirmed: store === smithCatalog.store && fulfillmentMethod !== 'pickup' && fulfillmentAreaConfirmed,
         store,
       }),
     });
@@ -538,26 +547,56 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
                   placeholder="Optional"
                 />
               </div>
+              {store === smithCatalog.store && (
+                <label className="le-checkout-footnote" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                  <input
+                    type="checkbox"
+                    checked={smsReleaseOptIn}
+                    onChange={(event) => setSmsReleaseOptIn(event.target.checked)}
+                  />
+                  <span>Opt in to SMS notifications about future limited pizza releases. Optional; message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out.</span>
+                </label>
+              )}
             </div>
 
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Fulfillment</div>
-              {deliveryAvailable ? (
+              {store === smithCatalog.store ? (
+                <>
+                  <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
+                    {[
+                      ['pickup', 'Pickup — free'],
+                      ['delivery', 'Metro delivery — $12'],
+                      ['shipping', 'Shipping — $22'],
+                    ].map(([method, label]) => (
+                      <button
+                        key={method}
+                        type="button"
+                        className={`le-checkout-pickup-pill${fulfillmentMethod === method ? ' is-selected' : ''}`}
+                        onClick={() => { setFulfillmentMethod(method); setPickup(method === 'pickup'); setFulfillmentAreaConfirmed(false); }}
+                        aria-pressed={fulfillmentMethod === method}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {fulfillmentMethod === 'shipping' && (
+                    <p className="le-checkout-footnote">Shipping within 100 miles; $100 merchandise minimum.</p>
+                  )}
+                  {fulfillmentMethod === 'delivery' && (
+                    <p className="le-checkout-footnote">Delivery within the Twin Cities metro area.</p>
+                  )}
+                  {fulfillmentMethod !== 'pickup' && (
+                    <label className="le-checkout-footnote" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                      <input type="checkbox" required checked={fulfillmentAreaConfirmed} onChange={(event) => setFulfillmentAreaConfirmed(event.target.checked)} />
+                      <span>{fulfillmentMethod === 'shipping' ? 'I confirm my delivery address is within 100 miles of West St. Paul.' : 'I confirm my address is within the Twin Cities metro area.'}</span>
+                    </label>
+                  )}
+                </>
+              ) : deliveryAvailable ? (
                 <div className="le-checkout-pickup-selector" role="group" aria-label="Fulfillment method">
-                  <button
-                    type="button"
-                    className={`le-checkout-pickup-pill${pickup ? ' is-selected' : ''}`}
-                    onClick={() => setPickup(true)}
-                    aria-pressed={pickup}
-                  >
-                    Pickup
-                  </button>
-                  <button
-                    type="button"
-                    className={`le-checkout-pickup-pill${!pickup ? ' is-selected' : ''}`}
-                    onClick={() => setPickup(false)}
-                    aria-pressed={!pickup}
-                  >
+                  <button type="button" className={`le-checkout-pickup-pill${pickup ? ' is-selected' : ''}`} onClick={() => setPickup(true)} aria-pressed={pickup}>Pickup</button>
+                  <button type="button" className={`le-checkout-pickup-pill${!pickup ? ' is-selected' : ''}`} onClick={() => setPickup(false)} aria-pressed={!pickup}>
                     {store === CHEZ_GARAGE_STORE
                       ? `Local delivery (+${fmt(CHEZ_GARAGE_DELIVERY_FEE_CENTS)})`
                       : `Local delivery${usesUnifiedFulfillment ? ' (+$6)' : ''}`}
@@ -577,7 +616,7 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
 
               {store === smithCatalog.store && (
                 <p className="le-checkout-footnote" style={{ textAlign: 'left' }}>
-                  Free Tuesday pickup · {smithCatalog.pickup.address}
+                  Pickup, metro delivery, and shipping fulfilled the week of November 2, 2026 · Pickup: {smithCatalog.pickup.address}
                 </p>
               )}
 

@@ -14,11 +14,8 @@ import { PUBLIC_ROUTES, INTERNAL_ROUTES } from '../../config/routes';
 import { MERCHANT_RETURN_POLICY_JSON_LD } from '../../config/returnPolicy';
 import { cloudinaryConfig, heroPublicId, heroFallbackSrc, heroVersion } from '../../data/cloudinaryContent';
 
-/**
- * Deep-linkable section metadata — these hash fragments are treated as
- * distinct "pages" for canonical URLs, OG tags, and structured data so that
- * Google can surface them independently in search results.
- */
+// Section titles can describe the current panel, but fragments and tracking
+// parameters do not identify separate indexable documents.
 const SECTION_META = {
   '#small-events': {
     title: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Cooperative',
@@ -54,20 +51,20 @@ export const DefaultSeo = () => {
 
   const canonicalUrl = useMemo(() => {
     const path = location.pathname || '/';
-    const search = location.search || '';
+    // Query parameters select UI state or attribution, not another document.
     const normalized = path === '/' ? '/' : path;
     try {
       const url = new URL(SITE_URL);
       url.pathname = normalized;
-      url.search = search;
+      url.search = '';
       if (normalized !== '/' && url.pathname.endsWith('/')) {
         url.pathname = url.pathname.replace(/\/+$/, '');
       }
       return url.toString();
     } catch (err) {
-      return `${SITE_URL}${normalized}${search}`;
+      return `${SITE_URL}${normalized}`;
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   const ogImageUrl = useMemo(() => buildOgImageUrl(), []);
 

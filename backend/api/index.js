@@ -655,23 +655,8 @@ const sendUcpProfile = (res) => {
 
 app.get('/.well-known/ucp', (req, res) => sendUcpProfile(res));
 app.get('/.well-known/ucp.json', (req, res) => sendUcpProfile(res));
-app.get('/api/sitemap.xml', async (req, res) => {
-  try {
-    const sitemapPath = path.resolve(__dirname, '../../public/sitemap.xml');
-    const xml = await fs.promises.readFile(sitemapPath, 'utf8');
-    return res.status(200).type('application/xml; charset=utf-8').send(xml);
-  } catch (err) {
-    // Static file may be absent in the serverless bundle — generate from the route manifest instead.
-    try {
-      const dynamicSitemapHandler = require('../../api-handlers/sitemap.xml.js');
-      return await dynamicSitemapHandler(req, res);
-    } catch (fallbackErr) {
-      logger.error({ err: fallbackErr }, 'dynamic sitemap route failed');
-      if (!res.headersSent) {
-        res.status(500).type('text/plain').send('Failed to load sitemap');
-      }
-    }
-  }
+app.get('/api/sitemap.xml', (_req, res) => {
+  return res.redirect(308, 'https://www.localeffortfood.com/sitemap.xml');
 });
 
 // Brain routes
@@ -1174,7 +1159,7 @@ app.use('/api/venues', createVenuesRouter({ logger }));
 app.use('/api/finance', createFinanceRouter({ logger }));
 app.use('/api/product-pricing', createProductPricingRouter({ logger }));
 app.use('/api/admin/reviews', createOwnerReviewRouter({ logger }));
-app.use('/api/sales', createSalesRouter({ logger }));
+app.use('/api/sales', createSalesRouter({ logger, emailOutboxService }));
 app.use('/api/food-ops', createFoodOpsRouter({ logger }));
 app.post('/api/internal/catalog/sanity-sync', async (req, res, next) => {
   try { await sanityCommerceSyncHandler(req, res); } catch (err) { next(err); }

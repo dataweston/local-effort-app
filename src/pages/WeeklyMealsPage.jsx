@@ -136,7 +136,7 @@ const WeeklyMealsPage = () => {
                   category: 'Meal Preparation',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '18',
                   unitText: 'per adult per dinner (family rate)',
@@ -152,7 +152,7 @@ const WeeklyMealsPage = () => {
                   category: 'Meal Preparation',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '13.50',
                   unitText: 'per adult per breakfast',
@@ -168,7 +168,7 @@ const WeeklyMealsPage = () => {
                   category: 'Meal Preparation',
                 },
                 priceSpecification: {
-                  '@type': 'PriceSpecification',
+                  '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
                   price: '10',
                   unitText: 'per weekly delivery',
@@ -207,11 +207,6 @@ const WeeklyMealsPage = () => {
   return (
     <div className="fullpage-demo-scope service-page">
       <Helmet>
-        <title>Weekly Meal Prep Delivery in Minneapolis–St. Paul | {SITE_NAME}</title>
-        <meta
-          name="description"
-          content="Weekly personal-chef meal prep delivered across Minneapolis–St. Paul. Home-cooked dinners from $18 a person, breakfasts from $13.50, from Minnesota-grown ingredients. Sign up in under a minute."
-        />
         <link rel="canonical" href={`${SITE_URL}/weekly-meals`} />
         <script type="application/ld+json">{structuredData}</script>
       </Helmet>

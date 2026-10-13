@@ -49,27 +49,26 @@ const journalPhotos = ['sliced', 'oven', 'stamp', 'boxed'].map((src) =>
 );
 const photoUrl = (name) => `/images/pizza-on-smith/${name}.webp`;
 const productImage = (product) => product.images?.[0] || (product.image ? photoUrl(product.image) : null);
-const description =
-  'Neapolitan-inspired frozen pizzas, 100% Midwest ingredients. Pick up on Tuesdays at 608 Smith Ave S, West St. Paul.';
+const description = 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Order October 13–28 for pickup or delivery the week of November 2.';
 
 const fallbackPage = {
-  eyebrow: 'Frozen pizza · Tuesday pickup',
+  eyebrow: '',
   headline: 'Home-oven pizzas, available on Smith Ave.',
-  introduction: 'Pickup on Tuesdays. Perfect frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.',
+  introduction: 'Order October 13–28. Pickup and delivery happen the week of November 2. 100% Midwest ingredients. Real food.',
   storyHeading: 'A little Naples.\nAll Midwest.',
   storyText: 'Neapolitan-inspired pizzas made with 100% Midwest ingredients. Vacuum sealed for shelf life and home-oven perfection. Keep a few on hand for the nights you’d rather just turn on the oven.',
   orderHeading: 'Stock your freezer.',
   orderIntroduction: 'Choose your packs. Mix as you like.',
-  pickupHeading: 'Pick up on Tuesday.',
-  pickupAddress: '608 Smith Ave S, West St. Paul, MN',
-  journalEyebrow: 'A few pictures from around here',
+  pickupHeading: 'Fulfillment the week of November 2.',
+  pickupAddress: 'Pickup at 608 Smith Ave S, West St. Paul, MN · delivery and shipping options at checkout',
+  journalEyebrow: '',
   journalHeading: 'This is local pizza.',
   oliveOilDescription: 'The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.',
-  checkoutFootnote: 'Secure payment with Square · No account needed',
+  checkoutFootnote: 'Ordering October 13–28 · Secure payment with Square',
   returnToOrderLabel: 'Fill your freezer ↗',
   notes: [
-    {label: '01 / pick up', heading: 'Your Tuesday stop.', text: 'Collect your order at 608 Smith Ave S in West St. Paul. These pizzas are for local pickup only.'},
-    {label: '02 / keep frozen', heading: 'Dinner, on standby.', text: 'Vacuum sealed for shelf life. Keep frozen until you’re ready, then follow the baking directions on the package.'},
+    {label: '01 / order', heading: 'October 13–28.', text: 'Choose pickup, Twin Cities metro delivery, or shipping within 100 miles.'},
+    {label: '02 / fulfillment', heading: 'Week of November 2.', text: 'All pickups and deliveries are scheduled for the week of November 2.'},
     {label: '03 / finish well', heading: 'Don’t forget the crust.', text: 'After the bake, brush a little olive oil over the crust. A small step that makes a better pizza.'},
   ],
 };
@@ -77,7 +76,12 @@ const fallbackPage = {
 const mergePage = (nextPage) => ({
   ...fallbackPage,
   ...(nextPage || {}),
-  notes: nextPage?.notes?.length ? nextPage.notes : fallbackPage.notes,
+  introduction: fallbackPage.introduction,
+  pickupHeading: fallbackPage.pickupHeading,
+  pickupAddress: fallbackPage.pickupAddress,
+  journalEyebrow: '',
+  checkoutFootnote: fallbackPage.checkoutFootnote,
+  notes: fallbackPage.notes,
 });
 
 const uniqueProducts = (items) => {
@@ -123,6 +127,8 @@ function PizzaShop() {
   const [products, setProducts] = useState(uniqueProducts(generatedCatalog.products));
   const [page, setPage] = useState(() => mergePage(generatedCatalog.page));
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [cloudinaryPhotos, setCloudinaryPhotos] = useState([]);
+  const orderOpen = Date.now() >= Date.parse('2026-10-13T05:00:00Z') && Date.now() < Date.parse('2026-10-29T05:00:00Z');
   const checkoutLinkHandled = useRef(false);
   useEffect(() => {
     let alive = true;
@@ -137,10 +143,26 @@ function PizzaShop() {
       .finally(() => {
         if (alive) setCatalogLoaded(true);
       });
+    fetch('/api/search-images?query=pizza&per_page=12')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (alive && Array.isArray(data?.images)) {
+          setCloudinaryPhotos(data.images
+            .filter((image) => image.context?.alt?.toLowerCase().includes('pizza'))
+            .map((image) => ({
+              id: image.asset_id || image.public_id || image.thumbnail_url,
+              src: image.large_url || image.thumbnail_url || image.secure_url,
+              alt: 'Pizza from the Local Effort kitchen',
+            }))
+            .filter((image) => image.id && image.src)
+            .slice(0, 8));
+        }
+      })
+      .catch(() => {});
     return () => { alive = false; };
   }, []);
   useEffect(() => {
-    if (!catalogLoaded || checkoutLinkHandled.current || typeof window === 'undefined') return;
+    if (!catalogLoaded || checkoutLinkHandled.current || typeof window === 'undefined' || !orderOpen) return;
     const productId = new URLSearchParams(window.location.search).get('add_to_cart');
     if (!productId) return;
     checkoutLinkHandled.current = true;
@@ -164,7 +186,7 @@ function PizzaShop() {
       source: 'google_checkout_link',
     });
     openCart();
-  }, [add, catalogLoaded, clear, openCart, products]);
+  }, [add, catalogLoaded, clear, openCart, orderOpen, products]);
   const oliveOil = products.find((product) =>
     product.id === 'smith-olive-oil' ||
     product.slug === 'smith-olive-oil' ||
@@ -221,7 +243,11 @@ function PizzaShop() {
           priceCurrency: 'USD',
           url: `${SITE_URL}/pizza-on-smith`,
           checkoutPageURLTemplate: `${SITE_URL}/pizza-on-smith?add_to_cart=${encodeURIComponent(product.id)}`,
-          availableDeliveryMethod: 'https://schema.org/OnSitePickup',
+          availableDeliveryMethod: [
+            'https://schema.org/OnSitePickup',
+            'https://schema.org/DeliveryModeOwnFleet',
+            'https://schema.org/ParcelService',
+          ],
         },
       },
     })),
@@ -229,7 +255,7 @@ function PizzaShop() {
   return (
     <div className="pizza-smith fullpage-demo-scope">
       <Helmet>
-        <title>Pizza on Smith | Frozen Pizza Pickup — Local Effort</title>
+        <title>Pizza on Smith | Local Effort Cooperative</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={`${SITE_URL}/pizza-on-smith`} />
         <meta property="og:title" content="Pizza on Smith — Local Effort" />
@@ -240,9 +266,13 @@ function PizzaShop() {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
       <header className="ps-hero">
-        <p className="ps-eyebrow">{page.eyebrow}</p>
         <h1>{page.headline}</h1>
         <p>{page.introduction}</p>
+        <p className="ps-order-window" role="status">
+          {orderOpen
+            ? 'Ordering open October 13–28 · pickup and delivery the week of November 2'
+            : 'Ordering closed · pickup and delivery for this release take place the week of November 2'}
+        </p>
       </header>
       <div className="ps-shop">
         <section className="ps-gallery" aria-label="Our pizzas">
@@ -374,7 +404,7 @@ function PizzaShop() {
               <span>Your order</span>
               <strong>{money(total)}</strong>
             </div>
-            <button className="ps-checkout" type="button" disabled={total === 0} onClick={buy}>
+            <button className="ps-checkout" type="button" disabled={total === 0 || !orderOpen} onClick={buy}>
               {total ? `Checkout · ${money(total)}` : 'Choose your pizzas'}
               <span aria-hidden="true">↗</span>
             </button>
@@ -385,7 +415,7 @@ function PizzaShop() {
       <section className="ps-journal" aria-labelledby="ps-journal-title">
         <header>
           <div>
-            <p className="ps-eyebrow">{page.journalEyebrow}</p>
+            {page.journalEyebrow && !/a few pictures from around here/i.test(page.journalEyebrow) && <p className="ps-eyebrow">{page.journalEyebrow}</p>}
             <h2 id="ps-journal-title">{page.journalHeading}</h2>
           </div>
         </header>
@@ -399,6 +429,11 @@ function PizzaShop() {
                 height={photo.src === 'sliced' ? 934 : 1280}
                 loading="lazy"
               />
+            </figure>
+          ))}
+          {cloudinaryPhotos.map((photo) => (
+            <figure key={photo.id}>
+              <img src={photo.src} alt={photo.alt} loading="lazy" />
             </figure>
           ))}
         </div>

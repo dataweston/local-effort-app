@@ -109,3 +109,71 @@ opt-in and auditable STOP handling before any marketing text; verify the
 Merchant Center and Meta Commerce account configurations before promising
 Google/Instagram placement. No customer-facing send or ad activation is part
 of code implementation.
+
+## Public crawl hygiene
+
+`src/config/routes.js` is the public route contract. `tools/static-export.js`
+combines its indexable routes with public blog posts and active products from
+Sanity, renders their HTML, and writes the authoritative
+`https://www.localeffortfood.com/sitemap.xml`. Public CMS snapshots embedded in
+HTML contain public presentation facts only; member/paid posts
+are excluded using the existing publishing access rules. A configured CMS fetch
+failure fails export rather than advertising empty dynamic pages.
+
+`tools/sync-vercel-routes.js` consumes the generated dynamic-path manifest and
+maps both static and dynamic pages to their prerendered documents. Trailing
+slashes and retired aliases redirect to final canonical URLs. Query parameters
+and fragments do not create separate canonical documents. Keep redirects for
+retired pages, but never list redirect sources or intentional noindex pages in
+the sitemap. `/api/sitemap.xml` is a compatibility redirect, not a second feed.
+Venue placeholder pages retain noindex until their existing publishability
+contract is satisfied; member investment information remains noindex.
+
+### October 13, 2026 Ahrefs audit evaluation
+
+Owner: site operator. As of: October 13, 2026. Review on the first post-deployment
+Ahrefs crawl of project **9538697**; these findings are a local remediation
+snapshot, not a claim that the hosted crawl counts have cleared.
+
+| Audit finding | Relevance and response |
+| --- | --- |
+| Sitemap redirects, competing sitemaps, missing indexable URLs | Real canonical-host/feed mismatch. Use one www sitemap, generated public CMS routes, and explicit noindex exclusions. |
+| Duplicate pages/no canonical, no outgoing links, missing OG/X | Real empty-shell problem on dynamic products. Render product/blog facts, canonical and social metadata; product pages link to the shop. |
+| Missing H1 and metadata length warnings | Add missing initial-page headings and improve useful service/list metadata. Do not pad product descriptions, truncate authored CMS copy blindly, or treat character thresholds as ranking requirements. |
+| Low word count and only one incoming dofollow link | Evaluate the page's job. Product facts, a booking interface, and a visual storefront do not need artificial prose or unrelated links. Products have shop/catalogue discovery paths. |
+| Oversized images | Preserve photos/crops and animated artwork, use smaller WebP derivatives, and bound Sanity/Cloudinary originals. Verify actual served URLs, not just source-file sizes. |
+| Schema.org validation errors | `unitText` belongs on `UnitPriceSpecification`, not generic `PriceSpecification`. Separate the per-guest rate from the total party minimum; retain valid `FoodService` and return-policy fields. |
+| Broken link and external 4XX | Confirmed the Psyche-specific EVA URL returns 404; link to the working official EVA resource with a general informational label, not a product-specific verification claim. |
+| Internal/external redirects and redirect chain | Link directly to final external destinations where verified; normalize public slash variants and retired aliases. The platform-level apex-to-www hop is outside repository routing. |
+| Redirected pages without incoming links; HTTP-to-HTTPS | Expected for retired aliases and transport/canonical-host redirects. Do not create internal links to obsolete pages just to suppress warnings. |
+| Noindex / noindex-follow | Intentional for internal or unpublished information. Preserve boundaries and exclude those pages from sitemap, rather than removing noindex. |
+| IndexNow, changed H1, SERP title mismatch | Informational, not implementation defects by themselves. IndexNow is optional; a changed heading is expected after edits; search engines may rewrite SERP titles. |
+
+Local validation exercises the production bundle/export/route-sync/copy path,
+the existing public-context feed contract, and generated HTML before JavaScript.
+Deployment and an authenticated URL-level Ahrefs recrawl are still required to
+attribute every original affected row. The original report/API credentials were
+unavailable during implementation. A CMS-authored press resource still points
+at retired `/gallery`; correct that source content in Sanity rather than adding
+a presentation-only link substitution or resurrecting the retired route.
+
+This remediation does not alter checkout, fulfillment, payment verification,
+or confirmation delivery and does not authorize deployment or customer sends.
+
+Verification recorded on October 13: production bundle/export/sync/copy passed;
+the existing public-context tests passed **3/3**. All **44** sitemap documents
+passed generated-HTML checks for one H1, one matching canonical, descriptions,
+OG/X metadata, outgoing links, and absence of noindex. **238** JSON-LD blocks
+parsed, including **7** correctly typed unit-price specifications; this is not
+a substitute for the authenticated Ahrefs semantic-validation report.
+The export includes **21** public CMS snapshots (one post, twenty products).
+
+A local preview returned HTTP 200 for all 44 sitemap URLs and direct canonical
+308s for their 43 non-root slash variants. Browser checks covered product facts
+and shop navigation, booking controls without submission, the public article,
+and optimized shop/candlelight artwork. The article's API refresh supplied an
+apex canonical; the browser now retains the www canonical and matching OG URL
+after that refresh. Five optimized artwork sources total **1,337,746 bytes**
+versus **17,135,897 bytes** for the originals (92.2% smaller); the animation
+retains its twelve frames and loop setting.
+

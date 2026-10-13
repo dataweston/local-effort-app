@@ -26,8 +26,13 @@ import PrivateEventsPage from '../pages/PrivateEventsPage';
 import LocalistPage from '../pages/LocalistPage';
 import MemberFundraisePage from '../pages/MemberFundraisePage';
 import GiftCardsPage from '../pages/GiftCardsPage';
+import BookPage from '../pages/BookPage';
+import ProductPage from '../pages/ProductPage';
+import WinterDinnerPage from '../pages/WinterDinnerPage';
+import WinterPizzaPage from '../pages/WinterPizzaPage';
+import JanuaryMealsPage from '../pages/JanuaryMealsPage';
 
-export default function StaticApp({ helmetContext }) {
+export default function StaticApp({ helmetContext, pageData = null }) {
   const location = useLocation();
   const isFullPageHome = location.pathname === '/';
   return (
@@ -40,7 +45,12 @@ export default function StaticApp({ helmetContext }) {
             <Routes>
               <Route path="/" element={<FullPageDemoPage />} />
               <Route path="/blog" element={<BlogList />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/blog/:slug" element={<BlogPost initialPost={pageData?.kind === 'blog' ? pageData.data : null} />} />
+              <Route path="/product/:slug" element={<ProductPage initialProduct={pageData?.kind === 'product' ? pageData.data : null} />} />
+              <Route path="/book" element={<BookPage />} />
+              <Route path="/winterdinner" element={<WinterDinnerPage />} />
+              <Route path="/winterpizza" element={<WinterPizzaPage />} />
+              <Route path="/januarymeals" element={<JanuaryMealsPage />} />
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
               <Route path="/sale" element={<SalePage />} />

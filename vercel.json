@@ -22,7 +22,6 @@
     }
   ],
   "crons": [
-    { "path": "/api/email/sale-confirmations/process", "schedule": "*/5 * * * *" },
     {
       "path": "/api/venues/sync",
       "schedule": "0 7 * * *"
@@ -319,6 +318,231 @@
       "dest": "/backend/api/server.js"
     },
     {
+      "src": "^/pizza-on-smith/+$",
+      "dest": "https://www.localeffortfood.com/pizza-on-smith",
+      "status": 308
+    },
+    {
+      "src": "^/blog/+$",
+      "dest": "https://www.localeffortfood.com/blog",
+      "status": 308
+    },
+    {
+      "src": "^/releases/+$",
+      "dest": "https://www.localeffortfood.com/releases",
+      "status": 308
+    },
+    {
+      "src": "^/sale/+$",
+      "dest": "https://www.localeffortfood.com/sale",
+      "status": 308
+    },
+    {
+      "src": "^/gift-cards/+$",
+      "dest": "https://www.localeffortfood.com/gift-cards",
+      "status": 308
+    },
+    {
+      "src": "^/chez-garage/+$",
+      "dest": "https://www.localeffortfood.com/chez-garage",
+      "status": 308
+    },
+    {
+      "src": "^/return-policy/+$",
+      "dest": "https://www.localeffortfood.com/return-policy",
+      "status": 308
+    },
+    {
+      "src": "^/happymonday/+$",
+      "dest": "https://www.localeffortfood.com/happymonday",
+      "status": 308
+    },
+    {
+      "src": "^/pizza-party/+$",
+      "dest": "https://www.localeffortfood.com/pizza-party",
+      "status": 308
+    },
+    {
+      "src": "^/julydinner/+$",
+      "dest": "https://www.localeffortfood.com/julydinner",
+      "status": 308
+    },
+    {
+      "src": "^/winterdinner/+$",
+      "dest": "https://www.localeffortfood.com/winterdinner",
+      "status": 308
+    },
+    {
+      "src": "^/winterpizza/+$",
+      "dest": "https://www.localeffortfood.com/winterpizza",
+      "status": 308
+    },
+    {
+      "src": "^/february/+$",
+      "dest": "https://www.localeffortfood.com/february",
+      "status": 308
+    },
+    {
+      "src": "^/psyche/+$",
+      "dest": "https://www.localeffortfood.com/psyche",
+      "status": 308
+    },
+    {
+      "src": "^/januarymeals/+$",
+      "dest": "https://www.localeffortfood.com/januarymeals",
+      "status": 308
+    },
+    {
+      "src": "^/book/+$",
+      "dest": "https://www.localeffortfood.com/book",
+      "status": 308
+    },
+    {
+      "src": "^/localist/+$",
+      "dest": "https://www.localeffortfood.com/localist",
+      "status": 308
+    },
+    {
+      "src": "^/weekly-meals/+$",
+      "dest": "https://www.localeffortfood.com/weekly-meals",
+      "status": 308
+    },
+    {
+      "src": "^/small-events/+$",
+      "dest": "https://www.localeffortfood.com/small-events",
+      "status": 308
+    },
+    {
+      "src": "^/308b-member/+$",
+      "dest": "https://www.localeffortfood.com/308b-member",
+      "status": 308
+    },
+    {
+      "src": "^/office-catering/+$",
+      "dest": "https://www.localeffortfood.com/office-catering",
+      "status": 308
+    },
+    {
+      "src": "^/firehouse/+$",
+      "dest": "https://www.localeffortfood.com/firehouse",
+      "status": 308
+    },
+    {
+      "src": "^/localkitchen/+$",
+      "dest": "https://www.localeffortfood.com/localkitchen",
+      "status": 308
+    },
+    {
+      "src": "^/private-events/+$",
+      "dest": "https://www.localeffortfood.com/private-events",
+      "status": 308
+    },
+    {
+      "src": "^/blog/local-effort/+$",
+      "dest": "https://www.localeffortfood.com/blog/local-effort",
+      "status": 308
+    },
+    {
+      "src": "^/product/I%20like%20it%20because%20it's%20not%20sweet/+$",
+      "dest": "https://www.localeffortfood.com/product/I%20like%20it%20because%20it's%20not%20sweet",
+      "status": 308
+    },
+    {
+      "src": "^/product/chez-garage-lamb-chili/+$",
+      "dest": "https://www.localeffortfood.com/product/chez-garage-lamb-chili",
+      "status": 308
+    },
+    {
+      "src": "^/product/bread-loaf-red-fife/+$",
+      "dest": "https://www.localeffortfood.com/product/bread-loaf-red-fife",
+      "status": 308
+    },
+    {
+      "src": "^/product/kimchi-early-spring/+$",
+      "dest": "https://www.localeffortfood.com/product/kimchi-early-spring",
+      "status": 308
+    },
+    {
+      "src": "^/product/new-nw-12-inch-seasonal-frozen-pizza/+$",
+      "dest": "https://www.localeffortfood.com/product/new-nw-12-inch-seasonal-frozen-pizza",
+      "status": 308
+    },
+    {
+      "src": "^/product/chez-garage-psyche-olive-oil/+$",
+      "dest": "https://www.localeffortfood.com/product/chez-garage-psyche-olive-oil",
+      "status": 308
+    },
+    {
+      "src": "^/product/ramp-oil/+$",
+      "dest": "https://www.localeffortfood.com/product/ramp-oil",
+      "status": 308
+    },
+    {
+      "src": "^/product/chez-garage-frozen-pizza/+$",
+      "dest": "https://www.localeffortfood.com/product/chez-garage-frozen-pizza",
+      "status": 308
+    },
+    {
+      "src": "^/product/chez-garage-pork-belly/+$",
+      "dest": "https://www.localeffortfood.com/product/chez-garage-pork-belly",
+      "status": 308
+    },
+    {
+      "src": "^/product/sticky-toffee-pudding-gelato/+$",
+      "dest": "https://www.localeffortfood.com/product/sticky-toffee-pudding-gelato",
+      "status": 308
+    },
+    {
+      "src": "^/product/zwetschgenkuchen/+$",
+      "dest": "https://www.localeffortfood.com/product/zwetschgenkuchen",
+      "status": 308
+    },
+    {
+      "src": "^/product/bbg/+$",
+      "dest": "https://www.localeffortfood.com/product/bbg",
+      "status": 308
+    },
+    {
+      "src": "^/product/chez-garage-chocolate-bars/+$",
+      "dest": "https://www.localeffortfood.com/product/chez-garage-chocolate-bars",
+      "status": 308
+    },
+    {
+      "src": "^/product/tomato-jam/+$",
+      "dest": "https://www.localeffortfood.com/product/tomato-jam",
+      "status": 308
+    },
+    {
+      "src": "^/product/ice-cream-mountain-mint-pint/+$",
+      "dest": "https://www.localeffortfood.com/product/ice-cream-mountain-mint-pint",
+      "status": 308
+    },
+    {
+      "src": "^/product/smith-brussels/+$",
+      "dest": "https://www.localeffortfood.com/product/smith-brussels",
+      "status": 308
+    },
+    {
+      "src": "^/product/smith-cheese-3/+$",
+      "dest": "https://www.localeffortfood.com/product/smith-cheese-3",
+      "status": 308
+    },
+    {
+      "src": "^/product/smith-cheese-6/+$",
+      "dest": "https://www.localeffortfood.com/product/smith-cheese-6",
+      "status": 308
+    },
+    {
+      "src": "^/product/smith-kids-3/+$",
+      "dest": "https://www.localeffortfood.com/product/smith-kids-3",
+      "status": 308
+    },
+    {
+      "src": "^/product/smith-olive-oil/+$",
+      "dest": "https://www.localeffortfood.com/product/smith-olive-oil",
+      "status": 308
+    },
+    {
       "src": "^/pizza-on-smith$",
       "dest": "/prerender/pizza-on-smith/index.html"
     },
@@ -363,12 +587,24 @@
       "dest": "/prerender/julydinner/index.html"
     },
     {
+      "src": "^/winterdinner$",
+      "dest": "/prerender/winterdinner/index.html"
+    },
+    {
+      "src": "^/winterpizza$",
+      "dest": "/prerender/winterpizza/index.html"
+    },
+    {
       "src": "^/february$",
       "dest": "/prerender/february/index.html"
     },
     {
       "src": "^/psyche$",
       "dest": "/prerender/psyche/index.html"
+    },
+    {
+      "src": "^/januarymeals$",
+      "dest": "/prerender/januarymeals/index.html"
     },
     {
       "src": "^/book$",
@@ -407,38 +643,122 @@
       "dest": "/prerender/private-events/index.html"
     },
     {
-      "src": "^/foodist$",
-      "dest": "/localkitchen",
+      "src": "^/blog/local-effort$",
+      "dest": "/prerender/blog/local-effort/index.html"
+    },
+    {
+      "src": "^/product/I%20like%20it%20because%20it's%20not%20sweet$",
+      "dest": "/prerender/product/I%20like%20it%20because%20it's%20not%20sweet/index.html"
+    },
+    {
+      "src": "^/product/chez-garage-lamb-chili$",
+      "dest": "/prerender/product/chez-garage-lamb-chili/index.html"
+    },
+    {
+      "src": "^/product/bread-loaf-red-fife$",
+      "dest": "/prerender/product/bread-loaf-red-fife/index.html"
+    },
+    {
+      "src": "^/product/kimchi-early-spring$",
+      "dest": "/prerender/product/kimchi-early-spring/index.html"
+    },
+    {
+      "src": "^/product/new-nw-12-inch-seasonal-frozen-pizza$",
+      "dest": "/prerender/product/new-nw-12-inch-seasonal-frozen-pizza/index.html"
+    },
+    {
+      "src": "^/product/chez-garage-psyche-olive-oil$",
+      "dest": "/prerender/product/chez-garage-psyche-olive-oil/index.html"
+    },
+    {
+      "src": "^/product/ramp-oil$",
+      "dest": "/prerender/product/ramp-oil/index.html"
+    },
+    {
+      "src": "^/product/chez-garage-frozen-pizza$",
+      "dest": "/prerender/product/chez-garage-frozen-pizza/index.html"
+    },
+    {
+      "src": "^/product/chez-garage-pork-belly$",
+      "dest": "/prerender/product/chez-garage-pork-belly/index.html"
+    },
+    {
+      "src": "^/product/sticky-toffee-pudding-gelato$",
+      "dest": "/prerender/product/sticky-toffee-pudding-gelato/index.html"
+    },
+    {
+      "src": "^/product/zwetschgenkuchen$",
+      "dest": "/prerender/product/zwetschgenkuchen/index.html"
+    },
+    {
+      "src": "^/product/bbg$",
+      "dest": "/prerender/product/bbg/index.html"
+    },
+    {
+      "src": "^/product/chez-garage-chocolate-bars$",
+      "dest": "/prerender/product/chez-garage-chocolate-bars/index.html"
+    },
+    {
+      "src": "^/product/tomato-jam$",
+      "dest": "/prerender/product/tomato-jam/index.html"
+    },
+    {
+      "src": "^/product/ice-cream-mountain-mint-pint$",
+      "dest": "/prerender/product/ice-cream-mountain-mint-pint/index.html"
+    },
+    {
+      "src": "^/product/smith-brussels$",
+      "dest": "/prerender/product/smith-brussels/index.html"
+    },
+    {
+      "src": "^/product/smith-cheese-3$",
+      "dest": "/prerender/product/smith-cheese-3/index.html"
+    },
+    {
+      "src": "^/product/smith-cheese-6$",
+      "dest": "/prerender/product/smith-cheese-6/index.html"
+    },
+    {
+      "src": "^/product/smith-kids-3$",
+      "dest": "/prerender/product/smith-kids-3/index.html"
+    },
+    {
+      "src": "^/product/smith-olive-oil$",
+      "dest": "/prerender/product/smith-olive-oil/index.html"
+    },
+    {
+      "src": "^/foodist/?$",
+      "dest": "https://www.localeffortfood.com/localkitchen",
       "status": 308
     },
     {
-      "src": "^/weeklymeals$",
-      "dest": "/weekly-meals",
+      "src": "^/weeklymeals/?$",
+      "dest": "https://www.localeffortfood.com/weekly-meals",
       "status": 308
     },
     {
-      "src": "^/smallevents$",
-      "dest": "/small-events",
+      "src": "^/smallevents/?$",
+      "dest": "https://www.localeffortfood.com/small-events",
       "status": 308
     },
     {
-      "src": "^/meal-prep$",
-      "dest": "/weekly-meals",
+      "src": "^/meal-prep/?$",
+      "dest": "https://www.localeffortfood.com/weekly-meals",
       "status": 308
     },
     {
-      "src": "^/weekly$",
-      "dest": "/blog",
+      "src": "^/weekly/?$",
+      "dest": "https://www.localeffortfood.com/blog",
       "status": 308
     },
     {
       "src": "^/weekly/(?<slug>.*)$",
-      "dest": "/blog/$1",
+      "dest": "https://www.localeffortfood.com/blog/$1",
       "status": 308
     },
     {
-      "src": "^/salepage$",
-      "dest": "/sale",
+      "src": "^/salepage/?$",
+      "dest": "https://www.localeffortfood.com/sale",
       "status": 308
     },
     {

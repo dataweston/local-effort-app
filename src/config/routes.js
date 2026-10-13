@@ -1,11 +1,13 @@
 // Single source of truth for route metadata.
 // Drives: prerender, sitemap, <head> meta, vercel.json routing.
 
+import { VENUES, getVenue, isPublishable } from './venues';
+
 export const PUBLIC_ROUTES = [
   {
     path: '/pizza-on-smith',
-    title: 'Pizza on Smith | Frozen Pizza Pickup — Local Effort',
-    description: 'Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients. Tuesday pickup at 608 Smith Ave S, West St. Paul. Cheese bundles from $34, kids’ 3-packs $14.50, and Brussels sprout specials.',
+    title: 'Pizza on Smith | Local Effort Cooperative',
+    description: 'Neapolitan-inspired pizzas made with Midwest ingredients. Order October 13–28 for pickup, metro delivery, or shipping during the week of November 2. Pickup in West St. Paul.',
     prerender: true,
   },
   {
@@ -16,14 +18,14 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/blog',
-    title: 'Local Report - Local Effort Cooperative',
-    description: 'Dispatches, updates, and kitchen notes from Local Effort Cooperative',
+    title: 'Local Report: Kitchen Stories | Local Effort Cooperative',
+    description: 'Read kitchen stories, cooperative updates, and dispatches from Local Effort, a Minneapolis personal chef team cooking with Minnesota-grown ingredients.',
     prerender: true,
   },
   {
     path: '/releases',
     title: 'Press & Releases - Local Effort Cooperative',
-    description: 'News, press coverage, and updates from Local Effort Cooperative',
+    description: 'Find Local Effort Cooperative press releases, business updates, media contacts, and resources for coverage of our Minneapolis food cooperative.',
     prerender: true,
   },
   {
@@ -55,8 +57,8 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/happymonday',
-    title: 'For Happy Monday - Local Effort Cooperative',
-    description: 'Local Effort menu and ordering for Happy Monday.',
+    title: 'Happy Monday Coffee Menu | Local Effort Cooperative',
+    description: 'Explore Local Effort food at Happy Monday Coffee in Roseville, including local pizza, menu details, and ingredient lists from our Minneapolis cooperative.',
     prerender: true,
   },
   {
@@ -78,13 +80,13 @@ export const PUBLIC_ROUTES = [
     path: '/winterdinner',
     title: 'Winter Dinner - Local Effort Cooperative',
     description: 'Seasonal winter dinner experience from Local Effort.',
-    prerender: false,
+    prerender: true,
   },
   {
     path: '/winterpizza',
     title: 'Winter Pizza - Local Effort Cooperative',
     description: 'Winter pizza pop-up from Local Effort.',
-    prerender: false,
+    prerender: true,
   },
   {
     path: '/february',
@@ -102,7 +104,7 @@ export const PUBLIC_ROUTES = [
     path: '/januarymeals',
     title: 'January Meals - Local Effort Cooperative',
     description: 'January meal prep offerings from Local Effort.',
-    prerender: false,
+    prerender: true,
   },
   {
     path: '/book',
@@ -118,14 +120,14 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/weekly-meals',
-    title: 'Weekly Meal Prep Delivery in Minneapolis–St. Paul | Local Effort Cooperative',
-    description: 'Weekly personal-chef meal prep delivered across Minneapolis–St. Paul. Home-cooked dinners from $18 a person, breakfasts from $13.50, from Minnesota-grown ingredients. Sign up in under a minute.',
+    title: 'Twin Cities Weekly Meal Prep | Local Effort Cooperative',
+    description: 'Weekly chef-made meals delivered across Minneapolis–St. Paul. Dinners from $18 per person and breakfasts from $13.50, made with Minnesota-grown ingredients.',
     prerender: true,
   },
   {
     path: '/small-events',
-    title: 'Private Event Catering in Minneapolis–St. Paul | Local Effort Cooperative',
-    description: 'Private chef catering for dinner parties, showers, weddings, and office parties across Minneapolis–St. Paul. Seasonal menus from 100% Midwest ingredients, 4–75 guests. Dinner parties from $850.',
+    title: 'Twin Cities Private Catering | Local Effort Cooperative',
+    description: 'Book private chef catering for dinners, showers, weddings, and office parties in Minneapolis–St. Paul. Seasonal Midwest menus for gatherings of 4–75.',
     prerender: true,
   },
   {
@@ -133,11 +135,12 @@ export const PUBLIC_ROUTES = [
     title: '308B Member Offerings — Invest in the Cooperative | Local Effort Cooperative',
     description: 'Local Effort Cooperative is raising from its members under Minnesota Chapter 308B. Three member offerings: a kitchen equipment note, a local-farm purchasing fund, and patronage-linked member capital.',
     prerender: true,
+    sitemap: false, // Member investment information intentionally remains noindex.
   },
   {
     path: '/office-catering',
-    title: 'Office Catering Minneapolis - Sandwich Trays, Salads & Baked Goods | Local Effort Cooperative',
-    description: 'Order office catering in Minneapolis-St. Paul: sandwich trays, big-bowl salads that feed 8-10, and baked goods by the dozen from Local Effort Cooperative. $150 minimum, 48-hour lead time, $40 delivery - free at $750+. Invoice-friendly.',
+    title: 'Twin Cities Office Catering | Local Effort Cooperative',
+    description: 'Order sandwich trays, salads, and baked goods for Minneapolis–St. Paul offices. Local Effort catering has a $150 minimum and needs 48 hours’ notice.',
     prerender: true,
   },
   // The two event spaces and the offer page that carries both.
@@ -153,18 +156,21 @@ export const PUBLIC_ROUTES = [
     title: 'FIREHOUSE — Private Event Space in St. Paul | Local Effort Cooperative',
     description: 'Book FIREHOUSE, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
     prerender: true,
+    sitemap: isPublishable(getVenue('firehouse')),
   },
   {
     path: '/localkitchen',
     title: 'Local Kitchen — Private Event Space in Minneapolis | Local Effort Cooperative',
     description: 'Book Local Kitchen, an event space from Local Effort Cooperative. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients. Check the calendar and request a date.',
     prerender: true,
+    sitemap: isPublishable(getVenue('foodist')),
   },
   {
     path: '/private-events',
     title: 'Private Events at Our Place — Two Minneapolis Spaces | Local Effort Cooperative',
     description: 'Host your private event in one of Local Effort Cooperative’s two Minneapolis spaces. We cook and serve; you pick the room and the night. Seasonal menus from 100% Minnesota-grown ingredients.',
     prerender: true,
+    sitemap: VENUES.some(isPublishable),
   },
 ];
 

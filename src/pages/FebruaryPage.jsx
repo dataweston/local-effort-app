@@ -327,6 +327,7 @@ const FebruaryPage = () => {
 
   return (
     <div className="fullpage-demo february-page">
+      <h1 className="sr-only">February Chef Dinner at Home</h1>
       <Helmet>
         <title>February Chef Dinner | {SITE_NAME}</title>
         <meta

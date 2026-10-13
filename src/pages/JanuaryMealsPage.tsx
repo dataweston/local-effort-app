@@ -444,7 +444,9 @@ END:VCALENDAR`;
   if (libraryLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0f172a] via-[#0f172a] to-[#111827] text-white flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-2xl px-4">
+          <h1 className="text-3xl font-bold mb-4">The Local Effort January reset</h1>
+          <p className="text-slate-300 mb-4">Weston shares his diet plan for January, focusing on high fiber and fermented foods. Sign in to edit the plan to suit your needs, using ingredient data from the USDA Food Database.</p>
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
           <p className="text-slate-300">Loading meal library...</p>
         </div>

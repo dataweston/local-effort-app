@@ -41,7 +41,6 @@ commerce:
 
 feeds:
 - GET /sitemap.xml
-- GET /api/sitemap.xml
 - GET /api/feeds/releases.rss
 - GET /api/feeds/releases.atom
 

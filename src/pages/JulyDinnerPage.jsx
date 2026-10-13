@@ -552,7 +552,7 @@ const JulyDinnerPage = () => {
             {event.dateLabel} ·{' '}
             <a
               className="jd-place-link"
-              href="https://www.thearthouse.events"
+              href="https://thearthouse.events/"
               target="_blank"
               rel="noopener noreferrer"
             >

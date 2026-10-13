@@ -12,7 +12,7 @@ import { ptToHtml } from '../store/data/ptToHtml';
 import generatedChezGaragePageData from '../store/data/generatedChezGaragePageData.json';
 
 const STORE_SLUG = 'chez-garage';
-const HERO_IMAGE_PATH = '/images/chez-garage-hero.jpg';
+const HERO_IMAGE_PATH = '/images/chez-garage-hero.webp';
 
 // Search- and model-facing title. The Sanity label is lowercase shop copy, not
 // a snippet; this is the keyword-bearing one and matches routes.js.

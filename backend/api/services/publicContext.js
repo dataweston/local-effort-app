@@ -63,8 +63,6 @@ function loadManifest(manifestPath, { fsImpl = fs, logger = console } = {}) {
 function buildDefaultFeeds(siteUrl) {
   const trimmedSite = siteUrl.replace(/\/$/, '');
   return [
-    { type: 'sitemap', url: `${trimmedSite}/sitemap.xml` },
-    { type: 'sitemap', url: `${trimmedSite}/api/sitemap.xml` },
     { type: 'rss', url: `${trimmedSite}/api/feeds/blog.rss` },
     { type: 'atom', url: `${trimmedSite}/api/feeds/blog.atom` },
     { type: 'json', url: `${trimmedSite}/api/feeds/blog.json` },
@@ -81,16 +79,21 @@ function buildPublicSitePayload({
 } = {}) {
   const siteUrl = resolveSiteUrl({ manifest, env });
   const trimmedSite = siteUrl.replace(/\/$/, '');
+  const feeds = Array.isArray(manifest?.feeds) ? manifest.feeds : buildDefaultFeeds(siteUrl);
+  const sitemap = `${DEFAULT_SITE_URL}/sitemap.xml`;
   return {
     name: manifest?.name || 'Local Effort',
     url: siteUrl,
     navigation: Array.isArray(manifest?.navigation) ? manifest.navigation : [],
     endpoints: Array.isArray(manifest?.apis) ? manifest.apis : DEFAULT_PUBLIC_APIS,
-    feeds: Array.isArray(manifest?.feeds) ? manifest.feeds : buildDefaultFeeds(siteUrl),
+    feeds: [
+      { type: 'sitemap', url: sitemap },
+      ...feeds.filter((feed) => feed.type !== 'sitemap'),
+    ],
     support: manifest?.support || DEFAULT_SUPPORT,
     mcp: Array.isArray(manifest?.mcpServers) ? manifest.mcpServers : [],
     ucp: Array.isArray(manifest?.ucpServers) ? manifest.ucpServers : [],
-    sitemap: `${trimmedSite}/sitemap.xml`,
+    sitemap,
     aiTxt: `${trimmedSite}/ai.txt`,
     manifest: `${trimmedSite}/ai/manifest.json`,
     updatedAt: manifest?.updated || now(),

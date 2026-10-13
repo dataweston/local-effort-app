@@ -32,7 +32,7 @@ const GOOGLE_PRODUCT_CATEGORY = 'Food, Beverages & Tobacco > Food Items';
 const STORE_META = {
   sale: { path: '/sale', productType: 'Prepared Food > Seasonal Drops', delivery: true },
   'chez-garage': { path: '/chez-garage', productType: 'Prepared Food > Chez Garage Pop-Up', delivery: true },
-  'pizza-on-smith': { path: '/pizza-on-smith', productType: 'Prepared Food > Pizza on Smith', delivery: false },
+  'pizza-on-smith': { path: '/pizza-on-smith', productType: 'Prepared Food > Pizza on Smith', delivery: true },
 };
 
 function escapeXml(value = '') {

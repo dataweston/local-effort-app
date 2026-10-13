@@ -29,6 +29,9 @@ const buildDirectSaleConfirmations = (flow, facts, { ownerEmail = CONTACT, sende
           ...(typeof payload.textContent === 'string'
             ? { textContent: resolveCustomerEmail(payload.textContent.replaceAll('{{paymentId}}', String(facts.paymentId))) }
             : {}),
+          ...(typeof payload.htmlContent === 'string'
+            ? { htmlContent: resolveCustomerEmail(payload.htmlContent.replaceAll('{{paymentId}}', String(facts.paymentId))) }
+            : {}),
         },
       }));
   }

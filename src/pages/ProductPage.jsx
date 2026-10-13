@@ -2,11 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import client from '../sanityClient';
+import { Link } from 'react-router-dom';
+import { SITE_URL } from '../config/siteMetadata';
+import { readPublicPageData } from '../ssr/publicPageData';
+import { sanityImageUrl } from '../utils/sanityImageUrl';
 
-export default function ProductPage() {
+export default function ProductPage({ initialProduct = null }) {
   const { slug } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(() => initialProduct || readPublicPageData('product', slug));
+  const [loading, setLoading] = useState(!product);
 
   useEffect(() => {
     let alive = true;
@@ -33,8 +37,15 @@ export default function ProductPage() {
       <Helmet>
         <title>{product ? `${product.title} | Local Effort` : 'Product | Local Effort'}</title>
         {product && (
-          <meta name="description" content={product.shortDescription || ''} />
+          <meta name="description" content={product.shortDescription || product.title} />
         )}
+        {product && <meta property="og:title" content={`${product.title} | Local Effort`} />}
+        {product && <meta property="og:description" content={product.shortDescription || product.title} />}
+        {product && <meta name="twitter:title" content={`${product.title} | Local Effort`} />}
+        {product && <meta name="twitter:description" content={product.shortDescription || product.title} />}
+        {images[0] && <meta property="og:image" content={sanityImageUrl(images[0], 1200)} />}
+        {images[0] && <meta name="twitter:image" content={sanityImageUrl(images[0], 1200)} />}
+        <link rel="canonical" href={`${SITE_URL}/product/${encodeURIComponent(slug)}`} />
       </Helmet>
       
       {loading ? (
@@ -46,7 +57,7 @@ export default function ProductPage() {
           <div>
             <div className="aspect-[4/3] bg-neutral-100 rounded overflow-hidden">
               {images[0] ? (
-                <img src={images[0]} alt={product.title} className="w-full h-full object-cover" />
+                <img src={sanityImageUrl(images[0], 960)} alt={product.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full grid place-items-center text-neutral-400">No image</div>
               )}
@@ -54,7 +65,7 @@ export default function ProductPage() {
             {images.length > 1 && (
               <div className="mt-2 grid grid-cols-4 gap-2">
                 {images.slice(1, 5).map((u, i) => (
-                  <img key={i} src={u} alt="" className="h-20 w-full object-cover rounded" />
+                  <img key={i} src={sanityImageUrl(u, 240)} alt="" loading="lazy" className="h-20 w-full object-cover rounded" />
                 ))}
               </div>
             )}
@@ -65,6 +76,7 @@ export default function ProductPage() {
               <p className="mt-2 text-neutral-700">{product.shortDescription}</p>
             )}
             <div className="mt-3 text-xl font-semibold">${(price/100).toFixed(2)}</div>
+            <Link to="/sale" className="mt-4 inline-block underline">Browse the shop and order</Link>
           </div>
         </div>
       )}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 const BlockContent = lazy(() => import('@sanity/block-content-to-react'));
 import sanityClient from '../sanityClient.js';
@@ -9,8 +8,8 @@ const FeedbackForm = lazy(() => import('../components/menu/FeedbackForm'));
 // LoadingSpinner is a named export; map it to default for React.lazy
 const LoadingSpinner = lazy(() => import('../components/layout/LoadingSpinner').then(mod => ({ default: mod.LoadingSpinner })));
 import ErrorBoundary from '../components/ErrorBoundary';
-import SectionHeader from '../components/ui/SectionHeader';
 import Separator from '../components/ui/Separator';
+import SectionHeader from '../components/ui/SectionHeader';
 
 const HappyMondayPage = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -45,26 +44,24 @@ const HappyMondayPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Happy Monday | Local Effort</title>
-        <meta
-          name="description"
-          content="Explore our special Happy Monday menu, made with the finest local ingredients."
-        />
-      </Helmet>
 
       <div className="space-y-24 mb-24">
         <section className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-12 space-y-2">
+            <span className="heading-overline">Weekly Special</span>
+            <h1 className="heading-xl heading-balance">{pageContent?.title || 'Local Effort at Happy Monday'}</h1>
+          </div>
           {/* Render the dynamic content box */}
           {pageContent && (
             <div className="text-center mb-12">
-              <SectionHeader overline="Weekly Special" title={pageContent.title} />
               <div className="flex justify-center mt-8 mb-8">
                 <img
-                  src="https://www.localeffortfood.com/gallery/IMG_3145.jpg"
+                  src="/gallery/happy-monday-800.webp"
                   alt="Happy Monday"
                   className="max-w-full h-auto rounded-lg shadow-lg"
                   style={{ width: '50%' }}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               {/* The BlockContent component renders rich text. Wrap lazy import in Suspense + ErrorBoundary */}

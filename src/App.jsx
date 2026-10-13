@@ -45,6 +45,7 @@ const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const AdminFoodOpsReceiptsPage = lazy(() => import('./pages/AdminFoodOpsReceiptsPage'));
 const AdminOwnerReviewPage = lazy(() => import('./pages/AdminOwnerReviewPage'));
+const AdminPizzaOnSmithPage = lazy(() => import('./pages/AdminPizzaOnSmithPage'));
 
 const WeeklyDemoPage = lazy(() => import('./pages/WeeklyDemoPage'));
 const MealPrepIntakePage = lazy(() => import('./pages/MealPrepIntakePage'));
@@ -373,6 +374,14 @@ const AppContent = () => {
                   element={
                     <AnimatedPage>
                       <AdminOwnerReviewPage />
+                    </AnimatedPage>
+                  }
+                />
+                <Route
+                  path="/admin/pizza-on-smith"
+                  element={
+                    <AnimatedPage>
+                      <AdminPizzaOnSmithPage />
                     </AnimatedPage>
                   }
                 />
