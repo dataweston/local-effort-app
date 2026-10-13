@@ -1,7 +1,8 @@
 import React, {useMemo, useState} from 'react'
 import PropTypes from 'prop-types'
 import {useDocumentOperation} from 'sanity'
-import {Box, Button, Flex, Stack, Text, TextArea, useToast} from '@sanity/ui'
+import {Box, Button, Flex, Stack, Text, TextArea} from '@sanity/ui'
+import {useToast} from '@sanity/ui/toast'
 
 const CLIPBOARD_TYPE = 'local-effort.releasePressKit'
 const CLIPBOARD_VERSION = 1
