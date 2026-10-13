@@ -39,6 +39,7 @@ import hubLocalistContent from './hubLocalistContent'
 import hubLocalistItem from './hubLocalistItem'
 import dinnerEvent from './dinnerEvent'
 import pizzaOnSmithPage from './pizzaOnSmithPage'
+import pizzaPhoto from './objects/pizzaPhoto'
 
 export const schemaTypes = [
   page,
@@ -82,6 +83,7 @@ export const schemaTypes = [
   hubLocalistItem,
   dinnerEvent,
   pizzaOnSmithPage,
+  pizzaPhoto,
 ]
 
 export default schemaTypes

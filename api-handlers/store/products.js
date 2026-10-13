@@ -57,7 +57,10 @@ const PIZZA_PAGE_PROJECTION = `{
   checkoutFootnote,
   journalHeading,
   returnToOrderLabel,
-  notes[]{_key, heading, text}
+  notes[]{_key, heading, text},
+  galleryPhotos[]{_key, publicId, alt},
+  detailPhoto{publicId, alt},
+  journalPhotos[]{_key, publicId, alt}
 }`;
 
 module.exports = async (req, res) => {

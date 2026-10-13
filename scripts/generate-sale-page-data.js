@@ -135,7 +135,10 @@ async function fetchStoreData(client, store) {
           fulfillmentLabel, storyHeading, storyText,
           orderHeading, orderIntroduction, pickupHeading, pickupAddress,
           oliveOilDescription, checkoutFootnote, journalHeading,
-          returnToOrderLabel, notes[]{_key, heading, text}
+          returnToOrderLabel, notes[]{_key, heading, text},
+          galleryPhotos[]{_key, publicId, alt},
+          detailPhoto{publicId, alt},
+          journalPhotos[]{_key, publicId, alt}
         },`
       : '"page": null,';
 

@@ -51,7 +51,7 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { query = '', next_cursor = null, per_page = '24' } = req.query;
+  const { query = '', next_cursor = null, per_page = '24', sort = '' } = req.query;
   const perPage = Math.min(100, parseInt(per_page, 10) || 24);
 
   try {
@@ -135,8 +135,9 @@ async function handler(req, res) {
       .with_field('context')
       .max_results(perPage);
 
-    // Sort by relevance if a query is present; otherwise by recency
-    if (String(query || '').trim()) {
+    // Relevance when searching, unless the caller asks for newest first (the
+    // Studio photo picker does, so freshly tagged uploads appear at the top).
+    if (String(query || '').trim() && sort !== 'recent') {
       builder.sort_by('score', 'desc');
     } else {
       builder.sort_by('created_at', 'desc');

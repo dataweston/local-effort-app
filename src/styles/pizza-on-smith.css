@@ -101,7 +101,34 @@
   text-wrap: balance;
   margin: 0 0 18px;
 }
-.ps-hero > p {
+/* Studio rich text: paragraphs sit flush, a second paragraph gets a gap, and
+   lists and inline marks inherit the surrounding type. */
+.ps-rich p {
+  margin: 0;
+}
+.ps-rich p + p,
+.ps-rich p + ul,
+.ps-rich p + ol,
+.ps-rich ul + p,
+.ps-rich ol + p {
+  margin-top: 0.75em;
+}
+.ps-rich ul,
+.ps-rich ol {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.ps-rich a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+.ps-rich-line {
+  display: block;
+}
+.ps-rich-line + .ps-rich-line {
+  margin-top: 0.5em;
+}
+.ps-hero > .ps-rich {
   font-size: 18px;
   line-height: 1.55;
   color: var(--ps-muted);
@@ -282,7 +309,7 @@
   letter-spacing: -0.04em;
   margin: 0 0 16px;
 }
-.ps-story p {
+.ps-story .ps-rich {
   font-size: 16px;
   line-height: 1.65;
   color: var(--ps-muted);
@@ -299,7 +326,7 @@
   letter-spacing: -0.035em;
   margin: 0 0 5px;
 }
-.ps-order-heading > p {
+.ps-order-heading > .ps-rich {
   margin: 0 0 20px;
   color: var(--ps-muted);
   font-size: 15px;
@@ -543,7 +570,7 @@
     padding: 25px 0 23px;
     margin-bottom: 22px;
   }
-  .ps-hero > p {
+  .ps-hero > .ps-rich {
     font-size: 16px;
     max-width: 340px;
   }
@@ -779,7 +806,7 @@
   margin: 0;
   min-width: 0;
 }
-.ps-journal-grid .ps-journal-sliced {
+.ps-journal-grid .ps-journal-wide {
   grid-column: span 4;
 }
 .ps-journal-grid img {
@@ -789,7 +816,7 @@
   object-fit: cover;
   display: block;
 }
-.ps-journal-sliced img {
+.ps-journal-wide img {
   aspect-ratio: 3/2;
 }
 .ps-journal-grid figcaption {
@@ -837,7 +864,7 @@
   .ps-journal-grid figure {
     grid-column: span 1;
   }
-  .ps-journal-grid .ps-journal-sliced {
+  .ps-journal-grid .ps-journal-wide {
     grid-column: span 2;
   }
   .ps-journal-grid figcaption {

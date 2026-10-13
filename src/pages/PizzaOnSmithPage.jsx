@@ -10,46 +10,14 @@ import { trackEvent } from '../lib/trackEvent';
 import '../styles/pizza-on-smith.css';
 import DropBanner from '../store/components/DropBanner';
 import { getDropState, getDropWindow, useNow } from '../store/pizzaDrop';
+import PizzaRichCopy from '../store/components/PizzaRichCopy';
+import { cloudinarySrcSet, cloudinaryUrl, usablePhotos } from '../store/pizzaPhotos';
 
 const money = (cents) => `$${(cents / 100).toFixed(2).replace(/\.00$/, '')}`;
-const photos = [
-  {
-    src: 'brussels',
-    alt: 'Brussels sprout pizza on a silver platter',
-  },
-  {
-    src: 'sliced',
-    alt: 'A slice pulled from a pepperoni pizza on a wooden board',
-  },
-  {
-    src: 'crust',
-    alt: 'Close-up of a blistered pizza crust inside its vacuum seal',
-  },
-  {
-    src: 'cheese',
-    alt: 'Small cheese and pepperoni pizzas on parchment',
-  },
-  {
-    src: 'oven',
-    alt: 'A person holding a freshly baked pizza beside an outdoor oven',
-  },
-  {
-    src: 'stamp',
-    alt: 'Local Pizza lettering printed with hand-carved potato stamps',
-  },
-  {
-    src: 'boxed',
-    alt: 'A pizza in a hand-stamped Local Pizza box',
-  },
-  {
-    src: 'seasonal',
-    alt: 'A vacuum-sealed seasonal pizza topped with corn, herbs and cheese',
-  },
-];
-const journalPhotos = ['sliced', 'oven', 'stamp', 'boxed'].map((src) =>
-  photos.find((photo) => photo.src === src)
-);
 const photoUrl = (name) => `/images/pizza-on-smith/${name}.webp`;
+const lines = (value) => String(value || '').split('\n').map((line, index) => (
+  <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line}</React.Fragment>
+));
 const productImage = (product) => product.images?.[0] || (product.image ? photoUrl(product.image) : null);
 const mergePage = (nextPage) => ({
   ...generatedCatalog.page,
@@ -104,6 +72,10 @@ function PizzaShop() {
   const dropWindow = getDropWindow(page);
   const dropState = getDropState(dropWindow, now);
   const description = page.seoDescription;
+  const galleryPhotos = usablePhotos(page.galleryPhotos);
+  const detailPhoto = usablePhotos([page.detailPhoto])[0];
+  const journalPhotos = usablePhotos(page.journalPhotos);
+  const shownPhoto = galleryPhotos[Math.min(activePhoto, Math.max(galleryPhotos.length - 1, 0))];
   const checkoutLinkHandled = useRef(false);
   useEffect(() => {
     let alive = true;
@@ -224,12 +196,12 @@ function PizzaShop() {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={`${SITE_URL}/pizza-on-smith`} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={`${SITE_URL}${photoUrl('brussels')}`} />
+        {galleryPhotos[0] ? <meta property="og:image" content={cloudinaryUrl(galleryPhotos[0].publicId, { width: 1200, ratio: '1.91' })} /> : null}
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
       <header className="ps-hero">
-        <h1>{page.headline}</h1>
-        <p>{page.introduction}</p>
+        <h1>{lines(page.headline)}</h1>
+        <PizzaRichCopy value={page.introduction} />
         <DropBanner
           window={dropWindow}
           state={dropState}
@@ -240,71 +212,83 @@ function PizzaShop() {
       </header>
       <div className="ps-shop">
         <section className="ps-gallery" aria-label="Our pizzas">
-          <figure>
-            <img
-              className={`ps-main-photo ps-photo-${photos[activePhoto].src}`}
-              src={photoUrl(photos[activePhoto].src)}
-              alt={photos[activePhoto].alt}
-              width="960"
-              height="1200"
-              fetchPriority="high"
-            />
-          </figure>
-          <div className="ps-gallery-controls" aria-label="Photo navigation">
-            <button
-              type="button"
-              aria-label="Previous photo"
-              onClick={() => setActivePhoto((activePhoto + photos.length - 1) % photos.length)}
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              aria-label="Next photo"
-              onClick={() => setActivePhoto((activePhoto + 1) % photos.length)}
-            >
-              →
-            </button>
-          </div>
-          <div className="ps-thumbnails" aria-label="Choose a photo">
-            {photos.map((photo, index) => (
-              <button
-                key={photo.src}
-                type="button"
-                aria-label={`Show photo: ${photo.alt}`}
-                aria-pressed={activePhoto === index}
-                onClick={() => setActivePhoto(index)}
-              >
+          {shownPhoto ? (
+            <>
+              <figure>
                 <img
-                  src={photoUrl(`${photo.src}-thumb`)}
-                  alt=""
-                  width="72"
-                  height="72"
+                  className="ps-main-photo"
+                  src={cloudinaryUrl(shownPhoto.publicId, { width: 960, ratio: '3:4' })}
+                  srcSet={cloudinarySrcSet(shownPhoto.publicId, [480, 960, 1440], '3:4')}
+                  sizes="(min-width: 900px) 50vw, 100vw"
+                  alt={shownPhoto.alt}
+                  width="960"
+                  height="1280"
+                  fetchPriority="high"
+                />
+              </figure>
+              {galleryPhotos.length > 1 ? (
+                <>
+                  <div className="ps-gallery-controls" aria-label="Photo navigation">
+                    <button
+                      type="button"
+                      aria-label="Previous photo"
+                      onClick={() => setActivePhoto((activePhoto + galleryPhotos.length - 1) % galleryPhotos.length)}
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Next photo"
+                      onClick={() => setActivePhoto((activePhoto + 1) % galleryPhotos.length)}
+                    >
+                      →
+                    </button>
+                  </div>
+                  <div className="ps-thumbnails" aria-label="Choose a photo">
+                    {galleryPhotos.map((photo, index) => (
+                      <button
+                        key={photo._key || photo.publicId}
+                        type="button"
+                        aria-label={`Show photo: ${photo.alt}`}
+                        aria-pressed={activePhoto === index}
+                        onClick={() => setActivePhoto(index)}
+                      >
+                        <img
+                          src={cloudinaryUrl(photo.publicId, { width: 144, ratio: '1:1' })}
+                          alt=""
+                          width="72"
+                          height="72"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </>
+          ) : null}
+          {detailPhoto ? (
+            <div className="ps-freezer-photos">
+              <figure>
+                <img
+                  src={cloudinaryUrl(detailPhoto.publicId, { width: 720, ratio: '3:4' })}
+                  alt={detailPhoto.alt}
+                  width="720"
+                  height="960"
                   loading="lazy"
                 />
-              </button>
-            ))}
-          </div>
-          <div className="ps-freezer-photos">
-            <figure>
-              <img
-                src={photoUrl('crust')}
-                alt="A close look at the browned crust through its vacuum seal"
-                width="720"
-                height="960"
-                loading="lazy"
-              />
-            </figure>
-          </div>
+              </figure>
+            </div>
+          ) : null}
           <div className="ps-story">
-            <h2>{String(page.storyHeading || '').split('\n').map((line, index) => <React.Fragment key={`${line}-${index}`}>{index > 0 && <br />}{line}</React.Fragment>)}</h2>
-            <p>{page.storyText}</p>
+            <h2>{lines(page.storyHeading)}</h2>
+            <PizzaRichCopy value={page.storyText} />
           </div>
         </section>
         <section className="ps-order" id="order" aria-labelledby="ps-order-title">
           <div className="ps-order-heading">
             <h2 id="ps-order-title">{page.orderHeading}</h2>
-            <p>{page.orderIntroduction}</p>
+            <PizzaRichCopy value={page.orderIntroduction} />
           </div>
           <div className="ps-products">
             {pizzaProducts.map((product) => {
@@ -352,7 +336,7 @@ function PizzaShop() {
               <strong>
                 {oliveOil.title} <span>{money(oliveOil.price)}</span>
               </strong>
-              <small>{page.oliveOilDescription}</small>
+              <small><PizzaRichCopy value={page.oliveOilDescription} inline /></small>
             </span>
           </label> : null}
           <div className="ps-pickup">
@@ -388,25 +372,27 @@ function PizzaShop() {
             <h2 id="ps-journal-title">{page.journalHeading}</h2>
           </div>
         </header>
-        <div className="ps-journal-grid">
-          {journalPhotos.map((photo) => (
-            <figure key={photo.src} className={`ps-journal-${photo.src}`}>
-              <img
-                src={photoUrl(photo.src)}
-                alt={photo.alt}
-                width={photo.src === 'sliced' ? 1400 : 960}
-                height={photo.src === 'sliced' ? 934 : 1280}
-                loading="lazy"
-              />
-            </figure>
-          ))}
-        </div>
+        {journalPhotos.length ? (
+          <div className="ps-journal-grid">
+            {journalPhotos.map((photo, index) => (
+              <figure key={photo._key || photo.publicId} className={index === 0 ? 'ps-journal-wide' : undefined}>
+                <img
+                  src={cloudinaryUrl(photo.publicId, { width: index === 0 ? 1400 : 960, ratio: index === 0 ? '3:2' : '3:4' })}
+                  alt={photo.alt}
+                  width={index === 0 ? 1400 : 960}
+                  height={index === 0 ? 934 : 1280}
+                  loading="lazy"
+                />
+              </figure>
+            ))}
+          </div>
+        ) : null}
         <a className="ps-return-to-order" href="#order">
           {page.returnToOrderLabel}
         </a>
       </section>
       <dl className="ps-notes" aria-label="Good to know">
-        {page.notes.map((note, index) => <div key={note._key || note.heading || index}><dt>{note.heading}</dt><dd>{note.text}</dd></div>)}
+        {page.notes.map((note, index) => <div key={note._key || note.heading || index}><dt>{note.heading}</dt><dd><PizzaRichCopy value={note.text} /></dd></div>)}
       </dl>
       <footer className="ps-footer">
         <Link to="/">local effort cooperative</Link>
