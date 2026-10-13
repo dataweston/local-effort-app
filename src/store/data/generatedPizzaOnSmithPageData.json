@@ -1,21 +1,109 @@
 {
-  "generatedAt": "2026-10-13T18:27:51.815Z",
+  "generatedAt": "2026-10-13T23:00:50.597Z",
   "store": "pizza-on-smith",
   "page": {
     "headline": "Home-oven pizzas, available on Smith Ave.",
-    "introduction": "Neapolitan-inspired frozen pizzas for quick home dinners. 100% Midwest ingredients. Real food.",
+    "introduction": [
+      {
+        "_key": "8beff0c0cb60",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "6abe4a3906e0",
+            "_type": "span",
+            "marks": [],
+            "text": "Hello, West St. Paul :)\nLocal Effort is excited to announce the first drop of our frozen pizza line. These 100% midwest pizzas are ready to bake, and almost like eating one fresh from one of our Gozneys. "
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
     "seoDescription": "Neapolitan-inspired frozen pizzas made with 100% Midwest ingredients, sold in limited-time drops for pickup, delivery or shipping.",
     "dropOpensAt": "2026-10-13T00:00:00-05:00",
     "dropClosesAt": "2026-10-28T23:59:59-05:00",
     "fulfillmentLabel": "Week of November 2, 2026",
-    "storyHeading": "All Midwest.",
-    "storyText": "Every ingredient in this pizza is grown or produced in the Midwest. Our pizza is agri-cultural. It's also fun and delicious, and a little rough around the edges. ",
+    "storyHeading": "Authentic, Midwest home-oven pizza. ",
+    "storyText": [
+      {
+        "_key": "8d4ff38a9946",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "639fd6d28e9c",
+            "_type": "span",
+            "marks": [],
+            "text": "Every ingredient* in this pizza is grown or produced in the Midwest. Our pizza is agri-cultural. It's also fun and delicious, and a little rough around the edges. "
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "d526092d49d1",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "3244d9a7a079",
+            "_type": "span",
+            "marks": [],
+            "text": "We use tomatoes from local farms, and canned tomato sauce from Dei Fratelli in Ohio. We use Rochdale Mozzarella and Widmer Brick on our cheese pizzas. Our crusts are made primarily with Bolles and Durum from Bakers Field."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "0364f4feec3b",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "4eb59dbe3cd1",
+            "_type": "span",
+            "marks": [],
+            "text": "*alongside our sourdough leavener, we use bobs red yeast, is what it is."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
     "orderHeading": "Stock your freezer.",
-    "orderIntroduction": "Choose your packs. Mix as you like.",
+    "orderIntroduction": [
+      {
+        "_key": "17732b53708d",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "79a209ee4fe2",
+            "_type": "span",
+            "marks": [],
+            "text": "Deep Discounts for Bulk Orders."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
     "pickupHeading": "Fulfillment the week of November 2.",
     "pickupAddress": "608 Smith Ave S, West St. Paul, MN",
-    "oliveOilDescription": "The finishing touch: brush a little olive oil on the crusts after baking. They’re better that way.",
-    "checkoutFootnote": "Secure payment with Square · No account needed",
+    "oliveOilDescription": [
+      {
+        "_key": "d71619100859",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "f2aedca84627",
+            "_type": "span",
+            "marks": [],
+            "text": "drizzle a little olive oil on the crusts after baking. They’re better that way. "
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
+    "checkoutFootnote": "Secure payment with Square | Sign up for future drops",
     "journalHeading": "This is Local Pizza.",
     "returnToOrderLabel": "Fill your freezer ↗",
     "notes": [
@@ -33,6 +121,84 @@
         "_key": "finish",
         "heading": "Don’t forget the crust.",
         "text": "After the bake, brush a little olive oil over the crust. A small step that makes a better pizza."
+      }
+    ],
+    "detailPhoto": {
+      "alt": "A close look at the browned crust through its vacuum seal",
+      "publicId": "pizza-on-smith/crust"
+    },
+    "galleryPhotos": [
+      {
+        "_key": "d2a2fe076156",
+        "alt": "Brussels sprout pizza on a silver platter",
+        "publicId": "pizza-on-smith/brussels"
+      },
+      {
+        "_key": "29f7360cd2e6",
+        "alt": "A slice pulled from a pepperoni pizza on a wooden board",
+        "publicId": "pizza-on-smith/sliced"
+      },
+      {
+        "_key": "6db84f118529",
+        "alt": "Close-up of a blistered pizza crust inside its vacuum seal",
+        "publicId": "pizza-on-smith/crust"
+      },
+      {
+        "_key": "adb14037691a",
+        "alt": "Small cheese and pepperoni pizzas on parchment",
+        "publicId": "pizza-on-smith/cheese"
+      },
+      {
+        "_key": "d9c7f32b1498",
+        "alt": "A person holding a freshly baked pizza beside an outdoor oven",
+        "publicId": "pizza-on-smith/oven"
+      },
+      {
+        "_key": "f4b6d61eb61c",
+        "alt": "Local Pizza lettering printed with hand-carved potato stamps",
+        "publicId": "pizza-on-smith/stamp"
+      },
+      {
+        "_key": "86935617b151",
+        "alt": "A pizza in a hand-stamped Local Pizza box",
+        "publicId": "pizza-on-smith/boxed"
+      },
+      {
+        "_key": "138baffa71b4",
+        "alt": "A vacuum-sealed seasonal pizza topped with corn, herbs and cheese",
+        "publicId": "pizza-on-smith/seasonal"
+      },
+      {
+        "_key": "49433cb3c8bd",
+        "alt": "A blistered, charred pizza crust stacked in a cardboard box on a wooden table",
+        "publicId": "xeqxodaorudcrnqt5mvd"
+      },
+      {
+        "_key": "effd60ffde37",
+        "alt": "A toddler gazing at a slice of margherita pizza in a cardboard box, with sunflowers in the foreground",
+        "publicId": "tv0fdfwwknqr0vxeet9w"
+      }
+    ],
+    "journalPhotos": [
+      {
+        "_key": "9a63b74854ea",
+        "alt": "A slice pulled from a pepperoni pizza on a wooden board",
+        "publicId": "pizza-on-smith/sliced"
+      },
+      {
+        "_key": "66dcc796ac15",
+        "alt": "A person holding a freshly baked pizza beside an outdoor oven",
+        "publicId": "pizza-on-smith/oven"
+      },
+      {
+        "_key": "01356ece53d5",
+        "alt": "Local Pizza lettering printed with hand-carved potato stamps",
+        "publicId": "pizza-on-smith/stamp"
+      },
+      {
+        "_key": "183ee5ea5086",
+        "alt": "A pizza in a hand-stamped Local Pizza box",
+        "publicId": "pizza-on-smith/boxed"
       }
     ]
   },
