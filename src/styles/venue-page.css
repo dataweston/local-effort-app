@@ -61,6 +61,12 @@
   --venue-accent: var(--accent-ochre);
 }
 
+/* Small Events: de Boodt's apple (brand-tokens.css:84), the nearest measured
+   accent to the rose this offer carried on the home tabs. */
+.venue-scope--apple {
+  --venue-accent: var(--accent-apple);
+}
+
 /* ── Hero: the room first ────────────────────────────────────────────────
    The service pages put the order slip above everything, because there the
    product is already understood — people know what a dinner party is. A room
@@ -940,16 +946,6 @@
   margin-top: 0;
 }
 
-/* The kicker renders the venue slug, and "firehouse" is one of the words that
-   exposes an fi-ligature gap in the kicker face once letter-spacing is applied
-   to it. Caught in a screenshot, not in the build. Ligatures buy nothing in a
-   nine-character lowercase label, so they are turned off here rather than the
-   word being respelled around the bug. Scoped to these pages: the rest of the
-   site keeps whatever its own kickers do today. */
-.venue-scope .ht-kicker {
-  font-variant-ligatures: none;
-}
-
 /* ── The gallery ─────────────────────────────────────────────────────────
    Every photograph below the fold, rooms and food in one grid.
 
@@ -1044,7 +1040,7 @@
    twelve-column field and the existing gallery plates move up into the story.
    Below it, the normal venue flow remains intact. */
 @media (min-width: 64.0625rem) {
-  .venue-scope--firehouse .venue-layout {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-layout {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: clamp(0.75rem, 1.4vw, 1.25rem);
@@ -1053,31 +1049,31 @@
     align-items: start;
   }
 
-  .venue-scope--firehouse .venue-hero,
-  .venue-scope--firehouse .venue-gallery,
-  .venue-scope--firehouse .venue-gallery__grid {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-hero,
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery,
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__grid {
     display: contents;
   }
 
-  .venue-scope--firehouse .venue-hero__plate {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-hero__plate {
     grid-column: 1 / span 8;
     grid-row: 1;
     max-width: none;
     align-self: start;
   }
 
-  .venue-scope--firehouse .venue-hero__copy {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-hero__copy {
     grid-column: 9 / -1;
     grid-row: 1;
     align-self: end;
     padding-top: clamp(0.25rem, 1vw, 1rem);
   }
 
-  .venue-scope--firehouse .venue-hero__caption {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-hero__caption {
     margin-top: 0;
   }
 
-  .venue-scope--firehouse .venue-ledger {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-ledger {
     grid-column: 1 / span 7;
     grid-row: 2;
     margin-top: 0;
@@ -1085,158 +1081,176 @@
     align-self: center;
   }
 
-  .venue-scope--firehouse .service-hero {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .service-hero {
     grid-column: 1 / -1;
     grid-row: 5;
     margin: 0;
     padding-top: 0;
   }
 
-  .venue-scope--firehouse .service-hero .ht-slip {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .service-hero .ht-slip {
     width: 100%;
     max-width: none;
   }
 
-  .venue-scope--firehouse .venue-ask {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-ask {
     grid-template-columns: minmax(18rem, 4fr) minmax(0, 7fr);
   }
 
-  .venue-scope--firehouse .venue-gallery__tile {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile {
     width: 100%;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='building'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='building'] {
     grid-column: 8 / -1;
     grid-row: 2;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='kitchen'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='kitchen'] {
     grid-column: 5 / -1;
     grid-row: 3;
     align-self: center;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-tomato'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-tomato'] {
     grid-column: 1 / span 4;
     grid-row: 3;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-melon'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-melon'] {
     grid-column: 1 / span 6;
     grid-row: 4;
     aspect-ratio: 4 / 3;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-corn'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-corn'] {
     grid-column: 7 / span 6;
     grid-row: 4;
     aspect-ratio: 4 / 3;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-pizza'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-pizza'] {
     grid-column: 1 / span 8;
     grid-row: 6;
   }
 
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-harvest'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-harvest'] {
     grid-column: 9 / -1;
     grid-row: 6;
   }
 
-  .venue-scope--firehouse .venue-void {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-void {
     grid-column: 1 / -1;
     grid-row: 8;
     margin-top: 0;
   }
 }
 
+/* Small Events has no room plates, so the two rows the FIREHOUSE gives to its
+   building and kitchen go to food: the tomato sits beside the ledger, and the
+   melon and corn plates close the gap above the calendar. */
+@media (min-width: 64.0625rem) {
+  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-tomato'] {
+    grid-column: 8 / -1;
+    grid-row: 2;
+  }
+
+  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-melon'] {
+    grid-row: 3;
+  }
+
+  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-corn'] {
+    grid-row: 3;
+  }
+}
+
 /* Short, readable booking columns; naturally stacked on smaller screens. */
-.venue-scope--firehouse .venue-book__details {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__details {
   display: grid;
   gap: 1.5rem;
   align-items: start;
 }
-.venue-scope--firehouse .venue-book__event,
-.venue-scope--firehouse .venue-book__contact,
-.venue-scope--firehouse .venue-book__field {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__event,
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__contact,
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__field {
   min-width: 0;
 }
-.venue-scope--firehouse .venue-book__contact > .venue-book__legend {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__contact > .venue-book__legend {
   margin: 0 0 0.75rem;
 }
-.venue-scope--firehouse .venue-book .ht-label,
-.venue-scope--firehouse .venue-book__legend {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book .ht-label,
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__legend {
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.4;
 }
-.venue-scope--firehouse .venue-book__style {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__style {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   padding: 0.65rem 0.5rem;
 }
-.venue-scope--firehouse .venue-book__style-name {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__style-name {
   line-height: 1.35;
 }
-.venue-scope--firehouse .venue-book__style-rate {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__style-rate {
   grid-column: 2;
   line-height: 1.4;
 }
-.venue-scope--firehouse .venue-book__ledger .venue-ledger__row {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__ledger .venue-ledger__row {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: baseline;
 }
-.venue-scope--firehouse .venue-book__ledger .venue-ledger__value {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__ledger .venue-ledger__value {
   text-align: right;
 }
-.venue-scope--firehouse .venue-book__ledger i {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__ledger i {
   display: block;
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-style: normal;
 }
-.venue-scope--firehouse .venue-book__basis {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__basis {
   margin-bottom: 0;
   line-height: 1.55;
 }
-.venue-scope--firehouse .venue-book__contact .ht-row {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__contact .ht-row {
   grid-template-columns: minmax(0, 1fr);
 }
-.venue-scope--firehouse .venue-book__submit .ht-submit {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__submit .ht-submit {
   max-width: 100%;
   white-space: normal;
   line-height: 1.5;
 }
-.venue-scope--firehouse .venue-book__contact .ht-footnote {
+:is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__contact .ht-footnote {
   font-family: var(--font-body);
   line-height: 1.5;
   margin: 0.85rem 0 0;
 }
 @media (min-width: 75rem) {
-  .venue-scope--firehouse .venue-ask {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-ask {
     grid-template-columns: minmax(16rem, 0.85fr) minmax(0, 2fr);
   }
-  .venue-scope--firehouse .venue-book__details {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__details {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: clamp(1.25rem, 2vw, 2rem);
   }
-  .venue-scope--firehouse .venue-book__contact {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-book__contact {
     padding-left: clamp(1.25rem, 2vw, 2rem);
     border-left: 1px solid var(--sp-rule-hair);
   }
 }
 @media (min-width: 64.0625rem) {
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-asparagus'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-asparagus'] {
     grid-column: 1 / span 4;
     grid-row: 7;
   }
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-service'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-service'] {
     grid-column: 5 / span 4;
     grid-row: 7;
   }
-  .venue-scope--firehouse .venue-gallery__tile[data-slot='food-cannoli'] {
+  :is(.venue-scope--firehouse, .venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-cannoli'] {
     grid-column: 9 / -1;
     grid-row: 7;
   }

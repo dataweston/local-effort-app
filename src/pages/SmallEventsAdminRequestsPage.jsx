@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const STATUS_OPTIONS = ['all', 'draft', 'held', 'confirmed', 'expired'];
+const STATUS_OPTIONS = ['all', 'draft', 'held', 'confirmed', 'payment-review', 'expired'];
 const TYPE_OPTIONS = ['all', 'dinner', 'pizza', 'holiday'];
 
 const formatCurrency = (value) => {

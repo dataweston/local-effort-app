@@ -126,8 +126,8 @@ export const PUBLIC_ROUTES = [
   },
   {
     path: '/small-events',
-    title: 'Twin Cities Private Catering | Local Effort Cooperative',
-    description: 'Book private chef catering for dinners, showers, weddings, and office parties in Minneapolis–St. Paul. Seasonal Midwest menus for gatherings of 4–75.',
+    title: 'Private Event Catering — Book a Date | Local Effort Cooperative',
+    description: 'Book a Local Effort chef for your own place: dinner parties, showers, office and holiday parties for 8–200 guests in Minneapolis–St. Paul. Pick an open date and pay the deposit online.',
     prerender: true,
   },
   {

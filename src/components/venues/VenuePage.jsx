@@ -31,7 +31,6 @@ export default function VenuePage({ slug, path, displayName }) {
     return {
       ...venue,
       nickname: displayName,
-      kicker: 'local kitchen —',
       headline: displayName,
       summary:
         'Book Local Kitchen, a private event space from Local Effort Cooperative in Minneapolis–St. Paul. Our room, our kitchen, seasonal menus from Minnesota-grown ingredients.',

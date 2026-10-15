@@ -53,7 +53,6 @@ export default function GuestChefPrompt({ addressLabel }) {
       >
         <div className="venue-guest-sheet__inner">
           <div className="venue-guest-sheet__head">
-            <p className="ht-kicker">in-house —</p>
             <h2 id="guest-chef-heading">Coming soon</h2>
             <button
               type="button"

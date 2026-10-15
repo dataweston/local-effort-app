@@ -41,6 +41,10 @@ const ERROR_COPY = {
   'enquiry-failed': 'We couldn’t send that. Nothing was charged — try again, or email us directly.',
   'invalid-email': 'That email address doesn’t look right.',
   'missing-name': 'We need a name for the booking.',
+  'missing-event-address': 'Where is the event? We need the street address of the place we’ll be cooking.',
+  'missing-fields': 'A detail is missing — check the form and try again.',
+  'invalid-date': 'That date doesn’t look right. Pick it from the calendar.',
+  'invalid-guest-count': 'The guest count is outside what we can quote online. Ask us and we’ll work it out by hand.',
 };
 
 const errorFor = (code) =>
@@ -55,10 +59,12 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
   const [eventTime, setEventTime] = useState('');
   const [notes, setNotes] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
+  const [eventAddress, setEventAddress] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
 
+  const isClient = venue.slug === 'client';
   // The room's own ceiling wins over the pricing cap once it is a real fact.
   const roomMax = useMemo(() => {
     const seats = Math.max(venue.capacity?.seated || 0, venue.capacity?.standing || 0);
@@ -101,6 +107,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
         serviceStyle,
         guestCount,
         contactName,
+        eventAddress: isClient ? eventAddress : undefined,
         contactEmail,
         contactPhone,
         notes,
@@ -138,6 +145,7 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
           eventTime ? `Requested start: ${eventTime} Central time.` : null,
           quote ? `Estimate ${usd(quote.estimateMinCents)}–${usd(quote.estimateMaxCents)}.` : null,
           selectedDate ? `Date ${selectedDate} is not published as open.` : null,
+          isClient && eventAddress ? `Event address: ${eventAddress}.` : null,
           notes,
         ]
           .filter(Boolean)
@@ -261,13 +269,15 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
               {usd(quote.perGuestMinCents)}–{usd(quote.perGuestMaxCents)} × {quote.guestCount}
             </dd>
           </div>
-          <div className="venue-ledger__row">
-            <dt className="venue-ledger__term">venue fee</dt>
-            <dd className="venue-ledger__value">
-              {usd(quote.venueFeeCents)}
-              {venue.venueFeeHours ? <i> — est. {venue.venueFeeHours} hours</i> : null}
-            </dd>
-          </div>
+          {quote.venueFeeCents > 0 && (
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">venue fee</dt>
+              <dd className="venue-ledger__value">
+                {usd(quote.venueFeeCents)}
+                {venue.venueFeeHours ? <i> — est. {venue.venueFeeHours} hours</i> : null}
+              </dd>
+            </div>
+          )}
           <div className="venue-ledger__row venue-book__total">
             <dt className="venue-ledger__term">estimate</dt>
             <dd className="venue-ledger__value">
@@ -301,6 +311,23 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
           <label className="ht-label" htmlFor={`venue-time-${venue.slug}`}>event start time (Central)</label>
           <input id={`venue-time-${venue.slug}`} className="ht-input" type="time" required value={eventTime} onChange={(event) => setEventTime(event.target.value)} />
         </div>
+        {isClient && (
+          <div>
+            <label className="ht-label" htmlFor={`venue-address-${venue.slug}`}>
+              where we’ll cook — street address
+            </label>
+            <input
+              id={`venue-address-${venue.slug}`}
+              className="ht-input"
+              type="text"
+              required
+              minLength={6}
+              autoComplete="street-address"
+              value={eventAddress}
+              onChange={(event) => setEventAddress(event.target.value)}
+            />
+          </div>
+        )}
         <div>
           <label className="ht-label" htmlFor={`venue-name-${venue.slug}`}>your name</label>
           <input

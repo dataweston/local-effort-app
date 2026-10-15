@@ -1,183 +1,112 @@
 // src/pages/SmallEventsPage.jsx
 //
-// /small-events — broken out of the home page's horizontal tab format so the
-// private-event offer has its own indexable URL, canonical, and JSON-LD. The
-// home page now teases this page instead of duplicating it.
+// /small-events — the FIREHOUSE page's instrument without the room. The party is
+// at the client's own place, so "the room" is the calendar of nights we are free
+// to cook, and picking one and paying the deposit is the whole page.
 //
-// Material system: .ht-scope--events in src/styles/home-tabs.css (rose accent,
-// hand-ruled slip). Direction: src/components/fullpage/HOME-TABS-DESIGN.md
-import React, { useMemo, useState } from 'react';
+// Everything below the title is src/components/venues/VenueSheet.jsx, the same
+// body /firehouse and /localkitchen use, so the three booking pages cannot drift
+// apart. This file only supplies the Small Events facts (src/config/smallEventsVenue.js),
+// the head, and the structured data.
+//
+// Availability is the universal calendar's `client` resource
+// (docs/design/UNIVERSAL-CALENDAR.md): open unless a FIREHOUSE or Local Kitchen
+// booking, an owner block or the shared Foodist calendar takes the date. An
+// Airbnb block does not close it, because Airbnb only governs the FIREHOUSE.
+import React, { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import PhotoGrid from '../components/common/PhotoGrid';
-import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
-import { QuickEventBookForm } from '../components/services/slipForms';
-import { Dialog, DialogContent } from '../components/ui/dialog';
+import VenueSheet from '../components/venues/VenueSheet';
+import { SMALL_EVENTS_VENUE } from '../config/smallEventsVenue';
+import { SERVICE_STYLES, MIN_GUESTS, MAX_GUESTS } from '../config/eventPricing';
 import { SITE_NAME, SITE_URL } from '../config/siteMetadata';
 import '../styles/fullpage-demo-theme.css';
 import '../styles/home-tabs.css';
 import '../styles/service-page.css';
+import '../styles/venue-page.css';
 
-// The "Before you book" FAQ and the closing second booking form were removed on
-// client direction (2026-07-26). The page is now hero+form → testimonial →
-// photos, with exactly one ask on it. FAQ_ITEMS went with the section rather
-// than being left orphaned; git history has the six answers if they come back.
+const PATH = '/small-events';
+const TITLE = `Private event catering — book a date | ${SITE_NAME}`;
+const DESCRIPTION =
+  `Book a Local Effort chef for your own place: dinner parties, showers, office and holiday ` +
+  `parties for ${MIN_GUESTS}–${MAX_GUESTS} guests in Minneapolis–St. Paul. Pick an open date and ` +
+  `pay the deposit online. Seasonal menus from Midwest-sourced ingredients.`;
 
 const SmallEventsPage = () => {
-  const [wizardOpen, setWizardOpen] = useState(false);
-
+  // Offers are generated from the same table the server prices from, so the
+  // markup cannot advertise a rate the checkout will not charge.
   const structuredData = useMemo(
-    () => JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'FoodService',
-          '@id': `${SITE_URL}/small-events#service`,
-          name: 'Local Effort Cooperative — Private Event Catering',
-          url: `${SITE_URL}/small-events`,
-          description: 'Private chef catering for intimate dinners, weddings, showers, corporate events, and holiday parties in Minneapolis–St. Paul. Farm-to-table menus with 100% Minnesota-sourced ingredients. 4–75 guests.',
-          provider: { '@id': `${SITE_URL}#business` },
-          areaServed: [
-            { '@type': 'City', name: 'Minneapolis' },
-            { '@type': 'City', name: 'Saint Paul' },
-            { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
-          ],
-          hasOfferCatalog: {
-            '@type': 'OfferCatalog',
-            name: 'Private Catering Services',
-            itemListElement: [
-              {
+    () =>
+      JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'FoodService',
+            '@id': `${SITE_URL}${PATH}#service`,
+            name: 'Local Effort Cooperative — Private Event Catering',
+            url: `${SITE_URL}${PATH}`,
+            description: DESCRIPTION,
+            provider: { '@id': `${SITE_URL}#business` },
+            areaServed: [
+              { '@type': 'City', name: 'Minneapolis' },
+              { '@type': 'City', name: 'Saint Paul' },
+              { '@type': 'Place', name: 'Twin Cities Metro, Minnesota' },
+            ],
+            hasOfferCatalog: {
+              '@type': 'OfferCatalog',
+              name: 'Private event catering by service style',
+              itemListElement: SERVICE_STYLES.map((style) => ({
                 '@type': 'Offer',
                 itemOffered: {
                   '@type': 'Service',
-                  name: 'Private Dinner Party at Your Home',
-                  description: 'In-home private chef dinner party for 4–16 guests. Seasonal, locally sourced multi-course menus tailored to your preferences, dietary needs, and occasion. Includes chef, ingredients, cooking, and service.',
-                  serviceType: 'Private chef dinner',
-                  category: 'Event Catering',
-                },
-                priceSpecification: {
-                  '@type': 'UnitPriceSpecification',
-                  priceCurrency: 'USD',
-                  price: '85',
-                  unitText: 'per guest (estimated starting rate)',
-                },
-              },
-              {
-                '@type': 'Offer',
-                itemOffered: {
-                  '@type': 'Service',
-                  name: 'Wedding & Shower Catering',
-                  description: 'Farm-to-table wedding and shower catering for up to 50 guests. Custom menus, professional staffing, and full service built around Minnesota-grown ingredients. Deposit holds your date.',
-                  serviceType: 'Wedding catering',
-                  category: 'Event Catering',
-                },
-                priceSpecification: {
-                  '@type': 'UnitPriceSpecification',
-                  priceCurrency: 'USD',
-                  price: '45',
-                  unitText: 'per guest (estimated starting rate)',
-                },
-              },
-              {
-                '@type': 'Offer',
-                itemOffered: {
-                  '@type': 'Service',
-                  name: 'Small Events & Holiday Parties',
-                  description: 'Catering for holiday parties, corporate events, birthdays, and gatherings up to 75 guests. Seasonal menus, professional service, and locally sourced ingredients throughout.',
+                  name: style.label,
                   serviceType: 'Event catering',
                   category: 'Event Catering',
                 },
                 priceSpecification: {
-                  '@type': 'UnitPriceSpecification',
+                  '@type': 'PriceSpecification',
                   priceCurrency: 'USD',
-                  price: '45',
-                  unitText: 'per guest (estimated starting rate)',
+                  minPrice: String(style.minCents / 100),
+                  maxPrice: String(style.maxCents / 100),
+                  unitText: 'per guest',
                 },
+              })),
+            },
+            potentialAction: {
+              '@type': 'ReserveAction',
+              name: 'Book a date',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: `${SITE_URL}${PATH}?date={date}`,
+                actionPlatform: ['https://schema.org/DesktopWebPlatform', 'https://schema.org/MobileWebPlatform'],
               },
-            ],
+            },
           },
-        },
-        {
-          '@type': 'WebPage',
-          '@id': `${SITE_URL}/small-events`,
-          name: 'Private Event Catering — Dinners, Weddings & Parties | Local Effort Cooperative',
-          description: 'Book private chef catering for intimate dinners, weddings, showers, and holiday parties in Minneapolis–St. Paul. Locally sourced, seasonal menus for 4–75 guests.',
-          isPartOf: { '@id': `${SITE_URL}#website` },
-          about: { '@id': `${SITE_URL}/small-events#service` },
-        },
-        // The FAQPage entry was removed with the on-page FAQ (2026-07-26):
-        // Google requires the answers to be visible on the page that claims
-        // them, so schema outliving the section would be a violation.
-      ],
-    }),
+          {
+            '@type': 'WebPage',
+            '@id': `${SITE_URL}${PATH}`,
+            name: TITLE,
+            description: DESCRIPTION,
+            isPartOf: { '@id': `${SITE_URL}#website` },
+            about: { '@id': `${SITE_URL}${PATH}#service` },
+          },
+        ],
+      }),
     [],
   );
 
   return (
     <div className="fullpage-demo-scope service-page">
       <Helmet>
-        <link rel="canonical" href={`${SITE_URL}/small-events`} />
+        <title>{TITLE}</title>
+        <meta name="description" content={DESCRIPTION} />
+        <link rel="canonical" href={`${SITE_URL}${PATH}`} />
+        <meta property="og:image" content={SMALL_EVENTS_VENUE.photos.hero} />
         <script type="application/ld+json">{structuredData}</script>
       </Helmet>
 
-      <div className="ht-scope ht-scope--events is-drawn service-page__body">
-        {/* ── The offer + the form, above the fold ── */}
-        <section className="service-hero">
-          <div className="ht-slip">
-            <p className="ht-kicker">small events —</p>
-            <h1 className="ht-heading">Minnesotan food for Minnesotans</h1>
-            <span className="ht-rule-line" aria-hidden="true" />
-            <p className="ht-copy">
-              Dinner parties, showers, office and holiday parties for 4–75 guests. Seasonal
-              menus from 100% Midwest-sourced ingredients, cooked and served at your place.
-            </p>
-            <p className="ht-facts">
-              dinner &amp; pizza parties from $850 · larger events from $1,200
-            </p>
-            <QuickEventBookForm source="small-events-page" ctaLabel="Request this date" />
-            <div className="ht-side-links">
-              <button type="button" className="ht-side-link" onClick={() => setWizardOpen(true)}>
-                Want an instant estimate first? Open the detailed planner
-              </button>
-            </div>
-          </div>
-          <div className="ht-hero-photo ht-hero-photo--events service-hero__photo">
-            <img
-              src="https://res.cloudinary.com/dokyhfvyd/image/upload/c_limit,f_auto,q_auto,w_1600/vjuesai2mxfavpq9d2df"
-              alt="Private event catering by Local Effort Cooperative in Minneapolis"
-              loading="eager"
-            />
-          </div>
-        </section>
-
-        {/* ── Proof ── */}
-        <section className="service-quote">
-          <figure className="ht-quote m-0">
-            <blockquote className="m-0">&ldquo;Local Effort is truly top tier.&rdquo;</blockquote>
-            <figcaption className="ht-quote-attr">
-              —{' '}
-              <a href="https://www.soupsistersmn.com/" target="_blank" rel="noreferrer">
-                Alyssa Andes
-              </a>
-            </figcaption>
-          </figure>
-        </section>
-
-        {/* ── Photos ── */}
-        <section className="service-gallery">
-          <PhotoGrid
-            tags={['event', 'dinner']}
-            perPage={12}
-            layout="masonry"
-            className="small-events-gallery"
-          />
-        </section>
+      <div className="ht-scope is-drawn service-page__body">
+        <VenueSheet venue={SMALL_EVENTS_VENUE} headingLevel={1} />
       </div>
-
-      <Dialog open={wizardOpen} onOpenChange={setWizardOpen}>
-        <DialogContent className="fullpage-demo-scope small-events-dialog max-h-[90vh] overflow-y-auto sm:max-w-[680px]">
-          <SmallEventsWizard initialType="dinner" onClose={() => setWizardOpen(false)} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

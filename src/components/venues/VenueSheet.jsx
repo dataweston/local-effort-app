@@ -34,6 +34,8 @@ import VenueCalendar from './VenueCalendar';
 import VenueBooking from './VenueBooking';
 import GuestChefPrompt from './GuestChefPrompt';
 import { SHARED_PHOTOS, missingFacts } from '../../config/venues';
+import { SERVICE_STYLES, MIN_GUESTS, MAX_GUESTS, usd as usdWhole } from '../../config/eventPricing';
+import { CONTACT_EMAIL } from '../../config/siteMetadata';
 
 const CLOUD_NAME = import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd';
 
@@ -181,13 +183,84 @@ const FIREHOUSE_GALLERY_SLOTS = [
  */
 const usableDateParam = (raw) => {
   if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
   if (raw < today) return null;
   // Reject a real-looking string that is not a real day (2026-02-31).
   const parsed = new Date(`${raw}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== raw) return null;
   return raw;
 };
+
+/**
+ * What Square's redirect actually proves: nothing. `?deposit=success` is a URL
+ * anyone can type, so the banner asks the server whether the deposit landed,
+ * using the claim token that came back in the redirect. Until the webhook has
+ * been applied the honest answer is "processing", and it says so rather than
+ * claiming a hold that may not exist.
+ */
+function PaidBanner({ slug, nickname, holdId, token }) {
+  const [state, setState] = useState(token ? 'processing' : 'unknown');
+
+  useEffect(() => {
+    if (!token) return undefined;
+    let cancelled = false;
+    let timer = null;
+    let attempts = 0;
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const res = await fetch(
+          `/api/venues/${encodeURIComponent(slug)}/book/${encodeURIComponent(holdId)}/status?token=${encodeURIComponent(token)}`,
+          { cache: 'no-store' },
+        );
+        if (cancelled) return;
+        if (res.status === 404) {
+          setState('unknown');
+          return;
+        }
+        const data = res.ok ? await res.json() : null;
+        if (cancelled) return;
+        if (data?.state && data.state !== 'processing') {
+          setState(data.state);
+          return;
+        }
+      } catch {
+        // Transient: fall through and try again.
+      }
+      if (attempts < 20) timer = setTimeout(poll, 3000);
+      else if (!cancelled) setState('late');
+    };
+    poll();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [slug, holdId, token]);
+
+  const copy = {
+    processing: 'Thanks. We are waiting for Square to confirm your deposit, which usually takes a few seconds.',
+    confirmed: `Deposit received. ${nickname} is held in your name. A confirmation is on its way by email, and we will be in touch about the menu.`,
+    review: `Your payment went through, but we could not hold the date automatically. We are reviewing it by hand and will email you; nothing further is needed from you.`,
+    expired: `This date was released before the deposit arrived. If you were charged, email ${CONTACT_EMAIL} and we will sort it out.`,
+    late: `Square has not confirmed your deposit yet. If you were charged, you do not need to pay again; email ${CONTACT_EMAIL} and we will check.`,
+    unknown: `We could not match this page to a booking. If you paid a deposit, email ${CONTACT_EMAIL} and we will check.`,
+  }[state];
+
+  return (
+    <p className="venue-book__paid" role="status">
+      {copy}
+    </p>
+  );
+}
+
+PaidBanner.propTypes = {
+  slug: PropTypes.string.isRequired,
+  nickname: PropTypes.string.isRequired,
+  holdId: PropTypes.string.isRequired,
+  token: PropTypes.string,
+};
+
+PaidBanner.defaultProps = { token: null };
 
 export default function VenueSheet({ venue, headingLevel, showWordmark }) {
   const [searchParams] = useSearchParams();
@@ -203,6 +276,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
 
   // Square sends the payer back here after the card step.
   const paidHold = searchParams.get('deposit') === 'success' ? searchParams.get('hold') : null;
+  const paidToken = paidHold ? searchParams.get('token') : null;
   useEffect(() => {
     if (paidHold) setSelectedDate(null);
   }, [paidHold]);
@@ -210,10 +284,17 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
   const Heading = headingLevel === 1 ? 'h1' : 'h2';
   const capacity = capacityLine(venue.capacity);
   const roomFee = usd(venue.roomFeeCents);
-  const gaps = missingFacts(venue);
+  const isClient = venue.slug === 'client';
+  const gaps = isClient ? [] : missingFacts(venue);
+  // A room with no plates of its own (the client's kitchen is not ours to
+  // photograph; Local Kitchen's photographs are not supplied yet) is composed
+  // from food alone, in the slots the FIREHOUSE gives to food.
+  const foodOnly = isClient || !venue.photos?.plates?.length;
   // Rooms first, then food. Order is the composition: see the note on
   // `tile` in venues.json — each band of spans sums to six.
-  const gallery = [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || []), ...(venue.photos?.food || [])];
+  const gallery = foodOnly
+    ? [...(SHARED_PHOTOS.food || []), ...(venue.photos?.food || [])]
+    : [...(venue.photos?.plates || []), ...(SHARED_PHOTOS.food || []), ...(venue.photos?.food || [])];
 
   return (
     <div className={`venue-scope venue-scope--${venue.accent} venue-scope--${venue.slug}`}>
@@ -234,24 +315,18 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
         </p>
       )}
 
-      {paidHold && (
-        <p className="venue-book__paid" role="status">
-          Deposit received — {venue.nickname} is held in your name. A confirmation is on its way by
-          email, and we’ll be in touch about the menu.
-        </p>
-      )}
+      {paidHold && <PaidBanner slug={venue.slug} nickname={venue.nickname} holdId={paidHold} token={paidToken} />}
 
       <div className="venue-layout">
       {/* ── 1. The room, on the sheet ── */}
       <section className="venue-hero">
         <Plate
           src={venue.photos?.hero}
-          alt={`${venue.nickname} — event space by Local Effort Cooperative`}
+          alt={venue.photos?.heroAlt || `${venue.nickname} — event space by Local Effort Cooperative`}
           eager={headingLevel === 1}
         />
         <div className="venue-hero__copy">
           <div className="venue-hero__caption">
-            <p className="ht-kicker">{venue.kicker}</p>
             {capacity && <p className="ht-facts">{capacity}</p>}
           </div>
           <Heading className="venue-hero__name">
@@ -271,7 +346,6 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
 
       {/* ── 2. The ledger ── */}
       <section className="venue-ledger specimen-reveal" ref={ledger.ref} data-finish={ledger.finish}>
-        <p className="ht-kicker">the room —</p>
         <h2>What you get</h2>
         <dl className="venue-ledger__rows">
           {capacity && (
@@ -306,9 +380,26 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
           <div className="venue-ledger__row">
             <dt className="venue-ledger__term">food &amp; service</dt>
             <dd className="venue-ledger__value">
-              quoted per guest · $45–$250 depending on how it’s served
+              quoted per guest · {usdWhole(Math.min(...SERVICE_STYLES.map((s) => s.minCents)))}–
+              {usdWhole(Math.max(...SERVICE_STYLES.map((s) => s.maxCents)))} depending on how it’s served
             </dd>
           </div>
+          {isClient && (
+            <>
+              <div className="venue-ledger__row">
+                <dt className="venue-ledger__term">party size</dt>
+                <dd className="venue-ledger__value">
+                  {MIN_GUESTS}–{MAX_GUESTS} guests
+                </dd>
+              </div>
+              <div className="venue-ledger__row">
+                <dt className="venue-ledger__term">where</dt>
+                <dd className="venue-ledger__value">
+                  at your place — we bring the kitchen, cook, serve and clear
+                </dd>
+              </div>
+            </>
+          )}
           {venue.amenities?.length > 0 && (
             <div className="venue-ledger__row">
               <dt className="venue-ledger__term">in the room</dt>
@@ -321,8 +412,9 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
       {/* ── 3. The ask ── */}
       <section className="service-hero" aria-labelledby={`book-${venue.slug}`}>
         <div className="ht-slip">
-          <p className="ht-kicker">the date —</p>
-          <h2 id={`book-${venue.slug}`}>Pick a night at {venue.nickname}</h2>
+          <h2 id={`book-${venue.slug}`}>
+            {isClient ? 'Pick a date for your event' : `Pick a night at ${venue.nickname}`}
+          </h2>
           <span className="ht-rule-line" aria-hidden="true" />
 
           {/* Grid rather than stack, above 62rem. The brief for this page is
@@ -381,7 +473,13 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
               <GalleryTile
                 key={item.publicId || item.src}
                 item={item}
-                slot={venue.slug === 'firehouse' ? (item.slot || FIREHOUSE_GALLERY_SLOTS[index]) : null}
+                slot={
+                  venue.slug === 'firehouse'
+                    ? (item.slot || FIREHOUSE_GALLERY_SLOTS[index])
+                    : foodOnly
+                      ? FIREHOUSE_GALLERY_SLOTS[index + 2]
+                      : null
+                }
               />
             ))}
           </div>
@@ -434,7 +532,6 @@ VenueSheet.propTypes = {
     slug: PropTypes.string.isRequired,
     nickname: PropTypes.string.isRequired,
     accent: PropTypes.string,
-    kicker: PropTypes.string,
     headline: PropTypes.string,
     summary: PropTypes.string,
     address: PropTypes.object,

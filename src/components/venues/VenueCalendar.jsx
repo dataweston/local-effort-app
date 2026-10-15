@@ -26,7 +26,16 @@ const MONTH_NAMES = [
 
 const pad = (n) => String(n).padStart(2, '0');
 const isoOf = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
-const todayIso = () => new Date().toISOString().slice(0, 10);
+// The business day, not the visitor's and not UTC's. After 7pm Central a UTC
+// "today" is already tomorrow, which offered (and then refused) a date that was
+// still bookable, and hid today's.
+const todayIso = () =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 
 const daysInMonth = (year, month) => new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 const firstWeekday = (year, month) => new Date(Date.UTC(year, month, 1)).getUTCDay();
@@ -54,8 +63,8 @@ export default function VenueCalendar({
   onSelectDate,
 }) {
   const start = useMemo(() => {
-    const now = new Date();
-    return { year: now.getUTCFullYear(), month: now.getUTCMonth() };
+    const [year, month] = todayIso().split('-').map(Number);
+    return { year, month: month - 1 };
   }, []);
 
   // Open on the month of a date the visitor arrived with (the ReserveAction
