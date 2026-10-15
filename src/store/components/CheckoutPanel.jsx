@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSquareCard } from '../../hooks/useSquareCard';
-import { useSquareExpressPay } from '../../hooks/useSquareExpressPay';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 import { trackEvent } from '../../lib/trackEvent';
 import { capturePageErrors, reportCheckoutFailure } from '../../lib/checkoutFailure';
@@ -385,39 +384,6 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     verifyBuyer,
   ]);
 
-  const handleExpressToken = useCallback(async (token) => {
-    if (status === 'submitting') return;
-    setError('');
-    if (!canSubmit(false)) {
-      setError('Add your contact and fulfillment details before using express pay.');
-      return;
-    }
-
-    setStatus('submitting');
-    const checkoutAttemptId = resolveCheckoutAttemptId();
-    try {
-      trackEvent('express_pay.used', { store, sessionId: checkoutAttemptId, amountCents });
-      await submitCheckout({ token, verificationToken: undefined, method: 'express' });
-    } catch (err) {
-      reportCheckoutFailure({ store, sessionId: checkoutAttemptId, stage: 'express', error: err, amountCents });
-      clearCheckoutAttempt();
-      setStatus('error');
-      setError(err?.message || 'Unable to complete purchase.');
-    }
-  }, [amountCents, canSubmit, clearCheckoutAttempt, resolveCheckoutAttemptId, status, store, submitCheckout]);
-
-  const { googlePayAvailable, applePayAvailable, error: expressError } = useSquareExpressPay({
-    amountCents,
-    containerId: '#store-express-pay',
-    enabled,
-    onToken: handleExpressToken,
-  });
-  const expressPayAvailable = googlePayAvailable || applePayAvailable;
-
-  useEffect(() => {
-    if (expressPayAvailable) trackEvent('express_pay.shown', { store });
-  }, [expressPayAvailable, store]);
-
   useEffect(() => {
     if (!enabled) return undefined;
     return capturePageErrors({ store });
@@ -763,12 +729,6 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
             <div className="le-checkout-section">
               <div className="le-checkout-section-title">Payment</div>
               <div className="le-checkout-payment">
-                <div
-                  id="store-express-pay"
-                  className="le-checkout-express"
-                  aria-label="Express payment options"
-                />
-                {expressPayAvailable && <div className="le-checkout-express-divider">or</div>}
                 <div className="le-checkout-card-container">
                   <div id="store-card-container" />
                   {(loadingScript || (!cardLoaded && !cardError)) && (
@@ -784,8 +744,8 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
               </div>
             </div>
 
-            {(error || cardError || expressError) && (
-              <div className="le-checkout-error">{error || cardError || expressError}</div>
+            {(error || cardError) && (
+              <div className="le-checkout-error">{error || cardError}</div>
             )}
 
             <button

@@ -44,6 +44,39 @@ const waitForSquare = (signal) =>
     }, 150);
   });
 
+const GOOGLE_PAY_SCRIPT_URL = 'https://pay.google.com/gp/p/js/pay.js';
+const GOOGLE_PAY_SCRIPT_TIMEOUT_MS = 6000;
+let googlePayScriptReady = null;
+
+// Square's googlePay() injects Google's pay.js itself and, when the script is
+// blocked (privacy browsers, content blockers, in-app webviews), retries in a
+// tight loop: ~180 failed requests/second, hundreds of console errors, and a
+// starved main thread that makes card tokenization time out. Only hand the
+// wallet to Square once Google's script has demonstrably loaded.
+const ensureGooglePayScript = () => {
+  if (window.google?.payments?.api) return Promise.resolve();
+  if (googlePayScriptReady) return googlePayScriptReady;
+  googlePayScriptReady = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const fail = (message) => {
+      clearTimeout(timer);
+      script.remove();
+      googlePayScriptReady = null;
+      reject(new Error(message));
+    };
+    const timer = setTimeout(() => fail('Google Pay script timed out'), GOOGLE_PAY_SCRIPT_TIMEOUT_MS);
+    script.src = GOOGLE_PAY_SCRIPT_URL;
+    script.async = true;
+    script.onload = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    script.onerror = () => fail('Google Pay script blocked');
+    document.head.appendChild(script);
+  });
+  return googlePayScriptReady;
+};
+
 const buildWalletError = (walletName, tokenResult) => {
   const first = tokenResult?.errors?.[0];
   return new Error(first?.message || first?.code || tokenResult?.status || `${walletName} was not approved.`);
@@ -57,6 +90,12 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
 
   const googlePayRef = useRef(null);
   const applePayRef = useRef(null);
+  // Contact/status updates must not destroy an active wallet interaction.
+  const onTokenRef = useRef(onToken);
+
+  useEffect(() => {
+    onTokenRef.current = onToken;
+  }, [onToken]);
 
   const destroy = useCallback(() => {
     [googlePayRef, applePayRef].forEach((ref) => {
@@ -79,7 +118,7 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
       if (tokenResult?.status !== 'OK' || !tokenResult?.token) {
         throw buildWalletError(walletName, tokenResult);
       }
-      await onToken?.(tokenResult.token, tokenResult);
+      await onTokenRef.current?.(tokenResult.token, tokenResult);
     };
 
     const mountWalletButton = async ({ walletName, create, attachOptions, ref, setAvailable }) => {
@@ -89,10 +128,19 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
       if (!container) throw new Error('Express pay container not found');
 
       const wallet = await create();
+      if (signal.aborted) {
+        wallet.destroy?.();
+        return;
+      }
       const buttonHost = document.createElement('div');
       buttonHost.className = 'le-checkout-wallet-button';
       container.appendChild(buttonHost);
       await wallet.attach(buttonHost, attachOptions);
+      if (signal.aborted) {
+        wallet.destroy?.();
+        buttonHost.remove();
+        return;
+      }
       ref.current = wallet;
       buttonHost.onclick = async () => {
         try {
@@ -132,6 +180,8 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
         container.innerHTML = '';
 
         try {
+          await ensureGooglePayScript();
+          if (signal.aborted) return;
           await mountWalletButton({
             walletName: 'Google Pay',
             create: () => payments.googlePay(paymentRequest),
@@ -143,7 +193,9 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
           // Wallet unavailable in this browser or seller configuration.
         }
 
+        if (signal.aborted) return;
         try {
+          if (!window.ApplePaySession) throw new Error('Apple Pay unsupported');
           await mountWalletButton({
             walletName: 'Apple Pay',
             create: () => payments.applePay(paymentRequest),
@@ -166,7 +218,7 @@ export function useSquareExpressPay({ amountCents, containerId, enabled, onToken
       controller.abort();
       destroy();
     };
-  }, [enabled, amountCents, containerId, onToken, destroy]);
+  }, [enabled, amountCents, containerId, destroy]);
 
   return { googlePayAvailable, applePayAvailable, loading, error };
 }
