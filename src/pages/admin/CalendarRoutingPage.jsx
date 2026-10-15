@@ -13,6 +13,7 @@ import {
   todayChicago,
   toSaveGraph,
 } from '../../components/calendarRouting/routingRules';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import './calendar-routing.css';
 
 const API = '/api/calendar-routing';
@@ -66,8 +67,15 @@ async function callApi(path, token, { method = 'GET', body, signal } = {}) {
 }
 
 export default function CalendarRoutingPage() {
+  // A signed-in admin needs no token. The pasted token stays as the fallback
+  // for a browser that is not signed in.
+  const { accessToken, isAdmin: signedInAdmin } = useSupabaseAuth();
   const [token, setToken] = useState('');
   const [tokenDraft, setTokenDraft] = useState('');
+  const credential = (signedInAdmin && accessToken) || token;
+  const credentialRef = useRef('');
+  credentialRef.current = credential;
+  const hasCredential = Boolean(credential);
   const [loadState, setLoadState] = useState('idle'); // idle | loading | ready | error
   const [loadError, setLoadError] = useState('');
   const [saved, setSaved] = useState(null);
@@ -120,17 +128,19 @@ export default function CalendarRoutingPage() {
     }
   }, []);
 
+  // Keyed on having a credential, not on its value: Supabase refreshes the
+  // access token hourly and a reload would discard unsaved edits.
   useEffect(() => {
-    if (token) load(token);
+    if (hasCredential) load(credentialRef.current);
     else setLoadState('idle');
-  }, [token, load]);
+  }, [hasCredential, load]);
 
   const submitToken = (event) => {
     event.preventDefault();
     const next = tokenDraft.trim();
     setStoredAdminToken(next);
-    if (next === token && next) load(next);
     setToken(next);
+    if (hasCredential && next) load(signedInAdmin && accessToken ? accessToken : next);
   };
 
   // ── Draft edits ─────────────────────────────────────────────────────────
@@ -179,7 +189,7 @@ export default function CalendarRoutingPage() {
     setSaving(true);
     setSaveError('');
     try {
-      const data = await callApi('/graph', token, { method: 'PUT', body: toSaveGraph(draft) });
+      const data = await callApi('/graph', credentialRef.current, { method: 'PUT', body: toSaveGraph(draft) });
       const graph = normalizeGraph(data.graph);
       // Keep the feeds' live status the server just reported; PUT does not carry it.
       const withFeeds = { ...graph, nodes: graph.nodes.map((node) => (node.kind === 'feed' ? { ...node, config: liveFeeds[node.id] || node.config } : node)) };
@@ -204,13 +214,13 @@ export default function CalendarRoutingPage() {
   savedRef.current = saved;
 
   const requestPreview = useCallback(async (graph, signal) => {
-    const data = await callApi('/preview', token, {
+    const data = await callApi('/preview', credentialRef.current, {
       method: 'POST',
       signal,
       body: { resource, graph: toSaveGraph(graph), from, to: addDaysIso(from, PREVIEW_DAYS - 1) },
     });
     return Array.isArray(data.days) ? data.days : [];
-  }, [token, resource, from]);
+  }, [resource, from]);
 
   // The saved graph's preview is the baseline for "N dates change".
   useEffect(() => {
@@ -251,7 +261,7 @@ export default function CalendarRoutingPage() {
     };
   }, [loadState, resource, draftKey, requestPreview]);
 
-  const hasToken = Boolean(token);
+  const hasToken = hasCredential;
   const bannerError = loadState === 'error' ? loadError : '';
 
   return (
@@ -284,7 +294,7 @@ export default function CalendarRoutingPage() {
         </form>
       </header>
 
-      {!hasToken ? <p className="cr-banner">Enter the admin token to load the routing.</p> : null}
+      {!hasToken ? <p className="cr-banner">Sign in as an admin, or enter the admin token, to load the routing.</p> : null}
       {bannerError ? <p className="cr-banner cr-banner--error" role="alert">{bannerError}</p> : null}
       {loadState === 'loading' ? <p className="cr-banner" role="status">Loading the routing…</p> : null}
 

@@ -9,16 +9,21 @@ const { loadGraph, loadFacts, validateGraph, resourceSlugs, resourceLabel } = re
 const { resolveResourceDays, kindOf } = require('../calendar/engine');
 const { todayChicago, addDaysIso, isIsoDate } = require('../calendar/dates');
 const google = require('../calendar/google');
+const { createAdminVerifier } = require('../utils/adminVerifier');
 
 const MAX_PREVIEW_DAYS = 400;
 
-function createCalendarRouter({ logger } = {}) {
+function createCalendarRouter({ logger, verifyAdminRequest = createAdminVerifier() } = {}) {
   const router = express.Router();
 
-  router.use((req, res, next) => {
+  // The admin token still works; a signed-in Supabase admin works too, so the
+  // owner does not have to paste a secret into the page.
+  router.use(async (req, res, next) => {
     res.set('Cache-Control', 'no-store');
     res.set('X-Robots-Tag', 'noindex');
-    if (!venueInternals.isAdmin(req)) return res.status(401).json({ error: 'unauthorized' });
+    if (!venueInternals.isAdmin(req) && !(await verifyAdminRequest(req))) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
     if (!prisma) return res.status(503).json({ error: 'database-unavailable' });
     return next();
   });

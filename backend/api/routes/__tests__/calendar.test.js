@@ -68,6 +68,26 @@ describe('calendar routing admin API', () => {
     expect(bad.status).toBe(401);
   });
 
+  it('lets a signed-in admin in without the token, and nobody else', async () => {
+    const express = require('express');
+    const { createCalendarRouter } = require('../calendar');
+    const app = express();
+    app.use('/s', createCalendarRouter({
+      logger: { warn() {}, error() {}, info() {} },
+      verifyAdminRequest: async (req) => (req.headers.authorization === 'Bearer session-jwt' ? { email: 'owner@example.com' } : null),
+    }));
+    const s = await new Promise((resolve) => {
+      const instance = app.listen(0, () => resolve(instance));
+    });
+    try {
+      const url = `http://127.0.0.1:${s.address().port}/s/graph`;
+      expect((await fetch(url, { headers: { authorization: 'Bearer session-jwt' } })).status).toBe(200);
+      expect((await fetch(url, { headers: { authorization: 'Bearer other' } })).status).toBe(401);
+    } finally {
+      await new Promise((resolve) => s.close(resolve));
+    }
+  });
+
   it('serves the default graph before anything is saved', async () => {
     const body = await (await call('/graph')).json();
     const ids = body.graph.nodes.map((node) => node.id);
