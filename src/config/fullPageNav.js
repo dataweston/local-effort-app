@@ -1,5 +1,3 @@
-import chefCooperativePageData from '../store/data/generatedChefCooperativePageData.json';
-
 // Home page panels + header navigation.
 //
 // FULLPAGE_PAGES drives the horizontal scroll-snap container on `/`. Its order
@@ -63,13 +61,6 @@ export const HEADER_NAV = [
     description: 'Book FIREHOUSE, a retired firehouse event space in St. Paul',
     href: '/firehouse',
     accent: 'var(--accent-poppy)',
-  },
-  {
-    id: 'chef-cooperative',
-    label: 'For Chefs',
-    description: chefCooperativePageData.page.metaDescription,
-    href: '/chef-cooperative',
-    accent: 'var(--brand-olive)',
   },
   {
     id: 'about',
