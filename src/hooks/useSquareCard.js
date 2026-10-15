@@ -143,6 +143,22 @@ const ensureSquareSdkScript = (sdkUrl, isSandbox) => {
   return promise;
 };
 
+// Square's verifyBuyer rejects with an Error whose message is a JSON array of
+// {code, detail, category}; showing that verbatim leaves customers with raw JSON.
+const humanizeVerifyError = (err) => {
+  let list = null;
+  if (Array.isArray(err)) list = err;
+  else if (typeof err?.message === 'string' && err.message.trim().startsWith('[')) {
+    try { list = JSON.parse(err.message); } catch (_) { list = null; }
+  }
+  const first = Array.isArray(list) ? list[0] : null;
+  if (!first) return err instanceof Error ? err : new Error(String(err?.message || 'Buyer verification failed.'));
+  if (first.category === 'PAYMENT_METHOD_ERROR') {
+    return new Error('Your card could not be verified. Check the card number, expiry, CVV and ZIP, or try another card. You have not been charged.');
+  }
+  return new Error(first.detail || first.message || 'Buyer verification failed. You have not been charged.');
+};
+
 /**
  * useSquareCard - shared hook to load Square Web Payments SDK, initialize card, and provide tokenize helper.
  * @param {string} containerId - DOM selector id (e.g. '#cf-card-container') to attach card to.
@@ -529,7 +545,7 @@ export function useSquareCard(containerId, enabled, deps = []) {
       return verificationToken;
     } catch (err) {
       lastTokenRef.current = { token: null, cardInstanceId: 0, at: 0 };
-      throw err;
+      throw humanizeVerifyError(err);
     }
   };
 
