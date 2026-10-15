@@ -7,17 +7,21 @@ import { createRequire } from 'node:module';
 // a test quietly opening the live database.
 const require = createRequire(import.meta.url);
 const { __internals } = require('../venues.js');
-const { loadVenueCalendar, publicVenue } = __internals;
+const { loadResourceCalendar } = require('../../calendar/service');
+const { publicVenue } = __internals;
 
-/** Minimal stand-in for the three queries loadVenueCalendar issues. */
-const fakeDb = ({ slots = [], blocks = [], holds = [] }) => ({
+/** Minimal stand-in for the queries the calendar reader issues. */
+const fakeDb = ({ slots = [], blocks = [], holds = [], feeds = [] }) => ({
   smallEventAvailability: { findMany: async () => slots },
   venueBlock: { findMany: async () => blocks },
   smallEventHold: { findMany: async () => holds },
+  calendarNode: { findMany: async () => [] },
+  calendarRoute: { findMany: async () => [] },
+  venueCalendarFeed: { findMany: async () => feeds },
 });
 
 const load = (data) =>
-  loadVenueCalendar({ slug: 'firehouse', from: '2026-10-01', to: '2026-10-31', db: fakeDb(data) });
+  loadResourceCalendar({ resource: 'firehouse', from: '2026-10-01', to: '2026-10-31', db: fakeDb(data) });
 
 const statusOn = (days, date) => days.find((day) => day.date === date)?.status;
 
@@ -63,7 +67,8 @@ describe('venue availability precedence', () => {
     // to Airbnb, whatever our own grid says.
     const days = await load({
       slots: [{ id: 's1', date: '2026-10-05', type: 'dinner', venue: 'firehouse', status: 'open' }],
-      blocks: [{ date: '2026-10-05', venue: 'firehouse', source: 'Airbnb', summary: 'Reserved' }],
+      blocks: [{ date: '2026-10-05', venue: 'firehouse', feedId: 'f1', source: 'Airbnb', summary: 'Reserved' }],
+      feeds: [{ id: 'f1', venue: 'firehouse', label: 'Airbnb', url: 'https://example.test/a.ics', active: true }],
     });
     expect(statusOn(days, '2026-10-05')).toBe('booked');
     expect(days.find((day) => day.date === '2026-10-05').source).toBe('Airbnb');

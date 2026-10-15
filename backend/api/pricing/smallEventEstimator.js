@@ -52,10 +52,16 @@ const SERVICE_STYLES = RULES.filter(
 
 const SERVICE_STYLE_BY_KEY = new Map(SERVICE_STYLES.map((style) => [style.key, style]));
 
-/** Venue fees, keyed by the venues.json slug rather than the rule's scope. */
+/**
+ * Venue fees, keyed by the venues.json slug rather than the rule's scope.
+ *
+ * `client` is a Small Event at the customer's own address: there is no room to
+ * rent, so the fee is zero and the estimate is food and service alone.
+ */
 const VENUE_FEE_CENTS = {
   foodist: ruleAmount('small_event.venue.foodist'),
   firehouse: ruleAmount('small_event.venue.firehouse'),
+  client: 0,
 };
 
 const DEPOSIT_RULE = RULES.find((rule) => rule.ruleKey === 'small_event.deposit');

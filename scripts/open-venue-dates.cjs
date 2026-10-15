@@ -16,7 +16,7 @@
  * re-running is safe. It will re-open a date an admin had CLOSED, though, so
  * prefer a narrow range over blanket re-runs. Existing holds and imported
  * feed blocks are untouched and still outrank an open row when the calendar is
- * assembled (see loadVenueCalendar in backend/api/routes/venues.js).
+ * assembled (see loadResourceCalendar in backend/api/calendar/service.js).
  */
 
 const path = require('path');

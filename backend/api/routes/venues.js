@@ -11,10 +11,32 @@
 
 const express = require('express');
 const { prisma } = require('../utils/prisma');
-const { buildCalendar, parseCalendar, groupIntoRanges, addDaysIso } = require('../utils/ical');
+const { parseCalendar, addDaysIso } = require('../utils/ical');
 const crypto = require('crypto');
 const { estimateVenueEvent } = require('../pricing/smallEventEstimator');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
+const { claimDate, loadResourceCalendar, buildOutboundIcs } = require('../calendar/service');
+const { todayChicago } = require('../calendar/dates');
+const { CLIENT_RESOURCE } = require('../calendar/graph');
+const { retryFailedMirrors } = require('../calendar/mirror');
+const { readBusyEvents } = require('../calendar/google');
+
+// A feed whose "url" is `google-calendar:<calendarId>` is read through the
+// service account instead of fetched, so a calendar shared with us (Steve
+// Ray's) needs no secret address. Stored in the same column, synced the same way.
+const GOOGLE_FEED_PREFIX = 'google-calendar:';
+
+// Small Events is not a room, but it is sold through the same booking engine.
+// Its facts live here only because there is nowhere else for a pseudo-venue.
+const CLIENT_VENUE = {
+  slug: CLIENT_RESOURCE,
+  nickname: 'Small Events',
+  capacity: null,
+};
+
+// Where the buyer lands after Square. The Local Kitchen's public page is
+// /localkitchen (its slug, `foodist`, predates the rename).
+const PAGE_PATH = { client: '/small-events', firehouse: '/firehouse', foodist: '/localkitchen' };
 
 // Static relative require, not path.join: @vercel/node traces static requires
 // and would miss a computed path. vercel.json includeFiles names it too, as a
@@ -38,7 +60,10 @@ const DEFAULT_HORIZON_DAYS = 365;
 const FEED_TIMEOUT_MS = 10000;
 const FEED_MAX_BYTES = 4 * 1024 * 1024;
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+// Business days are America/Chicago days, never UTC: after 7pm Central a UTC
+// "today" is already tomorrow and would close the date the owner is still
+// selling.
+const todayIso = () => todayChicago();
 
 const isIsoDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
 
@@ -94,11 +119,6 @@ const newToken = () =>
 // events flow (smallEvents.js:8) so a visitor who books a room and a visitor
 // who books a dinner get the same promise.
 const HOLD_WINDOW_HOURS = 24;
-
-// Deposits are only taken against a date an operator has actually opened. An
-// Deposits are only taken against a date an operator has actually opened. An
-// `unmanaged` date — no row in the availability table — is not a promise, so
-// it routes to the enquiry form instead of to a payment link. See VENUES.md.
 
 const isEmail = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || ''));
 
@@ -189,66 +209,9 @@ const publicVenue = (venue) => {
   };
 };
 
-/**
- * Merge every source of truth for a venue's calendar into one status per day.
- *
- * Precedence, strongest first:
- *   booked   a confirmed hold, or an imported block from an external feed
- *   held     an unexpired 24h hold against an estimate
- *   blocked  an admin-closed date
- *   open     an admin-opened date
- * Days with no row at all are absent from the map; the UI renders those as
- * "enquire" rather than guessing, because an unmanaged date is not a promise.
- */
-async function loadVenueCalendar({ slug, from, to, db = prisma }) {
-  const [slots, blocks, holds] = await Promise.all([
-    db.smallEventAvailability.findMany({
-      where: { venue: slug, date: { gte: from, lte: to } },
-    }),
-    db.venueBlock.findMany({
-      where: { venue: slug, date: { gte: from, lte: to } },
-    }),
-    db.smallEventHold.findMany({
-      where: {
-        OR: [{ status: 'confirmed' }, { status: 'held', holdUntil: { gt: new Date() } }],
-      },
-      include: { slot: true },
-    }),
-  ]);
-
-  const days = new Map();
-  const put = (date, status, extra = {}) => {
-    days.set(date, { date, status, ...extra });
-  };
-
-  for (const slot of slots) {
-    put(slot.date, slot.status === 'blocked' ? 'blocked' : 'open', {
-      types: [slot.type],
-      notes: slot.notes || '',
-      source: slot.source,
-    });
-  }
-
-  // Holds outrank admin status: a date can be open in the grid and still be
-  // spoken for by someone mid-checkout.
-  for (const hold of holds) {
-    if (!hold.slot || hold.slot.venue !== slug) continue;
-    const date = hold.slot.date;
-    if (date < from || date > to) continue;
-    put(date, hold.status === 'confirmed' ? 'booked' : 'held', {
-      holdUntil: hold.holdUntil,
-      source: 'hold',
-    });
-  }
-
-  // Imported blocks are the strongest signal: the room is physically taken
-  // according to a system the owner also operates.
-  for (const block of blocks) {
-    put(block.date, 'booked', { source: block.source, summary: block.summary || '' });
-  }
-
-  return [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
-}
+// The calendar itself lives in ../calendar. `loadResourceCalendar` is the one
+// reader: it applies the routing graph, so what a visitor sees, what a booking
+// is allowed to claim, and what the outbound .ics publishes cannot disagree.
 
 /** Fetch one feed with a timeout and a size cap. */
 async function fetchFeed(url) {
@@ -283,8 +246,9 @@ async function fetchFeed(url) {
  */
 async function syncFeed(feed, { logger } = {}) {
   try {
-    const text = await fetchFeed(feed.url);
-    const events = parseCalendar(text);
+    const events = String(feed.url).startsWith(GOOGLE_FEED_PREFIX)
+      ? await readBusyEvents({ calendarId: String(feed.url).slice(GOOGLE_FEED_PREFIX.length), from: todayIso(), to: addDaysIso(todayIso(), MAX_HORIZON_DAYS) })
+      : parseCalendar(await fetchFeed(feed.url));
     const horizonEnd = addDaysIso(todayIso(), MAX_HORIZON_DAYS);
 
     const rows = [];
@@ -351,6 +315,10 @@ function createVenuesRouter({ logger } = {}) {
     return venue;
   };
 
+  // Rooms plus Small Events (slug `client`), for the endpoints both can use.
+  const resolveResource = (req, res) =>
+    normalizeString(req.params.slug, 40) === CLIENT_RESOURCE ? CLIENT_VENUE : resolveVenue(req, res);
+
   // ── Public ────────────────────────────────────────────────────────────
 
   router.get('/', (req, res) => {
@@ -358,7 +326,7 @@ function createVenuesRouter({ logger } = {}) {
   });
 
   router.get('/:slug/availability', async (req, res) => {
-    const venue = resolveVenue(req, res);
+    const venue = resolveResource(req, res);
     if (!venue) return undefined;
     if (!ensurePrisma(res)) return undefined;
 
@@ -369,7 +337,7 @@ function createVenuesRouter({ logger } = {}) {
     const to = requestedTo && requestedTo <= maxTo ? requestedTo : defaultTo;
 
     try {
-      const days = await loadVenueCalendar({ slug: venue.slug, from, to });
+      const days = await loadResourceCalendar({ resource: venue.slug, from, to, db: prisma });
       res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       return res.json({ venue: venue.slug, from, to, days });
     } catch (error) {
@@ -384,20 +352,23 @@ function createVenuesRouter({ logger } = {}) {
   // a Square link. Making someone submit an enquiry, wait for a reply and then
   // follow a second link is the flow this page was built to replace.
   //
-  // Three things are deliberate:
+  // Deliberate:
   //
   //   1. The price is re-derived here from the owner price book. The client
   //      ships the same numbers (src/config/eventPricing.js) so the figure can
-  //      render in prerendered HTML, but nothing the browser sends is trusted:
-  //      the amount on the payment link is computed from date, guests and style
-  //      alone.
-  //   2. The hold is written BEFORE the payment link exists, and released if
-  //      Square fails. The opposite order sells a night we never took off the
-  //      market.
-  //   3. Only an operator-opened date is payable. An `unmanaged` date has no
-  //      row, promises nothing, and gets the enquiry form instead.
+  //      render in prerendered HTML, but nothing the browser sends is trusted.
+  //   2. The date is claimed atomically (calendar/service.js claimDate): the
+  //      rules are re-read under a per-date lock, so two buyers cannot both
+  //      pass a check and then both write a hold.
+  //   3. The hold, the estimate and the FinancePaymentAttempt are written in
+  //      that one transaction, BEFORE any Square call. A payment that lands
+  //      after a crash still finds its sale. If Square then fails, the hold is
+  //      released so a night nobody can buy is not held for a day.
+  //   4. A date is payable only if the routing graph says it is sellable:
+  //      FIREHOUSE and the Local Kitchen need an operator-opened night; Small
+  //      Events is open unless something closes it.
   router.post('/:slug/book', async (req, res) => {
-    const venue = resolveVenue(req, res);
+    const venue = resolveResource(req, res);
     if (!venue) return undefined;
     if (!ensurePrisma(res)) return undefined;
 
@@ -422,6 +393,15 @@ function createVenuesRouter({ logger } = {}) {
     const contactPhone = normalizeString(req.body?.contactPhone, 40);
     const notes = normalizeString(req.body?.notes, 1000);
 
+    // A Small Event happens at the customer's address, so the address is part
+    // of the sale. It is stored where a room stores its slug. A venue slug typed
+    // there would make the booking look like a room booking, so it is refused.
+    const isClient = venue.slug === CLIENT_RESOURCE;
+    const eventAddress = isClient ? normalizeString(req.body?.eventAddress, 200) : '';
+    if (isClient && (eventAddress.length < 6 || VENUE_BY_SLUG.has(eventAddress.toLowerCase()))) {
+      return res.status(400).json({ error: 'missing-event-address' });
+    }
+
     if (!isIsoDate(date)) return res.status(400).json({ error: 'invalid-date' });
     if (date < todayIso()) return res.status(400).json({ error: 'date-in-past' });
     if (date > addDaysIso(todayIso(), MAX_HORIZON_DAYS)) {
@@ -445,58 +425,62 @@ function createVenuesRouter({ logger } = {}) {
       return res.status(400).json({ error: 'over-capacity', capacity: seats });
     }
 
+    const { client: squareClient, locationId } = getSquareClient();
+    if (!squareClient || !locationId) {
+      if (logger?.error) logger.error({}, 'venue checkout: square not configured');
+      return res.status(503).json({ error: 'square-not-configured' });
+    }
+
     let estimate;
     try {
-      estimate = await prisma.$transaction(async (tx) => {
-        // Re-read the date inside the transaction rather than trusting the grid
-        // the visitor was looking at, which may be a minute old.
-        const slot = await tx.smallEventAvailability.findFirst({
-          where: { venue: venue.slug, date, status: 'open' },
-        });
-        if (!slot) throw new Error('date-not-open');
-
-        const blocked = await tx.venueBlock.findFirst({ where: { venue: venue.slug, date } });
-        if (blocked) throw new Error('date-taken');
-
-        const existing = await tx.smallEventHold.findFirst({
-          where: {
-            slotId: slot.id,
-            OR: [{ status: 'confirmed' }, { status: 'held', holdUntil: { gt: new Date() } }],
-          },
-        });
-        if (existing) throw new Error('date-taken');
-
-        return tx.smallEventEstimate.create({
-          data: {
-            type: 'holiday',
-            status: 'hold-pending',
-            location: venue.slug,
-            serviceStyle: quote.serviceStyle,
-            guestCount: quote.guestCount,
-            eventDate: date,
-            eventTime,
-            contactName,
-            contactEmail,
-            contactPhone: contactPhone || null,
-            notes: notes || null,
-            estimateMinCents: quote.estimateMinCents,
-            estimateMaxCents: quote.estimateMaxCents,
-            subtotalCents: quote.estimateMinCents,
-            depositPercent: quote.depositPercent,
-            depositAmountCents: quote.depositCents,
-            depositStatus: 'pending',
-            claimToken: newToken(),
-            lastEditedAt: new Date(),
-            hold: {
-              create: {
-                slotId: slot.id,
-                status: 'held',
-                holdUntil: new Date(Date.now() + HOLD_WINDOW_HOURS * 3600 * 1000),
+      estimate = await claimDate({
+        db: prisma,
+        resource: venue.slug,
+        date,
+        build: async (tx, slot) => {
+          const created = await tx.smallEventEstimate.create({
+            data: {
+              type: 'holiday',
+              status: 'hold-pending',
+              location: isClient ? eventAddress : venue.slug,
+              serviceStyle: quote.serviceStyle,
+              guestCount: quote.guestCount,
+              eventDate: date,
+              eventTime,
+              contactName,
+              contactEmail,
+              contactPhone: contactPhone || null,
+              notes: notes || null,
+              estimateMinCents: quote.estimateMinCents,
+              estimateMaxCents: quote.estimateMaxCents,
+              subtotalCents: quote.estimateMinCents,
+              depositPercent: quote.depositPercent,
+              depositAmountCents: quote.depositCents,
+              depositStatus: 'pending',
+              claimToken: newToken(),
+              lastEditedAt: new Date(),
+              hold: {
+                create: {
+                  slotId: slot.id,
+                  status: 'held',
+                  holdUntil: new Date(Date.now() + HOLD_WINDOW_HOURS * 3600 * 1000),
+                },
               },
             },
-          },
-          include: { hold: true },
-        });
+            include: { hold: true },
+          });
+          await tx.financePaymentAttempt.create({
+            data: {
+              provider: 'square',
+              idempotencyKey: `venue-deposit:${created.id}`,
+              status: 'pending',
+              requestedCents: quote.depositCents,
+              currency: 'USD',
+              metadata: { channel: 'venue_booking', estimateId: created.id, resource: venue.slug, date },
+            },
+          });
+          return created;
+        },
       });
     } catch (error) {
       if (error?.message === 'date-not-open' || error?.message === 'date-taken') {
@@ -506,20 +490,12 @@ function createVenuesRouter({ logger } = {}) {
       return res.status(503).json({ error: 'hold-failed' });
     }
 
-    const { client: squareClient, locationId } = getSquareClient();
-    if (!squareClient || !locationId) {
-      // The hold is real but unpayable, so it is released rather than left to
-      // block a night nobody can buy.
-      await releaseHold(estimate.id, logger);
-      if (logger?.error) logger.error({}, 'venue checkout: square not configured');
-      return res.status(503).json({ error: 'square-not-configured' });
-    }
-
+    const attemptKey = `venue-deposit:${estimate.id}`;
     try {
       const referenceId = `venue:${venue.slug}:${estimate.id}`;
       const dollars = Math.round(quote.estimateMinCents / 100).toLocaleString('en-US');
-      const response = await squareClient.checkoutApi.createPaymentLink({
-        idempotencyKey: newToken(),
+      const orderResponse = await squareClient.ordersApi.createOrder({
+        idempotencyKey: `${attemptKey}:order`,
         order: {
           locationId,
           referenceId,
@@ -532,11 +508,25 @@ function createVenuesRouter({ logger } = {}) {
             },
           ],
         },
-        checkoutOptions: {
-          redirectUrl: `${resolveSiteUrl()}/${venue.slug}?deposit=success&hold=${estimate.id}`,
-          note: referenceId,
-          prePopulateBuyerEmail: contactEmail || undefined,
+      });
+      const squareOrderId = orderResponse?.result?.order?.id;
+      if (!squareOrderId) throw new Error('no-square-order');
+
+      // The order id is what a completed-payment webhook reconciles against.
+      await prisma.financePaymentAttempt.update({
+        where: { provider_idempotencyKey: { provider: 'square', idempotencyKey: attemptKey } },
+        data: {
+          metadata: { channel: 'venue_booking', estimateId: estimate.id, resource: venue.slug, date, squareOrderId },
         },
+      });
+
+      const response = await squareClient.checkoutApi.createPaymentLink({
+        idempotencyKey: `${attemptKey}:link`,
+        orderId: squareOrderId,
+        checkoutOptions: {
+          redirectUrl: `${resolveSiteUrl()}${PAGE_PATH[venue.slug] || `/${venue.slug}`}?deposit=success&hold=${estimate.id}&token=${encodeURIComponent(estimate.claimToken)}`,
+        },
+        prePopulatedData: { buyerEmail: contactEmail },
       });
 
       const paymentLink = response?.result?.paymentLink;
@@ -548,7 +538,7 @@ function createVenuesRouter({ logger } = {}) {
           amountCents: quote.depositCents,
           status: 'pending',
           squarePaymentLinkId: paymentLink.id || null,
-          squareOrderId: paymentLink.orderId || paymentLink.order_id || null,
+          squareOrderId,
         },
       });
 
@@ -562,8 +552,42 @@ function createVenuesRouter({ logger } = {}) {
       });
     } catch (error) {
       await releaseHold(estimate.id, logger);
+      await prisma.financePaymentAttempt
+        .update({
+          where: { provider_idempotencyKey: { provider: 'square', idempotencyKey: attemptKey } },
+          data: { status: 'failed', failureCode: 'checkout-link-failed', failureMessage: String(error?.message || error).slice(0, 300) },
+        })
+        .catch(() => {});
       if (logger?.error) logger.error({ err: error }, 'venue checkout failed');
       return res.status(502).json({ error: 'checkout-failed' });
+    }
+  });
+
+  // Whether a deposit actually landed. The success page asks this instead of
+  // believing `?deposit=success`, which anyone can type. The claim token is the
+  // bearer secret; without it the answer is the same as for an unknown id.
+  router.get('/:slug/book/:id/status', async (req, res) => {
+    const venue = resolveResource(req, res);
+    if (!venue) return undefined;
+    if (!ensurePrisma(res)) return undefined;
+    const token = normalizeString(String(req.query.token || ''), 80);
+    const id = normalizeString(req.params.id, 80);
+    res.set('Cache-Control', 'no-store');
+    try {
+      const estimate = id && token ? await prisma.smallEventEstimate.findUnique({ where: { id }, include: { hold: true } }) : null;
+      const a = Buffer.from(String(estimate?.claimToken || ''));
+      const b = Buffer.from(token);
+      if (!estimate || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        return res.status(404).json({ error: 'not-found' });
+      }
+      let state = 'processing';
+      if (estimate.status === 'confirmed') state = 'confirmed';
+      else if (estimate.status === 'payment-review') state = 'review';
+      else if (estimate.hold && estimate.hold.status === 'held' && estimate.hold.holdUntil <= new Date()) state = 'expired';
+      return res.json({ state, date: estimate.eventDate, venue: venue.slug });
+    } catch (error) {
+      if (logger?.error) logger.error({ err: error }, 'venue booking status failed');
+      return res.status(503).json({ error: 'status-unavailable' });
     }
   });
 
@@ -579,25 +603,16 @@ function createVenuesRouter({ logger } = {}) {
     const to = addDaysIso(from, MAX_HORIZON_DAYS);
 
     try {
-      const days = await loadVenueCalendar({ slug: venue.slug, from, to });
-      // Only genuinely unavailable days go outbound. Exporting "open" would
-      // tell a subscriber the room is busy every night we manage it.
-      const busy = days
-        .filter((day) => day.status === 'booked' || day.status === 'held' || day.status === 'blocked')
-        .map((day) => day.date);
-
-      const events = groupIntoRanges(busy).map((range) => ({
-        uid: `${venue.slug}-${range.start}-${range.end}@localeffortfood.com`,
-        start: range.start,
-        end: range.end,
-        summary: `${venue.nickname} — unavailable`,
-      }));
-
-      const body = buildCalendar({
+      // What the routing graph says this venue publishes: our own bookings,
+      // holds and closed days. Never the Airbnb import (it would echo back to
+      // Airbnb) and never anything a customer could be identified from.
+      const body = await buildOutboundIcs({
+        nodeId: `ics:${venue.slug}`,
         name: `${venue.nickname} — Local Effort Cooperative`,
-        events,
+        from,
+        to,
+        db: prisma,
       });
-
       res.set('Content-Type', 'text/calendar; charset=utf-8');
       res.set('Content-Disposition', `inline; filename="${venue.slug}.ics"`);
       res.set('Cache-Control', 'public, max-age=900');
@@ -643,21 +658,32 @@ function createVenuesRouter({ logger } = {}) {
     if (!ensurePrisma(res)) return undefined;
 
     const label = normalizeString(req.body?.label, 60);
-    const url = normalizeString(req.body?.url, 1000);
+
+    // A calendar shared with our service account (the Local Kitchen's shared
+    // calendar with Steve Ray) is read through the Google API, not fetched, so
+    // it takes a calendar id instead of a secret address.
+    const googleCalendarId = normalizeString(req.body?.googleCalendarId, 200);
+    let url = normalizeString(req.body?.url, 1000);
+    if (googleCalendarId) {
+      if (!/^[A-Za-z0-9._%+@#-]+$/.test(googleCalendarId)) return res.status(400).json({ error: 'invalid-calendar-id' });
+      url = `${GOOGLE_FEED_PREFIX}${googleCalendarId}`;
+    }
     if (!label || !url) return res.status(400).json({ error: 'missing-fields' });
 
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch {
-      return res.status(400).json({ error: 'invalid-url' });
-    }
-    // Server-side fetch of a user-supplied URL: require https and reject
-    // anything pointing back at the host, so a feed cannot be used to probe
-    // internal services.
-    if (parsed.protocol !== 'https:') return res.status(400).json({ error: 'https-required' });
-    if (/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|\[?::1)/i.test(parsed.hostname)) {
-      return res.status(400).json({ error: 'host-not-allowed' });
+    if (!googleCalendarId) {
+      let parsed;
+      try {
+        parsed = new URL(url);
+      } catch {
+        return res.status(400).json({ error: 'invalid-url' });
+      }
+      // Server-side fetch of a user-supplied URL: require https and reject
+      // anything pointing back at the host, so a feed cannot be used to probe
+      // internal services.
+      if (parsed.protocol !== 'https:') return res.status(400).json({ error: 'https-required' });
+      if (/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|\[?::1)/i.test(parsed.hostname)) {
+        return res.status(400).json({ error: 'host-not-allowed' });
+      }
     }
 
     const feed = await prisma.venueCalendarFeed.create({
@@ -689,7 +715,13 @@ function createVenuesRouter({ logger } = {}) {
       // with a short budget should not open N sockets at once.
       results.push(await syncFeed(feed, { logger }));
     }
-    return res.json({ ok: true, synced: results.length, results });
+    // Bookings whose Google Calendar write failed are retried on the same
+    // pass, so the daily sync is also what heals a missed calendar event.
+    const mirrors = await retryFailedMirrors({ db: prisma, logger }).catch((error) => {
+      if (logger?.error) logger.error({ err: error }, 'calendar mirror retry failed');
+      return { error: 'mirror-retry-failed' };
+    });
+    return res.json({ ok: true, synced: results.length, results, mirrors });
   };
 
   router.get('/sync', handleSync);
@@ -698,4 +730,4 @@ function createVenuesRouter({ logger } = {}) {
   return router;
 }
 
-module.exports = { createVenuesRouter, __internals: { loadVenueCalendar, syncFeed, publicVenue } };
+module.exports = { createVenuesRouter, __internals: { syncFeed, publicVenue, isAdmin } };

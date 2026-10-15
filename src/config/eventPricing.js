@@ -36,10 +36,11 @@ export const SERVICE_STYLES = [
   },
 ];
 
-/** Room fee per event day, by venues.json slug. Cents. */
+/** Room fee per event day, by slug. `client` = at the customer's address, no room. Cents. */
 export const VENUE_FEE_CENTS = {
   foodist: 15000,
   firehouse: 75000,
+  client: 0,
 };
 
 /** Date-hold deposit, in basis points of the low estimate. */

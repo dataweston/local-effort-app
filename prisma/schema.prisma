@@ -161,6 +161,54 @@ model SmallEventPayment {
   estimate            SmallEventEstimate @relation(fields: [estimateId], references: [id])
 }
 
+// The universal calendar's routing graph (see docs/design/UNIVERSAL-CALENDAR.md).
+// Nodes are resources we sell, inbound feeds, outbound .ics URLs, Google
+// calendars and the hub. A node absent from this table falls back to the
+// default wiring in backend/api/calendar/graph.js, so an empty table is a
+// working calendar, not an empty one.
+model CalendarNode {
+  id        String   @id
+  kind      String
+  label     String
+  config    Json?
+  posX      Int?
+  posY      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CalendarRoute {
+  id        String   @id @default(uuid())
+  fromId    String
+  toId      String
+  kind      String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([fromId, toId, kind])
+  @@index([toId])
+}
+
+// One row per (booking, outbound Google calendar): the external event id and
+// whether the write has landed. A failed write stays 'error' with the reason and
+// is retried by the venue sync cron and by webhook replay.
+model CalendarMirror {
+  id            String    @id @default(uuid())
+  estimateId    String
+  nodeId        String
+  externalId    String?
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  lastError     String?
+  lastAttemptAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([estimateId, nodeId])
+  @@index([status])
+}
+
 enum PriceTier {
   subscriber
   member
