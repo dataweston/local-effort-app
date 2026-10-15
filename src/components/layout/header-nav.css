@@ -122,6 +122,16 @@
   background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
 }
 
+/* The featured destination (Local Pizza) wears its accent at rest: oven-orange
+   text and a held hairline, so it reads apart from the other routes. */
+.le-nav-item[data-featured='true'],
+.le-sheet-item[data-featured='true'] {
+  color: var(--brand-hearth-deep);
+  font-weight: 700;
+  background-size: 100% 2px;
+  background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
+}
+
 /* Seven destinations plus the membership action is a lot of row. Below 1280px
    it closes up rather than wrapping — the tagline is already hidden there
    (line 74), so the space it frees goes to the nav. */

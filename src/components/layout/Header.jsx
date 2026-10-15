@@ -89,6 +89,7 @@ export const Header = () => {
                 title={item.description}
                 aria-current={active ? 'page' : undefined}
                 data-active={active ? 'true' : 'false'}
+                data-featured={item.featured ? 'true' : undefined}
                 style={{ '--nav-accent': item.accent }}
               >
                 {item.label}
@@ -155,6 +156,7 @@ export const Header = () => {
                   className="le-sheet-item"
                   title={item.description}
                   data-active={isItemActive(item) ? 'true' : 'false'}
+                  data-featured={item.featured ? 'true' : undefined}
                   style={{ '--nav-accent': item.accent }}
                   variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
                 >

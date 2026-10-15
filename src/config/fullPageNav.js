@@ -47,6 +47,22 @@ export const HEADER_NAV = [
     accent: 'var(--brand-rose)',
   },
   {
+    id: 'local-pizza',
+    label: 'Local Pizza',
+    description: 'Pizza on Smith: limited-time drops of frozen pizza, pickup, metro delivery, or shipping',
+    href: '/pizza-on-smith',
+    accent: 'var(--brand-hearth)',
+    // Set apart from the other destinations: the oven colour held on at rest.
+    featured: true,
+  },
+  {
+    id: 'firehouse',
+    label: 'Book a Firehouse',
+    description: 'Book FIREHOUSE, a retired firehouse event space in St. Paul',
+    href: '/firehouse',
+    accent: 'var(--accent-poppy)',
+  },
+  {
     id: 'about',
     label: 'About',
     description: 'A worker-owned Minneapolis food cooperative',
