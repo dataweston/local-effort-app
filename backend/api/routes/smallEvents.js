@@ -2,64 +2,32 @@ const crypto = require('crypto');
 const express = require('express');
 const { prisma } = require('../utils/prisma');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
+const { estimateVenueEvent, SERVICE_STYLES } = require('../pricing/smallEventEstimator');
 
-const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 
-// baseRate is the per-guest food rate at the minimum guest count. It tapers
-// down by baseRateTaperPerGuest for each guest above minGuests (floored at
-// baseRateFloor) because larger parties get bulk efficiency and staffing is
-// already billed separately below.
-const SMALL_EVENT_CONFIG = {
-  dinner: {
-    label: 'Dinner party',
-    baseRate: 95,
-    baseRateFloor: 65,
-    baseRateTaperPerGuest: 1.0,
-    minGuests: 4,
-    minimumTotal: 850,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
-  },
-  pizza: {
-    label: 'Pizza Party',
-    baseRate: 55,
-    baseRateFloor: 38,
-    baseRateTaperPerGuest: 0.6,
-    minGuests: 4,
-    minimumTotal: 850,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
-  },
-  holiday: {
-    label: 'Small events',
-    baseRate: 70,
-    baseRateFloor: 48,
-    baseRateTaperPerGuest: 0.4,
-    minGuests: 6,
-    minimumTotal: 1200,
-    staffingGuestsPer: 15,
-    staffingHourly: 40,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.18,
-  },
+const EVENT_TYPE_LABELS = {
+  dinner: 'Dinner party',
+  pizza: 'Pizza Party',
+  holiday: 'Small events',
 };
 
-const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
+// Event types are availability/hold/line-item metadata only; they carry no pricing.
+const EVENT_TYPES = Object.keys(EVENT_TYPE_LABELS);
 
-// Meal style scales the per-guest food rate. 'full' is the reference (100%).
-const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
-const DEFAULT_MEAL_STYLE = 'full';
-const normalizeMealStyle = (value) =>
-  Object.prototype.hasOwnProperty.call(MEAL_STYLE_MULTIPLIER, value) ? value : DEFAULT_MEAL_STYLE;
+const DEFAULT_SERVICE_STYLE = 'buffet_passed';
+const SERVICE_STYLE_KEYS = new Set(SERVICE_STYLES.map((style) => style.key));
+// Retired meal-style values from the old formula. Old drafts may still carry
+// them; they carry no price information, so they fall back to the default.
+const RETIRED_SERVICE_STYLES = new Set(['full', 'between', 'light']);
+
+// Returns a SERVICE_STYLES key, the default for empty/retired values, or null when unknown.
+const resolveServiceStyle = (value) => {
+  const key = normalizeString(value, 60);
+  if (!key || RETIRED_SERVICE_STYLES.has(key)) return DEFAULT_SERVICE_STYLE;
+  return SERVICE_STYLE_KEYS.has(key) ? key : null;
+};
 
 const ADMIN_TOKEN = process.env.SMALL_EVENTS_ADMIN_TOKEN || process.env.EVENTS_ADMIN_TOKEN || '';
 
@@ -95,44 +63,42 @@ const addHours = (date, hours) => {
   return next;
 };
 
-// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
-const effectiveBaseRate = (config, guestCount) => {
-  const over = Math.max(0, guestCount - (config.minGuests || 1));
-  const rate = config.baseRate - (config.baseRateTaperPerGuest || 0) * over;
-  return Math.max(config.baseRateFloor ?? config.baseRate, rate);
-};
-
+// Pricing is the shared small-event price book (../pricing/smallEventEstimator),
+// the same figures the browser shows from src/config/eventPricing.js. This flow
+// only ever serves events at the customer's own address, so no room fee applies.
+// The hold basis (subtotalCents) is the LOW end of the range, as in the book.
 const computeEstimate = (type, payload) => {
-  const config = SMALL_EVENT_CONFIG[type];
-  if (!config) return null;
-  const guestCount = Math.max(0, parseIntSafe(payload.guestCount));
-  const mealStyle = normalizeMealStyle(payload.mealStyle ?? payload.serviceStyle);
-  const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
-  const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
-  const foodCost = guestCount * effectiveBaseRate(config, guestCount) * MEAL_STYLE_MULTIPLIER[mealStyle];
-  const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
-  const estimateMin = subtotal * config.rangeMin;
-  const estimateMax = subtotal * config.rangeMax;
+  if (!EVENT_TYPES.includes(type)) return { ok: false, error: 'invalid-type' };
+  const serviceStyle = resolveServiceStyle(payload.serviceStyle);
+  if (!serviceStyle) return { ok: false, error: 'unknown-service-style' };
 
+  const result = estimateVenueEvent({
+    venueSlug: 'client',
+    serviceStyle,
+    guestCount: payload.guestCount,
+  });
+  if (!result.ok) return { ok: false, error: result.error };
+
+  const { estimateMinCents, estimateMaxCents } = result;
   const overridePercent = Number(payload.depositOverridePercent);
-  const depositPercent = Number.isFinite(overridePercent) && overridePercent > 0
-    ? overridePercent / 100
-    : DEFAULT_DEPOSIT_PERCENT;
+  const hasOverridePercent = Number.isFinite(overridePercent) && overridePercent > 0;
+  const depositPercent = hasOverridePercent ? Math.round(overridePercent) : result.depositPercent;
   const overrideAmount = Number(payload.depositOverrideAmount);
-  const depositAmount = Number.isFinite(overrideAmount) && overrideAmount > 0
-    ? overrideAmount
-    : subtotal * depositPercent;
+  const depositAmountCents = Number.isFinite(overrideAmount) && overrideAmount > 0
+    ? toCents(overrideAmount)
+    : hasOverridePercent
+      ? Math.round((estimateMinCents * overridePercent) / 100)
+      : result.depositCents;
 
   return {
-    guestCount,
-    mealStyle,
-    staffingCount,
-    staffingCostCents: toCents(staffingCost),
-    subtotalCents: toCents(subtotal),
-    estimateMinCents: toCents(estimateMin),
-    estimateMaxCents: toCents(estimateMax),
-    depositPercent: Math.round(depositPercent * 100),
-    depositAmountCents: toCents(depositAmount),
+    ok: true,
+    guestCount: result.guestCount,
+    serviceStyle: result.serviceStyle,
+    subtotalCents: estimateMinCents,
+    estimateMinCents,
+    estimateMaxCents,
+    depositPercent,
+    depositAmountCents,
   };
 };
 
@@ -228,8 +194,8 @@ const sanitizeEstimatePayload = (payload) => ({
   eventTime: normalizeString(payload.eventTime, 80) || null,
   alternateDates: normalizeString(payload.alternateDates, 200) || null,
   location: normalizeString(payload.location, 200) || null,
-  // Meal style (full | between | light) is persisted in serviceStyle.
-  serviceStyle: normalizeMealStyle(payload.mealStyle ?? payload.serviceStyle),
+  // Persisted as one of the SERVICE_STYLES keys; retired meal-style values fall back to the default.
+  serviceStyle: resolveServiceStyle(payload.serviceStyle) || DEFAULT_SERVICE_STYLE,
   budgetRange: normalizeString(payload.budgetRange, 80) || null,
   menuNotes: normalizeString(payload.menuNotes, 600) || null,
   dietary: normalizeString(payload.dietary, 600) || null,
@@ -489,7 +455,7 @@ function createSmallEventsRouter({ logger } = {}) {
       const estimateId = normalizeString(req.body?.estimateId, 80);
       const payload = sanitizeEstimatePayload(req.body || {});
       const computation = computeEstimate(type, req.body || {});
-      if (!computation) return res.status(400).json({ error: 'invalid-type' });
+      if (!computation.ok) return res.status(400).json({ error: computation.error });
 
       const now = new Date();
       const expiresAt = addDays(now, ESTIMATE_LIFESPAN_DAYS);
@@ -548,11 +514,7 @@ function createSmallEventsRouter({ logger } = {}) {
       const hold = await prisma.smallEventHold.findUnique({ where: { estimateId: estimate.id } });
 
       return res.json({
-        estimate: {
-          ...estimate,
-          staffingCount: computation.staffingCount,
-          staffingCostCents: computation.staffingCostCents,
-        },
+        estimate,
         hold,
         sessionToken,
       });
@@ -591,7 +553,7 @@ function createSmallEventsRouter({ logger } = {}) {
           referenceId,
           lineItems: [
             {
-              name: `${SMALL_EVENT_CONFIG[estimate.type]?.label || 'Event'} deposit`,
+              name: `${EVENT_TYPE_LABELS[estimate.type] || 'Event'} deposit`,
               quantity: '1',
               basePriceMoney: {
                 amount: estimate.depositAmountCents,
@@ -636,4 +598,4 @@ function createSmallEventsRouter({ logger } = {}) {
   return router;
 }
 
-module.exports = { createSmallEventsRouter };
+module.exports = { createSmallEventsRouter, computeEstimate, resolveServiceStyle };

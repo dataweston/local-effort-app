@@ -8,6 +8,7 @@ import '../styles/fullpage-demo-theme.css';
 import '../styles/home-tabs.css';
 import '../styles/service-page.css';
 import '../styles/pizza-party.css';
+import { SERVICE_STYLES, estimateEvent, MIN_GUESTS, MAX_GUESTS, usd } from '../config/eventPricing';
 
 const PIZZA_FAQ = [
   {
@@ -217,33 +218,22 @@ const PizzaPartyPage = () => {
   const isValidAddress = (a) => a.line1.trim().length > 3 && a.city.trim().length > 1 && a.postal.trim().length >= 5;
 
   const basePrice = 75; // Deposit amount
-  // Estimated total mirrors the pizza costing in the small-events estimator
-  // (backend/api/routes/smallEvents.js → SMALL_EVENT_CONFIG.pizza). Keep in sync.
-  const PIZZA_PRICING = {
-    baseRate: 55,
-    baseRateFloor: 38,
-    baseRateTaperPerGuest: 0.6,
-    minGuests: 4,
-    minimumTotal: 850,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    rangeMid: 1.0, // midpoint of rangeMin 0.9 / rangeMax 1.2
-  };
-  const estimatePizzaTotal = (guests) => {
+  // Estimated total comes from the shared small-event price book
+  // (src/config/eventPricing.js), priced at the buffet/passed style, at the
+  // customer's address. Below the price book's minimum the minimum is shown.
+  const estimatePizzaRange = (guests) => {
     const g = Math.max(0, Number(guests) || 0);
-    if (!g) return 0;
-    const over = Math.max(0, g - PIZZA_PRICING.minGuests);
-    const perGuest = Math.max(
-      PIZZA_PRICING.baseRateFloor,
-      PIZZA_PRICING.baseRate - PIZZA_PRICING.baseRateTaperPerGuest * over,
-    );
-    const staffCount = Math.max(1, Math.ceil(g / PIZZA_PRICING.staffingGuestsPer));
-    const staffing = staffCount * PIZZA_PRICING.staffingHourly * PIZZA_PRICING.staffingHours;
-    const subtotal = Math.max(g * perGuest + staffing, PIZZA_PRICING.minimumTotal);
-    return Math.round(subtotal * PIZZA_PRICING.rangeMid);
+    if (!g) return null;
+    return estimateEvent({
+      venueSlug: 'client',
+      serviceStyle: SERVICE_STYLES[0].key,
+      guestCount: Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, g)),
+    });
   };
-  const estimatedTotal = estimatePizzaTotal(guestCount);
+  const pizzaRange = estimatePizzaRange(guestCount);
+  const estimatedTotalLabel = pizzaRange
+    ? `${usd(pizzaRange.estimateMinCents)}–${usd(pizzaRange.estimateMaxCents)}`
+    : usd(0);
   const addOnTotal = addOnEnabled ? guestCount * 9 : 0;
   const grandTotal = basePrice + addOnTotal;
 
@@ -532,7 +522,7 @@ const PizzaPartyPage = () => {
                 </div>
                 <div className="ht-ledger-row">
                   <span>Estimated total for {guestCount} guests</span>
-                  <span className="ht-ledger-price">${estimatedTotal}</span>
+                  <span className="ht-ledger-price">{estimatedTotalLabel}</span>
                 </div>
               </div>
               <button type="button" onClick={() => openModal(null)} className="ht-submit">
@@ -724,7 +714,7 @@ const PizzaPartyPage = () => {
                     </div>
                     <div className="flex items-center justify-between text-neutral-600 text-xs">
                       <span>Estimated total ({guestCount} guests)</span>
-                      <span>${estimatedTotal}</span>
+                      <span>{estimatedTotalLabel}</span>
                     </div>
                   </div>
                 </div>

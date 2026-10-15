@@ -45,13 +45,12 @@ test.describe('home page transactions and forms', () => {
     const estimateResponse = {
       id: 'estimate-1',
       guestCount: 12,
-      staffingCount: 2,
-      staffingCostCents: 0,
-      subtotalCents: 120000,
-      estimateMinCents: 100000,
-      estimateMaxCents: 150000,
-      depositAmountCents: 18000,
-      depositPercent: 15,
+      serviceStyle: 'buffet_passed',
+      subtotalCents: 54000,
+      estimateMinCents: 54000,
+      estimateMaxCents: 90000,
+      depositAmountCents: 10800,
+      depositPercent: 20,
       depositStatus: 'unpaid',
       lastEditedAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -152,6 +151,7 @@ test.describe('home page transactions and forms', () => {
       contactName: 'Jamie Tester',
       contactEmail: 'jamie@example.com',
       guestCount: '12',
+      serviceStyle: 'buffet_passed',
     });
     expect(holdPayload).toMatchObject({ estimateId: 'estimate-1', slotId: 'slot-1' });
     expect(checkoutPayload).toEqual({ estimateId: 'estimate-1' });

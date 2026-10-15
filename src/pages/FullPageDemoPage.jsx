@@ -22,6 +22,7 @@ import {
 import { FULLPAGE_PAGES } from '../config/fullPageNav';
 import { trackEvent } from '../lib/trackEvent';
 import SmallEventsWizard from '../components/smallEvents/SmallEventsWizard';
+import { SERVICE_STYLES, estimateEvent, MIN_GUESTS, MAX_GUESTS, DEPOSIT_BPS, usd } from '../config/eventPricing';
 // The slip forms are shared with the standalone /weekly-meals and /small-events
 // pages so the home funnel and the indexable pages cannot drift apart.
 import { QuickEventBookForm } from '../components/services/slipForms';
@@ -29,52 +30,15 @@ import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import '../styles/home-hero.css';
 import '../styles/home-tabs.css';
 
-const SMALL_EVENT_CONFIG = {
-  dinner: {
-    label: 'Dinner party',
-    baseRate: 95,
-    baseRateFloor: 65,
-    baseRateTaperPerGuest: 1.0,
-    minimumTotal: 0,
-    minGuests: 4,
-    maxGuests: 16,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
-  },
-  pizza: {
-    label: 'Pizza Party',
-    baseRate: 55,
-    baseRateFloor: 38,
-    baseRateTaperPerGuest: 0.6,
-    minimumTotal: 0,
-    minGuests: 4,
-    maxGuests: 16,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
-  },
-  holiday: {
-    label: 'Small events',
-    baseRate: 70,
-    baseRateFloor: 48,
-    baseRateTaperPerGuest: 0.4,
-    minimumTotal: 0,
-    minGuests: 6,
-    maxGuests: 75,
-    staffingGuestsPer: 15,
-    staffingHourly: 40,
-    staffingHours: 4,
-    rangeMin: 0.9,
-    rangeMax: 1.18,
-  },
+const SMALL_EVENT_LABELS = {
+  dinner: 'Dinner party',
+  pizza: 'Pizza Party',
+  holiday: 'Small events',
 };
 
-const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
+const EVENT_TYPES = Object.keys(SMALL_EVENT_LABELS);
+const PIZZA_FROM_CENTS = SERVICE_STYLES[0].minCents;
+const PIZZA_FROM_PER_GUEST = usd(PIZZA_FROM_CENTS);
 const renderBulletinInline = (text, keyPrefix) => {
   const tokens = String(text).split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g);
   return tokens.map((token, index) => {
@@ -99,7 +63,6 @@ const renderBulletin = (markdown) => String(markdown || '').split(/\n/).map((lin
   if (/^\s*>\s?/.test(line)) return <blockquote key={key}>{renderBulletinInline(line.replace(/^\s*>\s?/, ''), key)}</blockquote>;
   return <p key={key}>{renderBulletinInline(line, key)}</p>;
 });
-const DEFAULT_DEPOSIT_PERCENT = 0.15;
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
@@ -199,9 +162,8 @@ const createSmallEventDefaults = (type) => ({
   eventTime: '',
   alternateDates: '',
   guestCount: '',
-  mealStyle: 'full',
   location: '',
-  serviceStyle: '',
+  serviceStyle: SERVICE_STYLES[0].key,
   menuNotes: '',
   dietary: '',
   rentals: '',
@@ -498,37 +460,32 @@ const parseGuestCount = (value) => {
   return Number.isNaN(parsed) ? 0 : parsed;
 };
 
-const clampGuestCount = (value, config) => {
+const clampGuestCount = (value) => {
   if (value === '' || value === null || value === undefined) return 0;
   let count = parseGuestCount(value);
   if (count <= 0) return 0;
-  if (config?.minGuests && count < config.minGuests) count = config.minGuests;
-  if (config?.maxGuests && count > config.maxGuests) count = config.maxGuests;
+  if (count < MIN_GUESTS) count = MIN_GUESTS;
+  if (count > MAX_GUESTS) count = MAX_GUESTS;
   return count;
 };
 
-// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
-// Mirrors effectiveBaseRate in backend/api/routes/smallEvents.js.
-const effectiveBaseRate = (config, guestCount) => {
-  const over = Math.max(0, guestCount - (config.minGuests || 1));
-  const rate = config.baseRate - (config.baseRateTaperPerGuest || 0) * over;
-  return Math.max(config.baseRateFloor ?? config.baseRate, rate);
-};
+const DEFAULT_SERVICE_STYLE = SERVICE_STYLES[0].key;
+const normalizeServiceStyle = (value) =>
+  SERVICE_STYLES.some((style) => style.key === value) ? value : DEFAULT_SERVICE_STYLE;
 
-// Meal style scales the per-guest food rate. Mirrors backend smallEvents.js.
-const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
-const MEAL_STYLE_OPTIONS = [
-  { value: 'full', label: 'Full meal' },
-  { value: 'between', label: 'Somewhere in between' },
-  { value: 'light', label: 'Light snacks' },
-];
-const normalizeMealStyle = (value) =>
-  Object.prototype.hasOwnProperty.call(MEAL_STYLE_MULTIPLIER, value) ? value : 'full';
+// Server estimates arrive in cents; the form works in dollars.
+const toServerEstimate = (estimate) => ({
+  guestCount: estimate.guestCount || 0,
+  estimateMin: centsToDollars(estimate.estimateMinCents || 0),
+  estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
+  depositPercent: estimate.depositPercent ? estimate.depositPercent / 100 : DEPOSIT_BPS / 10000,
+  depositAmount: centsToDollars(estimate.depositAmountCents || 0),
+});
 
   const getDepositPercent = (form) => {
     const override = parseFloat(form.depositOverridePercent);
     if (!Number.isNaN(override) && override > 0) return override / 100;
-    return DEFAULT_DEPOSIT_PERCENT;
+    return DEPOSIT_BPS / 10000;
   };
 
   const getEstimateExpiry = (form) => {
@@ -583,14 +540,13 @@ const normalizeMealStyle = (value) =>
   };
 
   const buildQuoteMessage = (type) => {
-    const config = SMALL_EVENT_CONFIG[type];
     const form = getSmallEventForm(type);
     const estimate = getEstimateForType(type);
     const depositPercent = getDepositPercent(form);
     const depositLabel = form.depositOverrideAmount
       ? `${formatCurrency(Number(form.depositOverrideAmount), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} flat`
       : `${Math.round(depositPercent * 100)}%`;
-    const guestCount = clampGuestCount(form.guestCount, config);
+    const guestCount = clampGuestCount(form.guestCount);
     const fallbackHold = form.estimateId
       ? calendarHolds.find((hold) => hold.estimateId === form.estimateId)
       : null;
@@ -602,7 +558,7 @@ const normalizeMealStyle = (value) =>
       lines.push(`${label}: ${value}`);
     };
 
-    addLine('Event type', config?.label || type);
+    addLine('Event type', SMALL_EVENT_LABELS[type] || type);
     addLine('Guest count', guestCount || form.guestCount);
     addLine('Contact name', form.contactName || quoteName);
     addLine('Contact email', form.contactEmail || quoteEmail);
@@ -610,7 +566,7 @@ const normalizeMealStyle = (value) =>
     addLine('Event date', form.eventDate);
     addLine('Event time', form.eventTime);
     addLine('Location', form.location);
-    addLine('Service style', form.serviceStyle);
+    addLine('Service style', SERVICE_STYLES.find((style) => style.key === form.serviceStyle)?.label || form.serviceStyle);
     addLine('Menu notes', form.menuNotes);
     addLine('Dietary notes', form.dietary);
     addLine('Rentals or staffing', form.rentals);
@@ -660,11 +616,10 @@ const normalizeMealStyle = (value) =>
     setQuoteStatus('sending');
     setQuoteError('');
     try {
-      const config = SMALL_EVENT_CONFIG[type];
       const payload = {
         name: quoteName || undefined,
         email: quoteEmail || undefined,
-        subject: `Small events quote request: ${config?.label || type}`,
+        subject: `Small events quote request: ${SMALL_EVENT_LABELS[type] || type}`,
         category: 'small-events',
         type,
         message: buildQuoteMessage(type),
@@ -689,29 +644,33 @@ const normalizeMealStyle = (value) =>
   };
 
   const getEstimateForType = (type) => {
-    const config = SMALL_EVENT_CONFIG[type];
+    const label = SMALL_EVENT_LABELS[type];
     const form = getSmallEventForm(type);
-    if (!config) return null;
+    if (!label) return null;
     if (form.serverEstimate) return form.serverEstimate;
 
-    const guestCount = clampGuestCount(form.guestCount, config);
-    const staffingCount = guestCount ? Math.max(1, Math.ceil(guestCount / config.staffingGuestsPer)) : 0;
-    const staffingCost = staffingCount * config.staffingHourly * config.staffingHours;
-    const mealStyle = normalizeMealStyle(form.mealStyle);
-    const foodCost = guestCount * effectiveBaseRate(config, guestCount) * MEAL_STYLE_MULTIPLIER[mealStyle];
-    const subtotal = Math.max(foodCost + staffingCost, config.minimumTotal);
-    const estimateMin = subtotal * config.rangeMin;
-    const estimateMax = subtotal * config.rangeMax;
+    const guestCount = clampGuestCount(form.guestCount);
+    const priced = estimateEvent({
+      venueSlug: 'client',
+      serviceStyle: normalizeServiceStyle(form.serviceStyle),
+      guestCount,
+    });
+    if (!priced) {
+      return { guestCount, estimateMin: 0, estimateMax: 0, depositPercent: getDepositPercent(form), depositAmount: 0 };
+    }
+    const estimateMin = centsToDollars(priced.estimateMinCents);
+    const estimateMax = centsToDollars(priced.estimateMaxCents);
     const depositPercent = getDepositPercent(form);
-    const depositAmount = form.depositOverrideAmount
-      ? Number(form.depositOverrideAmount)
-      : subtotal * depositPercent;
+    const overridePercent = parseFloat(form.depositOverridePercent);
+    let depositAmount = centsToDollars(priced.depositCents);
+    if (form.depositOverrideAmount) {
+      depositAmount = Number(form.depositOverrideAmount);
+    } else if (!Number.isNaN(overridePercent) && overridePercent > 0) {
+      depositAmount = estimateMin * depositPercent;
+    }
 
     return {
       guestCount,
-      staffingCount,
-      staffingCost,
-      subtotal,
       estimateMin,
       estimateMax,
       depositPercent,
@@ -721,16 +680,7 @@ const normalizeMealStyle = (value) =>
 
   const applyEstimateResponse = (type, estimate, hold) => {
     if (!estimate) return;
-    const serverEstimate = {
-      guestCount: estimate.guestCount || 0,
-      staffingCount: estimate.staffingCount || 0,
-      staffingCost: centsToDollars(estimate.staffingCostCents || 0),
-      subtotal: centsToDollars(estimate.subtotalCents || 0),
-      estimateMin: centsToDollars(estimate.estimateMinCents || 0),
-      estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
-      depositPercent: estimate.depositPercent ? estimate.depositPercent / 100 : DEFAULT_DEPOSIT_PERCENT,
-      depositAmount: centsToDollars(estimate.depositAmountCents || 0),
-    };
+    const serverEstimate = toServerEstimate(estimate);
     setSmallEventForms((prev) => ({
       ...prev,
       [type]: {
@@ -749,16 +699,7 @@ const normalizeMealStyle = (value) =>
 
   const applyEstimateToForm = (type, estimate) => {
     if (!estimate) return;
-    const serverEstimate = {
-      guestCount: estimate.guestCount || 0,
-      staffingCount: estimate.staffingCount || 0,
-      staffingCost: centsToDollars(estimate.staffingCostCents || 0),
-      subtotal: centsToDollars(estimate.subtotalCents || 0),
-      estimateMin: centsToDollars(estimate.estimateMinCents || 0),
-      estimateMax: centsToDollars(estimate.estimateMaxCents || 0),
-      depositPercent: estimate.depositPercent ? estimate.depositPercent / 100 : DEFAULT_DEPOSIT_PERCENT,
-      depositAmount: centsToDollars(estimate.depositAmountCents || 0),
-    };
+    const serverEstimate = toServerEstimate(estimate);
     setSmallEventForms((prev) => ({
       ...prev,
       [type]: {
@@ -768,12 +709,11 @@ const normalizeMealStyle = (value) =>
         contactEmail: estimate.contactEmail || '',
         contactPhone: estimate.contactPhone || '',
         guestCount: estimate.guestCount || '',
-        mealStyle: normalizeMealStyle(estimate.serviceStyle),
         eventDate: estimate.eventDate || '',
         eventTime: estimate.eventTime || '',
         alternateDates: estimate.alternateDates || '',
         location: estimate.location || '',
-        serviceStyle: estimate.serviceStyle || '',
+        serviceStyle: normalizeServiceStyle(estimate.serviceStyle),
         budgetRange: estimate.budgetRange || '',
         menuNotes: estimate.menuNotes || '',
         dietary: estimate.dietary || '',
@@ -807,12 +747,11 @@ const normalizeMealStyle = (value) =>
         contactEmail: form.contactEmail,
         contactPhone: form.contactPhone,
         guestCount: form.guestCount,
-        mealStyle: form.mealStyle,
+        serviceStyle: normalizeServiceStyle(form.serviceStyle),
         eventDate: form.eventDate,
         eventTime: form.eventTime,
         alternateDates: form.alternateDates,
         location: form.location,
-        serviceStyle: form.serviceStyle,
         budgetRange: form.budgetRange,
         menuNotes: form.menuNotes,
         dietary: form.dietary,
@@ -1019,8 +958,9 @@ const normalizeMealStyle = (value) =>
   };
 
   const renderSmallEventDialogContent = (type) => {
-    const config = SMALL_EVENT_CONFIG[type];
+    const config = SMALL_EVENT_LABELS[type];
     const form = getSmallEventForm(type);
+    const selectedStyle = SERVICE_STYLES.find((style) => style.key === form.serviceStyle) || null;
     const estimate = getEstimateForType(type);
     const expiresAt = getEstimateExpiry(form);
     const fallbackHold = form.estimateId
@@ -1050,12 +990,7 @@ const normalizeMealStyle = (value) =>
       },
     };
     const intro = introCopy[type] || introCopy.holiday;
-    const guestMin = config?.minGuests || 1;
-    const guestMax = config?.maxGuests;
-    const guestLimitLabel = [
-      config?.minGuests ? `min ${config.minGuests}` : null,
-      config?.maxGuests ? `max ${config.maxGuests}` : null,
-    ].filter(Boolean).join(', ');
+    const guestLimitLabel = `min ${MIN_GUESTS}, max ${MAX_GUESTS}`;
     const selectedSlot = form.holdSlotId
       ? slots.find((slot) => slot.id === form.holdSlotId)
       : null;
@@ -1190,29 +1125,17 @@ const normalizeMealStyle = (value) =>
               </div>
               <div>
                 <label className="form-fun-label">
-                  Guest count{guestLimitLabel ? ` (${guestLimitLabel})` : ''}
+                  Guest count ({guestLimitLabel})
                 </label>
                 <input
                   type="number"
-                  min={guestMin}
-                  max={guestMax}
+                  min={MIN_GUESTS}
+                  max={MAX_GUESTS}
                   className="mt-1"
                   value={form.guestCount}
                   onChange={(e) => updateSmallEventForm(type, 'guestCount', e.target.value)}
                   placeholder="ex: 18"
                 />
-              </div>
-              <div>
-                <label className="form-fun-label">How much food?</label>
-                <select
-                  className="mt-1"
-                  value={form.mealStyle}
-                  onChange={(e) => updateSmallEventForm(type, 'mealStyle', e.target.value)}
-                >
-                  {MEAL_STYLE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>
@@ -1295,18 +1218,18 @@ const normalizeMealStyle = (value) =>
             </div>
             <p className="form-fun-help">Pick a style and any must-haves.</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="form-fun-label">Serving style</label>
+              <div className="md:col-span-2">
+                <label className="form-fun-label">Service style</label>
                 <select
                   className="mt-1"
                   value={form.serviceStyle}
                   onChange={(e) => updateSmallEventForm(type, 'serviceStyle', e.target.value)}
                 >
-                  <option value="">Select style</option>
-                  <option value="plated">Plated</option>
-                  <option value="family">Family-style</option>
-                  <option value="buffet">Buffet</option>
-                  <option value="dropoff">Drop-off</option>
+                  {SERVICE_STYLES.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label} — {usd(opt.minCents)}–{usd(opt.maxCents)} per guest
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -1444,7 +1367,7 @@ const normalizeMealStyle = (value) =>
                 : formatCurrency(0)}
             </div>
             <div className="mt-2 text-xs text-slate-600">
-              Based on {estimate?.guestCount || 0} guests, {estimate?.staffingCount || 0} staff.
+              Based on {estimate?.guestCount || 0} guests{selectedStyle ? `, ${selectedStyle.label.toLowerCase()}` : ''}.
             </div>
             <div className="text-xs text-slate-500">
               Rentals, tax, and bar packages are estimated separately.
@@ -1662,7 +1585,7 @@ const normalizeMealStyle = (value) =>
                     >
                       {EVENT_TYPES.map((eventType) => (
                         <option key={eventType} value={eventType}>
-                          {SMALL_EVENT_CONFIG[eventType].label}
+                          {SMALL_EVENT_LABELS[eventType]}
                         </option>
                       ))}
                     </select>
@@ -2339,12 +2262,12 @@ const normalizeMealStyle = (value) =>
     {
       question: 'How does event pricing work?',
       answer:
-        'Pricing depends on guest count, staffing, service style, and final ingredients. The event page generates a ballpark range and sets a cost for a deposit, to hold the date. We confirm the final quote with you after details are verified. Email us directly if you prefer.',
+        'Pricing depends on guest count, service style, and final ingredients. The event page generates a ballpark range and sets a cost for a deposit, to hold the date. We confirm the final quote with you after details are verified. Email us directly if you prefer.',
     },
     {
       question: 'What is the deposit and hold policy?',
       answer:
-        'A 15% deposit holds your date. Deposits are handled through Square.',
+        `A ${DEPOSIT_BPS / 100}% deposit holds your date. Deposits are handled through Square.`,
     },
     {
       question: 'Can you help with rentals or staffing?',
@@ -2571,8 +2494,8 @@ const normalizeMealStyle = (value) =>
 
   /* ── Weekly Meal Prep structured data (prices derived from the meal prep
         calculator in src/pages/MealPrepIntakePage.jsx) ── */
-    /* ── Local Pizza structured data (prices derived from SMALL_EVENT_CONFIG
-        pizza pricing shared with backend/api/routes/smallEvents.js) ── */
+    /* ── Local Pizza structured data (prices derived from SERVICE_STYLES[0] in
+        src/config/eventPricing.js, the same price book the booking flow uses) ── */
   const pizzaStructuredData = useMemo(
     () => JSON.stringify({
       '@context': 'https://schema.org',
@@ -2582,7 +2505,7 @@ const normalizeMealStyle = (value) =>
           '@id': 'https://www.localeffortfood.com#local-pizza',
           name: 'Local Effort Cooperative — Local Pizza Parties',
           url: 'https://www.localeffortfood.com/#local-pizza',
-          description: '100% Midwest-ingredient pizza. Full-service pizza parties at your home, office, or business across Minneapolis–St. Paul from $55 per guest ($850 party minimum). Frozen Local Pizza available at Happy Monday in Roseville.',
+          description: `100% Midwest-ingredient pizza. Full-service pizza parties at your home, office, or business across Minneapolis–St. Paul from ${PIZZA_FROM_PER_GUEST} per guest. Frozen Local Pizza available at Happy Monday in Roseville.`,
           provider: { '@id': 'https://www.localeffortfood.com#business' },
           areaServed: [
             { '@type': 'City', name: 'Minneapolis' },
@@ -2599,15 +2522,15 @@ const normalizeMealStyle = (value) =>
                 itemOffered: {
                   '@type': 'Service',
                   name: 'Pizza Party — Full Service',
-                  description: 'Pizza party at your location for 4–16 guests, cooked and served by our chefs. 100% Midwest ingredients.',
+                  description: `Pizza party at your location for ${MIN_GUESTS}–${MAX_GUESTS} guests, cooked and served by our chefs. 100% Midwest ingredients.`,
                   serviceType: 'Pizza catering',
                   category: 'Event Catering',
                 },
                 priceSpecification: {
                   '@type': 'UnitPriceSpecification',
                   priceCurrency: 'USD',
-                  price: '55',
-                  unitText: 'per guest ($850 party minimum)',
+                  price: String(PIZZA_FROM_CENTS / 100),
+                  unitText: 'per guest',
                 },
               },
             ],
@@ -2617,7 +2540,7 @@ const normalizeMealStyle = (value) =>
           '@type': 'WebPage',
           '@id': 'https://www.localeffortfood.com/#local-pizza',
           name: 'Local Pizza Parties & Frozen Pizza | Local Effort Cooperative',
-          description: 'Book a 100% Midwest-ingredient pizza party in the Twin Cities from $55 per guest, or find frozen Local Pizza at Happy Monday in Roseville.',
+          description: `Book a 100% Midwest-ingredient pizza party in the Twin Cities from ${PIZZA_FROM_PER_GUEST} per guest, or find frozen Local Pizza at Happy Monday in Roseville.`,
           isPartOf: { '@id': 'https://www.localeffortfood.com#website' },
           about: { '@id': 'https://www.localeffortfood.com#local-pizza' },
         },
@@ -2953,7 +2876,7 @@ const normalizeMealStyle = (value) =>
               <h2>Local Pizza Parties in Minneapolis–St. Paul</h2>
               <p>
                 Book a 100% Midwest-ingredient pizza party at your home, office, or business.
-                From $55 per guest with an $850 party minimum, cooked and served by Local Effort
+                From {PIZZA_FROM_PER_GUEST} per guest, cooked and served by Local Effort
                 chefs. Frozen Local Pizza is stocked at Happy Monday in Roseville.
               </p>
             </div>
@@ -2977,7 +2900,7 @@ const normalizeMealStyle = (value) =>
                     100% Midwest ingredients, cooked and served at your home, office, or business
                     by our chefs. Pick a date — we bring everything.
                   </p>
-                  <p className="ht-facts">from $55 a guest · $850 party minimum</p>
+                  <p className="ht-facts">from {PIZZA_FROM_PER_GUEST} a guest</p>
                   <QuickEventBookForm
                     fixedType="Pizza party"
                     source="local-pizza"
@@ -3707,7 +3630,7 @@ const normalizeMealStyle = (value) =>
           ) : (
             <form className="form-fun-card space-y-4" onSubmit={submitQuoteMessage}>
               <div className="text-xs text-slate-600">
-                Quote type: {SMALL_EVENT_CONFIG[quoteDialogType]?.label || 'Small events'}
+                Quote type: {SMALL_EVENT_LABELS[quoteDialogType] || 'Small events'}
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>

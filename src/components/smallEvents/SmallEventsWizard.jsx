@@ -14,103 +14,34 @@
  *   7. Summary + deposit / save
  */
 
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import '../../styles/le-checkout.css';
+import { SERVICE_STYLES, estimateEvent, MIN_GUESTS, MAX_GUESTS, DEPOSIT_BPS, usd } from '../../config/eventPricing';
 
-/* ─── Config (mirrors backend) ────────────────────────────────────────────── */
+/* ─── Config ──────────────────────────────────────────────────────────────── */
 
-// Shared pricing fields MUST stay in sync with backend/api/routes/smallEvents.js
-// (SMALL_EVENT_CONFIG). UI-only fields: description, maxGuests.
-const SMALL_EVENT_CONFIG = {
+// Prices, guest limits and the deposit come from the shared price book in
+// src/config/eventPricing.js. Only UI copy lives here.
+const EVENT_TYPE_META = {
   dinner: {
     label: 'Dinner party',
     description: 'Chef-led, multi-course dinner at your home.',
-    baseRate: 95,
-    baseRateFloor: 65,
-    baseRateTaperPerGuest: 1.0,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    minimumTotal: 850,
-    minGuests: 4,
-    maxGuests: 16,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
   },
   pizza: {
     label: 'Pizza party',
     description: 'Wood-fired pizza, full service at your location.',
-    baseRate: 55,
-    baseRateFloor: 38,
-    baseRateTaperPerGuest: 0.6,
-    staffingGuestsPer: 8,
-    staffingHourly: 45,
-    staffingHours: 4,
-    minimumTotal: 850,
-    minGuests: 4,
-    maxGuests: 16,
-    rangeMin: 0.9,
-    rangeMax: 1.2,
   },
   holiday: {
     label: 'Small event / holiday',
     description: 'Corporate, milestone, or holiday hosting.',
-    baseRate: 70,
-    baseRateFloor: 48,
-    baseRateTaperPerGuest: 0.4,
-    staffingGuestsPer: 15,
-    staffingHourly: 40,
-    staffingHours: 4,
-    minimumTotal: 1200,
-    minGuests: 6,
-    maxGuests: 75,
-    rangeMin: 0.9,
-    rangeMax: 1.18,
   },
 };
 
-const DEFAULT_DEPOSIT_PERCENT = 0.15;
-const EVENT_TYPES = Object.keys(SMALL_EVENT_CONFIG);
-
-// Meal style scales the per-guest food rate. Mirrors backend smallEvents.js.
-const MEAL_STYLE_MULTIPLIER = { full: 1.0, between: 0.8, light: 0.6 };
-const MEAL_STYLE_OPTIONS = [
-  { value: 'full', label: 'Full meal', sub: 'Multi-course, sit-down' },
-  { value: 'between', label: 'Somewhere in between', sub: 'Substantial spread' },
-  { value: 'light', label: 'Light snacks', sub: 'Bites & grazing' },
-];
-const DEFAULT_MEAL_STYLE = 'full';
-
-/* ─── Pricing helper ───────────────────────────────────────────────────────── */
-
-// Per-guest food rate tapers down as guest count rises, floored at baseRateFloor.
-// Mirrors effectiveBaseRate in backend/api/routes/smallEvents.js.
-function effectiveBaseRate(cfg, guests) {
-  const over = Math.max(0, guests - (cfg.minGuests || 1));
-  const rate = cfg.baseRate - (cfg.baseRateTaperPerGuest || 0) * over;
-  return Math.max(cfg.baseRateFloor ?? cfg.baseRate, rate);
-}
-
-function calcEstimate(type, guests, mealStyle = DEFAULT_MEAL_STYLE) {
-  const cfg = SMALL_EVENT_CONFIG[type];
-  if (!cfg || !guests || guests < 1) return null;
-  const styleMult = MEAL_STYLE_MULTIPLIER[mealStyle] ?? 1;
-  const staffCount = Math.ceil(guests / cfg.staffingGuestsPer);
-  const base = effectiveBaseRate(cfg, guests) * guests * styleMult;
-  const staffing = staffCount * cfg.staffingHourly * cfg.staffingHours;
-  const raw = base + staffing;
-  const mid = Math.max(raw, cfg.minimumTotal);
-  return {
-    min: Math.round(mid * cfg.rangeMin),
-    max: Math.round(mid * cfg.rangeMax),
-    deposit: Math.round(mid * DEFAULT_DEPOSIT_PERCENT),
-  };
-}
+const EVENT_TYPES = Object.keys(EVENT_TYPE_META);
+const DEFAULT_SERVICE_STYLE = SERVICE_STYLES[0].key;
 
 /* ─── Helpers ──────────────────────────────────────────────────────────────── */
 
-const fmt = (cents) => `$${(cents / 100).toFixed(0)}`;
-const fmtDollars = (dollars) => `$${Math.round(dollars).toLocaleString()}`;
 const isValidEmail = (v) => /.+@.+\..+/.test((v || '').trim());
 const normalizePhone = (v) => (v || '').replace(/\D/g, '').slice(0, 10);
 const formatPhone = (v) => {
@@ -142,7 +73,7 @@ const INITIAL_STATE = {
   step: 1,
   type: null,         // 'dinner' | 'pizza' | 'holiday'
   guests: '',
-  mealStyle: DEFAULT_MEAL_STYLE, // 'full' | 'between' | 'light'
+  serviceStyle: DEFAULT_SERVICE_STYLE, // a SERVICE_STYLES key
   date: '',           // 'YYYY-MM-DD'
   location: '',
   kitchenAccess: true,
@@ -204,9 +135,8 @@ export default function SmallEventsWizard({ initialType, onClose }) {
   }, [state.step, state.type]);
 
   const estimate = useMemo(() => {
-    const g = parseInt(state.guests, 10);
-    return g > 0 ? calcEstimate(state.type, g, state.mealStyle) : null;
-  }, [state.type, state.guests, state.mealStyle]);
+    return estimateEvent({ venueSlug: 'client', serviceStyle: state.serviceStyle, guestCount: parseInt(state.guests, 10) });
+  }, [state.guests, state.serviceStyle]);
 
   const openSlotDates = useMemo(() => new Set(slots.filter((s) => s.status === 'open').map((s) => s.date)), [slots]);
 
@@ -226,7 +156,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
         contactEmail: state.email,
         contactPhone: state.phone,
         guestCount: g,
-        mealStyle: state.mealStyle,
+        serviceStyle: state.serviceStyle,
         eventDate: state.date || undefined,
         location: state.location,
         kitchenAccess: state.kitchenAccess,
@@ -277,8 +207,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
       case 1: return !!state.type;
       case 2: {
         const g = parseInt(state.guests, 10);
-        const cfg = SMALL_EVENT_CONFIG[state.type];
-        return g >= (cfg?.minGuests || 1) && (!cfg?.maxGuests || g <= cfg.maxGuests);
+        return g >= MIN_GUESTS && g <= MAX_GUESTS;
       }
       case 3: return !!state.date;
       case 4: return !!state.location.trim();
@@ -288,7 +217,6 @@ export default function SmallEventsWizard({ initialType, onClose }) {
     }
   }, [state]);
 
-  const cfg = SMALL_EVENT_CONFIG[state.type] || {};
   const totalSteps = 7;
 
   /* ─── Render helpers ─────────────────────────────────────────────────────── */
@@ -372,10 +300,10 @@ export default function SmallEventsWizard({ initialType, onClose }) {
         <span className="le-checkout-summary-label">Estimate</span>
         <div style={{ textAlign: 'right' }}>
           <div className="le-checkout-summary-value">
-            {fmtDollars(estimate.min)}–{fmtDollars(estimate.max)}
+            {usd(estimate.estimateMinCents)}–{usd(estimate.estimateMaxCents)}
           </div>
           <div className="le-checkout-summary-breakdown">
-            ~{fmtDollars(estimate.deposit)} deposit ({Math.round(DEFAULT_DEPOSIT_PERCENT * 100)}%)
+            {usd(estimate.depositCents)} deposit ({DEPOSIT_BPS / 100}%)
           </div>
         </div>
       </div>
@@ -388,7 +316,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
       <WizardCard title="What are you planning?">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#d9d0c6' }}>
           {EVENT_TYPES.map((key) => {
-            const c = SMALL_EVENT_CONFIG[key];
+            const c = EVENT_TYPE_META[key];
             return (
               <button
                 key={key}
@@ -426,12 +354,12 @@ export default function SmallEventsWizard({ initialType, onClose }) {
   /* ─── Step 2: Guest count ────────────────────────────────────────────────── */
   if (state.step === 2) {
     const guestVal = parseInt(state.guests, 10);
-    const tooFew = guestVal > 0 && cfg.minGuests && guestVal < cfg.minGuests;
-    const tooMany = guestVal > 0 && cfg.maxGuests && guestVal > cfg.maxGuests;
+    const tooFew = guestVal > 0 && guestVal < MIN_GUESTS;
+    const tooMany = guestVal > 0 && guestVal > MAX_GUESTS;
     return (
       <WizardCard
         title="How many guests?"
-        subtitle={[cfg.minGuests && `Minimum ${cfg.minGuests}`, cfg.maxGuests && `maximum ${cfg.maxGuests}`].filter(Boolean).join(', ')}
+        subtitle={`Minimum ${MIN_GUESTS}, maximum ${MAX_GUESTS}`}
       >
         <EstimateBar />
         <div className="le-checkout-field" style={{ marginBottom: '0.25rem' }}>
@@ -439,7 +367,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button
               type="button"
-              onClick={() => set({ guests: String(Math.max(cfg.minGuests || 1, guestVal - 1 || 0)) })}
+              onClick={() => set({ guests: String(Math.max(MIN_GUESTS, guestVal - 1 || 0)) })}
               style={{ width: 40, height: 40, border: '1px solid #d9d0c6', background: '#fff', fontSize: '1.2rem', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               aria-label="Decrease"
             >−</button>
@@ -448,31 +376,31 @@ export default function SmallEventsWizard({ initialType, onClose }) {
               type="number"
               className="le-checkout-input"
               value={state.guests}
-              min={cfg.minGuests || 1}
-              max={cfg.maxGuests}
+              min={MIN_GUESTS}
+              max={MAX_GUESTS}
               onChange={(e) => set({ guests: e.target.value })}
               style={{ textAlign: 'center', width: 80, flexShrink: 0 }}
             />
             <button
               type="button"
-              onClick={() => set({ guests: String(Math.min(cfg.maxGuests || 999, (guestVal || 0) + 1)) })}
+              onClick={() => set({ guests: String(Math.min(MAX_GUESTS, (guestVal || 0) + 1)) })}
               style={{ width: 40, height: 40, border: '1px solid #d9d0c6', background: '#fff', fontSize: '1.2rem', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               aria-label="Increase"
             >+</button>
           </div>
-          {tooFew && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Minimum {cfg.minGuests} guests for this event type.</div>}
-          {tooMany && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Maximum {cfg.maxGuests} guests for this event type.</div>}
+          {tooFew && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Minimum {MIN_GUESTS} guests.</div>}
+          {tooMany && <div style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.35rem' }}>Maximum {MAX_GUESTS} guests.</div>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '1rem' }}>
-          <span className="le-checkout-label">How much food?</span>
+          <span className="le-checkout-label">Service style</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#d9d0c6', border: '1px solid #d9d0c6' }}>
-            {MEAL_STYLE_OPTIONS.map((opt) => {
-              const selected = state.mealStyle === opt.value;
+            {SERVICE_STYLES.map((opt) => {
+              const selected = state.serviceStyle === opt.key;
               return (
                 <button
-                  key={opt.value}
+                  key={opt.key}
                   type="button"
-                  onClick={() => set({ mealStyle: opt.value })}
+                  onClick={() => set({ serviceStyle: opt.key })}
                   aria-pressed={selected}
                   style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem',
@@ -480,9 +408,9 @@ export default function SmallEventsWizard({ initialType, onClose }) {
                     cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s',
                   }}
                 >
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: selected ? '#fff' : '#111' }}>{opt.label}</span>
-                    <span style={{ fontSize: '0.75rem', color: selected ? 'rgba(255,255,255,0.7)' : '#6b655d' }}>{opt.sub}</span>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: selected ? '#fff' : '#111' }}>{opt.label}</span>
+                  <span style={{ fontSize: '0.75rem', color: selected ? 'rgba(255,255,255,0.7)' : '#6b655d', whiteSpace: 'nowrap' }}>
+                    {usd(opt.minCents)}–{usd(opt.maxCents)} per guest
                   </span>
                 </button>
               );
@@ -731,10 +659,10 @@ export default function SmallEventsWizard({ initialType, onClose }) {
       {/* Summary card */}
       <div style={{ border: '1px solid #e8e8e8', marginBottom: '1.25rem' }}>
         {[
-          ['Event', SMALL_EVENT_CONFIG[state.type]?.label],
+          ['Event', EVENT_TYPE_META[state.type]?.label],
           ['Date', dateLabel],
           ['Guests', state.guests],
-          ['Food', MEAL_STYLE_OPTIONS.find((o) => o.value === state.mealStyle)?.label],
+          ['Service', SERVICE_STYLES.find((o) => o.key === state.serviceStyle)?.label],
           ['Location', state.location || '—'],
           ['Kitchen', state.kitchenAccess ? 'Full access' : 'Limited'],
           state.dietary ? ['Dietary', state.dietary] : null,
@@ -753,8 +681,8 @@ export default function SmallEventsWizard({ initialType, onClose }) {
             <div style={{ fontSize: '0.7rem', color: '#6b655d', marginTop: '0.2rem' }}>Finalized after consultation</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="le-checkout-summary-value">{fmtDollars(estimate.min)}–{fmtDollars(estimate.max)}</div>
-            <div className="le-checkout-summary-breakdown">Deposit: ~{fmtDollars(estimate.deposit)}</div>
+            <div className="le-checkout-summary-value">{usd(estimate.estimateMinCents)}–{usd(estimate.estimateMaxCents)}</div>
+            <div className="le-checkout-summary-breakdown">Deposit: {usd(estimate.depositCents)}</div>
           </div>
         </div>
       )}
@@ -769,7 +697,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
           disabled={state.submitStatus === 'saving'}
           onClick={() => handleSave({ withDeposit: true })}
         >
-          {state.submitStatus === 'saving' ? 'Working…' : `Pay deposit — ~${fmtDollars(estimate?.deposit ?? 0)}`}
+          {state.submitStatus === 'saving' ? 'Working…' : `Pay deposit — ${usd(estimate?.depositCents ?? 0)}`}
         </button>
         <button
           type="button"

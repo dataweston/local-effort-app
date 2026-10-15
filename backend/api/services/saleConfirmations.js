@@ -1,4 +1,5 @@
 const venues = require('../../../src/config/venues.json').venues;
+const SERVICE_STYLE_LABELS = new Map(require('../pricing/smallEventEstimator').SERVICE_STYLES.map((style) => [style.key, style.label]));
 const SITE = 'https://www.localeffortfood.com';
 const CONTACT = 'yum@localeffortfood.com';
 const INSTAGRAM = 'https://www.instagram.com/localeffort/';
@@ -32,7 +33,7 @@ function buildEventConfirmations({ estimate, amountCents, ownerEmail = CONTACT, 
   const shell = (body) => `<!doctype html><html><body style="margin:0;background:#f3ebe5;color:#24201c;font-family:Arial,sans-serif"><div style="max-width:600px;margin:auto;padding:28px 22px"><p style="font-size:18px;margin:0 0 22px"><strong>Local Effort</strong></p>${body}<p style="line-height:1.6">${contact.replace(CONTACT, `<a href="mailto:${CONTACT}" style="color:inherit">${CONTACT}</a>`)}</p><p><a href="${SITE}" style="color:inherit">Website</a> &nbsp;·&nbsp; <a href="${INSTAGRAM}" style="color:inherit">Instagram</a></p></div></body></html>`;
   const base = { sender: { email: senderEmail, name: 'Local Effort' }, replyTo: { email: CONTACT, name: 'Local Effort' }, tags: ['sale-confirmation', 'event-booking'] };
   const details = rows.map(([k, v]) => `${k}: ${v}`).join('\n');
-  const ownerRows = [['Customer', estimate.contactName || 'Not provided'], ['Email', estimate.contactEmail], ['Phone', estimate.contactPhone || 'Not provided'], ...rows, ['Service style', estimate.serviceStyle || 'To be confirmed'], ['Notes', estimate.notes || 'None']];
+  const ownerRows = [['Customer', estimate.contactName || 'Not provided'], ['Email', estimate.contactEmail], ['Phone', estimate.contactPhone || 'Not provided'], ...rows, ['Service style', SERVICE_STYLE_LABELS.get(estimate.serviceStyle) || estimate.serviceStyle || 'To be confirmed'], ['Notes', estimate.notes || 'None']];
   return [
     { role: 'customer', payload: { ...base, to: [{ email: estimate.contactEmail }], subject: `Booking confirmed${venue ? ` — ${venue.nickname}` : ''} — ${date}`, htmlContent: shell(`${image ? `<img src="${image}" width="556" alt="${escapeHtml(venue.nickname)} event space" style="display:block;width:100%;height:auto;margin-bottom:24px">` : ''}<h1 style="font-size:24px;font-weight:normal">Your booking is confirmed</h1><p style="line-height:1.6">${escapeHtml(intro)}</p>${table(rows)}`), textContent: `${intro}\n\n${details}\n\n${contact}\nWebsite: ${SITE}\nInstagram: ${INSTAGRAM}` } },
     { role: 'owner', payload: { ...base, to: [{ email: ownerEmail }], subject: `New confirmed booking${venue ? ` — ${venue.nickname}` : ''} — ${date}`, htmlContent: shell(`<h1 style="font-size:24px;font-weight:normal">New confirmed booking</h1>${table(ownerRows)}`), textContent: `New confirmed booking — Local Effort\n\n${ownerRows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nWebsite: ${SITE}\nInstagram: ${INSTAGRAM}` } },
