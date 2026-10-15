@@ -3,6 +3,7 @@ import { useSquareCard } from '../../hooks/useSquareCard';
 import { useSquareExpressPay } from '../../hooks/useSquareExpressPay';
 import { getOrCreateCheckoutAttemptId, clearCheckoutAttemptId } from '../../lib/checkoutAttemptId';
 import { trackEvent } from '../../lib/trackEvent';
+import { capturePageErrors, reportCheckoutFailure } from '../../lib/checkoutFailure';
 import { useCart } from '../cart/CartContext';
 import '../../styles/le-checkout.css';
 import smithCatalog from '../data/pizzaOnSmith.json';
@@ -298,7 +299,13 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
       }),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data?.error || 'Checkout failed.');
+    if (!response.ok) {
+      // The server records its own rejections (api-handlers/store/checkout.js).
+      throw Object.assign(new Error(data?.error || 'Checkout failed.'), {
+        code: data?.code,
+        recordedByServer: true,
+      });
+    }
     trackEvent('order.placed', {
       store,
       method,
@@ -348,12 +355,15 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     const checkoutAttemptId = resolveCheckoutAttemptId();
     trackEvent('payment.attempted', { store, sessionId: checkoutAttemptId, amountCents });
 
+    let stage = 'tokenize';
     try {
       const token = await tokenize();
+      stage = 'verify';
       const verificationToken = await verifyBuyer(token, verificationDetails);
+      stage = 'submit';
       await submitCheckout({ token, verificationToken, method: 'card' });
     } catch (err) {
-      trackEvent('payment.failed', { store, reason: err?.message });
+      reportCheckoutFailure({ store, sessionId: checkoutAttemptId, stage, error: err, amountCents });
       // Retire the attempt id on failure. Square caches a result per
       // idempotency key, so reusing it after a decline replays the decline
       // rather than taking a fresh payment; the server also refuses a second
@@ -384,15 +394,17 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
     }
 
     setStatus('submitting');
+    const checkoutAttemptId = resolveCheckoutAttemptId();
     try {
-      trackEvent('express_pay.used', { store, amountCents });
+      trackEvent('express_pay.used', { store, sessionId: checkoutAttemptId, amountCents });
       await submitCheckout({ token, verificationToken: undefined, method: 'express' });
     } catch (err) {
+      reportCheckoutFailure({ store, sessionId: checkoutAttemptId, stage: 'express', error: err, amountCents });
       clearCheckoutAttempt();
       setStatus('error');
       setError(err?.message || 'Unable to complete purchase.');
     }
-  }, [amountCents, canSubmit, clearCheckoutAttempt, status, store, submitCheckout]);
+  }, [amountCents, canSubmit, clearCheckoutAttempt, resolveCheckoutAttemptId, status, store, submitCheckout]);
 
   const { googlePayAvailable, applePayAvailable, error: expressError } = useSquareExpressPay({
     amountCents,
@@ -405,6 +417,20 @@ export default function CheckoutPanel({ store = 'sale', onBack }) {
   useEffect(() => {
     if (expressPayAvailable) trackEvent('express_pay.shown', { store });
   }, [expressPayAvailable, store]);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    return capturePageErrors({ store });
+  }, [enabled, store]);
+
+  // The card form failing to load leaves a dead pay button; record it once per
+  // distinct message so the owner can see it happened.
+  const reportedCardError = useRef('');
+  useEffect(() => {
+    if (!cardError || reportedCardError.current === cardError) return;
+    reportedCardError.current = cardError;
+    reportCheckoutFailure({ store, sessionId: undefined, stage: 'card-form', error: new Error(cardError) });
+  }, [cardError, store]);
 
   if (!open) return null;
 

@@ -15,6 +15,8 @@ const {
   markPaymentAttemptFailed,
   markPaymentAttemptSucceeded,
 } = require('../../backend/api/finance/paymentAttempts');
+const { describePaymentError } = require('../../backend/api/finance/paymentErrors');
+const { recordCheckoutEvent } = require('./_recordEvent');
 const { isRealIsoDate } = require('./_dateSelection');
 const {
   pickupByStore,
@@ -159,18 +161,39 @@ const normalizeAddress = (address) => {
   };
 };
 
+// Every rejection is written to the ledger (and awaited) before the customer
+// sees it, so a failed attempt always leaves evidence of where and why.
+const failCheckout = async (req, res, status, body, { stage = 'validation', declineCodes } = {}) => {
+  const input = req.body || {};
+  await recordCheckoutEvent({
+    event: 'payment.failed',
+    store: input.store || 'sale',
+    sessionId: input.checkoutAttemptId,
+    actorType: 'system',
+    meta: {
+      origin: 'server',
+      stage,
+      httpStatus: status,
+      code: body?.code,
+      declineCodes: Array.isArray(declineCodes) ? declineCodes.join(',') : undefined,
+      reason: body?.error,
+    },
+  });
+  return res.status(status).json(body);
+};
+
 module.exports = async (req, res, { emailOutboxService } = {}) => {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    if (!sq) return res.status(500).json({ error: 'Square not configured' });
-    if (!LOCATION_ID) return res.status(500).json({ error: 'Square location missing' });
+    if (!sq) return failCheckout(req, res, 500, { error: 'Square not configured' }, { stage: 'config' });
+    if (!LOCATION_ID) return failCheckout(req, res, 500, { error: 'Square location missing' }, { stage: 'config' });
     // Payment integrity is fail-closed: the booked commercial order and its
     // pending attempt must exist before Square is allowed to move money.
     if (!prisma) {
-      return res.status(503).json({
+      return failCheckout(req, res, 503, {
         error: 'Ordering database unavailable. No payment was taken; please try again shortly.',
         code: 'ordering-database-unavailable',
-      });
+      }, { stage: 'config' });
     }
 
     const {
@@ -191,29 +214,29 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       fulfillmentAreaConfirmed = false,
     } = req.body || {};
 
-    if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'No items' });
-    if (!token) return res.status(400).json({ error: 'Missing payment token' });
+    if (!Array.isArray(items) || !items.length) return failCheckout(req, res, 400, { error: 'No items' });
+    if (!token) return failCheckout(req, res, 400, { error: 'Missing payment token' });
     const pizzaDrop = store === 'pizza-on-smith' ? await getPizzaDrop() : null;
     const pizzaDropState = pizzaDrop ? pizzaDropStatus(pizzaDrop) : null;
     if (pizzaDropState && pizzaDropState !== 'open') {
-      return res.status(409).json({
+      return failCheckout(req, res, 409, {
         error: pizzaDropState === 'upcoming' ? 'Pizza on Smith ordering has not opened yet.' : 'Pizza on Smith ordering is closed.',
         code: 'ordering-window-closed',
       });
     }
     if (store === 'pizza-on-smith' && fulfillmentMethod !== 'pickup' && fulfillmentAreaConfirmed !== true) {
-      return res.status(422).json({ error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
+      return failCheckout(req, res, 422, { error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
     }
-    if (!pricingVersion) return res.status(409).json({ error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
+    if (!pricingVersion) return failCheckout(req, res, 409, { error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
 
     for (const item of items) {
-      if (!item?.productId) return res.status(400).json({ error: 'Each item needs productId' });
+      if (!item?.productId) return failCheckout(req, res, 400, { error: 'Each item needs productId' });
       const qty = Number(item.qty);
-      if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ error: 'Invalid qty' });
+      if (!Number.isInteger(qty) || qty < 1) return failCheckout(req, res, 400, { error: 'Invalid qty' });
     }
 
     const smithError = validateSmithOrder(items, store, pickup, fulfillmentMethod);
-    if (smithError) return res.status(422).json({ error: smithError });
+    if (smithError) return failCheckout(req, res, 422, { error: smithError });
 
     const priced = await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
     const pricedLines = priced.lines;
@@ -221,7 +244,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
     let amount = priced.subtotal;
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      return res.status(422).json({ error: 'Invalid order total' });
+      return failCheckout(req, res, 422, { error: 'Invalid order total' });
     }
 
     const subtotal = amount;
@@ -597,11 +620,20 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       ...(reconciliationPending ? { reconciliationPending: true } : {}),
     });
   } catch (error) {
-    const msg = (error?.errors && JSON.stringify(error.errors)) || error?.message || 'Checkout failed';
-    return res.status(error?.statusCode || 500).json({
+    const payment = describePaymentError(error);
+    if (payment.isPaymentError) {
+      // Square's raw error array is for the owner's records, not the customer.
+      return failCheckout(req, res, error?.statusCode || 402, {
+        error: payment.message,
+        code: payment.code,
+        declineCodes: payment.codes,
+      }, { stage: 'square', declineCodes: payment.codes });
+    }
+    const msg = error?.message || 'Checkout failed';
+    return failCheckout(req, res, error?.statusCode || 500, {
       error: msg,
       ...(error?.code ? {code: error.code} : {}),
-    });
+    }, { stage: 'server' });
   }
 };
 module.exports.queueSaleConfirmations = queueSaleConfirmations;

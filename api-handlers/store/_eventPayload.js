@@ -143,6 +143,13 @@ function sanitizeMeta(raw) {
   copyText('leadType', 100, { identifier: true });
   copyText('method', 80, { identifier: true });
   copyText('reason', 240, { redact: true });
+  // Failure diagnostics. `stage` says where in checkout it broke, `code` is the
+  // Square/server error code, and `declineCodes` lists every code Square returned.
+  copyText('stage', 40, { identifier: true });
+  copyText('code', 120, { identifier: true });
+  copyText('declineCodes', 240, { redact: true });
+  copyText('origin', 20, { identifier: true });
+  copyInteger('httpStatus', 0, 999);
   copyInteger('itemCount', 0, 1000);
   copyInteger('amountCents', 0, 100000000);
 

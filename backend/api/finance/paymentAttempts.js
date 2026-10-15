@@ -25,10 +25,17 @@ function paymentEvidence(payment) {
 }
 
 function failureDetails(error) {
-  const first = Array.isArray(error?.errors) ? error.errors[0] : null;
+  const errors = Array.isArray(error?.errors) ? error.errors : [];
+  const first = errors[0] || null;
+  // Square can report several problems at once (e.g. TRANSACTION_LIMIT and
+  // ADDRESS_VERIFICATION_FAILURE). Keep all of them; the first alone hides the
+  // fix the customer actually needs.
+  const message = errors.length > 1
+    ? errors.map((entry) => `${entry?.code || 'ERROR'}: ${entry?.detail || entry?.message || ''}`.trim()).join(' | ')
+    : first?.detail || first?.message || error?.message || 'Payment failed';
   return {
     failureCode: cleanString(first?.code || error?.code || 'payment_failed', 120),
-    failureMessage: cleanString(first?.detail || first?.message || error?.message || 'Payment failed', 1000),
+    failureMessage: cleanString(message, 1000),
   };
 }
 
