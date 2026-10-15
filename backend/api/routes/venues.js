@@ -296,6 +296,26 @@ async function syncFeed(feed, { logger } = {}) {
   }
 }
 
+// A Google calendar is cheap to read and the owner edits it by hand, so it is
+// re-read when a customer looks at (or books) a date, not once a day. Bounded:
+// a feed read within the last few minutes is not read again, and a failed read
+// still stamps `lastSyncAt`, so an outage cannot turn into a request storm.
+const GOOGLE_FEED_MAX_AGE_MS = 3 * 60 * 1000;
+
+async function refreshGoogleFeeds({ logger, now = Date.now(), db = prisma, sync = syncFeed } = {}) {
+  if (!db) return;
+  try {
+    const feeds = await db.venueCalendarFeed.findMany({
+      where: { active: true, url: { startsWith: GOOGLE_FEED_PREFIX } },
+    });
+    const stale = feeds.filter((feed) => !feed.lastSyncAt || now - new Date(feed.lastSyncAt).getTime() > GOOGLE_FEED_MAX_AGE_MS);
+    await Promise.all(stale.map((feed) => sync(feed, { logger })));
+  } catch (error) {
+    // Stale busy days are better than no calendar.
+    if (logger?.error) logger.error({ err: error }, 'google feed refresh failed');
+  }
+}
+
 function createVenuesRouter({ logger } = {}) {
   const router = express.Router();
 
@@ -330,6 +350,7 @@ function createVenuesRouter({ logger } = {}) {
     const to = requestedTo && requestedTo <= maxTo ? requestedTo : defaultTo;
 
     try {
+      await refreshGoogleFeeds({ logger });
       const days = await loadResourceCalendar({ resource: venue.slug, from, to, db: prisma });
       res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       return res.json({ venue: venue.slug, from, to, days });
@@ -428,6 +449,7 @@ function createVenuesRouter({ logger } = {}) {
     // Nothing is reserved here. An unpaid checkout must not keep anyone else
     // from buying the night, so this only refuses a date that is already gone.
     try {
+      await refreshGoogleFeeds({ logger });
       await assertDateAvailable({ db: prisma, resource: venue.slug, date });
     } catch (error) {
       if (error?.message === 'date-not-open' || error?.message === 'date-taken') {
@@ -717,4 +739,4 @@ function createVenuesRouter({ logger } = {}) {
   return router;
 }
 
-module.exports = { createVenuesRouter, __internals: { syncFeed, publicVenue, isAdmin } };
+module.exports = { createVenuesRouter, __internals: { syncFeed, refreshGoogleFeeds, publicVenue, isAdmin, GOOGLE_FEED_PREFIX } };

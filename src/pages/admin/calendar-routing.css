@@ -164,6 +164,12 @@
 .cr-field-row { display: flex; gap: 0.5rem; }
 .cr-token .cr-field { margin-top: 0; min-width: 16rem; }
 
+.cr-addfeed { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--specimen-rule); }
+.cr-addfeed h2 { font-size: 1.1rem; margin: 0; }
+.cr-addfeed .cr-note { margin: 0.35rem 0 0.75rem; max-width: 46rem; }
+.cr-addfeed__form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+.cr-addfeed__form .cr-field { margin-top: 0; min-width: 13rem; }
+
 /* ── Save bar ─────────────────────────────────────────────────────────── */
 
 .cr-bar {

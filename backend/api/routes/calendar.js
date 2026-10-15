@@ -13,7 +13,11 @@ const { createAdminVerifier } = require('../utils/adminVerifier');
 
 const MAX_PREVIEW_DAYS = 400;
 
-function createCalendarRouter({ logger, verifyAdminRequest = createAdminVerifier() } = {}) {
+function createCalendarRouter({
+  logger,
+  verifyAdminRequest = createAdminVerifier(),
+  syncFeed = venueInternals.syncFeed,
+} = {}) {
   const router = express.Router();
 
   // The admin token still works; a signed-in Supabase admin works too, so the
@@ -128,6 +132,50 @@ function createCalendarRouter({ logger, verifyAdminRequest = createAdminVerifier
     } catch (error) {
       if (logger?.error) logger.error({ err: error }, 'calendar preview failed');
       return res.status(503).json({ error: 'preview-unavailable' });
+    }
+  });
+
+  // Add a Google calendar as something that blocks dates. It is read through
+  // the service account, so it needs only the calendar id (the calendar must be
+  // shared with the service account). `resource` is the thing it blocks.
+  router.post('/feeds', async (req, res) => {
+    const label = String(req.body?.label || '').trim().slice(0, 60);
+    const calendarId = String(req.body?.googleCalendarId || '').trim();
+    const resource = String(req.body?.resource || '');
+    if (!label || !calendarId) return res.status(400).json({ error: 'missing-fields' });
+    if (!/^[A-Za-z0-9._%+@#-]{1,200}$/.test(calendarId)) return res.status(400).json({ error: 'invalid-calendar-id' });
+    if (!resourceSlugs().includes(resource)) return res.status(400).json({ error: 'unknown-resource' });
+    try {
+      const feed = await prisma.venueCalendarFeed.create({
+        data: { venue: resource, label, url: `${venueInternals.GOOGLE_FEED_PREFIX}${calendarId}` },
+      });
+      // Once the owner has saved a layout, a new feed arrives with no cables
+      // (the saved layout is authoritative), so the one the owner asked for is
+      // saved with it. Before that, the built-in wiring supplies it.
+      const layoutSaved = (await prisma.calendarNode.findMany({ take: 1 }).catch(() => [])).length > 0;
+      if (layoutSaved) {
+        await prisma.calendarRoute.createMany({
+          data: [{ fromId: `feed:${feed.id}`, toId: `resource:${resource}`, kind: 'blocks', enabled: true }],
+        });
+      }
+      const sync = await syncFeed(feed, { logger });
+      return res.json({ ok: true, feedId: feed.id, sync, graph: await loadGraph(prisma) });
+    } catch (error) {
+      if (logger?.error) logger.error({ err: error }, 'calendar feed create failed');
+      return res.status(503).json({ error: 'feed-create-failed' });
+    }
+  });
+
+  // Read every active feed now instead of waiting for the daily sync.
+  router.post('/sync', async (req, res) => {
+    try {
+      const feeds = await prisma.venueCalendarFeed.findMany({ where: { active: true } });
+      const results = [];
+      for (const feed of feeds) results.push(await syncFeed(feed, { logger }));
+      return res.json({ ok: true, results, graph: await loadGraph(prisma) });
+    } catch (error) {
+      if (logger?.error) logger.error({ err: error }, 'calendar sync failed');
+      return res.status(503).json({ error: 'sync-failed' });
     }
   });
 

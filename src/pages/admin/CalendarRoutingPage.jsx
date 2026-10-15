@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Board from '../../components/calendarRouting/Board';
+import AddGoogleFeed from '../../components/calendarRouting/AddGoogleFeed';
 import PreviewPanel, { PREVIEW_DAYS } from '../../components/calendarRouting/PreviewPanel';
 import {
   addDaysIso,
@@ -204,6 +205,48 @@ export default function CalendarRoutingPage() {
     }
   };
 
+  // ── Reading Google calendars ────────────────────────────────────────────
+
+  const [feedBusy, setFeedBusy] = useState(false);
+  const [feedNotice, setFeedNotice] = useState('');
+
+  const describeSync = (results) => {
+    const list = Array.isArray(results) ? results : [results];
+    const failed = list.filter((item) => item && item.status === 'error');
+    if (failed.length) return `${failed.length} of ${list.length} calendars could not be read. Check that each is shared with the service account.`;
+    return `Read ${list.length} ${list.length === 1 ? 'calendar' : 'calendars'}. The busy days are on the board now.`;
+  };
+
+  const addGoogleFeed = async (body) => {
+    setFeedBusy(true);
+    setFeedNotice('');
+    try {
+      const data = await callApi('/feeds', credentialRef.current, { method: 'POST', body });
+      await load(credentialRef.current);
+      setFeedNotice(describeSync(data.sync));
+      return true;
+    } catch (error) {
+      setFeedNotice(messageFor(error.code || 'network'));
+      return false;
+    } finally {
+      setFeedBusy(false);
+    }
+  };
+
+  const syncNow = async () => {
+    setFeedBusy(true);
+    setFeedNotice('');
+    try {
+      const data = await callApi('/sync', credentialRef.current, { method: 'POST', body: {} });
+      await load(credentialRef.current);
+      setFeedNotice(describeSync(data.results));
+    } catch (error) {
+      setFeedNotice(messageFor(error.code || 'network'));
+    } finally {
+      setFeedBusy(false);
+    }
+  };
+
   // ── Preview ─────────────────────────────────────────────────────────────
 
   const savedKey = saved ? previewKey(saved) : '';
@@ -318,6 +361,17 @@ export default function CalendarRoutingPage() {
           {problemCount > 0 ? <p className="cr-note cr-note--error">Fix the highlighted fields before saving.</p> : null}
           {saveError ? <p className="cr-banner cr-banner--error" role="alert">{saveError}</p> : null}
 
+          {resources.length ? (
+            <AddGoogleFeed
+              resources={resources}
+              serviceAccount={google?.serviceAccountEmail}
+              disabled={dirty}
+              busy={feedBusy || saving}
+              onAdd={addGoogleFeed}
+              onSyncNow={syncNow}
+            />
+          ) : null}
+          {feedNotice ? <p className="cr-banner" role="status">{feedNotice}</p> : null}
           <div className="cr-layout">
             <Board
               nodes={nodesForBoard}

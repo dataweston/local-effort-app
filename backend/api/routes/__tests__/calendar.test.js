@@ -7,9 +7,17 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const TOKEN = 'routing-test-token';
 const state = { nodes: [], routes: [] };
+const created = [];
 
 const db = {
-  venueCalendarFeed: { findMany: async () => [] },
+  venueCalendarFeed: {
+    findMany: async () => [],
+    create: async ({ data }) => {
+      const row = { id: `f${created.length + 1}`, ...data };
+      created.push(row);
+      return row;
+    },
+  },
   calendarNode: {
     findMany: async () => state.nodes,
     deleteMany: async ({ where }) => {
@@ -145,5 +153,38 @@ describe('calendar routing admin API', () => {
       }),
     });
     expect(bad.status).toBe(400);
+  });
+
+  it('adds a Google calendar that closes Small Events dates, and reads it once', async () => {
+    const express = require('express');
+    const { createCalendarRouter } = require('../calendar');
+    const synced = [];
+    const app = express();
+    app.use(express.json());
+    app.use('/r', createCalendarRouter({
+      logger: { warn() {}, error() {}, info() {} },
+      syncFeed: async (feed) => {
+        synced.push(feed.url);
+        return { feedId: feed.id, status: 'ok', blocks: 2 };
+      },
+    }));
+    const s = await new Promise((resolve) => { const x = app.listen(0, () => resolve(x)); });
+    const url = `http://127.0.0.1:${s.address().port}/r/feeds`;
+    try {
+      const post = (body) => fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+      expect((await post({ label: 'x', googleCalendarId: 'a b', resource: 'client' })).status).toBe(400);
+      expect((await post({ label: '', googleCalendarId: 'abc@group.calendar.google.com', resource: 'client' })).status).toBe(400);
+      expect((await post({ label: 'x', googleCalendarId: 'abc@group.calendar.google.com', resource: 'nope' })).status).toBe(400);
+      expect(created).toHaveLength(0);
+
+      const res = await post({ label: '608 Smith', googleCalendarId: 'abc@group.calendar.google.com', resource: 'firehouse' });
+      expect(res.status).toBe(200);
+      expect(created[0]).toMatchObject({ venue: 'firehouse', url: 'google-calendar:abc@group.calendar.google.com' });
+      expect(synced).toEqual(['google-calendar:abc@group.calendar.google.com']);
+      // A saved layout is authoritative, so the cable is saved with the feed.
+      expect(state.routes.some((r) => r.fromId === `feed:${created[0].id}` && r.toId === 'resource:firehouse' && r.kind === 'blocks')).toBe(true);
+    } finally {
+      await new Promise((resolve) => s.close(resolve));
+    }
   });
 });

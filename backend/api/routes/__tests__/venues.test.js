@@ -25,6 +25,26 @@ const fakeDb = ({ slots = [], blocks = [], holds = [], feeds = [] }) => ({
 const load = (data) =>
   loadResourceCalendar({ resource: 'firehouse', from: '2026-10-01', to: '2026-10-31', db: fakeDb(data) });
 
+
+describe('refreshGoogleFeeds', () => {
+  const now = Date.parse('2026-10-16T15:00:00Z');
+  const feed = (id, lastSyncAt) => ({ id, url: 'google-calendar:x', active: true, lastSyncAt });
+  const run = async (feeds, sync) =>
+    __internals.refreshGoogleFeeds({ now, db: fakeDb({ feeds }), sync, logger: { error() {} } });
+
+  it('reads a Google calendar that was last read a while ago, or never', async () => {
+    const read = [];
+    await run(
+      [feed('never', null), feed('old', new Date(now - 10 * 60_000)), feed('fresh', new Date(now - 60_000))],
+      async (f) => read.push(f.id),
+    );
+    expect(read.sort()).toEqual(['never', 'old']);
+  });
+
+  it('never fails the customer request when Google is down', async () => {
+    await expect(run([feed('a', null)], async () => { throw new Error('down'); })).resolves.toBeUndefined();
+  });
+});
 const statusOn = (days, date) => days.find((day) => day.date === date)?.status;
 
 describe('venue availability precedence', () => {
