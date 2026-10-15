@@ -458,7 +458,6 @@ const AppContent = () => {
                 />
                 <Route path="/events" element={<Navigate to="/book" replace />} />
                 <Route
-                <Route
                   path="/admin/calendar-routing"
                   element={
                     <AnimatedPage>
@@ -466,6 +465,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route
                   path="/book"
                   element={
                     <AnimatedPage>
