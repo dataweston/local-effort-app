@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-const { claimDate, loadResourceCalendar, buildOutboundIcs } = require('../service');
+const { settleDate, assertDateAvailable, loadResourceCalendar, buildOutboundIcs } = require('../service');
 
 const NOW = new Date('2026-10-13T15:00:00Z');
 
 /**
  * A just-enough Prisma. Transactions run one at a time, which is what the
- * advisory lock guarantees on Postgres; the test is that claimDate re-reads
+ * advisory lock guarantees on Postgres; the test is that settleDate re-reads
  * state inside the lock, not that the fake locks correctly.
  */
 function fakeDb(seed = {}) {
@@ -34,10 +34,17 @@ function fakeDb(seed = {}) {
       },
     },
     smallEventHold: {
-      findMany: async () =>
+      findMany: async ({ where }) =>
         t.holds
-          .filter((h) => h.status === 'confirmed' || (h.status === 'held' && h.holdUntil > NOW))
+          .filter((h) => !where?.status || h.status === where.status)
           .map((h) => ({ ...h, slot: t.slots.find((s) => s.id === h.slotId) })),
+      upsert: async ({ where, update, create }) => {
+        const existing = t.holds.find((h) => h.estimateId === where.estimateId);
+        if (existing) return Object.assign(existing, update);
+        const row = { ...create };
+        t.holds.push(row);
+        return row;
+      },
     },
     $executeRaw: async () => 0,
     $transaction: (fn) => {
@@ -49,73 +56,87 @@ function fakeDb(seed = {}) {
   return { api, t };
 }
 
-const hold = (api, t) => async (tx, slot) => {
-  const row = { estimateId: `e-${t.holds.length + 1}`, slotId: slot.id, status: 'held', holdUntil: new Date(NOW.getTime() + 86400000) };
-  t.holds.push(row);
-  return row;
-};
+const take = (api, resource, estimateId, date = '2026-12-05') =>
+  settleDate({ db: api, resource, date, estimateId, now: NOW });
 
-describe('claimDate', () => {
-  it('two buyers racing for one Small Events day: one wins, one is told it is taken', async () => {
+describe('settleDate: a date is taken by a paid deposit', () => {
+  it('two deposits racing for one Small Events day: the first gets it, the second is told it is taken', async () => {
     const { api, t } = fakeDb();
-    const results = await Promise.allSettled([
-      claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) }),
-      claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) }),
-    ]);
-    expect(results.map((r) => r.status).sort()).toEqual(['fulfilled', 'rejected']);
-    expect(results.find((r) => r.status === 'rejected').reason.message).toBe('date-taken');
+    const results = await Promise.all([take(api, 'client', 'e-1'), take(api, 'client', 'e-2')]);
+    expect(results.filter((r) => r.ok)).toHaveLength(1);
+    expect(results.find((r) => !r.ok).reason).toBe('date-taken');
+    expect(t.holds).toHaveLength(1);
+    expect(t.holds[0].status).toBe('confirmed');
+  });
+
+  it('a payment replay re-confirms the same estimate instead of conflicting with itself', async () => {
+    const { api, t } = fakeDb();
+    await take(api, 'client', 'e-1');
+    await expect(take(api, 'client', 'e-1')).resolves.toEqual({ ok: true });
     expect(t.holds).toHaveLength(1);
   });
 
-  it('a FIREHOUSE hold and a Small Events claim on the same day cannot both succeed', async () => {
-    const { api, t } = fakeDb({ slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }] });
-    await claimDate({ db: api, resource: 'firehouse', date: '2026-12-05', now: NOW, build: hold(api, t) });
-    await expect(
-      claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) }),
-    ).rejects.toThrow('date-taken');
+  it('a confirmed FIREHOUSE booking and a Small Events booking on the same day cannot both succeed', async () => {
+    const { api } = fakeDb({ slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }] });
+    await take(api, 'firehouse', 'e-1');
+    await expect(take(api, 'client', 'e-2')).resolves.toEqual({ ok: false, reason: 'date-taken' });
   });
 
-  it('a Small Events hold does not stop FIREHOUSE selling the night', async () => {
-    const { api, t } = fakeDb({ slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }] });
-    await claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) });
-    await expect(
-      claimDate({ db: api, resource: 'firehouse', date: '2026-12-05', now: NOW, build: hold(api, t) }),
-    ).resolves.toBeTruthy();
+  it('a Small Events booking does not stop FIREHOUSE selling the night', async () => {
+    const { api } = fakeDb({ slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }] });
+    await take(api, 'client', 'e-1');
+    await expect(take(api, 'firehouse', 'e-2')).resolves.toEqual({ ok: true });
   });
 
   it('an Airbnb-imported night is not sellable at FIREHOUSE but is at Small Events', async () => {
-    const { api, t } = fakeDb({
+    const { api } = fakeDb({
       slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }],
       feeds: [{ id: 'airbnb', venue: 'firehouse', label: 'Airbnb', url: 'https://x/a.ics', active: true }],
       blocks: [{ feedId: 'airbnb', venue: 'firehouse', date: '2026-12-05', source: 'Airbnb' }],
     });
-    await expect(claimDate({ db: api, resource: 'firehouse', date: '2026-12-05', now: NOW, build: hold(api, t) })).rejects.toThrow('date-taken');
-    await expect(claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) })).resolves.toBeTruthy();
+    await expect(take(api, 'firehouse', 'e-1')).resolves.toEqual({ ok: false, reason: 'date-taken' });
+    await expect(take(api, 'client', 'e-2')).resolves.toEqual({ ok: true });
   });
 
   it('refuses an unmanaged FIREHOUSE night, a closed Small Events day, and a day inside the lead time', async () => {
-    const { api, t } = fakeDb({ slots: [{ id: 'c', venue: 'client', date: '2026-12-06', type: 'event', status: 'blocked' }] });
-    await expect(claimDate({ db: api, resource: 'firehouse', date: '2026-12-05', now: NOW, build: hold(api, t) })).rejects.toThrow('date-not-open');
-    await expect(claimDate({ db: api, resource: 'client', date: '2026-12-06', now: NOW, build: hold(api, t) })).rejects.toThrow('date-not-open');
-    await expect(claimDate({ db: api, resource: 'client', date: '2026-10-20', now: NOW, build: hold(api, t) })).rejects.toThrow('date-not-open');
+    const { api } = fakeDb({ slots: [{ id: 'c', venue: 'client', date: '2026-12-06', type: 'event', status: 'blocked' }] });
+    await expect(take(api, 'firehouse', 'e-1')).resolves.toEqual({ ok: false, reason: 'date-not-open' });
+    await expect(take(api, 'client', 'e-2', '2026-12-06')).resolves.toEqual({ ok: false, reason: 'date-not-open' });
+    await expect(take(api, 'client', 'e-3', '2026-10-20')).resolves.toEqual({ ok: false, reason: 'date-not-open' });
+  });
+});
+
+describe('assertDateAvailable', () => {
+  it('reserves nothing: an unpaid checkout never blocks a second visitor', async () => {
+    const { api, t } = fakeDb();
+    await assertDateAvailable({ db: api, resource: 'client', date: '2026-12-05', now: NOW });
+    await assertDateAvailable({ db: api, resource: 'client', date: '2026-12-05', now: NOW });
+    expect(t.holds).toHaveLength(0);
   });
 
-  it('an expired hold no longer blocks the day', async () => {
+  it('a leftover unpaid hold does not block the day', async () => {
     const { api, t } = fakeDb();
     t.slots.push({ id: 's0', venue: 'client', date: '2026-12-05', type: 'event', status: 'open' });
-    t.holds.push({ estimateId: 'old', slotId: 's0', status: 'held', holdUntil: new Date(NOW.getTime() - 1000) });
-    await expect(claimDate({ db: api, resource: 'client', date: '2026-12-05', now: NOW, build: hold(api, t) })).resolves.toBeTruthy();
+    t.holds.push({ estimateId: 'old', slotId: 's0', status: 'held', holdUntil: new Date(NOW.getTime() + 3600_000) });
+    await expect(assertDateAvailable({ db: api, resource: 'client', date: '2026-12-05', now: NOW })).resolves.toBeUndefined();
+  });
+
+  it('refuses a booked day and a closed day', async () => {
+    const { api } = fakeDb();
+    await take(api, 'client', 'e-1');
+    await expect(assertDateAvailable({ db: api, resource: 'client', date: '2026-12-05', now: NOW })).rejects.toThrow('date-taken');
+    await expect(assertDateAvailable({ db: api, resource: 'firehouse', date: '2026-12-07', now: NOW })).rejects.toThrow('date-not-open');
   });
 });
 
 describe('published feeds', () => {
   it('the FIREHOUSE .ics carries our bookings as ranges and none of the Airbnb import', async () => {
-    const { api, t } = fakeDb({
+    const { api } = fakeDb({
       slots: [{ id: 'fh', venue: 'firehouse', date: '2026-12-05', type: 'holiday', status: 'open' }],
       feeds: [{ id: 'airbnb', venue: 'firehouse', label: 'Airbnb', url: 'https://x/a.ics', active: true }],
       blocks: [{ feedId: 'airbnb', venue: 'firehouse', date: '2026-12-20', source: 'Airbnb' }],
     });
-    await claimDate({ db: api, resource: 'firehouse', date: '2026-12-05', now: NOW, build: hold(api, t) });
+    await settleDate({ db: api, resource: 'firehouse', date: '2026-12-05', estimateId: 'e-1', now: NOW });
     const ics = await buildOutboundIcs({ nodeId: 'ics:firehouse', name: 'FIREHOUSE', from: '2026-10-13', to: '2027-10-13', db: api, now: NOW });
     expect(ics).toContain('DTSTART;VALUE=DATE:20261205');
     expect(ics).not.toContain('20261220');

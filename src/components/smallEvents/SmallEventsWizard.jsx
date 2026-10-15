@@ -714,7 +714,7 @@ export default function SmallEventsWizard({ initialType, onClose }) {
         </button>
       </div>
       <p className="le-checkout-footnote" style={{ marginTop: '0.75rem' }}>
-        Deposit holds your date for 24 hours. We'll confirm the quote by email before any charge.
+        The date is yours once the deposit goes through. We'll confirm the quote by email.
       </p>
       <button
         type="button"

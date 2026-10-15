@@ -49,7 +49,6 @@ const SELECTABLE = new Set(['open', 'unmanaged']);
 
 const STATE_LABEL = {
   open: 'available',
-  held: 'on hold for someone else',
   booked: 'booked',
   blocked: 'not available',
   unmanaged: 'ask us',
@@ -287,11 +286,10 @@ export default function VenueCalendar({
       </div>
 
       <p className="venue-calendar__legend" aria-hidden="true">
-        <span>open — raised</span>
-        <span>held — outlined</span>
-        <span>booked — struck</span>
-        <span>ask us — queried</span>
-        <span>closed — faint</span>
+        <span>open to book</span>
+        <span>already booked</span>
+        <span>ask us first</span>
+        <span>not available</span>
       </p>
 
       {/* aria-live so a screen reader hears the result of picking a date, and
@@ -300,8 +298,8 @@ export default function VenueCalendar({
         {loading
           ? 'Checking the calendar…'
           : selectedDate
-            ? `You picked ${selectedDate}. Add your details below and we’ll hold it.`
-            : `Pick a date to start. Anything faint isn’t spoken for — ask and we’ll check.`}
+            ? `You picked ${new Date(`${selectedDate}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' })}. Add your details to book it.`
+            : 'Pick a date to start. Anything faint isn’t open to book online — ask and we’ll check.'}
       </p>
     </div>
   );

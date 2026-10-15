@@ -43,18 +43,18 @@ function validateRoute({ fromId, toId, kind }) {
 // Status precedence, strongest first. A day absent from the map is "no
 // information"; the UI shows it as an enquiry unless the resource is
 // default-open.
-const RANK = { booked: 4, held: 3, blocked: 2, open: 1 };
+const RANK = { booked: 3, blocked: 2, open: 1 };
 
 const stronger = (a, b) => (!a || RANK[b.status] >= RANK[a.status] ? b : a);
 
 /**
- * Bookings and live holds for one resource, as busy days.
- * `bookings` rows: { venue, date, state: 'booked' | 'held', holdUntil? }.
+ * Paid bookings for one resource, as busy days. A date is only taken by a
+ * confirmed deposit, so `bookings` rows are all `state: 'booked'`.
  */
 const ownCommitments = (resourceSlug, facts) =>
   (facts.bookings || [])
     .filter((row) => row.venue === resourceSlug)
-    .map((row) => ({ date: row.date, status: row.state, source: 'booking', holdUntil: row.holdUntil }));
+    .map((row) => ({ date: row.date, status: 'booked', source: 'booking' }));
 
 const slug = (nodeId) => String(nodeId).slice('resource:'.length);
 
@@ -67,7 +67,7 @@ function incomingBlocks(graph) {
  *
  *   booked   confirmed booking here, a confirmed booking on a resource cabled
  *            into this one, or an imported feed day cabled into this one
- *   held     a live (unexpired) hold, here or on a cabled resource
+ *            (nothing is held for an unpaid checkout)
  *   blocked  an owner-closed day on this resource only
  *   open     owner-opened, or implicitly open inside the resource's window
  */
@@ -107,7 +107,7 @@ function resolveResourceDays({ resource, from, to, today, graph, facts }) {
     const fromKind = kindOf(route.fromId);
     if (fromKind === 'resource') {
       for (const day of ownCommitments(slug(route.fromId), facts)) {
-        put({ date: day.date, status: day.status, source: 'resource', via: route.fromId, holdUntil: day.holdUntil });
+        put({ date: day.date, status: day.status, source: 'resource', via: route.fromId });
       }
     } else if (fromKind === 'feed') {
       const feedId = route.fromId.slice('feed:'.length);

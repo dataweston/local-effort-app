@@ -4,6 +4,8 @@ const { fifoOrder } = require('../finance/receivables');
 const { projectEstimate, projectPayments } = require('../finance/smallEventsProjection');
 const { findAttemptForPayment } = require('../finance/squarePaymentEvidence');
 const { mirrorEstimate } = require('../calendar/mirror');
+const { settleDate } = require('../calendar/service');
+const { resourceOfEstimate } = require('../calendar/graph');
 
 // Both the legacy reference (`small-event:<id>`) and the venue/Small Events
 // reference (`venue:<slug>:<id>`) carry the estimate id.
@@ -43,22 +45,22 @@ const verifyPayment = ({ estimate, amountCents, currency }) => {
   return null;
 };
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
- * Someone else may have been sold the date if this hold lapsed before the
- * payment landed. The payment still stands; the owner has to refund or rebook.
+ * A date is taken by a captured deposit, never by a visitor filling in a form.
+ * Two people can pay for one night: the first deposit to land gets it, and the
+ * second payment still stands, so it goes to the owner as `date-taken` to
+ * refund or rebook. Returns null when the date was taken (or the estimate has
+ * no date to take), otherwise the reason it could not be.
  */
-const holdConflict = async ({ estimateId, now }) => {
-  const hold = await prisma.smallEventHold.findUnique({ where: { estimateId } });
-  if (!hold || hold.status === 'confirmed') return false;
-  if (hold.status === 'held' && hold.holdUntil > now) return false;
-  const rival = await prisma.smallEventHold.findFirst({
-    where: {
-      slotId: hold.slotId,
-      estimateId: { not: estimateId },
-      OR: [{ status: 'confirmed' }, { status: 'held', holdUntil: { gt: now } }],
-    },
-  });
-  return Boolean(rival);
+const takeDate = async ({ estimateId, estimate, now }) => {
+  const hold = await prisma.smallEventHold.findUnique({ where: { estimateId }, include: { slot: true } });
+  const date = ISO_DATE.test(estimate.eventDate || '') ? estimate.eventDate : hold?.slot?.date;
+  if (!date) return null;
+  const resource = hold?.slot?.venue || resourceOfEstimate(estimate);
+  const result = await settleDate({ db: prisma, resource, date, estimateId, now });
+  return result.ok ? null : result.reason;
 };
 
 async function applySmallEventPayment(payment, { logger, emailOutboxService, now = new Date() } = {}) {
@@ -93,7 +95,7 @@ async function applySmallEventPayment(payment, { logger, emailOutboxService, now
 
     const problem =
       verifyPayment({ estimate: existing, amountCents, currency }) ||
-      ((await holdConflict({ estimateId, now })) ? 'date-no-longer-held' : null);
+      (existing.status === 'confirmed' ? null : await takeDate({ estimateId, estimate: existing, now }));
     if (problem && existing.status !== 'confirmed') {
       await prisma.smallEventEstimate.update({
         where: { id: estimateId },

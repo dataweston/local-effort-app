@@ -43,7 +43,7 @@ export const VENUE_FEE_CENTS = {
   client: 0,
 };
 
-/** Date-hold deposit, in basis points of the low estimate. */
+/** Booking deposit, in basis points of the low estimate. */
 export const DEPOSIT_BPS = 2000;
 
 export const MIN_GUESTS = 8;
@@ -53,9 +53,9 @@ export const MAX_GUESTS = 200;
  * The same arithmetic the server does, for the figure that recomputes under
  * the visitor's hands.
  *
- * The hold is taken against the LOW end of the range plus fixed costs, because
- * the final menu price is set later by an operator. Holding at the top of the
- * range would mean refunding the difference on most bookings.
+ * The deposit is a share of the LOW end of the range plus fixed costs, because
+ * the final menu price is set later by an operator, and it is credited toward
+ * the final invoice.
  */
 export function estimateEvent({ venueSlug, serviceStyle, guestCount }) {
   const style = SERVICE_STYLES.find((entry) => entry.key === serviceStyle);

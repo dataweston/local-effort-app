@@ -303,15 +303,6 @@
   filter: drop-shadow(5px 4px 7px rgba(58, 46, 63, 0.34));
 }
 
-/* held — flattened and drawn in outline: someone else is mid-checkout on a 24h
-   hold. The wash stage of the study sheet, before colour settles. */
-.venue-day[data-state='held'] {
-  cursor: not-allowed;
-  color: color-mix(in srgb, var(--sp-ink) 50%, transparent);
-  outline: 1px dashed color-mix(in srgb, var(--sp-ink) 34%, transparent);
-  outline-offset: -4px;
-}
-
 /* booked — struck through in the venue accent, the way a cataloguer crosses
    out a folio. A line, not a fill, which is what keeps the accent inside its
    measured coverage. */
@@ -838,19 +829,38 @@
 }
 
 .venue-book__details {
-  animation: venue-book-details-in var(--sp-dur-2) var(--sp-ease) both;
+  display: grid;
+  gap: 1.5rem;
 }
 
-@keyframes venue-book-details-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.45rem);
-  }
+/* The date being booked, stated at the top of the form so the sheet always
+   says what is being bought. */
+.venue-book__date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  margin: 0 0 1.3rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--sp-rule);
+  border-bottom: 1px solid var(--sp-rule-hair);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.venue-book__date strong {
+  font-weight: 650;
+}
+
+.venue-book__date > span {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
+.venue-book__legend--next {
+  margin-top: 1.6rem;
 }
 
 .venue-book__submit {
@@ -1146,21 +1156,97 @@
   }
 }
 
-/* Small Events has no room plates, so the two rows the FIREHOUSE gives to its
-   building and kitchen go to food: the tomato sits beside the ledger, and the
-   melon and corn plates close the gap above the calendar. */
+/* Small Events has no rooms, and its job is to take a booking. The ask is the
+   second row, straight under the headline; the plain-language answers and the
+   food photographs follow it, and every row is filled so no gap opens between
+   them. FOODIST, which also has no room plates, keeps the FIREHOUSE rows with
+   food in the building and kitchen slots. */
 @media (min-width: 64.0625rem) {
-  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-tomato'] {
+  .venue-scope--foodist .venue-gallery__tile[data-slot='food-tomato'] {
     grid-column: 8 / -1;
     grid-row: 2;
   }
 
-  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-melon'] {
+  .venue-scope--foodist .venue-gallery__tile[data-slot='food-melon'],
+  .venue-scope--foodist .venue-gallery__tile[data-slot='food-corn'] {
     grid-row: 3;
   }
 
-  :is(.venue-scope--client, .venue-scope--foodist) .venue-gallery__tile[data-slot='food-corn'] {
+  .venue-scope--client .venue-hero__plate {
+    grid-column: 1 / span 7;
+  }
+
+  .venue-scope--client .venue-hero__copy {
+    grid-column: 8 / -1;
+    align-self: center;
+  }
+
+  .venue-scope--client .service-hero {
+    grid-row: 2;
+  }
+
+  .venue-scope--client .venue-included {
+    grid-column: 1 / span 7;
     grid-row: 3;
+    align-self: start;
+  }
+
+  .venue-scope--client .venue-gallery__tile[data-slot='food-tomato'] {
+    grid-column: 8 / -1;
+    grid-row: 3;
+    aspect-ratio: 4 / 5;
+  }
+
+  .venue-scope--client .venue-gallery__tile[data-slot='food-melon'],
+  .venue-scope--client .venue-gallery__tile[data-slot='food-corn'] {
+    grid-row: 4;
+  }
+
+  .venue-scope--client .venue-gallery__tile[data-slot='food-pizza'],
+  .venue-scope--client .venue-gallery__tile[data-slot='food-harvest'] {
+    grid-row: 5;
+  }
+
+  .venue-scope--client .venue-layout .venue-gallery__tile[data-slot='food-asparagus'],
+  .venue-scope--client .venue-layout .venue-gallery__tile[data-slot='food-service'],
+  .venue-scope--client .venue-layout .venue-gallery__tile[data-slot='food-cannoli'] {
+    grid-row: 6;
+  }
+
+  .venue-scope--client .venue-void {
+    grid-row: 7;
+  }
+}
+
+/* The plain-language answers under the ask. Prose rather than readouts, so the
+   values are set in the body face; the rule grammar is the ledger's. */
+.venue-included {
+  margin-top: var(--service-rhythm);
+  max-width: 52rem;
+}
+
+.venue-included__lede {
+  margin: 0.6rem 0 0;
+  max-width: 40rem;
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.venue-included .venue-ledger__value {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.venue-included__rate {
+  display: block;
+}
+
+@media (min-width: 64.0625rem) {
+  .venue-scope--client .venue-included {
+    margin-top: 0;
   }
 }
 

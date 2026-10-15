@@ -315,15 +315,9 @@ function createSmallEventsRouter({ logger } = {}) {
       if (!slot) return res.status(404).json({ error: 'slot-not-found' });
       if (slot.status === 'blocked') return res.status(409).json({ error: 'slot-blocked' });
 
-      const now = new Date();
+      // Only a paid booking takes a slot. An unpaid estimate never blocks a date.
       const activeHold = await prisma.smallEventHold.findFirst({
-        where: {
-          slotId,
-          OR: [
-            { status: 'confirmed' },
-            { status: 'held', holdUntil: { gt: now } },
-          ],
-        },
+        where: { slotId, status: 'confirmed' },
       });
       if (activeHold && activeHold.estimateId !== estimateId) {
         return res.status(409).json({ error: 'slot-held' });
@@ -536,9 +530,8 @@ function createSmallEventsRouter({ logger } = {}) {
       if (!estimate) return res.status(404).json({ error: 'estimate-not-found' });
       if (!estimate.depositAmountCents) return res.status(400).json({ error: 'deposit-missing' });
       if (!estimate.hold) return res.status(409).json({ error: 'hold-required' });
-      if (estimate.hold.status !== 'confirmed' && estimate.hold.holdUntil && estimate.hold.holdUntil.getTime() < Date.now()) {
-        return res.status(409).json({ error: 'hold-expired' });
-      }
+      // A hold is only a link from the estimate to its date. It reserves nothing:
+      // the date is taken when the deposit is paid.
 
       const { client: squareClient, locationId } = getSquareClient();
       if (!squareClient) return res.status(500).json({ error: 'square-not-configured' });

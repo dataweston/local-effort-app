@@ -15,7 +15,7 @@ const { parseCalendar, addDaysIso } = require('../utils/ical');
 const crypto = require('crypto');
 const { estimateVenueEvent } = require('../pricing/smallEventEstimator');
 const { getSquareClient } = require('../../../api-handlers/_lib/squareClient');
-const { claimDate, loadResourceCalendar, buildOutboundIcs } = require('../calendar/service');
+const { assertDateAvailable, loadResourceCalendar, buildOutboundIcs } = require('../calendar/service');
 const { todayChicago } = require('../calendar/dates');
 const { CLIENT_RESOURCE } = require('../calendar/graph');
 const { retryFailedMirrors } = require('../calendar/mirror');
@@ -115,11 +115,6 @@ const resolveSiteUrl = () => {
 const newToken = () =>
   typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
 
-// How long a deposit link keeps the date off the market. Matches the small
-// events flow (smallEvents.js:8) so a visitor who books a room and a visitor
-// who books a dinner get the same promise.
-const HOLD_WINDOW_HOURS = 24;
-
 const isEmail = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || ''));
 
 // In-memory submit limiter, same shape as the one messages.js keeps for every
@@ -169,21 +164,19 @@ const checkBookRateLimit = (req, email) => {
 };
 
 /**
- * Give a held date back.
+ * Discard an unpaid checkout.
  *
- * Called when a hold was written but the payment link could not be created.
- * Deleting rather than expiring: nobody was ever shown a price, so there is no
- * abandoned checkout to reconcile, and leaving the row would block a night for
- * 24 hours over an outage that lasted a second. Failures are swallowed on
- * purpose — the caller is already returning an error, and a failed cleanup
- * degrades to a date that frees itself when the hold window lapses.
+ * Called when the estimate was written but the payment link could not be
+ * created. Deleting rather than expiring: nobody was ever shown a price, so
+ * there is no abandoned checkout to reconcile. Failures are swallowed on
+ * purpose: the caller is already returning an error, and a leftover unpaid
+ * estimate blocks nothing.
  */
-const releaseHold = async (estimateId, logger) => {
+const discardCheckout = async (estimateId, logger) => {
   try {
-    await prisma.smallEventHold.deleteMany({ where: { estimateId } });
     await prisma.smallEventEstimate.delete({ where: { id: estimateId } });
   } catch (error) {
-    if (logger?.error) logger.error({ err: error, estimateId }, 'venue hold release failed');
+    if (logger?.error) logger.error({ err: error, estimateId }, 'venue checkout discard failed');
   }
 };
 
@@ -348,22 +341,23 @@ function createVenuesRouter({ logger } = {}) {
 
   // ── The deposit ───────────────────────────────────────────────────────
   //
-  // One call does the whole ask: validate, price, hold the date, and hand back
-  // a Square link. Making someone submit an enquiry, wait for a reply and then
-  // follow a second link is the flow this page was built to replace.
+  // One call does the whole ask: validate, price, and hand back a Square link.
+  // Making someone submit an enquiry, wait for a reply and then follow a
+  // second link is the flow this page was built to replace.
   //
   // Deliberate:
   //
   //   1. The price is re-derived here from the owner price book. The client
   //      ships the same numbers (src/config/eventPricing.js) so the figure can
   //      render in prerendered HTML, but nothing the browser sends is trusted.
-  //   2. The date is claimed atomically (calendar/service.js claimDate): the
-  //      rules are re-read under a per-date lock, so two buyers cannot both
-  //      pass a check and then both write a hold.
-  //   3. The hold, the estimate and the FinancePaymentAttempt are written in
-  //      that one transaction, BEFORE any Square call. A payment that lands
-  //      after a crash still finds its sale. If Square then fails, the hold is
-  //      released so a night nobody can buy is not held for a day.
+  //   2. A date is NOT held for a checkout. It is taken only when the paid
+  //      deposit lands (utils/smallEventsPayments.js -> calendar/service.js
+  //      settleDate), atomically under a per-date lock. This endpoint only
+  //      refuses a date that is already booked or closed.
+  //   3. The estimate and the FinancePaymentAttempt are written in one
+  //      transaction, BEFORE any Square call. A payment that lands after a
+  //      crash still finds its sale. If Square then fails, the unpaid estimate
+  //      is deleted.
   //   4. A date is payable only if the routing graph says it is sellable:
   //      FIREHOUSE and the Local Kitchen need an operator-opened night; Small
   //      Events is open unless something closes it.
@@ -431,63 +425,59 @@ function createVenuesRouter({ logger } = {}) {
       return res.status(503).json({ error: 'square-not-configured' });
     }
 
-    let estimate;
+    // Nothing is reserved here. An unpaid checkout must not keep anyone else
+    // from buying the night, so this only refuses a date that is already gone.
     try {
-      estimate = await claimDate({
-        db: prisma,
-        resource: venue.slug,
-        date,
-        build: async (tx, slot) => {
-          const created = await tx.smallEventEstimate.create({
-            data: {
-              type: 'holiday',
-              status: 'hold-pending',
-              location: isClient ? eventAddress : venue.slug,
-              serviceStyle: quote.serviceStyle,
-              guestCount: quote.guestCount,
-              eventDate: date,
-              eventTime,
-              contactName,
-              contactEmail,
-              contactPhone: contactPhone || null,
-              notes: notes || null,
-              estimateMinCents: quote.estimateMinCents,
-              estimateMaxCents: quote.estimateMaxCents,
-              subtotalCents: quote.estimateMinCents,
-              depositPercent: quote.depositPercent,
-              depositAmountCents: quote.depositCents,
-              depositStatus: 'pending',
-              claimToken: newToken(),
-              lastEditedAt: new Date(),
-              hold: {
-                create: {
-                  slotId: slot.id,
-                  status: 'held',
-                  holdUntil: new Date(Date.now() + HOLD_WINDOW_HOURS * 3600 * 1000),
-                },
-              },
-            },
-            include: { hold: true },
-          });
-          await tx.financePaymentAttempt.create({
-            data: {
-              provider: 'square',
-              idempotencyKey: `venue-deposit:${created.id}`,
-              status: 'pending',
-              requestedCents: quote.depositCents,
-              currency: 'USD',
-              metadata: { channel: 'venue_booking', estimateId: created.id, resource: venue.slug, date },
-            },
-          });
-          return created;
-        },
-      });
+      await assertDateAvailable({ db: prisma, resource: venue.slug, date });
     } catch (error) {
       if (error?.message === 'date-not-open' || error?.message === 'date-taken') {
         return res.status(409).json({ error: error.message });
       }
-      if (logger?.error) logger.error({ err: error }, 'venue hold failed');
-      return res.status(503).json({ error: 'hold-failed' });
+      if (logger?.error) logger.error({ err: error }, 'venue availability check failed');
+      return res.status(503).json({ error: 'checkout-unavailable' });
+    }
+
+    let estimate;
+    try {
+      estimate = await prisma.$transaction(async (tx) => {
+        const created = await tx.smallEventEstimate.create({
+          data: {
+            type: 'holiday',
+            status: 'deposit-pending',
+            location: isClient ? eventAddress : venue.slug,
+            serviceStyle: quote.serviceStyle,
+            guestCount: quote.guestCount,
+            eventDate: date,
+            eventTime,
+            contactName,
+            contactEmail,
+            contactPhone: contactPhone || null,
+            notes: notes || null,
+            estimateMinCents: quote.estimateMinCents,
+            estimateMaxCents: quote.estimateMaxCents,
+            subtotalCents: quote.estimateMinCents,
+            depositPercent: quote.depositPercent,
+            depositAmountCents: quote.depositCents,
+            depositStatus: 'pending',
+            claimToken: newToken(),
+            lastEditedAt: new Date(),
+          },
+        });
+        await tx.financePaymentAttempt.create({
+          data: {
+            provider: 'square',
+            idempotencyKey: `venue-deposit:${created.id}`,
+            status: 'pending',
+            requestedCents: quote.depositCents,
+            currency: 'USD',
+            metadata: { channel: 'venue_booking', estimateId: created.id, resource: venue.slug, date },
+          },
+        });
+        return created;
+      });
+    } catch (error) {
+      if (logger?.error) logger.error({ err: error }, 'venue checkout record failed');
+      return res.status(503).json({ error: 'checkout-unavailable' });
     }
 
     const attemptKey = `venue-deposit:${estimate.id}`;
@@ -501,7 +491,7 @@ function createVenuesRouter({ logger } = {}) {
           referenceId,
           lineItems: [
             {
-              name: `${venue.nickname} - ${date} date hold`,
+              name: `${venue.nickname} - ${date} deposit`,
               quantity: '1',
               basePriceMoney: { amount: quote.depositCents, currency: 'USD' },
               note: `${quote.depositPercent}% deposit against an estimated $${dollars} for ${quote.guestCount} guests`.slice(0, 500),
@@ -544,14 +534,12 @@ function createVenuesRouter({ logger } = {}) {
 
       return res.json({
         url: paymentLink.url,
-        holdId: estimate.id,
-        holdUntil: estimate.hold?.holdUntil,
         depositCents: quote.depositCents,
         estimateMinCents: quote.estimateMinCents,
         estimateMaxCents: quote.estimateMaxCents,
       });
     } catch (error) {
-      await releaseHold(estimate.id, logger);
+      await discardCheckout(estimate.id, logger);
       await prisma.financePaymentAttempt
         .update({
           where: { provider_idempotencyKey: { provider: 'square', idempotencyKey: attemptKey } },
@@ -583,7 +571,6 @@ function createVenuesRouter({ logger } = {}) {
       let state = 'processing';
       if (estimate.status === 'confirmed') state = 'confirmed';
       else if (estimate.status === 'payment-review') state = 'review';
-      else if (estimate.hold && estimate.hold.status === 'held' && estimate.hold.holdUntil <= new Date()) state = 'expired';
       return res.json({ state, date: estimate.eventDate, venue: venue.slug });
     } catch (error) {
       if (logger?.error) logger.error({ err: error }, 'venue booking status failed');

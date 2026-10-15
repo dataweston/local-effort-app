@@ -1,5 +1,5 @@
-// VenueBooking — the ask on /firehouse and /foodist: a night, a party size, a
-// service style, and a deposit that takes the date off the market.
+// VenueBooking — the ask on /firehouse, /foodist and /small-events: a date, a
+// party size, a service style, and a deposit that books the date.
 //
 // Design: docs/design/VENUES.md. Two things here are reference-derived rather
 // than chosen:
@@ -31,12 +31,12 @@ import {
 
 const ERROR_COPY = {
   'invalid-event-time': 'Choose an event start time (Central time).',
-  'date-not-open': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
-  'date-taken': 'That night was taken while you were filling this in. Pick another and we’ll hold it.',
+  'date-not-open': 'Someone booked that date while you were filling this in. Pick another on the calendar.',
+  'date-taken': 'Someone booked that date while you were filling this in. Pick another on the calendar.',
   'rate-limit-exceeded': 'Too many tries from here. Give it a few minutes, or email us and we’ll do it by hand.',
-  'square-not-configured': 'Card payments are down at our end. Send us the date and we’ll hold it by hand today.',
-  'checkout-failed': 'The card step didn’t open. Nothing was charged and the night is still free — try again, or email us.',
-  'hold-failed': 'We couldn’t reach the calendar. Nothing was charged. Try again in a moment.',
+  'square-not-configured': 'Card payments are down at our end. Nothing was charged. Email us the date and we’ll sort it out by hand.',
+  'checkout-failed': 'The card step didn’t open. Nothing was charged — try again, or email us.',
+  'checkout-unavailable': 'We couldn’t reach the calendar. Nothing was charged. Try again in a moment.',
   'over-capacity': 'That’s more people than the room holds. Drop the count, or ask us about the bigger space.',
   'enquiry-failed': 'We couldn’t send that. Nothing was charged — try again, or email us directly.',
   'invalid-email': 'That email address doesn’t look right.',
@@ -49,6 +49,16 @@ const ERROR_COPY = {
 
 const errorFor = (code) =>
   ERROR_COPY[code] || 'Something went wrong and nothing was charged. Try again, or email us.';
+
+// A calendar date has no time zone, so it is formatted as the same civil date
+// everywhere rather than shifted by the visitor's offset.
+const formatCivilDate = (iso, options) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(iso || '')
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { ...options, timeZone: 'UTC' })
+    : iso || '';
+const longDate = (iso) =>
+  formatCivilDate(iso, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const shortDate = (iso) => formatCivilDate(iso, { month: 'short', day: 'numeric' });
 
 export default function VenueBooking({ venue, selectedDate, selectedState, onClearDate }) {
   const [serviceStyle, setServiceStyle] = useState(SERVICE_STYLES[0].key);
@@ -182,214 +192,235 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
     return (
       <div className="ht-success" role="status">
         <span className="ht-success-lead">request received —</span>
-        We&apos;ll confirm {selectedDate} within one business day. Nothing is charged until we have
-        confirmed the details with you.
+        We&apos;ll confirm {longDate(selectedDate)} within one business day. Nothing is charged until
+        we have confirmed the details with you.
       </div>
     );
   }
 
+  const hasVenueRoom = Boolean(venue.capacity?.seated || venue.capacity?.standing);
+
   return (
     <form className="ht-form venue-book" onSubmit={submit}>
-      {/* ── the party ── */}
-      <fieldset className="venue-book__field">
-        <legend className="venue-book__legend">How many people</legend>
-        <div className="venue-book__stepper">
-          <button
-            type="button"
-            className="venue-calendar__step"
-            onClick={() => stepGuests(-1)}
-            disabled={guestCount <= MIN_GUESTS}
-            aria-label="One fewer guest"
-          >
-            &minus;
-          </button>
-          <input
-            className="venue-book__count"
-            type="number"
-            inputMode="numeric"
-            min={MIN_GUESTS}
-            max={roomMax}
-            value={guestCount}
-            aria-label="Number of guests"
-            onChange={(event) => {
-              const next = parseInt(event.target.value, 10);
-              if (Number.isFinite(next)) setGuestCount(next);
-            }}
-            onBlur={() =>
-              setGuestCount((current) => Math.min(roomMax, Math.max(MIN_GUESTS, current || MIN_GUESTS)))
-            }
-          />
-          <button
-            type="button"
-            className="venue-calendar__step"
-            onClick={() => stepGuests(1)}
-            disabled={guestCount >= roomMax}
-            aria-label="One more guest"
-          >
-            +
-          </button>
-          <span className="venue-book__stepper-note">
-            {MIN_GUESTS} minimum
-            {venue.capacity?.seated || venue.capacity?.standing ? ` · ${roomMax} maximum` : ''}
-          </span>
-        </div>
-      </fieldset>
-
-      {/* ── the service ── ruled rows, never three cards ── */}
-      {selectedDate && (
-        <div className="venue-book__details">
-          <div className="venue-book__event">
-      <fieldset className="venue-book__field">
-        <legend className="venue-book__legend">How it’s served</legend>
-        <div className="venue-book__styles">
-          {SERVICE_STYLES.map((style) => (
-            <label key={style.key} className="venue-book__style">
-              <input
-                type="radio"
-                name="serviceStyle"
-                value={style.key}
-                checked={serviceStyle === style.key}
-                onChange={() => setServiceStyle(style.key)}
-              />
-              <span className="venue-book__style-name">{style.label}</span>
-              <span className="venue-book__style-rate">
-                {usd(style.minCents)}–{usd(style.maxCents)} <i>per guest</i>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      {/* ── the figure ── the one thing that moves as you choose ── */}
-      {quote && (
-        <dl className="venue-book__ledger" aria-live="polite">
-          <div className="venue-ledger__row">
-            <dt className="venue-ledger__term">food &amp; service</dt>
-            <dd className="venue-ledger__value">
-              {usd(quote.perGuestMinCents)}–{usd(quote.perGuestMaxCents)} × {quote.guestCount}
-            </dd>
-          </div>
-          {quote.venueFeeCents > 0 && (
-            <div className="venue-ledger__row">
-              <dt className="venue-ledger__term">venue fee</dt>
-              <dd className="venue-ledger__value">
-                {usd(quote.venueFeeCents)}
-                {venue.venueFeeHours ? <i> — est. {venue.venueFeeHours} hours</i> : null}
-              </dd>
-            </div>
-          )}
-          <div className="venue-ledger__row venue-book__total">
-            <dt className="venue-ledger__term">estimate</dt>
-            <dd className="venue-ledger__value">
-              {usd(quote.estimateMinCents)}–{usd(quote.estimateMaxCents)}
-            </dd>
-          </div>
-          <div className="venue-ledger__row venue-book__deposit">
-            <dt className="venue-ledger__term">to hold the date</dt>
-            <dd className="venue-ledger__value">
-              {usd(quote.depositCents)}
-
-            </dd>
-          </div>
-        </dl>
-      )}
-
-      <p className="venue-book__basis">
-        {payable || !selectedDate
-          ? `${quote?.depositPercent}% of the low estimate, credited toward your final invoice. Your chef confirms the menu price with you. If the total is lower, we refund the difference.`
-          : 'This date needs confirmation. Send your details and we’ll check availability — usually the same day. No payment is taken.'}
+      {/* ── the date ── chosen on the calendar; echoed here so the form always
+           says what is being booked. ── */}
+      <p className="venue-book__date" aria-live="polite">
+        {selectedDate ? (
+          <>
+            <strong>{longDate(selectedDate)}</strong>
+            <button type="button" className="venue-book__clear" onClick={onClearDate}>
+              change date
+            </button>
+          </>
+        ) : (
+          <span>Pick a date on the calendar to book it.</span>
+        )}
       </p>
 
-          </div>
-          <div className="venue-book__contact">
-            <h3 className="venue-book__legend">Your details</h3>
-      {/* ── who ── the same field primitives every other slip on the site
-           uses (slipForms.jsx:161-213), so this form inherits the house input
-           styling rather than growing a second one. ── */}
-      <div className="venue-book__who">
-        <div>
-          <label className="ht-label" htmlFor={`venue-time-${venue.slug}`}>event start time (Central)</label>
-          <input id={`venue-time-${venue.slug}`} className="ht-input" type="time" required value={eventTime} onChange={(event) => setEventTime(event.target.value)} />
-        </div>
-        {isClient && (
-          <div>
-            <label className="ht-label" htmlFor={`venue-address-${venue.slug}`}>
-              where we’ll cook — street address
-            </label>
-            <input
-              id={`venue-address-${venue.slug}`}
-              className="ht-input"
-              type="text"
-              required
-              minLength={6}
-              autoComplete="street-address"
-              value={eventAddress}
-              onChange={(event) => setEventAddress(event.target.value)}
-            />
-          </div>
-        )}
-        <div>
-          <label className="ht-label" htmlFor={`venue-name-${venue.slug}`}>your name</label>
-          <input
-            id={`venue-name-${venue.slug}`}
-            className="ht-input"
-            type="text"
-            required
-            autoComplete="name"
-            value={contactName}
-            onChange={(event) => setContactName(event.target.value)}
-          />
-        </div>
-        <div className="ht-row">
-          <div>
-            <label className="ht-label" htmlFor={`venue-email-${venue.slug}`}>email</label>
-            <input
-              id={`venue-email-${venue.slug}`}
-              className="ht-input"
-              type="email"
-              required
-              autoComplete="email"
-              value={contactEmail}
-              onChange={(event) => setContactEmail(event.target.value)}
-            />
-          </div>
-          <div>
-            <label className="ht-label" htmlFor={`venue-phone-${venue.slug}`}>phone</label>
-            <input
-              id={`venue-phone-${venue.slug}`}
-              className="ht-input"
-              type="tel"
-              autoComplete="tel"
-              value={contactPhone}
-              onChange={(event) => setContactPhone(event.target.value)}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="ht-label" htmlFor={`venue-notes-${venue.slug}`}>
-            anything we should know
-          </label>
-          <textarea
-            id={`venue-notes-${venue.slug}`}
-            className="ht-input"
-            rows={2}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-          />
+      <div className="venue-book__details">
+        <div className="venue-book__event">
+          {/* ── the party ── */}
+          <fieldset className="venue-book__field">
+            <legend className="venue-book__legend">How many people</legend>
+            <div className="venue-book__stepper">
+              <button
+                type="button"
+                className="venue-calendar__step"
+                onClick={() => stepGuests(-1)}
+                disabled={guestCount <= MIN_GUESTS}
+                aria-label="One fewer guest"
+              >
+                &minus;
+              </button>
+              <input
+                className="venue-book__count"
+                type="number"
+                inputMode="numeric"
+                min={MIN_GUESTS}
+                max={roomMax}
+                value={guestCount}
+                aria-label="Number of guests"
+                onChange={(event) => {
+                  const next = parseInt(event.target.value, 10);
+                  if (Number.isFinite(next)) setGuestCount(next);
+                }}
+                onBlur={() =>
+                  setGuestCount((current) => Math.min(roomMax, Math.max(MIN_GUESTS, current || MIN_GUESTS)))
+                }
+              />
+              <button
+                type="button"
+                className="venue-calendar__step"
+                onClick={() => stepGuests(1)}
+                disabled={guestCount >= roomMax}
+                aria-label="One more guest"
+              >
+                +
+              </button>
+              <span className="venue-book__stepper-note">
+                {MIN_GUESTS} minimum
+                {hasVenueRoom || isClient ? ` · ${roomMax} maximum` : ''}
+              </span>
+            </div>
+          </fieldset>
+
+          {/* ── the service ── ruled rows, never three cards ── */}
+          <fieldset className="venue-book__field">
+            <legend className="venue-book__legend">How it’s served</legend>
+            <div className="venue-book__styles">
+              {SERVICE_STYLES.map((style) => (
+                <label key={style.key} className="venue-book__style">
+                  <input
+                    type="radio"
+                    name="serviceStyle"
+                    value={style.key}
+                    checked={serviceStyle === style.key}
+                    onChange={() => setServiceStyle(style.key)}
+                  />
+                  <span className="venue-book__style-name">{style.label}</span>
+                  <span className="venue-book__style-rate">
+                    {usd(style.minCents)}–{usd(style.maxCents)} <i>per guest</i>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* ── the figure ── the one thing that moves as you choose ── */}
+          {quote && (
+            <dl className="venue-book__ledger" aria-live="polite">
+              <div className="venue-ledger__row">
+                <dt className="venue-ledger__term">food &amp; service</dt>
+                <dd className="venue-ledger__value">
+                  {usd(quote.perGuestMinCents)}–{usd(quote.perGuestMaxCents)} × {quote.guestCount}
+                </dd>
+              </div>
+              {quote.venueFeeCents > 0 && (
+                <div className="venue-ledger__row">
+                  <dt className="venue-ledger__term">venue fee</dt>
+                  <dd className="venue-ledger__value">
+                    {usd(quote.venueFeeCents)}
+                    {venue.venueFeeHours ? <i> — est. {venue.venueFeeHours} hours</i> : null}
+                  </dd>
+                </div>
+              )}
+              <div className="venue-ledger__row venue-book__total">
+                <dt className="venue-ledger__term">estimated total</dt>
+                <dd className="venue-ledger__value">
+                  {usd(quote.estimateMinCents)}–{usd(quote.estimateMaxCents)}
+                </dd>
+              </div>
+              {payable && (
+                <div className="venue-ledger__row venue-book__deposit">
+                  <dt className="venue-ledger__term">deposit, due today</dt>
+                  <dd className="venue-ledger__value">{usd(quote.depositCents)}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+
+          <p className="venue-book__basis">
+            {payable || !selectedDate
+              ? `The deposit is ${quote?.depositPercent}% of the low estimate and is credited toward your final invoice. Your chef confirms the menu and the final price with you.`
+              : 'This date needs confirmation. Send your details and we’ll check availability — usually the same day. No payment is taken.'}
+          </p>
         </div>
 
-        {/* Honeypot. Real browsers leave it empty; the server rejects anything
-            that fills it. Matches every other public form on the site. */}
-        <div className="ht-hp" aria-hidden="true">
-          <label htmlFor={`venue-website-${venue.slug}`}>Website</label>
-          <input
-            id={`venue-website-${venue.slug}`}
-            type="text"
-            tabIndex={-1}
-            autoComplete="off"
-            value={website}
-            onChange={(event) => setWebsite(event.target.value)}
-          />
+        <div className="venue-book__contact">
+          <h3 className="venue-book__legend">{isClient ? 'When and where' : 'When'}</h3>
+          {/* The same field primitives every other slip on the site uses
+              (slipForms.jsx:161-213), so this form inherits the house input
+              styling rather than growing a second one. */}
+          <div className="venue-book__who">
+            <div>
+              <label className="ht-label" htmlFor={`venue-time-${venue.slug}`}>event start time (Central)</label>
+              <input id={`venue-time-${venue.slug}`} className="ht-input" type="time" required value={eventTime} onChange={(event) => setEventTime(event.target.value)} />
+            </div>
+            {isClient && (
+              <div>
+                <label className="ht-label" htmlFor={`venue-address-${venue.slug}`}>
+                  where we’ll cook — street address
+                </label>
+                <input
+                  id={`venue-address-${venue.slug}`}
+                  className="ht-input"
+                  type="text"
+                  required
+                  minLength={6}
+                  autoComplete="street-address"
+                  value={eventAddress}
+                  onChange={(event) => setEventAddress(event.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          <h3 className="venue-book__legend venue-book__legend--next">Who to send the confirmation to</h3>
+          <div className="venue-book__who">
+            <div>
+              <label className="ht-label" htmlFor={`venue-name-${venue.slug}`}>your name</label>
+              <input
+                id={`venue-name-${venue.slug}`}
+                className="ht-input"
+                type="text"
+                required
+                autoComplete="name"
+                value={contactName}
+                onChange={(event) => setContactName(event.target.value)}
+              />
+            </div>
+            <div className="ht-row">
+              <div>
+                <label className="ht-label" htmlFor={`venue-email-${venue.slug}`}>email</label>
+                <input
+                  id={`venue-email-${venue.slug}`}
+                  className="ht-input"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={contactEmail}
+                  onChange={(event) => setContactEmail(event.target.value)}
+                />
+              </div>
+              <div>
+                <label className="ht-label" htmlFor={`venue-phone-${venue.slug}`}>phone</label>
+                <input
+                  id={`venue-phone-${venue.slug}`}
+                  className="ht-input"
+                  type="tel"
+                  autoComplete="tel"
+                  value={contactPhone}
+                  onChange={(event) => setContactPhone(event.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="ht-label" htmlFor={`venue-notes-${venue.slug}`}>
+                anything we should know (allergies, theme, access)
+              </label>
+              <textarea
+                id={`venue-notes-${venue.slug}`}
+                className="ht-input"
+                rows={2}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+              />
+            </div>
+
+            {/* Honeypot. Real browsers leave it empty; the server rejects anything
+                that fills it. Matches every other public form on the site. */}
+            <div className="ht-hp" aria-hidden="true">
+              <label htmlFor={`venue-website-${venue.slug}`}>Website</label>
+              <input
+                id={`venue-website-${venue.slug}`}
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -401,27 +432,19 @@ export default function VenueBooking({ venue, selectedDate, selectedState, onCle
 
       <div className="venue-book__submit">
         <button type="submit" className="ht-submit" disabled={!selectedDate || submitting}>
-          {!selectedDate && 'Pick a night above'}
+          {!selectedDate && 'Pick a date to continue'}
           {selectedDate && submitting && (payable ? 'Opening the card step…' : 'Sending…')}
           {selectedDate && !submitting && payable && quote &&
-            `Hold ${selectedDate} — pay ${usd(quote.depositCents)}`}
-          {selectedDate && !submitting && !payable && `Ask about ${selectedDate}`}
+            `Pay ${usd(quote.depositCents)} deposit to book ${shortDate(selectedDate)}`}
+          {selectedDate && !submitting && !payable && `Ask about ${shortDate(selectedDate)}`}
         </button>
-        {selectedDate && (
-          <button type="button" className="venue-book__clear" onClick={onClearDate}>
-            change date
-          </button>
-        )}
       </div>
 
       <p className="ht-footnote">
         {payable || !selectedDate
-          ? 'Card step is handled by Square. The night is held for 24 hours while you pay, and released if you don’t.'
-          : 'No card, and nothing held — this one comes back to you by email.'}
+          ? 'You pay the deposit on Square’s secure page. The date is yours once it goes through, and we email your confirmation right after.'
+          : 'No card needed. We’ll reply by email.'}
       </p>
-          </div>
-        </div>
-      )}
     </form>
   );
 }

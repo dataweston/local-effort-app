@@ -26,9 +26,9 @@ describe('availability rules the owner stated', () => {
     expect(statusOn('client', '2026-12-06', f)).toBe('open');
   });
 
-  it('a live FIREHOUSE hold shows as held for Small Events, so two people cannot pay for the same day', () => {
-    const f = facts({ bookings: [{ venue: 'firehouse', date: '2026-12-05', state: 'held' }] });
-    expect(statusOn('client', '2026-12-05', f)).toBe('held');
+  it('a paid FIREHOUSE booking shows as booked for Small Events, so two people cannot pay for the same day', () => {
+    const f = facts({ bookings: [{ venue: 'firehouse', date: '2026-12-05', state: 'booked' }] });
+    expect(statusOn('client', '2026-12-05', f)).toBe('booked');
   });
 
   it('a Small Events booking does not take FIREHOUSE off the market', () => {
@@ -86,13 +86,13 @@ describe('outbound feeds', () => {
     expect(out.map((d) => d.date)).toEqual(['2026-12-05']);
   });
 
-  it('includes owner-closed days and live holds', () => {
+  it('includes owner-closed days and paid bookings', () => {
     const f = facts({
       slots: [{ venue: 'firehouse', date: '2026-12-07', status: 'blocked' }],
-      bookings: [{ venue: 'firehouse', date: '2026-12-06', state: 'held' }],
+      bookings: [{ venue: 'firehouse', date: '2026-12-06', state: 'booked' }],
     });
     const out = resolveOutboundDays({ nodeId: 'ics:firehouse', graph, facts: f, from: '2026-12-01', to: '2026-12-31' });
-    expect(out.map((d) => [d.date, d.status])).toEqual([['2026-12-06', 'held'], ['2026-12-07', 'blocked']]);
+    expect(out.map((d) => [d.date, d.status])).toEqual([['2026-12-06', 'booked'], ['2026-12-07', 'blocked']]);
   });
 
   it('finds the Google calendars a resource mirrors into', () => {

@@ -332,9 +332,9 @@ page.
 **The deposit is taken against the LOW end, plus fixed costs.** That basis is
 written into the rule itself (`estimateBasis:
 lower_rate_times_high_guest_count_plus_fixed_costs`) and the pricing discovery
-argued it: the operator sets the real menu price later, so holding at the top
+argued it: the operator sets the real menu price later, so charging against the top
 of the range would mean refunding the difference on most bookings. Thirty
-guests at buffet is $45 × 30 + $750 = $2,100, and the hold is $420 — the worked
+guests at buffet is $45 × 30 + $750 = $2,100, and the deposit is $420 — the worked
 example in `artifacts/product-pricing-discovery-2026-09-17`, which the
 estimator's tests assert against directly.
 
@@ -349,9 +349,10 @@ link, so the client's copy is never load-bearing for correctness.
 
 **Three rules in `POST /api/venues/:slug/book`:**
 
-1. **The hold is written before the payment link exists**, and released if
-   Square fails. The other order sells a night that was never taken off the
-   market.
+1. **No row is written for the date before payment.** Nothing holds a night
+   while someone is deciding. The route re-checks the date, persists the
+   estimate and payment attempt, then creates the link; a Square failure
+   discards the checkout. The date is taken only when the deposit lands.
 2. **Only an operator-opened date is payable.** `unmanaged` has no row, promises
    nothing, and routes to the enquiry form — the state table above, enforced.
    This means *the page cannot sell anything until dates are opened in the
@@ -361,11 +362,10 @@ link, so the client's copy is never load-bearing for correctness.
 3. **The amount is server-derived** from date, guests and style alone. A tampered
    client can only ever pay the correct price.
 
-Known race: two visitors can pass the in-transaction hold check within the same
-instant and both receive a link. The window is milliseconds and the recovery is
-a refund; closing it properly wants a unique constraint on
-`SmallEventHold.slotId`, which is a migration and was left out of this pass
-rather than half-done.
+Two visitors can both receive a link for the same open night. That is
+intended: the first deposit to land takes the date (`settleDate`, under a
+per-date lock); the second payment goes to `payment-review` and the owner
+refunds or rebooks it by hand.
 
 No schema migration was needed. The flow reuses `SmallEventEstimate`,
 `SmallEventAvailability`, `SmallEventHold` and `SmallEventPayment` exactly as
@@ -418,8 +418,7 @@ Kept from the original list, plus what this pass was tempted by:
   `.venue-calendar__step`, so the two things on this page that step through
   something are the same control.
 - **"Seamless booking", "instant confirmation", "effortless"** — the copy says
-  what happens: the night is held for 24 hours while you pay, and released if
-  you do not.
+  what happens: you pay the deposit and the date is yours.
 
 ## Still owner-blocked
 

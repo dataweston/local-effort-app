@@ -14,7 +14,9 @@ const { publicVenue } = __internals;
 const fakeDb = ({ slots = [], blocks = [], holds = [], feeds = [] }) => ({
   smallEventAvailability: { findMany: async () => slots },
   venueBlock: { findMany: async () => blocks },
-  smallEventHold: { findMany: async () => holds },
+  smallEventHold: {
+    findMany: async ({ where } = {}) => holds.filter((hold) => !where?.status || hold.status === where.status),
+  },
   calendarNode: { findMany: async () => [] },
   calendarRoute: { findMany: async () => [] },
   venueCalendarFeed: { findMany: async () => feeds },
@@ -40,7 +42,7 @@ describe('venue availability precedence', () => {
     expect(statusOn(days, '2026-10-05')).toBe('blocked');
   });
 
-  it('lets a live hold outrank an open slot', async () => {
+  it('never lets an unpaid hold take a date', async () => {
     const days = await load({
       slots: [{ id: 's1', date: '2026-10-05', type: 'dinner', venue: 'firehouse', status: 'open' }],
       holds: [
@@ -51,7 +53,8 @@ describe('venue availability precedence', () => {
         },
       ],
     });
-    expect(statusOn(days, '2026-10-05')).toBe('held');
+    expect(statusOn(days, '2026-10-05')).not.toBe('held');
+    expect(statusOn(days, '2026-10-05')).not.toBe('booked');
   });
 
   it('reports a confirmed hold as booked', async () => {

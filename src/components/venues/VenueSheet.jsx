@@ -14,13 +14,14 @@
 // departure from the house script and it is argued in VENUES.md.
 //
 // Beat 3 changed in 2026-09: it used to collect an enquiry and wait for a human
-// to reply. It now takes a 20% deposit through Square and holds the night on
-// the spot, because the journey this page is built for — someone who came to
-// book a chef, saw the room, and wants the date — dies in the gap between an
-// enquiry and an answer. A night we have not published still cannot be paid
-// for, but it is the same panel and the same vocabulary — it sends an enquiry
-// instead of minting a payment link, rather than handing the visitor a second
-// form that opens by asking what kind of party they are having.
+// to reply. It now takes a 20% deposit through Square, and a paid deposit is
+// what takes the night, because the journey this page is built for — someone
+// who came to book a chef, saw the room, and wants the date — dies in the gap
+// between an enquiry and an answer. Nothing is held while someone is deciding.
+// A night we have not published still cannot be paid for, but it is the same
+// panel and the same vocabulary — it sends an enquiry instead of minting a
+// payment link, rather than handing the visitor a second form that opens by
+// asking what kind of party they are having.
 //
 // Beats 4 and 5 swapped in the same pass. Photographs used to be scattered
 // down the page one at a time, each alone inside its own vertical rhythm, with
@@ -34,7 +35,7 @@ import VenueCalendar from './VenueCalendar';
 import VenueBooking from './VenueBooking';
 import GuestChefPrompt from './GuestChefPrompt';
 import { SHARED_PHOTOS, missingFacts } from '../../config/venues';
-import { SERVICE_STYLES, MIN_GUESTS, MAX_GUESTS, usd as usdWhole } from '../../config/eventPricing';
+import { SERVICE_STYLES, MIN_GUESTS, MAX_GUESTS, DEPOSIT_BPS, usd as usdWhole } from '../../config/eventPricing';
 import { CONTACT_EMAIL } from '../../config/siteMetadata';
 
 const CLOUD_NAME = import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME || 'dokyhfvyd';
@@ -196,9 +197,9 @@ const usableDateParam = (raw) => {
  * anyone can type, so the banner asks the server whether the deposit landed,
  * using the claim token that came back in the redirect. Until the webhook has
  * been applied the honest answer is "processing", and it says so rather than
- * claiming a hold that may not exist.
+ * claiming a booking that may not exist.
  */
-function PaidBanner({ slug, nickname, holdId, token }) {
+function PaidBanner({ slug, holdId, token }) {
   const [state, setState] = useState(token ? 'processing' : 'unknown');
 
   useEffect(() => {
@@ -239,9 +240,8 @@ function PaidBanner({ slug, nickname, holdId, token }) {
 
   const copy = {
     processing: 'Thanks. We are waiting for Square to confirm your deposit, which usually takes a few seconds.',
-    confirmed: `Deposit received. ${nickname} is held in your name. A confirmation is on its way by email, and we will be in touch about the menu.`,
-    review: `Your payment went through, but we could not hold the date automatically. We are reviewing it by hand and will email you; nothing further is needed from you.`,
-    expired: `This date was released before the deposit arrived. If you were charged, email ${CONTACT_EMAIL} and we will sort it out.`,
+    confirmed: 'Deposit received. Your date is booked. A confirmation is on its way by email, and your chef will be in touch about the menu.',
+    review: 'Your payment went through, but we could not confirm the date automatically. We are reviewing it by hand and will email you; nothing further is needed from you.',
     late: `Square has not confirmed your deposit yet. If you were charged, you do not need to pay again; email ${CONTACT_EMAIL} and we will check.`,
     unknown: `We could not match this page to a booking. If you paid a deposit, email ${CONTACT_EMAIL} and we will check.`,
   }[state];
@@ -255,7 +255,6 @@ function PaidBanner({ slug, nickname, holdId, token }) {
 
 PaidBanner.propTypes = {
   slug: PropTypes.string.isRequired,
-  nickname: PropTypes.string.isRequired,
   holdId: PropTypes.string.isRequired,
   token: PropTypes.string,
 };
@@ -315,7 +314,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
         </p>
       )}
 
-      {paidHold && <PaidBanner slug={venue.slug} nickname={venue.nickname} holdId={paidHold} token={paidToken} />}
+      {paidHold && <PaidBanner slug={venue.slug} holdId={paidHold} token={paidToken} />}
 
       <div className="venue-layout">
       {/* ── 1. The room, on the sheet ── */}
@@ -345,6 +344,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
       </section>
 
       {/* ── 2. The ledger ── */}
+      {!isClient && (
       <section className="venue-ledger specimen-reveal" ref={ledger.ref} data-finish={ledger.finish}>
         <h2>What you get</h2>
         <dl className="venue-ledger__rows">
@@ -384,22 +384,6 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
               {usdWhole(Math.max(...SERVICE_STYLES.map((s) => s.maxCents)))} depending on how it’s served
             </dd>
           </div>
-          {isClient && (
-            <>
-              <div className="venue-ledger__row">
-                <dt className="venue-ledger__term">party size</dt>
-                <dd className="venue-ledger__value">
-                  {MIN_GUESTS}–{MAX_GUESTS} guests
-                </dd>
-              </div>
-              <div className="venue-ledger__row">
-                <dt className="venue-ledger__term">where</dt>
-                <dd className="venue-ledger__value">
-                  at your place — we bring the kitchen, cook, serve and clear
-                </dd>
-              </div>
-            </>
-          )}
           {venue.amenities?.length > 0 && (
             <div className="venue-ledger__row">
               <dt className="venue-ledger__term">in the room</dt>
@@ -408,6 +392,7 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
           )}
         </dl>
       </section>
+      )}
 
       {/* ── 3. The ask ── */}
       <section className="service-hero" aria-labelledby={`book-${venue.slug}`}>
@@ -454,6 +439,65 @@ export default function VenueSheet({ venue, headingLevel, showWordmark }) {
           </div>
         </div>
       </section>
+
+      {/* ── 3b. What the booking is, for someone who came to book ──
+          Plain answers in the order a buyer asks them: what do I get, what
+          does it cost, what happens after I pay. Prices come from
+          eventPricing.js, the file the server prices from. */}
+      {isClient && (
+        <section className="venue-included specimen-reveal" ref={ledger.ref} data-finish={ledger.finish} aria-labelledby="included-client">
+          <h2 id="included-client">Dinner at your place, handled</h2>
+          <p className="venue-included__lede">
+            Pick a date, say how many are coming and how you’d like to eat, and pay the deposit.
+            That books it. Your chef takes it from there.
+          </p>
+          <dl className="venue-ledger__rows">
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">What we bring</dt>
+              <dd className="venue-ledger__value">The kitchen, the cooking, the serving and the clearing up.</dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">The food</dt>
+              <dd className="venue-ledger__value">
+                A seasonal menu from 100% Midwest-sourced ingredients. Your chef settles the details
+                with you after you book.
+              </dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">Group size</dt>
+              <dd className="venue-ledger__value">{MIN_GUESTS} to {MAX_GUESTS} guests</dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">Price per guest</dt>
+              <dd className="venue-ledger__value">
+                {SERVICE_STYLES.map((style) => (
+                  <span key={style.key} className="venue-included__rate">
+                    {style.label}: {usdWhole(style.minCents)}–{usdWhole(style.maxCents)}
+                  </span>
+                ))}
+              </dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">Deposit</dt>
+              <dd className="venue-ledger__value">
+                {DEPOSIT_BPS / 100}% of the low estimate, credited toward your final invoice.
+              </dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">After you pay</dt>
+              <dd className="venue-ledger__value">
+                We email your confirmation, then your chef gets in touch about the menu.
+              </dd>
+            </div>
+            <div className="venue-ledger__row">
+              <dt className="venue-ledger__term">Questions first</dt>
+              <dd className="venue-ledger__value">
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
 
       {/* ── 4. The gallery ──
           Every photograph below the fold, rooms and food together, in one grid

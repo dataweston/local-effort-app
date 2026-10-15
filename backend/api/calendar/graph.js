@@ -157,18 +157,15 @@ function validateGraph({ nodes, routes }) {
 }
 
 /**
- * Everything the engine reads, for a date range. Bookings are confirmed holds
- * plus unexpired holds; expired holds never block.
+ * Everything the engine reads, for a date range. A date is taken only by a
+ * confirmed (paid) booking. An unpaid checkout never blocks a night.
  */
-async function loadFacts(db, { from, to, now = new Date() }) {
+async function loadFacts(db, { from, to }) {
   const [slots, blocks, holds] = await Promise.all([
     db.smallEventAvailability.findMany({ where: { date: { gte: from, lte: to } } }),
     db.venueBlock.findMany({ where: { date: { gte: from, lte: to } } }),
     db.smallEventHold.findMany({
-      where: {
-        slot: { date: { gte: from, lte: to } },
-        OR: [{ status: 'confirmed' }, { status: 'held', holdUntil: { gt: now } }],
-      },
+      where: { slot: { date: { gte: from, lte: to } }, status: 'confirmed' },
       include: { slot: true },
     }),
   ]);
@@ -180,8 +177,7 @@ async function loadFacts(db, { from, to, now = new Date() }) {
       .map((hold) => ({
         venue: hold.slot.venue,
         date: hold.slot.date,
-        state: hold.status === 'confirmed' ? 'booked' : 'held',
-        holdUntil: hold.holdUntil,
+        state: 'booked',
         estimateId: hold.estimateId,
       })),
   };
