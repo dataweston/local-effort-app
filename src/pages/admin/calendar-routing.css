@@ -1,0 +1,492 @@
+/*
+ * Calendar routing editor (admin, internal).
+ * Grammar is the specimen's (docs/design/SPECIMEN.md): square corners, ruled
+ * hairlines, one directional cast shadow, mono for data, Yomogi for the hand.
+ * Every colour, rule, shadow and duration below is a token from
+ * src/styles/brand-tokens.css. Anything that is not is marked where it is used.
+ */
+
+.calendar-routing {
+  --cr-calling: var(--accent-poppy);      /* blocks cables: brand-tokens.css accent */
+  --cr-passing: var(--brand-olive-deep);  /* mirrors cables: brand-tokens.css brand */
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem 5rem;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+.calendar-routing > * {
+  max-width: 88rem;
+  margin-inline: auto;
+}
+
+.calendar-routing h1,
+.calendar-routing h2,
+.calendar-routing h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+}
+
+.calendar-routing h1 { font-size: 1.75rem; }
+.calendar-routing h2 { font-size: 1.15rem; }
+
+.calendar-routing button,
+.calendar-routing input,
+.calendar-routing select {
+  font: inherit;
+  color: inherit;
+  border-radius: 0; /* specimen: nothing rounded */
+}
+
+.calendar-routing :focus-visible {
+  /* specimen.css :focus-visible, dashed oxide */
+  outline: 2px dashed var(--brand-oxide);
+  outline-offset: 2px;
+}
+
+.cr-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Header and token ─────────────────────────────────────────────────── */
+
+.cr-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--specimen-rule);
+}
+
+.cr-top .cr-note { margin: 0.35rem 0 0; max-width: 40rem; }
+
+.cr-token {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.cr-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.cr-note--error { color: var(--accent-poppy); }
+.cr-note[data-state='error'] { color: var(--accent-poppy); }
+
+.cr-mono {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-office-code);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.cr-banner {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--specimen-rule);
+  background: var(--brand-sheet);
+  font-size: 0.9rem;
+}
+
+.cr-banner--error { border-color: var(--accent-poppy); color: var(--accent-poppy); }
+.cr-banner--warn { border-left: 4px solid var(--brand-oxide); }
+
+/* ── Buttons and fields ───────────────────────────────────────────────── */
+
+.calendar-routing button {
+  min-height: 44px;
+  padding: 0.4rem 0.95rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--brand-sheet);
+  cursor: pointer;
+  transition: background var(--le-dur-1) var(--le-ease), box-shadow var(--le-dur-1) var(--le-ease);
+}
+
+.calendar-routing button:hover:not(:disabled) {
+  background: var(--brand-mount);
+  box-shadow: var(--specimen-shadow);
+}
+
+.calendar-routing button:disabled {
+  cursor: default;
+  color: var(--color-text-muted);
+  border-color: var(--specimen-rule);
+  background: transparent;
+}
+
+.calendar-routing .cr-primary:not(:disabled) {
+  background: var(--brand-void);
+  color: var(--brand-linen);
+}
+
+.calendar-routing .cr-primary:hover:not(:disabled) { background: var(--brand-ink); }
+.calendar-routing .cr-danger { color: var(--accent-poppy); border-color: var(--accent-poppy); }
+
+.cr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.cr-field > span {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.cr-field input,
+.cr-field select {
+  min-height: 44px;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--specimen-rule);
+  background: var(--brand-sheet);
+  width: 100%;
+  min-width: 0;
+}
+
+.cr-field input[aria-invalid='true'] { border-color: var(--accent-poppy); }
+.cr-field-row { display: flex; gap: 0.5rem; }
+.cr-token .cr-field { margin-top: 0; min-width: 16rem; }
+
+/* ── Save bar ─────────────────────────────────────────────────────────── */
+
+.cr-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.cr-state {
+  margin: 0;
+  font-family: var(--font-yomogi);
+  font-size: 1.05rem;
+}
+
+.cr-state[data-dirty='true'] { color: var(--brand-oxide); }
+.cr-bar__actions { display: flex; gap: 0.5rem; }
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+
+.cr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21.5rem;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  align-items: start;
+}
+
+/* ── Board ────────────────────────────────────────────────────────────── */
+
+.cr-board {
+  position: relative;
+  height: 50rem;
+  overflow: hidden;
+  border: 1px solid var(--specimen-rule);
+  box-shadow: var(--specimen-shadow);
+  background-color: var(--brand-sheet);
+  /* a hairline grid, like graph paper under the jacks */
+  background-image:
+    linear-gradient(var(--color-surface-muted) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-surface-muted) 1px, transparent 1px);
+  background-size: 32px 32px; /* grid pitch, 2 x the 16px step of the spacing scale */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cr-board.is-panning { cursor: grabbing; }
+
+.cr-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.cr-boardbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.cr-hint {
+  margin: 0;
+  min-height: 2.6em;
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.cr-node__body .cr-note { font-size: 0.8rem; margin-top: 0.3rem; }
+
+/* ── Nodes ────────────────────────────────────────────────────────────── */
+
+.cr-node {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-page);
+  box-shadow: var(--specimen-shadow);
+  cursor: default;
+  user-select: text;
+}
+
+.cr-node--resource { background: var(--brand-mount); border-width: 2px; }
+.cr-node--hub { border-style: dashed; }
+
+.cr-node__head {
+  position: relative;
+  box-sizing: border-box;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.6rem;
+  border-bottom: 1px solid var(--specimen-rule);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cr-node__head[data-dragging='true'] { cursor: grabbing; }
+
+.cr-node__head h3 {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-node__body { padding: 0.3rem 0.8rem 0.8rem; }
+
+/* ── Ports ────────────────────────────────────────────────────────────── */
+
+.calendar-routing .cr-port {
+  position: absolute;
+  top: 0;
+  width: 44px;  /* touch target, per the brief */
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.cr-port--in { left: -22px; }
+.cr-port--out { right: -22px; }
+
+.cr-port::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  box-sizing: border-box;
+  border: 2px solid var(--color-border-strong);
+  background: var(--brand-sheet);
+  transition: background var(--le-dur-1) var(--le-ease), transform var(--le-dur-1) var(--le-ease);
+}
+
+.cr-port--out::before { background: var(--brand-void); }
+.calendar-routing .cr-port:hover:not(:disabled) { background: transparent; box-shadow: none; }
+.cr-port:hover::before { transform: scale(1.25); }
+.cr-port.is-source::before { background: var(--brand-oxide); border-color: var(--brand-oxide); }
+.cr-port.is-ready::before { background: var(--brand-olive); }
+.cr-port.is-target::before { background: var(--brand-olive-deep); transform: scale(1.5); }
+.cr-port.is-refused { cursor: not-allowed; }
+.cr-port.is-refused::before { opacity: 0.3; border-style: dashed; }
+
+/* ── Cables ───────────────────────────────────────────────────────────── */
+
+.calendar-routing .cr-cables {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cr-cable { cursor: pointer; outline: none; }
+.cr-cable__hit { fill: none; stroke: transparent; stroke-width: 22px; pointer-events: stroke; }
+
+.cr-cable__line {
+  fill: none;
+  stroke: var(--cr-calling);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  transition: stroke-width var(--le-dur-1) var(--le-ease), opacity var(--le-dur-1) var(--le-ease);
+}
+
+.cr-cable--mirrors .cr-cable__line { stroke: var(--cr-passing); }
+.cr-cable:hover .cr-cable__line,
+.cr-cable:focus-visible .cr-cable__line { stroke-width: 5px; }
+.cr-cable.is-selected .cr-cable__line { stroke-width: 5px; stroke: var(--brand-oxide); }
+
+.cr-cable__flow {
+  fill: none;
+  stroke: var(--brand-linen);
+  stroke-width: 1.5px;
+  stroke-dasharray: 2 18;
+  stroke-linecap: round;
+  pointer-events: none;
+  animation: cr-flow 4.8s linear infinite; /* slow: one dash step per 4.8s, 20px per step */
+}
+
+@keyframes cr-flow { to { stroke-dashoffset: -20; } }
+
+.cr-cable.is-off .cr-cable__line {
+  stroke-dasharray: 8 7;
+  stroke-width: 2px;
+  opacity: 0.45;
+}
+
+.cr-cable__plug { fill: var(--brand-void); pointer-events: none; }
+.cr-cable.is-off .cr-cable__plug { fill: var(--color-text-muted); }
+.cr-cable__line--drag { stroke: var(--brand-oxide); stroke-dasharray: 4 6; pointer-events: none; }
+
+.cr-cable:focus-visible .cr-cable__hit {
+  stroke: var(--color-focus-ring);
+}
+
+.cr-control {
+  position: absolute;
+  z-index: 3;
+  width: 15.5rem;
+  transform: translate(-50%, 0.9rem);
+  padding: 0.6rem 0.75rem 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--brand-sheet);
+  box-shadow: var(--specimen-shadow-lifted);
+  cursor: default;
+}
+
+.cr-control p { margin: 0; font-size: 0.875rem; line-height: 1.4; }
+.cr-control .cr-note { margin-top: 0.25rem; }
+.cr-control__actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+.cr-control__actions button { padding-inline: 0.7rem; }
+
+/* ── Preview ──────────────────────────────────────────────────────────── */
+
+.cr-preview {
+  padding: 1rem;
+  border: 1px solid var(--specimen-rule);
+  background: var(--brand-sheet);
+  box-shadow: var(--specimen-shadow);
+}
+
+.cr-diff {
+  margin: 0.6rem 0 0;
+  min-height: 1.4em;
+  font-family: var(--font-yomogi);
+  font-size: 1rem;
+}
+
+.cr-grid {
+  width: 100%;
+  margin-top: 0.6rem;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+  transition: opacity var(--le-dur-1) var(--le-ease);
+}
+
+.cr-grid[data-busy='true'] { opacity: 0.55; }
+
+.cr-grid th {
+  font-family: var(--font-office-code);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  padding: 0;
+}
+
+.cr-grid th:first-child,
+.cr-grid .cr-grid__month { width: 2.2rem; text-align: left; }
+
+.cr-grid td { padding: 0; }
+
+.calendar-routing .cr-day {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  font-family: var(--font-office-code);
+  font-size: 0.72rem;
+  line-height: 1;
+  text-align: center;
+  box-shadow: none;
+}
+
+.calendar-routing .cr-day:hover:not(:disabled) { box-shadow: none; filter: brightness(0.94); }
+
+.cr-day--open { background: color-mix(in srgb, var(--brand-olive) 55%, var(--brand-sheet)); } /* tint of brand-tokens.css --brand-olive */
+.cr-day--held { background: color-mix(in srgb, var(--accent-ochre) 45%, var(--brand-sheet)); } /* tint of --accent-ochre */
+.cr-day--booked { background: var(--accent-poppy); color: var(--brand-linen); }
+.cr-day--blocked {
+  background: repeating-linear-gradient(135deg, var(--brand-ink) 0 2px, var(--brand-sheet) 2px 6px); /* hatching in --brand-ink */
+  color: var(--brand-void);
+}
+.cr-day--none { background: var(--color-surface-muted); color: var(--color-text-muted); }
+
+.cr-day.is-changed { border-color: var(--brand-oxide); box-shadow: inset 0 0 0 1px var(--brand-oxide); }
+.cr-day.is-picked { outline: 2px solid var(--brand-void); outline-offset: 1px; }
+
+.cr-pick { margin: 0.6rem 0 0; font-size: 0.875rem; min-height: 2.6em; }
+
+.cr-legend { margin: 0.5rem 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem 1rem; }
+.cr-legend__row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+.cr-legend dt { display: flex; align-items: center; gap: 0.5rem; }
+.cr-legend dd { margin: 0; font-family: var(--font-office-code); }
+.calendar-routing .cr-legend__swatch { display: inline-block; width: 1rem; height: 1rem; }
+
+/* ── Narrow screens ───────────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .cr-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .calendar-routing { padding: 1.5rem 0.75rem 4rem; }
+  .cr-token { width: 100%; }
+  .cr-token .cr-field { min-width: 0; }
+  .cr-board { height: 34rem; }
+  .cr-boardbar { align-items: stretch; flex-direction: column; }
+  .cr-control { width: 13.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr-cable__flow { animation: none; }
+  .cr-cable__line,
+  .cr-port::before,
+  .calendar-routing button,
+  .cr-grid { transition: none; }
+}

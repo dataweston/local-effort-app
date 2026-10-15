@@ -41,6 +41,7 @@ const AnnualReportPage = lazy(() => import('./pages/AnnualReportPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
 const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
+const CalendarRoutingPage = lazy(() => import('./pages/admin/CalendarRoutingPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const AdminFoodOpsReceiptsPage = lazy(() => import('./pages/AdminFoodOpsReceiptsPage'));
@@ -457,6 +458,14 @@ const AppContent = () => {
                 />
                 <Route path="/events" element={<Navigate to="/book" replace />} />
                 <Route
+                <Route
+                  path="/admin/calendar-routing"
+                  element={
+                    <AnimatedPage>
+                      <CalendarRoutingPage />
+                    </AnimatedPage>
+                  }
+                />
                   path="/book"
                   element={
                     <AnimatedPage>

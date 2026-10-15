@@ -194,6 +194,7 @@ export const INTERNAL_ROUTES = [
   '/catherine-schedule',
   '/partners/',
   '/schedule/',
+  '/admin/calendar-routing',
   '/hub',
   '/brain',
   '/native-mobile-hub',
