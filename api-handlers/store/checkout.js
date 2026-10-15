@@ -17,6 +17,8 @@ const {
 } = require('../../backend/api/finance/paymentAttempts');
 const { describePaymentError } = require('../../backend/api/finance/paymentErrors');
 const { recordCheckoutEvent } = require('./_recordEvent');
+const { queueCheckoutFailureAlert } = require('./_failureAlert');
+const { shouldAlertOwner } = require('../../backend/api/finance/checkoutFailureAdvice');
 const { isRealIsoDate } = require('./_dateSelection');
 const {
   pickupByStore,
@@ -162,12 +164,15 @@ const normalizeAddress = (address) => {
 };
 
 // Every rejection is written to the ledger (and awaited) before the customer
-// sees it, so a failed attempt always leaves evidence of where and why.
-const failCheckout = async (req, res, status, body, { stage = 'validation', declineCodes } = {}) => {
+// sees it, so a failed attempt always leaves evidence of where and why. Failures
+// that mean a real customer was blocked also queue an owner alert.
+const failCheckout = async ({ req, res, emailOutboxService, amountCents }, status, body, { stage = 'validation', declineCodes } = {}) => {
   const input = req.body || {};
+  const store = input.store || 'sale';
+  const declineList = Array.isArray(declineCodes) ? declineCodes.join(',') : undefined;
   await recordCheckoutEvent({
     event: 'payment.failed',
-    store: input.store || 'sale',
+    store,
     sessionId: input.checkoutAttemptId,
     actorType: 'system',
     meta: {
@@ -175,22 +180,38 @@ const failCheckout = async (req, res, status, body, { stage = 'validation', decl
       stage,
       httpStatus: status,
       code: body?.code,
-      declineCodes: Array.isArray(declineCodes) ? declineCodes.join(',') : undefined,
+      declineCodes: declineList,
       reason: body?.error,
+      amountCents,
     },
   });
+  if (shouldAlertOwner({ stage, code: body?.code, status })) {
+    await queueCheckoutFailureAlert({
+      emailOutboxService,
+      store,
+      sessionId: input.checkoutAttemptId,
+      stage,
+      status,
+      code: body?.code,
+      declineCodes: declineList,
+      reason: body?.error,
+      amountCents,
+    });
+  }
   return res.status(status).json(body);
 };
 
 module.exports = async (req, res, { emailOutboxService } = {}) => {
+  const failure = { req, res, emailOutboxService, amountCents: undefined };
+  const fail = (status, body, options) => failCheckout(failure, status, body, options);
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    if (!sq) return failCheckout(req, res, 500, { error: 'Square not configured' }, { stage: 'config' });
-    if (!LOCATION_ID) return failCheckout(req, res, 500, { error: 'Square location missing' }, { stage: 'config' });
+    if (!sq) return fail(500, { error: 'Square not configured' }, { stage: 'config' });
+    if (!LOCATION_ID) return fail(500, { error: 'Square location missing' }, { stage: 'config' });
     // Payment integrity is fail-closed: the booked commercial order and its
     // pending attempt must exist before Square is allowed to move money.
     if (!prisma) {
-      return failCheckout(req, res, 503, {
+      return fail(503, {
         error: 'Ordering database unavailable. No payment was taken; please try again shortly.',
         code: 'ordering-database-unavailable',
       }, { stage: 'config' });
@@ -214,29 +235,29 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
       fulfillmentAreaConfirmed = false,
     } = req.body || {};
 
-    if (!Array.isArray(items) || !items.length) return failCheckout(req, res, 400, { error: 'No items' });
-    if (!token) return failCheckout(req, res, 400, { error: 'Missing payment token' });
+    if (!Array.isArray(items) || !items.length) return fail(400, { error: 'No items' });
+    if (!token) return fail(400, { error: 'Missing payment token' });
     const pizzaDrop = store === 'pizza-on-smith' ? await getPizzaDrop() : null;
     const pizzaDropState = pizzaDrop ? pizzaDropStatus(pizzaDrop) : null;
     if (pizzaDropState && pizzaDropState !== 'open') {
-      return failCheckout(req, res, 409, {
+      return fail(409, {
         error: pizzaDropState === 'upcoming' ? 'Pizza on Smith ordering has not opened yet.' : 'Pizza on Smith ordering is closed.',
         code: 'ordering-window-closed',
       });
     }
     if (store === 'pizza-on-smith' && fulfillmentMethod !== 'pickup' && fulfillmentAreaConfirmed !== true) {
-      return failCheckout(req, res, 422, { error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
+      return fail(422, { error: 'Confirm your address is within the selected fulfillment area.', code: 'fulfillment-area-unconfirmed' });
     }
-    if (!pricingVersion) return failCheckout(req, res, 409, { error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
+    if (!pricingVersion) return fail(409, { error: 'Prices changed; review your bag before checking out.', code: 'catalog-price-changed' });
 
     for (const item of items) {
-      if (!item?.productId) return failCheckout(req, res, 400, { error: 'Each item needs productId' });
+      if (!item?.productId) return fail(400, { error: 'Each item needs productId' });
       const qty = Number(item.qty);
-      if (!Number.isInteger(qty) || qty < 1) return failCheckout(req, res, 400, { error: 'Invalid qty' });
+      if (!Number.isInteger(qty) || qty < 1) return fail(400, { error: 'Invalid qty' });
     }
 
     const smithError = validateSmithOrder(items, store, pickup, fulfillmentMethod);
-    if (smithError) return failCheckout(req, res, 422, { error: smithError });
+    if (smithError) return fail(422, { error: smithError });
 
     const priced = await priceStorefrontCart({ store, items, fulfillment: { pickup }, expectedPriceBookVersion: pricingVersion, prisma });
     const pricedLines = priced.lines;
@@ -244,7 +265,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
     let amount = priced.subtotal;
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      return failCheckout(req, res, 422, { error: 'Invalid order total' });
+      return fail(422, { error: 'Invalid order total' });
     }
 
     const subtotal = amount;
@@ -284,6 +305,7 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
     // helper the pricing endpoint uses so the charge matches what was shown.
     const deliveryFee = resolveFulfillmentFee(store, pickup, fulfillmentMethod);
     amount = subtotal + deliveryFee;
+    failure.amountCents = amount;
 
     const pickupDetails = pickupByStore[store] || pickupByStore.sale;
     const fulfillment = pickup ? 'pickup' : fulfillmentMethod === 'shipping' ? 'shipping' : store === 'pizza-on-smith' ? 'metro_delivery' : 'local_delivery';
@@ -623,14 +645,14 @@ module.exports = async (req, res, { emailOutboxService } = {}) => {
     const payment = describePaymentError(error);
     if (payment.isPaymentError) {
       // Square's raw error array is for the owner's records, not the customer.
-      return failCheckout(req, res, error?.statusCode || 402, {
+      return fail(error?.statusCode || 402, {
         error: payment.message,
         code: payment.code,
         declineCodes: payment.codes,
       }, { stage: 'square', declineCodes: payment.codes });
     }
     const msg = error?.message || 'Checkout failed';
-    return failCheckout(req, res, error?.statusCode || 500, {
+    return fail(error?.statusCode || 500, {
       error: msg,
       ...(error?.code ? {code: error.code} : {}),
     }, { stage: 'server' });

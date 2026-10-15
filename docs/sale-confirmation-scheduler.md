@@ -10,4 +10,6 @@ The outbox still persists idempotent customer and owner confirmation jobs and re
 
 The Pizza on Smith customer confirmation uses the supplied Cloudinary image transformed to JPEG. An owner-only sample of the customer and owner emails was sent through the durable outbox on 2026-10-13; both were delivered to the owner inbox, the customer-style email rendered the image, and neither appeared in spam. No customer was contacted. Owner approval for real customer delivery is still pending.
 
+Owner checkout-failure alerts (`source: checkout-failure-alert`, `api-handlers/store/_failureAlert.js`) use the same outbox. One immediate send is attempted when a failure is recorded; a failed first send is retried only when a worker runs, so the same outage applies. The failure itself is always in the Brain ledger (`node scripts/checkout-failures.cjs`).
+
 Testing must use owner-only recipients; never send test messages to customers. Any future schedule must call the authenticated `/api/email/sale-confirmations/process` endpoint and preserve the durable outbox's retry and delivery-evidence behavior.

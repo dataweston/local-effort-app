@@ -42,7 +42,7 @@ function extractRecipients(payload) {
 
 // Receipts and fulfillment notices are transactional: a marketing opt-out must
 // not stop a buyer from learning that their paid order is ready.
-const TRANSACTIONAL_SOURCES = new Set(['sale-confirmation', 'pizza-on-smith-ready']);
+const TRANSACTIONAL_SOURCES = new Set(['sale-confirmation', 'pizza-on-smith-ready', 'checkout-failure-alert']);
 
 function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoService, logger }) {
   if (!getSanityClient || !brevoService) {

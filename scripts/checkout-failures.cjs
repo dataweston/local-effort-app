@@ -30,31 +30,8 @@ function argValue(name, fallback = '') {
   return index >= 0 ? process.argv[index + 1] || fallback : fallback;
 }
 
-// What to do about each code. Keyed by Square code, server code, or client stage.
-const NEXT_STEP = {
-  TRANSACTION_LIMIT: 'Issuer/Square limit on this amount. Raise the Square per-payment limit if it is ours; otherwise the customer must call their bank or use another card.',
-  PAYMENT_LIMIT_EXCEEDED: 'Square account payment limit. Check Square Dashboard > Account & Settings > Payment limits.',
-  ADDRESS_VERIFICATION_FAILURE: 'Billing ZIP did not match the card. Customer fixes ZIP; nothing to change on the site.',
-  CVV_FAILURE: 'Wrong security code. Customer retries.',
-  PAN_FAILURE: 'Bad card number. Customer retries or uses another card.',
-  GENERIC_DECLINE: 'Issuer declined. Customer contacts bank or uses another card.',
-  'catalog-price-changed': 'Customer cart had a stale price book. Check /api/store/price against the Sanity snapshot (catalog-revision-drift).',
-  'ordering-window-closed': 'Customer tried outside the CMS order window. Confirm the Sanity drop window.',
-  'ordering-database-unavailable': 'Database outage. Check Supabase/Prisma connectivity; nothing was charged.',
-  config: 'Server misconfiguration (Square or database). Check production env.',
-  server: 'Unexpected server error. Reproduce with the reason text; check the handler.',
-  tokenize: 'Browser could not tokenize the card (Square SDK). Check reason; test the card form on mobile Safari and Chrome.',
-  verify: 'Buyer verification (3-D Secure) failed or timed out in the browser.',
-  submit: 'Browser could not reach /api/store/checkout (network drop or timeout).',
-  express: 'Apple/Google Pay token failed after approval.',
-  'card-form': 'Square card form failed to load; the pay button was unusable.',
-};
-
-function adviceFor(payload) {
-  const codes = String(payload.declineCodes || payload.code || '').split(',').filter(Boolean);
-  for (const code of codes) if (NEXT_STEP[code]) return NEXT_STEP[code];
-  return NEXT_STEP[payload.stage] || 'No guidance for this code yet; read the reason.';
-}
+// Advice per code lives with the owner alert email so the two always agree.
+const { adviceFor } = require('../backend/api/finance/checkoutFailureAdvice');
 
 async function main() {
   loadEnv(path.resolve(argValue('env', '.vercel/.env.production.local')));
