@@ -233,6 +233,7 @@ model User {
   feedback           DishFeedback[]
   chefNotes          ChefNote[]
   hubProfile         HubProfile?
+  chefApplication    ChefApplication?
   hubInvitesSent     HubInvite[]         @relation("hubInviteSentBy")
   hubInvitesAccepted HubInvite[]         @relation("hubInviteAcceptedBy")
   hubDocuments       HubDocument[]       @relation("hubDocumentCreatedBy")
@@ -2386,4 +2387,53 @@ model OwnerReviewAudit {
 
   @@index([requestId, createdAt])
   @@index([decisionId])
+}
+
+// Server-only applicant records. These do not grant Hub access or membership.
+model ChefApplication {
+  id                       String   @id @default(uuid())
+  userId                   String   @unique
+  supabaseUid              String   @unique
+  email                    String
+  name                     String
+  serviceArea              String
+  experience               String
+  interests                String
+  availability             String
+  phone                    String   @default("")
+  contactPreference        String   @default("email")
+  workProfile              Json
+  publicDraft              Json
+  publicationConsent       Boolean  @default(false)
+  publicationConsentAt     DateTime?
+  publicationConsentVersion String?
+  acknowledgmentVersion    String
+  acknowledgedAt           DateTime
+  status                   String   @default("pending")
+  applicantReason          String   @default("")
+  version                  Int      @default(1)
+  withdrawnAt              DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  history                  ChefApplicationHistory[]
+
+  @@index([status, updatedAt])
+}
+
+model ChefApplicationHistory {
+  id             String   @id @default(uuid())
+  applicationId  String
+  version        Int
+  action         String
+  fromStatus     String?
+  toStatus       String
+  applicantReason String  @default("")
+  privateNote    String   @default("")
+  actorUid       String
+  actorEmail     String
+  createdAt      DateTime @default(now())
+  application    ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, version])
 }

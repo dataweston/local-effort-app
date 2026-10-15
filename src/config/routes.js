@@ -2,8 +2,15 @@
 // Drives: prerender, sitemap, <head> meta, vercel.json routing.
 
 import { VENUES, getVenue, isPublishable } from './venues';
+import chefCooperativePageData from '../store/data/generatedChefCooperativePageData.json';
 
 export const PUBLIC_ROUTES = [
+  {
+    path: '/chef-cooperative',
+    title: chefCooperativePageData.page.metaTitle,
+    description: chefCooperativePageData.page.metaDescription,
+    prerender: true,
+  },
   {
     path: '/pizza-on-smith',
     title: 'Pizza on Smith | Local Effort Cooperative',
@@ -187,6 +194,7 @@ export const INTERNAL_ROUTES = [
   '/inbox',
   '/campaigns',
   '/admin/',
+  '/admin/calendar-routing',
   '/weeklydemo',
   '/planner',
   '/weekly-order',
@@ -194,7 +202,6 @@ export const INTERNAL_ROUTES = [
   '/catherine-schedule',
   '/partners/',
   '/schedule/',
-  '/admin/calendar-routing',
   '/hub',
   '/brain',
   '/native-mobile-hub',

@@ -18,7 +18,7 @@ const GROUPED_TYPES = [
   // Sales
   'sale', 'salePage', 'happyMondayPage', 'happyMondaySalePage', 'tinyDinerSalePage', 'pizzaOnSmithPage',
   // Content
-  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner',
+  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner', 'chefCooperativePage',
   'menu', 'menuSection', 'menuItems', 'mealPrepMenu',
   'hubLocalistContent', 'hubLocalistItem',
   // People & Community
@@ -40,6 +40,9 @@ export default defineConfig({
 
   document: {
     actions: (prev, context) => {
+      if (context.schemaType === 'chefCooperativePage') {
+        return prev.filter((action) => action.action !== 'duplicate')
+      }
       if (context.schemaType === 'release') {
         return [...prev, ...(releasePressKitClipboardActions as DocumentActionComponent[])]
       }
@@ -99,6 +102,10 @@ export default defineConfig({
               .child(
                 S.list().title('Content').items([
                   S.documentTypeListItem('page').title('Pages'),
+                  S.listItem()
+                    .id('chef-cooperative-page')
+                    .title('Chef Cooperative Page')
+                    .child(S.document().schemaType('chefCooperativePage').documentId('chef-cooperative-page').title('Chef Cooperative Page')),
                   S.documentTypeListItem('blogPost').title('Blog Posts'),
                   S.documentTypeListItem('release').title('Press Releases'),
                   S.documentTypeListItem('publicEvent').title('Events'),
@@ -170,6 +177,7 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+    templates: (prev: Template[]) => prev.filter((template) => template.schemaType !== 'chefCooperativePage'),
   },
   templates: (prev: Template[]) => [
     ...prev,

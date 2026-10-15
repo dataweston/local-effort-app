@@ -38,6 +38,7 @@ import decisionPriority from './decisionPriority'
 import hubLocalistContent from './hubLocalistContent'
 import hubLocalistItem from './hubLocalistItem'
 import dinnerEvent from './dinnerEvent'
+import chefCooperativePage from './chefCooperativePage'
 
 export const schemaTypes = [
   page,
@@ -80,6 +81,7 @@ export const schemaTypes = [
   hubLocalistContent,
   hubLocalistItem,
   dinnerEvent,
+  chefCooperativePage,
 ]
 
 export default schemaTypes

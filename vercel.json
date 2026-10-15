@@ -318,6 +318,11 @@
       "dest": "/backend/api/server.js"
     },
     {
+      "src": "^/chef-cooperative/+$",
+      "dest": "https://www.localeffortfood.com/chef-cooperative",
+      "status": 308
+    },
+    {
       "src": "^/pizza-on-smith/+$",
       "dest": "https://www.localeffortfood.com/pizza-on-smith",
       "status": 308
@@ -541,6 +546,10 @@
       "src": "^/product/smith-olive-oil/+$",
       "dest": "https://www.localeffortfood.com/product/smith-olive-oil",
       "status": 308
+    },
+    {
+      "src": "^/chef-cooperative$",
+      "dest": "/prerender/chef-cooperative/index.html"
     },
     {
       "src": "^/pizza-on-smith$",

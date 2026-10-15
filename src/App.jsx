@@ -18,6 +18,7 @@ const ReleasesPage = lazy(() => import('./pages/ReleasesPage'));
 const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
 const PizzaOnSmithPage = lazy(() => import('./pages/PizzaOnSmithPage'));
+const ChefCooperativePage = lazy(() => import('./pages/ChefCooperativePage'));
 const SalePage = lazy(() => import('./pages/SalePage'));
 const ChezGaragePage = lazy(() => import('./pages/ChezGaragePage'));
 const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
@@ -40,8 +41,8 @@ const FullPageDemoPage = lazy(() => import('./pages/FullPageDemoPage'));
 const AnnualReportPage = lazy(() => import('./pages/AnnualReportPage'));
 const SmallEventsAdminRequestsPage = lazy(() => import('./pages/SmallEventsAdminRequestsPage'));
 const SmallEventsAdminAvailabilityPage = lazy(() => import('./pages/SmallEventsAdminAvailabilityPage'));
-const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const CalendarRoutingPage = lazy(() => import('./pages/admin/CalendarRoutingPage'));
+const WeeklyOrderPage = lazy(() => import('./pages/WeeklyOrderPage'));
 const AdminWeeklyOrderPage = lazy(() => import('./pages/AdminWeeklyOrderPage'));
 const AdminDecisionPreviewPage = lazy(() => import('./pages/AdminDecisionPreviewPage'));
 const AdminFoodOpsReceiptsPage = lazy(() => import('./pages/AdminFoodOpsReceiptsPage'));
@@ -248,6 +249,7 @@ const AppContent = () => {
                   }
                 />
                 <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
+                <Route path="/chef-cooperative" element={<ChefCooperativePage />} />
                 <Route path="/salepage" element={<Navigate to="/sale" replace />} />
                 <Route
                   path="/return-policy"
@@ -456,7 +458,6 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
-                <Route path="/events" element={<Navigate to="/book" replace />} />
                 <Route
                   path="/admin/calendar-routing"
                   element={
@@ -465,6 +466,7 @@ const AppContent = () => {
                     </AnimatedPage>
                   }
                 />
+                <Route path="/events" element={<Navigate to="/book" replace />} />
                 <Route
                   path="/book"
                   element={

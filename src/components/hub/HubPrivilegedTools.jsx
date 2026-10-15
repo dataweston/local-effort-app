@@ -157,6 +157,10 @@ export function PrivilegedTools({ accessToken, reloadDocs }) {
 
   return (
     <div className="hub-grid">
+      <Panel title="Chef applications" icon={ClipboardList}>
+        <p className="hub-muted">Review private chef applications, request information, and record review notes. Review does not admit a member or grant work or ownership access.</p>
+        <a href="/hub/chef">Open chef application review</a>
+      </Panel>
       <Panel title="Invite User" icon={UserPlus}>
         <form className="hub-form" onSubmit={createInvite}>
           <Field label="Email"><input type="email" value={invite.email} onChange={(e) => setInvite({ ...invite, email: e.target.value })} required /></Field>

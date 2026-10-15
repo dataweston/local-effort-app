@@ -2287,3 +2287,27 @@
   .hub-interview-rail ol button,
   .hub-interview-provenance fieldset label { transition: none; }
 }
+
+/* Private chef applications deliberately do not use the staff navigation shell. */
+.hub-chef-workspace .hub-main { width: 100%; max-width: 1100px; margin: 0 auto; }
+.hub-chef-layout { display: grid; gap: 20px; }
+.hub-chef-fieldset { display: grid; gap: 14px; border: 0; padding: 0; min-width: 0; }
+.hub-chef-fieldset legend { margin-bottom: 14px; font-family: var(--hub-font-display); font-size: 18px; }
+.hub-chef-check { display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+.hub-chef-check input { width: 18px; height: 18px; margin-top: 3px; flex: 0 0 auto; }
+.hub-chef-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.hub-chef-history { padding-left: 22px; display: grid; gap: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hub-chef-history p { margin: 6px 0; }
+.hub-chef-review-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.hub-chef-review-list li { display: grid; gap: 4px; overflow-wrap: anywhere; }
+.hub-chef-review-list button { text-align: left; padding: 10px 12px; background: var(--hub-accent-bg); border: 1px solid var(--hub-border); border-radius: var(--hub-radius-sm); color: var(--hub-ink); cursor: pointer; }
+.hub-chef-review-list span { font-size: 13px; color: var(--hub-muted); }
+.hub-chef-review-detail { border-top: 1px solid var(--hub-border); padding-top: 14px; min-width: 0; }
+.hub-chef-review-detail dl { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(0, 3fr); gap: 10px 16px; }
+.hub-chef-review-detail dt { font-weight: 600; }
+.hub-chef-review-detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .hub-chef-workspace .hub-main { padding: 14px 10px; }
+  .hub-chef-review-detail dl { grid-template-columns: 1fr; gap: 4px; }
+  .hub-chef-review-detail dd { margin-bottom: 10px; }
+}

@@ -274,6 +274,7 @@ function normalizeGroq(query) {
 }
 
 const PUBLIC_SANITY_QUERY_ALLOWLIST = new Set([
+  normalizeGroq(require('../../shared/chef-cooperative-page.json').query),
   normalizeGroq('*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt }'),
   normalizeGroq('*[_type == "blogPost"] | order(publishedAt desc)[0...50]{ title, "slug": slug.current, excerpt, publishedAt, mainImage }'),
   normalizeGroq('*[_type == "blogPost" && slug.current == $slug][0]{ title, publishedAt, body }'),
@@ -1526,6 +1527,24 @@ app.all('/api/hub/profile', async (req, res, next) => {
     await require('../../api-handlers/hub/profile')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub profile handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/chef-application', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/chef-application')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub chef application handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/chef-applications', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/chef-applications')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub chef review handler failed');
     next(err);
   }
 });

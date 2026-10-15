@@ -1,0 +1,5 @@
+{
+  "documentId": "chef-cooperative-page",
+  "documentType": "chefCooperativePage",
+  "query": "*[_type == \"chefCooperativePage\" && _id == \"chef-cooperative-page\"][0]{_id,_type,_rev,_updatedAt,title,metaTitle,metaDescription,introduction,proposalNotice,independenceNotice,localistDistinction,signupFeeNotice,dues{heading,recommendedMonthlyAmountCents,amountLabel,proposalLabel,rationale,collectionNotice,undecidedHeading,undecidedTerms},benefitsHeading,benefits[]{_key,heading,body},equity{heading,body,unresolvedHeading,unresolvedTerms},application{heading,body,ctaLabel,nextSteps[]{_key,heading,body}},privacy{heading,body},contact{heading,body,email,label},heroImage{alt,caption,\"url\":asset->url}}"
+}

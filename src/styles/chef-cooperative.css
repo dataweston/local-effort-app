@@ -1,0 +1,105 @@
+/* /chef-cooperative: a proposal on a working sheet, not a checkout or job board.
+   Same tokens and slip grammar as the service pages; one dark ownership band. */
+.chef-cooperative { overflow-wrap: anywhere; }
+.chef-cooperative .service-page__body { max-width: 1320px; }
+.chef-cooperative__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-top: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+.chef-cooperative .chef-cooperative__slip {
+  max-width: none;
+  padding: clamp(1.25rem, 3.5vw, 2.75rem);
+  border: 1px solid var(--ht-rule);
+  box-shadow: 9px 12px 0 -8px var(--brand-mount);
+}
+.chef-cooperative h1 {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(2.7rem, 4.9vw, 4.6rem);
+  line-height: .99;
+  letter-spacing: -.035em;
+  margin: 0 0 1.75rem;
+  white-space: pre-line;
+}
+.chef-cooperative__price {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem 1rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--ht-rule);
+  padding-top: 1rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+}
+.chef-cooperative__price strong { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 500; }
+.chef-cooperative__price span { max-width: 15rem; font-size: .85rem; }
+.chef-cooperative__status { font-family: var(--font-mono, 'IBM Plex Mono', monospace); font-size: .8rem; margin: .6rem 0 1rem; }
+.chef-cooperative__signup { font-weight: 650; font-size: 1.05rem; line-height: 1.5; }
+.chef-cooperative__apply {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.15rem;
+  margin: 1.25rem 0 1.5rem;
+  color: var(--brand-sheet);
+  background: var(--brand-ink);
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.4;
+  transition: background-color var(--le-dur-1);
+}
+.chef-cooperative__apply:hover { background: var(--brand-olive-deep); }
+.chef-cooperative__apply span { flex-shrink: 0; font-size: 1.4rem; }
+.chef-cooperative__copy { font-size: 1rem; line-height: 1.75; }
+.chef-cooperative__copy p { margin: 0 0 1.15rem; }
+.chef-cooperative__copy p:last-child { margin-bottom: 0; }
+.chef-cooperative__hero-note > .chef-cooperative__copy { margin-top: 1.5rem; }
+.chef-cooperative__proposal { border-top: 3px double var(--ht-rule); border-bottom: 1px solid var(--ht-rule); padding: 1.5rem 0; font-weight: 600; }
+.chef-cooperative__photo { margin: 0 0 2rem; }
+.chef-cooperative__photo img { display: block; width: 100%; height: auto; max-height: 34rem; object-fit: cover; box-shadow: 6px 13px 18px -10px #18130c55; }
+.chef-cooperative__photo figcaption { padding-top: .75rem; font-size: .85rem; }
+.chef-cooperative__section,
+.chef-cooperative__close {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: 1.5rem clamp(2rem, 6vw, 6rem);
+  margin-top: var(--service-rhythm);
+  padding-top: clamp(1.5rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--ht-rule);
+}
+.chef-cooperative .service-page__body h2 { margin: 0; max-width: 24ch; font-size: clamp(1.8rem, 3.2vw, 2.8rem); line-height: 1.08; text-wrap: balance; }
+.chef-cooperative .service-page__body h3 { font-size: 1.2rem; line-height: 1.25; }
+.chef-cooperative__notice { border-left: 2px solid var(--brand-olive); padding-left: 1.25rem; margin: 1.5rem 0 2rem; }
+.chef-cooperative__terms { padding-left: 1.25rem; margin: 1rem 0 0; line-height: 1.7; }
+.chef-cooperative__terms li { padding-left: .25rem; margin-bottom: .75rem; }
+.chef-cooperative__benefits { margin-top: var(--service-rhythm); }
+.chef-cooperative__ledger { margin-top: 2rem; }
+.chef-cooperative__row { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 1rem clamp(2rem, 6vw, 6rem); border-top: 1px solid var(--ht-rule); padding: 1.5rem 0; }
+.chef-cooperative__ownership { margin-top: var(--service-rhythm); padding: clamp(1.5rem, 4vw, 3rem); background: var(--brand-void); color: var(--brand-linen); }
+.chef-cooperative__ownership .chef-cooperative__section { border: 0; padding: 0; margin: 0; }
+.chef-cooperative .chef-cooperative__ownership h2,
+.chef-cooperative .chef-cooperative__ownership h3 { color: inherit; }
+.chef-cooperative__ownership h3 { margin-top: 2rem; }
+.chef-cooperative__section > div > .chef-cooperative__copy { margin-top: 1rem; }
+.chef-cooperative__section > div > .chef-cooperative__copy:first-child { margin-top: 0; }
+.chef-cooperative__steps article + article { border-top: 1px solid var(--ht-rule); padding-top: 1.5rem; margin-top: 1.5rem; }
+.chef-cooperative__steps .chef-cooperative__copy { margin-top: .75rem; }
+.chef-cooperative__close { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); align-items: start; }
+.chef-cooperative__close .chef-cooperative__copy { margin-top: 1rem; }
+.chef-cooperative__email { display: inline-block; margin-top: 1rem; text-decoration: underline; text-underline-offset: 4px; line-height: 1.7; }
+.chef-cooperative__closing-slip { border-top: 3px double var(--ht-rule); padding-top: 1rem; font-weight: 600; }
+@media (max-width: 760px) {
+  .chef-cooperative__hero,
+  .chef-cooperative__section,
+  .chef-cooperative__row,
+  .chef-cooperative__close { grid-template-columns: minmax(0, 1fr); }
+  .chef-cooperative__hero { gap: 2rem; }
+  .chef-cooperative__ownership { margin-inline: calc(-.5 * var(--service-gutter)); }
+  .chef-cooperative__row { padding: 1.25rem 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chef-cooperative__apply { transition: none; }
+}

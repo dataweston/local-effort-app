@@ -4,7 +4,7 @@
 site: https://www.localeffortfood.com/
 manifest: https://www.localeffortfood.com/ai/manifest.json
 llms-txt: https://www.localeffortfood.com/llms.txt
-last-updated: 2026-07-12
+last-updated: 2026-10-15
 
 primary-pages:
 - /pizza-on-smith Limited-time frozen pizza drops: fixed order window, then pickup (608 Smith Ave S, West St. Paul), metro delivery or shipping. Current window and fulfillment dates: GET /api/store/products?store=pizza-on-smith (page.dropOpensAt, page.dropClosesAt, page.fulfillmentLabel). 10-inch cheese: 3/$34 or 6/$59; kids cheese: 3/$14.50; Brussels special: $14.50; olive oil: 1 liter/$32.
@@ -20,6 +20,7 @@ primary-pages:
 - /psyche        Psyche olive oil product page
 - /february      Seasonal home-dinner booking page
 - /localist      Localist weekly meals SMS list signup (North Minneapolis pickup)
+- /chef-cooperative Independent chef cooperative proposal and no-fee application via /hub/chef; not employment hiring or customer Localist. Dues/benefits remain proposed; no automatic admission or equity offer.
 - /weekly-order  Weekly order checkout surface (customer-specific; not in search index)
 
 support:

@@ -32,6 +32,7 @@ import { OwnerInterviewView } from '../components/hub/HubOwnerInterviewView';
 import { LocalistClosedScreen, LocalistGuestShell, LocalistView } from '../components/hub/HubLocalistView';
 import { MembershipView } from '../components/hub/HubMembershipView';
 import { SecurityGuestShell, SecurityView } from '../components/hub/HubSecurityView';
+import HubChefView from './hub/HubChefView';
 import '../styles/hub.css';
 
 const tabs = [
@@ -58,6 +59,7 @@ export default function HubPage() {
   const localistToken = hubParams.get('localist') || '';
   const sharedDocId = hubParams.get('doc') || '';
   const hubPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+  const isChefRoute = hubPath === '/hub/chef';
   const isSecurityRoute = hubPath === '/hub/security';
   const isInputsRoute = hubPath === '/hub/inputs';
   const isEconomicsRoute = hubPath === '/hub/economics';
@@ -66,6 +68,8 @@ export default function HubPage() {
   const isMembershipRoute = hubPath === '/hub/membership' || hubPath === '/hub/member';
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileToken, setProfileToken] = useState(null);
   const [localistAccess, setLocalistAccess] = useState({ loaded: !localistToken, window: null });
   const [tab, setTab] = useState(isSecurityRoute ? 'security' : isInputsRoute ? 'foodInputs' : isEconomicsRoute ? 'economics' : isMembershipRoute ? 'membership' : isInterviewRoute ? 'interview' : sharedDocId ? 'docs' : 'today');
   // Privileged-only "view as" override: see the whole Hub as a staff or customer
@@ -90,23 +94,34 @@ export default function HubPage() {
   }, []);
 
   useEffect(() => {
-    if (!localistToken) return;
+    if (isChefRoute || !localistToken) return;
     setLocalistAccess({ loaded: false, window: null });
     api(`/api/hub/localist-window?token=${encodeURIComponent(localistToken)}`)
       .then((data) => setLocalistAccess({ loaded: true, window: data.window || null }))
       .catch(() => setLocalistAccess({ loaded: true, window: null }));
-  }, [localistToken]);
+  }, [localistToken, isChefRoute]);
 
   const loadProfile = useCallback(async () => {
-    if (!auth.accessToken) return;
+    if (!auth.accessToken || isChefRoute) return;
     setProfileLoaded(false);
+    setProfileError('');
     try {
       const data = await api('/api/hub/profile', auth.accessToken);
+      if (!data.profile && !inviteToken && hubPath === '/hub') {
+        const chef = await api('/api/hub/chef-application', auth.accessToken);
+        if (chef.application) {
+          window.location.replace('/hub/chef');
+          return;
+        }
+      }
       setProfile(data.profile || null);
+      setProfileToken(auth.accessToken);
+    } catch (error) {
+      setProfileError(error.message);
     } finally {
       setProfileLoaded(true);
     }
-  }, [auth.accessToken]);
+  }, [auth.accessToken, isChefRoute, inviteToken, hubPath]);
 
   // Privileged viewers also pull hidden docs so they can unhide or delete them;
   // everyone else only ever receives published docs from the API.
@@ -120,7 +135,7 @@ export default function HubPage() {
   }, [auth.accessToken, docsEndpoint]);
 
   const loadShellData = useCallback(async () => {
-    if (!auth.accessToken || !profile || String(profile.status || '').toLowerCase() !== 'active') return;
+    if (isChefRoute || !auth.accessToken || profileToken !== auth.accessToken || !profileLoaded || !profile || String(profile.status || '').toLowerCase() !== 'active') return;
     if (profile.accessLevel === 'customer' || profile.accessLevel === 'localist') return;
     const start = todayIso();
     const [peopleData, docsData, calendarData, convData, shiftData] = await Promise.all([
@@ -135,7 +150,7 @@ export default function HubPage() {
     setCalendar(calendarData.objects || []);
     setConversations(convData.conversations || []);
     setShifts(shiftData.shifts || []);
-  }, [auth.accessToken, profile, docsEndpoint]);
+  }, [auth.accessToken, profile, profileToken, profileLoaded, docsEndpoint, isChefRoute]);
 
   useEffect(() => { loadProfile().catch(() => setProfileLoaded(true)); }, [loadProfile]);
   useEffect(() => { loadShellData().catch(() => {}); }, [loadShellData]);
@@ -211,6 +226,9 @@ export default function HubPage() {
     }
   };
 
+  // This workspace has no staff shell, profile setup, or staff API side effects.
+  if (isChefRoute) return <HubChefView auth={auth} />;
+
   if (localistToken) {
     if (!localistAccess.loaded) {
       return (
@@ -246,7 +264,13 @@ export default function HubPage() {
       </>
     );
   }
-  if (profileLoaded && !profile) {
+  if (profileError) return (
+    <main className="hub-auth-screen"><div className="hub-auth-card">
+      <h1>Hub could not load</h1><p className="hub-error" role="alert">{profileError}</p>
+      <button className="hub-primary-button" type="button" onClick={loadProfile}>Try again</button>
+    </div></main>
+  );
+  if (profileLoaded && profileToken === auth.accessToken && !profile) {
     if (!inviteToken && !auth.isAdmin) {
       return (
         <>
@@ -260,7 +284,7 @@ export default function HubPage() {
       </>
     );
   }
-  if (!profileLoaded) {
+  if (!profileLoaded || profileToken !== auth.accessToken) {
     return (
       <>
         <main className="hub-auth-screen"><RefreshCw className="animate-spin" size={36} /></main>

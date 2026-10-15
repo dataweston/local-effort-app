@@ -1,8 +1,8 @@
 # Specimen — direction for the public site
 
 The material system behind every page reachable from the header: `/`,
-`/weekly-meals`, `/small-events`, `/sale`, `/localist`, and the home panels for
-Local Pizza, For Business and About.
+`/weekly-meals`, `/small-events`, `/sale`, `/localist`, `/chef-cooperative`,
+and the home panels for Local Pizza, For Business and About.
 
 Sources are the twenty-one works in [REFERENCE-SET.md](./REFERENCE-SET.md).
 Implementation is `src/styles/specimen.css`, tokens in
@@ -98,6 +98,30 @@ thing on the page. The script is therefore not *persuade, then ask* — it is
 
 Cover the CTA and the page still points at it: the slip is where the eye enters
 and the closing slip is where it exits.
+
+The chef cooperative page uses the same slip-first grammar without making an
+application look like a purchase. Proposed operating dues, their non-adopted
+status and the no-fees-at-signup notice precede the `/hub/chef` application link.
+Ruled explanations distinguish independent chef participation from employment
+and customer Localist membership; the single dark band holds the conditional
+ownership discussion. No photograph is required when there is no specifically
+approved image for this proposal.
+
+All substantive `/chef-cooperative` text belongs to the Sanity singleton
+`chefCooperativePage` / `chef-cooperative-page`, including metadata, proposal
+limits, benefit explanations, privacy and contact. Studio exposes it under
+Content → Chef Cooperative Page. `shared/chef-cooperative-page.json` owns the
+exact projected public query, and `shared/chef-cooperative-content.mjs` validates
+the seed, Studio content, generated snapshot and live browser refresh.
+
+`node scripts/seed-chef-cooperative-page.cjs` previews prepared public copy
+locally; explicit owner-authorized `--apply` creates the document only if absent
+and never replaces owner edits. `node scripts/generate-chef-cooperative-page-data.js`
+reads published CMS content before the build's content guard and Vite steps.
+It retains a valid previous CMS snapshot during an outage and fails when neither
+published content nor a valid prior snapshot exists. The prepared seed is never
+used as a public runtime fallback. Publishing content, deploying Studio schema
+and deploying the website are separate authorizations.
 
 ### The home page
 
