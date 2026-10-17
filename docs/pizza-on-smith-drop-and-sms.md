@@ -1,7 +1,7 @@
 # Pizza on Smith drop mechanics and SMS plan
 
 Owner: Local Effort Cooperative
-As of: 2026-10-13
+As of: 2026-10-16
 Review by: 2026-11-13, or when the Twilio account is approved, whichever is first.
 System of record: Sanity doc `pizza-on-smith-page` (window, fulfillment label, copy) and Sanity manual inventory (quantity caps).
 
@@ -12,6 +12,18 @@ System of record: Sanity doc `pizza-on-smith-page` (window, fulfillment label, c
 - **Quantity limit.** Set per product with `node scripts/set-pizza-on-smith-drop.cjs --cap <product-id>=<qty>` (dry run until `--apply`). No caps are applied yet; the owner chooses the numbers.
 - **Admin.** `/admin/pizza-on-smith` shows drop status, pick list by pickup/delivery/shipping, orders to do, and sends the method-specific "ready / on its way / shipped" email. Shipping requires a tracking number. Failed or dead-lettered notices show a Retry button.
 - **Ready email.** Transactional (`pizza-on-smith-ready` source). It goes through the durable outbox, ignores marketing unsubscribes, and still respects bounces, complaints and suppressions.
+
+## Manual sale confirmations without a worker
+
+In `/admin/pizza-on-smith`, open the paid order and choose **View confirmations**. Review the saved recipients, subject and original message separately for the customer and owner; copied recipients are also shown. Viewing and refreshing never send.
+
+Choose **Send customer confirmation** or **Send owner confirmation**, then confirm the named recipients. The authenticated request processes only that role's durable job immediately through Brevo, without the scheduled worker or unrelated queued messages. This is a purchase confirmation, not the ready/shipped action; it does not change fulfillment status.
+
+The API requires the order's owned, succeeded Square payment and original purchase-time confirmation snapshots. It preserves an existing job's content and stable payment/role key, repairs a missing selected job from its snapshot, and never recharges a payment or resends a job already accepted by the provider. Failed jobs expose their error and a **Retry** control; if Brevo/configuration is unavailable, the job remains recoverable and needs another manual retry while the worker is down. A processing job cannot be manually resent while its claim is active.
+
+Status `sent`, its timestamp and provider message ID mean Brevo accepted the message, not that it reached the recipient's inbox. Owner-only sample verification and explicit recipient approval still apply before real sends; the browser confirmation is not a substitute for those approvals.
+
+Verification: 35 focused sales tests passed. A finite local run exercised the real router and outbox against revision-aware in-memory storage and a simulated provider: read-only preview, one-role send, sent replay, provider failure/manual retry, unrelated jobs untouched, and unchanged fulfillment. The actual admin component was viewed at desktop/mobile sizes with synthetic order/API fixtures and the CMS-generated drop snapshot; cancel/send/retry and accepted-state controls were exercised. No external messages or production writes occurred. The new manual path has not been deployed or verified through real owner-only Brevo sends; the scheduler outage remains separate.
 
 ## SMS and RCS: not built
 

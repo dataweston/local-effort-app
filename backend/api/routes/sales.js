@@ -26,6 +26,7 @@ const { createAdminVerifier } = require('../utils/adminVerifier');
 const { BUSINESS_LINES } = require('../finance/businessLines');
 const { getPizzaDrop, pizzaDropStatus } = require('../../../api-handlers/store/_pizzaDrop');
 const { buildPizzaReadyNotice, methodOf, REPLY_EMAIL } = require('../../../api-handlers/store/_pizzaReadyNotice');
+const { buildDirectSaleConfirmations } = require('../../../api-handlers/store/sale-confirmation-outbox');
 
 const verifyAdminRequest = createAdminVerifier();
 
@@ -229,6 +230,167 @@ function createSalesRouter({
       daily: [...daily.values()].sort((a, b) => b.date.localeCompare(a.date)),
       products: [...productCounts.values()].map(({ orderIds, ...product }) => ({ ...product, orderCount: orderIds.size })).sort((a, b) => a.name.localeCompare(b.name)),
       orders: reportOrders,
+    });
+  }));
+
+  const confirmationRoles = ['customer', 'owner'];
+  const confirmationError = (code) => Object.assign(new Error(code), { statusCode: 409 });
+  const confirmationGuarded = (handler) => ownerGuarded(async (req, res) => {
+    try {
+      return await handler(req, res);
+    } catch (error) {
+      if (error.statusCode === 409) return res.status(409).json({ error: error.message });
+      logger?.error?.({ err: error, orderId: req.params.orderId }, 'sale confirmation unavailable');
+      return res.status(503).json({ error: 'email-service-unavailable' });
+    }
+  });
+  const validConfirmationPayload = (payload) => {
+    const validEmail = (value) => typeof value === 'string' && /^[^\s@{}]+@[^\s@{}]+\.[^\s@{}]+$/.test(value);
+    return payload && Array.isArray(payload.to) && payload.to.length > 0
+      && ['to', 'cc', 'bcc'].every((field) => payload[field] == null
+        || (Array.isArray(payload[field]) && payload[field].every((recipient) => validEmail(recipient?.email))))
+      && validEmail(payload.sender?.email) && validEmail(payload.replyTo?.email)
+      && ['subject', 'textContent', 'htmlContent'].every((field) =>
+        typeof payload[field] === 'string' && payload[field].trim() && !/\{\{[^}]+\}\}/.test(payload[field]));
+  };
+  const recipientScope = (payload) => JSON.stringify(['to', 'cc', 'bcc'].map((field) =>
+    (payload?.[field] || []).map((recipient) => String(recipient?.email || '').trim().toLowerCase()).sort()));
+
+  async function loadPizzaConfirmations(orderId) {
+    if (!emailOutboxService?.getJobs || !emailOutboxService?.stableOutboxId) {
+      throw new Error('email-service-unavailable');
+    }
+    const order = await prismaClient.commercialOrder.findFirst({
+      where: { ...pizzaOrderWhere, id: orderId },
+      select: {
+        ...pizzaOrderSelect,
+        status: true,
+        sourceSystem: true,
+        paymentAttempts: {
+          where: { provider: 'square', status: 'succeeded' },
+          select: {
+            commercialOrderId: true, provider: true, status: true, externalPaymentId: true,
+            requestedCents: true, currency: true, metadata: true,
+          },
+          orderBy: { updatedAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    if (!order || order.status !== 'paid' || order.sourceSystem !== 'store'
+      || order.metadata?.store !== 'pizza-on-smith') throw confirmationError('paid-pizza-order-required');
+    const attempt = order.paymentAttempts?.find((entry) =>
+      entry.provider === 'square' && entry.status === 'succeeded' && entry.commercialOrderId === order.id
+      && typeof entry.externalPaymentId === 'string' && entry.externalPaymentId.trim());
+    if (!attempt) throw confirmationError('verified-square-payment-required');
+    const paymentId = attempt.externalPaymentId;
+    const facts = attempt.metadata?.saleConfirmationFacts || order.metadata?.saleConfirmationFacts;
+    if (!facts || facts.flow !== 'store' || facts.store !== 'pizza-on-smith') {
+      throw confirmationError('original-confirmation-facts-required');
+    }
+    if ((attempt.requestedCents != null && attempt.requestedCents !== order.totalCents)
+      || (facts.totalCents != null && facts.totalCents !== order.totalCents)
+      || (facts.amountCents != null && facts.amountCents !== order.totalCents)
+      || (attempt.currency && order.currency && attempt.currency.toUpperCase() !== order.currency.toUpperCase())) {
+      throw confirmationError('payment-amount-mismatch');
+    }
+    const templates = facts.confirmationTemplates;
+    if (!Array.isArray(templates) || templates.length !== 2
+      || confirmationRoles.some((role) => templates.filter((entry) => entry?.role === role).length !== 1)) {
+      throw confirmationError('original-confirmation-templates-required');
+    }
+    let confirmations;
+    try {
+      confirmations = buildDirectSaleConfirmations('store', { ...facts, paymentId });
+    } catch (_error) {
+      throw confirmationError('original-confirmation-template-incomplete');
+    }
+    if (confirmations.length !== 2 || confirmations.some(({ payload }) => !validConfirmationPayload(payload))) {
+      throw confirmationError('original-confirmation-template-incomplete');
+    }
+    const entries = confirmationRoles.map((role) => {
+      const idempotencyKey = `square-payment-${paymentId}-sale-confirmation-${role}`;
+      return {
+        role, idempotencyKey, id: emailOutboxService.stableOutboxId(idempotencyKey),
+        payload: confirmations.find((entry) => entry.role === role).payload,
+      };
+    });
+    return { orderId: order.id, paymentId, entries };
+  }
+
+  async function readPizzaConfirmationState(state) {
+    const jobs = await emailOutboxService.getJobs({ ids: state.entries.map(({ id }) => id) });
+    return state.entries.map((entry) => {
+      const job = jobs.find(({ id }) => id === entry.id);
+      if (job && (job.source !== 'sale-confirmation' || job.idempotencyKey !== entry.idempotencyKey
+        || job.context?.paymentId !== state.paymentId || job.context?.role !== entry.role
+        || !validConfirmationPayload(job.payload) || recipientScope(job.payload) !== recipientScope(entry.payload))) {
+        throw confirmationError('original-confirmation-job-mismatch');
+      }
+      const payload = job?.payload || entry.payload;
+      return {
+        role: entry.role,
+        to: payload.to.map(({ email, name }) => ({ email, ...(name ? { name } : {}) })),
+        cc: (payload.cc || []).map(({ email, name }) => ({ email, ...(name ? { name } : {}) })),
+        bcc: (payload.bcc || []).map(({ email, name }) => ({ email, ...(name ? { name } : {}) })),
+        subject: payload.subject,
+        textContent: payload.textContent,
+        status: job?.status || 'missing',
+        attempts: job?.attempts || 0,
+        lastError: job?.lastError || null,
+        sentAt: job?.sentAt || null,
+        providerMessageId: job?.providerMessageId || null,
+      };
+    });
+  }
+
+  router.get('/pizza-on-smith/orders/:orderId/confirmations', confirmationGuarded(async (req, res) => {
+    const state = await loadPizzaConfirmations(req.params.orderId);
+    return res.json({ ok: true, orderId: state.orderId, confirmations: await readPizzaConfirmationState(state) });
+  }));
+
+  router.post('/pizza-on-smith/orders/:orderId/confirmations/send', confirmationGuarded(async (req, res) => {
+    const role = req.body?.role;
+    if (!confirmationRoles.includes(role) || Object.keys(req.body || {}).some((key) => key !== 'role')) {
+      throw confirmationError('confirmation-role-required');
+    }
+    if (!emailOutboxService?.enqueue || !emailOutboxService?.requeue || !emailOutboxService?.processBatch) {
+      throw new Error('email-service-unavailable');
+    }
+    const state = await loadPizzaConfirmations(req.params.orderId);
+    const before = await readPizzaConfirmationState(state);
+    const chosen = before.find((entry) => entry.role === role);
+    const entry = state.entries.find((item) => item.role === role);
+    let requeued = false;
+    let processingError = null;
+    if (chosen.status !== 'sent') {
+      if (chosen.status === 'missing') {
+        await emailOutboxService.enqueue({
+          idempotencyKey: entry.idempotencyKey, payload: entry.payload,
+          category: 'transactional', source: 'sale-confirmation',
+          context: { paymentId: state.paymentId, role, tags: ['sale-confirmation'] },
+        });
+      }
+      // Re-read after createIfNotExists: a concurrent webhook may own the job.
+      const current = (await readPizzaConfirmationState(state)).find((item) => item.role === role);
+      if (['retry', 'dead_letter'].includes(current.status)) {
+        requeued = (await emailOutboxService.requeue(entry.idempotencyKey)).requeued;
+      }
+      if (current.status !== 'sent') {
+        try {
+          await emailOutboxService.processBatch({ ids: [entry.id], limit: 1, source: 'sale-confirmation' });
+        } catch (error) {
+          processingError = error;
+          logger?.error?.({ err: error, orderId: state.orderId, role }, 'sale confirmation processing unavailable');
+        }
+      }
+    }
+    const confirmations = await readPizzaConfirmationState(state);
+    const result = { ...confirmations.find((item) => item.role === role), skipped: chosen.status === 'sent', requeued };
+    // "sent" records provider acceptance only; it is not recipient delivery.
+    return res.status(processingError ? 503 : 200).json({
+      ok: !processingError, orderId: state.orderId, confirmations, result,
+      ...(processingError ? { error: 'email-service-unavailable' } : {}),
     });
   }));
 

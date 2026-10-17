@@ -96,6 +96,32 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     return { id: outboxId, deduped: false, status: 'queued' };
   }
 
+  // Read only explicitly selected jobs from the write client so a manual send
+  // reports the persisted result, not a potentially stale CDN response.
+  async function getJobs({ ids } = {}) {
+    const scopedIds = [...new Set(safeArray(ids).filter((id) => typeof id === 'string' && id))];
+    if (!scopedIds.length) return [];
+    const sc = getSanityClient();
+    if (!sc) throw new Error('sanity-not-configured');
+    const rows = await sc.fetch(
+      '*[_type == "emailOutbox" && _id in $ids]{_id,idempotencyKey,category,source,context,payload,status,attempts,lastError,sentAt,providerMessageId}',
+      { ids: scopedIds }
+    );
+    return safeArray(rows).map((row) => ({
+      id: row._id,
+      idempotencyKey: row.idempotencyKey,
+      category: row.category,
+      source: row.source,
+      context: row.context,
+      payload: row.payload,
+      status: ['queued', 'retry', 'processing', 'sent', 'dead_letter'].includes(row.status) ? row.status : 'queued',
+      attempts: Math.max(0, Number(row.attempts) || 0),
+      lastError: row.lastError ? String(row.lastError).slice(0, 500) : null,
+      sentAt: row.sentAt || null,
+      providerMessageId: row.providerMessageId || null,
+    }));
+  }
+
   async function processBatch({ limit = 20, maxAttempts = 5, ids = null, source = null } = {}) {
     const sc = getSanityClient();
     if (!sc) throw new Error('sanity-not-configured');
@@ -209,8 +235,15 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     if (!existing) return { id: outboxId, requeued: false, status: null };
     if (!['retry', 'dead_letter'].includes(existing.status)) return { id: outboxId, requeued: false, status: existing.status };
     const now = toIsoNow();
-    await sc.patch(outboxId).set({ status: 'queued', attempts: 0, nextAttemptAt: now, updatedAt: now })
-      .unset(['deadLetterReason', 'finishedAt']).commit();
+    try {
+      await sc.patch(outboxId).ifRevisionId(existing._rev)
+        .set({ status: 'queued', attempts: 0, nextAttemptAt: now, updatedAt: now })
+        .unset(['deadLetterReason', 'finishedAt']).commit();
+    } catch (error) {
+      if (error?.statusCode !== 409) throw error;
+      const current = await sc.getDocument(outboxId);
+      return { id: outboxId, requeued: false, status: current?.status || null };
+    }
     return { id: outboxId, requeued: true, status: 'queued' };
   }
 
@@ -233,6 +266,7 @@ function createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoS
     enqueue,
     requeue,
     processBatch,
+    getJobs,
     getStats,
     stableOutboxId,
     sanitizeForId,

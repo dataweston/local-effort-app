@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { API_BASE } from '../lib/apiBase';
@@ -13,7 +13,13 @@ async function apiFetch(path, token, options = {}) {
     },
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data?.error || `Request failed (${response.status})`);
+  if (!response.ok) {
+    const detail = data?.error?.message || data?.message || (typeof data?.error === 'string' ? data.error : '');
+    const code = data?.code || data?.error?.code || (data?.message && typeof data?.error === 'string' ? data.error : '');
+    const error = new Error(`${detail || `Request failed (${response.status})`}${code && code !== detail ? ` (${code})` : ''}`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -23,6 +29,123 @@ const METHOD_LABEL = { pickup: 'Pickup', delivery: 'Metro delivery', shipping: '
 const DROP_LABEL = { open: 'Ordering is open', upcoming: 'Drop has not opened', closed: 'Ordering is closed' };
 const ACTION_LABEL = { pickup: 'Mark ready for pickup & email', delivery: 'Mark out for delivery & email', shipping: 'Mark shipped & email' };
 const NEEDS_RETRY = new Set(['retry', 'dead_letter']);
+
+function confirmationErrorMessage(error) {
+  if (error.status === 404 || error.status === 405) {
+    return `${error.message}. Sale confirmation controls may not be available on this API deployment, or this order is unavailable.`;
+  }
+  return error.message || 'Could not access sale confirmations.';
+}
+
+function OrderConfirmations({ orderId, accessToken, isAdmin }) {
+  const [open, setOpen] = useState(false);
+  const [confirmations, setConfirmations] = useState(null);
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const requestActive = useRef(false);
+  const path = `/api/sales/pizza-on-smith/orders/${encodeURIComponent(orderId)}/confirmations`;
+  const canRequest = isAdmin && Boolean(accessToken);
+
+  const readConfirmations = async () => {
+    const data = await apiFetch(path, accessToken);
+    if (!Array.isArray(data.confirmations)) throw new Error('The API did not return confirmation details. The matching API deployment may be required.');
+    setConfirmations(data.confirmations);
+    return data.confirmations;
+  };
+
+  const viewConfirmations = async () => {
+    if (!canRequest || requestActive.current) return;
+    setOpen(true);
+    requestActive.current = true;
+    setBusy('preview');
+    setError('');
+    setMessage('');
+    try {
+      await readConfirmations();
+    } catch (err) {
+      setError(confirmationErrorMessage(err));
+    } finally {
+      requestActive.current = false;
+      setBusy('');
+    }
+  };
+
+  const sendConfirmation = async (confirmation) => {
+    if (!canRequest || requestActive.current || ['sent', 'processing'].includes(confirmation.status)) return;
+    const destinations = ['to', 'cc', 'bcc'].flatMap((field) => (confirmation[field] || []).map(({ email, name }) =>
+      `${field.toUpperCase()}: ${name ? `${name} <${email}>` : email}`)).join(', ');
+    if (!destinations || !window.confirm(`Send the original ${confirmation.role} sale confirmation to ${destinations}?\n\nThis sends an email. It does not mark the order ready.`)) return;
+    requestActive.current = true;
+    setBusy(confirmation.role);
+    setError('');
+    setMessage('');
+    let sendError = '';
+    let latest = null;
+    try {
+      const data = await apiFetch(`${path}/send`, accessToken, { method: 'POST', body: JSON.stringify({ role: confirmation.role }) });
+      if (Array.isArray(data.confirmations)) {
+        latest = data.confirmations;
+        setConfirmations(latest);
+      }
+    } catch (err) {
+      sendError = confirmationErrorMessage(err);
+    }
+    try {
+      latest = await readConfirmations();
+    } catch (err) {
+      sendError = `${sendError ? `${sendError} ` : ''}Could not refresh persisted confirmation status: ${confirmationErrorMessage(err)} Review the status before trying again.`;
+    } finally {
+      requestActive.current = false;
+      setBusy('');
+    }
+    const selected = latest?.find(({ role }) => role === confirmation.role);
+    if (sendError) {
+      setError(sendError);
+    } else if (selected?.status === 'sent') {
+      setMessage(`The email provider accepted the ${confirmation.role} confirmation. Recipient delivery is not confirmed.`);
+    } else {
+      setError(`The ${confirmation.role} confirmation is ${selected?.status || 'not confirmed as accepted'}.${selected?.lastError ? ` ${selected.lastError}` : ' Review the persisted status and retry when appropriate.'}`);
+    }
+  };
+
+  return <div className="space-y-3">
+    <Button type="button" size="sm" variant="outline" disabled={!canRequest || Boolean(busy)} aria-expanded={open} aria-controls={`confirmations-${orderId}`} onClick={() => open ? setOpen(false) : void viewConfirmations()}>
+      {open ? 'Hide confirmations' : 'View confirmations'}
+    </Button>
+    {open && <section id={`confirmations-${orderId}`} className="space-y-3 border-t pt-3" aria-label="Sale confirmations" aria-busy={Boolean(busy)}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 className="font-semibold">Sale confirmations</h4>
+        <Button type="button" size="sm" variant="outline" disabled={!canRequest || Boolean(busy)} onClick={() => void viewConfirmations()}>Refresh confirmation status</Button>
+      </div>
+      <p className="text-sm text-slate-600">Original saved messages, separate from ready emails. Sending does not change fulfillment status. Sent means accepted by the email provider, not confirmed recipient delivery.</p>
+      {busy === 'preview' && <p role="status" className="text-sm text-slate-500">Loading confirmations…</p>}
+      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      {message && <p role="status" className="text-sm text-slate-600">{message}</p>}
+      {confirmations && ['customer', 'owner'].map((role) => {
+        const confirmation = confirmations.find((entry) => entry.role === role);
+        const status = confirmation?.status || 'missing';
+        const hasSnapshot = confirmation?.to?.some(({ email }) => email) && confirmation.subject && confirmation.textContent;
+        return <section key={role} className="space-y-2 rounded-lg border p-3" aria-label={`${role === 'customer' ? 'Customer' : 'Owner'} sale confirmation`}>
+          <h5 className="font-semibold">{role === 'customer' ? 'Customer' : 'Owner'} confirmation</h5>
+          <p className="break-words text-sm"><strong>To:</strong> {confirmation?.to?.map(({ email, name }) => name ? `${name} <${email}>` : email).join(', ') || 'No saved recipient'}</p>
+          {['cc', 'bcc'].map((field) => confirmation?.[field]?.length > 0 && <p key={field} className="break-words text-sm"><strong>{field.toUpperCase()}:</strong> {confirmation[field].map(({ email, name }) => name ? `${name} <${email}>` : email).join(', ')}</p>)}
+          <p className="break-words text-sm"><strong>Subject:</strong> {confirmation?.subject || 'No saved subject'}</p>
+          <p className="text-sm"><strong>Status:</strong> {status} · Attempts: {confirmation?.attempts ?? 0}</p>
+          {confirmation?.lastError && <p className="break-words text-sm text-red-700"><strong>Last error:</strong> {confirmation.lastError}</p>}
+          {confirmation?.sentAt && <p className="text-sm"><strong>Provider accepted at:</strong> {dateTime(confirmation.sentAt)} (Central)</p>}
+          {confirmation?.providerMessageId && <p className="break-words text-sm"><strong>Provider message ID:</strong> {confirmation.providerMessageId}</p>}
+          <p className="text-sm font-semibold">Original message</p>
+          <pre className="whitespace-pre-wrap break-words font-sans text-sm">{confirmation?.textContent || 'No original message snapshot available.'}</pre>
+          {!hasSnapshot && <p className="text-sm text-slate-600">Sending is unavailable without the saved recipient, subject, and original message.</p>}
+          <Button type="button" size="sm" variant="outline" disabled={!canRequest || Boolean(busy) || !hasSnapshot || ['sent', 'processing'].includes(status)} onClick={() => void sendConfirmation(confirmation)}>
+            {busy === role ? 'Sending…' : status === 'sent' ? 'Already accepted by provider' : status === 'processing' ? 'Processing' : `${NEEDS_RETRY.has(status) ? 'Retry' : 'Send'} ${role} confirmation`}
+          </Button>
+        </section>;
+      })}
+    </section>}
+  </div>;
+}
 
 export default function AdminPizzaOnSmithPage() {
   const { user, isAdmin, accessToken, loading: authLoading, signInWithGoogle, signOut } = useSupabaseAuth();
@@ -128,6 +251,7 @@ export default function AdminPizzaOnSmithPage() {
             </div></div>
           <ul className="list-inside list-disc text-sm">{order.lines.map((line) => <li key={line.id}>{line.quantity} × {line.name} — {money(line.totalCents, order.currency)}</li>)}</ul>
           {Object.entries(order.fulfillmentDetails || {}).filter(([, value]) => value).map(([label, value]) => <p className="whitespace-pre-line text-sm text-slate-600" key={label}><strong>{label}:</strong> {value}</p>)}
+          <OrderConfirmations orderId={order.id} accessToken={accessToken} isAdmin={isAdmin} />
         </article>)}
       </section>
     </>}
