@@ -41,6 +41,7 @@ import dinnerEvent from './dinnerEvent'
 import pizzaOnSmithPage from './pizzaOnSmithPage'
 import pizzaPhoto from './objects/pizzaPhoto'
 import chefCooperativePage from './chefCooperativePage'
+import dishLibraryPage from './dishLibraryPage'
 import chefMembershipTerms from './chefMembershipTerms'
 import chefEngagementTerms from './chefEngagementTerms'
 
@@ -90,6 +91,7 @@ export const schemaTypes = [
   pizzaOnSmithPage,
   pizzaPhoto,
   chefCooperativePage,
+  dishLibraryPage,
 ]
 
 export default schemaTypes

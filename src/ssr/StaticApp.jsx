@@ -10,6 +10,7 @@ import BlogPost from '../pages/BlogPost';
 import ReleasesPage from '../pages/ReleasesPage';
 import PizzaOnSmithPage from '../pages/PizzaOnSmithPage';
 import ChefCooperativePage from '../pages/ChefCooperativePage';
+import DishesPage from '../pages/DishesPage';
 import SalePage from '../pages/SalePage';
 import ChezGaragePage from '../pages/ChezGaragePage';
 import HappyMondayPage from '../pages/happymondaypage';
@@ -55,6 +56,7 @@ export default function StaticApp({ helmetContext, pageData = null }) {
               <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
               <Route path="/chef-cooperative" element={<ChefCooperativePage />} />
+              <Route path="/dishes" element={<DishesPage />} />
               <Route path="/sale" element={<SalePage />} />
               <Route path="/gift-cards" element={<GiftCardsPage />} />
               <Route path="/chez-garage" element={<ChezGaragePage />} />

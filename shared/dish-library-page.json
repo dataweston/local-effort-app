@@ -1,0 +1,5 @@
+{
+  "documentId": "dish-library-page",
+  "documentType": "dishLibraryPage",
+  "query": "*[_type == \"dishLibraryPage\" && _id == \"dish-library-page\"][0]{_id,_type,_rev,_updatedAt,title,metaDescription,introduction,emptyNotice,bookLabel,weeklyMealsLabel}"
+}

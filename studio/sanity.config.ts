@@ -18,7 +18,7 @@ const GROUPED_TYPES = [
   // Sales
   'sale', 'salePage', 'happyMondayPage', 'happyMondaySalePage', 'tinyDinerSalePage', 'pizzaOnSmithPage',
   // Content
-  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner', 'chefCooperativePage', 'chefMembershipTerms',
+  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner', 'chefCooperativePage', 'chefMembershipTerms', 'dishLibraryPage',
   'menu', 'menuSection', 'menuItems', 'mealPrepMenu',
   'hubLocalistContent', 'hubLocalistItem',
   // People & Community
@@ -40,7 +40,7 @@ export default defineConfig({
 
   document: {
     actions: (prev, context) => {
-      if (['chefCooperativePage', 'chefMembershipTerms'].includes(context.schemaType)) {
+      if (['chefCooperativePage', 'chefMembershipTerms', 'dishLibraryPage'].includes(context.schemaType)) {
         return prev.filter((action) => action.action !== 'duplicate')
       }
       if (context.schemaType === 'release') {
@@ -106,6 +106,10 @@ export default defineConfig({
                     .id('chef-cooperative-page')
                     .title('Chef Cooperative Page')
                     .child(S.document().schemaType('chefCooperativePage').documentId('chef-cooperative-page').title('Chef Cooperative Page')),
+                  S.listItem()
+                    .id('dish-library-page')
+                    .title('Dishes Page')
+                    .child(S.document().schemaType('dishLibraryPage').documentId('dish-library-page').title('Dishes Page')),
                   S.listItem()
                     .id('chef-membership-terms')
                     .title('Chef Membership Terms')
@@ -181,7 +185,7 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
-    templates: (prev: Template[]) => prev.filter((template) => !['chefCooperativePage', 'chefMembershipTerms'].includes(template.schemaType)),
+    templates: (prev: Template[]) => prev.filter((template) => !['chefCooperativePage', 'chefMembershipTerms', 'dishLibraryPage'].includes(template.schemaType)),
   },
   templates: (prev: Template[]) => [
     ...prev,

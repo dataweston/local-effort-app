@@ -76,6 +76,7 @@
     { "path": "/february", "title": "February Home Dinner", "summary": "Public booking page for the February dinner offering." },
     { "path": "/localist", "title": "Localist", "summary": "SMS list signup for weekly low-cost meals with North Minneapolis pickup." },
     { "path": "/chef-cooperative", "title": "Join our chef's cooperative", "summary": "Reasons to join Local Effort's chef cooperative, or talk with the team directly. Terms are not yet published." },
+    { "path": "/dishes", "title": "Dishes", "summary": "Dishes Local Effort cooks, grouped by course, with diet and protein filters. Also searchable through the menu.dishes.search MCP tool." },
     { "path": "/weekly-order", "title": "Weekly Order", "summary": "Weekly order checkout surface." }
   ],
   "apis": [

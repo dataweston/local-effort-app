@@ -21,6 +21,7 @@ primary-pages:
 - /february      Seasonal home-dinner booking page
 - /localist      Localist weekly meals SMS list signup (North Minneapolis pickup)
 - /chef-cooperative Invitation to join Local Effort's chef cooperative: reasons to join, or talk with the team directly. Terms are not yet published.
+- /dishes         Dishes Local Effort cooks, by course, with diet and protein filters. Only dishes the owner has published appear. Search them through the menu.dishes.search MCP tool.
 - /weekly-order  Weekly order checkout surface (customer-specific; not in search index)
 
 support:

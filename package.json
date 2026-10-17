@@ -158,7 +158,7 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && node scripts/generate-chef-cooperative-page-data.js && node scripts/check-content-guards.cjs && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && npm run build:prerender:copy",
+    "build": "node scripts/generate-sale-page-data.js && node scripts/generate-releases-page-data.js && node scripts/generate-chef-cooperative-page-data.js && node scripts/generate-menu-library.cjs && node scripts/check-content-guards.cjs && vite build && node tools/static-export.js && node tools/sync-vercel-routes.js && npm run build:prerender:copy",
     "studio:dev": "npm --prefix studio run dev",
     "studio:build": "npm --prefix studio run build",
     "studio:deploy": "node scripts/deploy-sanity-studio.cjs",

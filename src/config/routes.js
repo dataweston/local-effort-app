@@ -11,6 +11,12 @@ export const PUBLIC_ROUTES = [
     prerender: true,
   },
   {
+    path: '/dishes',
+    title: 'Dishes | Local Effort Cooperative',
+    description: 'Dishes Local Effort cooks for events and weekly meals, grouped by course with diet and protein filters.',
+    prerender: true,
+  },
+  {
     path: '/pizza-on-smith',
     title: 'Pizza on Smith | Local Effort Cooperative',
     description: 'Limited-time drops of Neapolitan-inspired frozen pizza made with Midwest ingredients. Pickup in West St. Paul, metro delivery, or shipping after each order window closes.',

@@ -19,6 +19,7 @@ const BlogList = lazy(() => import('./pages/BlogList'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
 const PizzaOnSmithPage = lazy(() => import('./pages/PizzaOnSmithPage'));
 const ChefCooperativePage = lazy(() => import('./pages/ChefCooperativePage'));
+const DishesPage = lazy(() => import('./pages/DishesPage'));
 const SalePage = lazy(() => import('./pages/SalePage'));
 const ChezGaragePage = lazy(() => import('./pages/ChezGaragePage'));
 const HappyMondayPage = lazy(() => import('./pages/happymondaypage'));
@@ -250,6 +251,7 @@ const AppContent = () => {
                 />
                 <Route path="/pizza-on-smith" element={<PizzaOnSmithPage />} />
                 <Route path="/chef-cooperative" element={<ChefCooperativePage />} />
+                <Route path="/dishes" element={<DishesPage />} />
                 <Route path="/salepage" element={<Navigate to="/sale" replace />} />
                 <Route
                   path="/return-policy"
