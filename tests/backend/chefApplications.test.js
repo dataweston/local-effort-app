@@ -96,6 +96,17 @@ describe('private chef application lifecycle', () => {
     expect(db.state().applications[0].version).toBe(1);
   });
 
+  it('names the offending field in plain words when an answer is blank or too long', async () => {
+    const { request, db } = fixture();
+    const blank = await request('self', 'POST', { ...payload(), serviceArea: '   ' });
+    expect(blank.statusCode).toBe(400);
+    expect(blank.body.error).toBe('Where you can work is required');
+    const long = await request('self', 'POST', { ...payload(), workProfile: { training: 'x'.repeat(1501) } });
+    expect(long.statusCode).toBe(400);
+    expect(long.body.error).toBe('Training is too long (limit 1500 characters)');
+    expect(db.state().applications).toEqual([]);
+  });
+
   it('rejects unauthenticated/unconfirmed identities, ownership/status injection, invalid URLs and the honeypot before creating records', async () => {
     const { request, db } = fixture();
     expect((await request('self', 'POST', payload(), { subject: null })).statusCode).toBe(401);

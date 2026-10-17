@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { api, Field, Panel } from '../../components/hub/hubShared';
 import { ChefMembershipPanel, ChefMembershipAdministration } from './ChefMembershipPanels';
 import { ChefDuesPanel } from './ChefDuesPanel';
 import { ChefWorkPanel } from './ChefWorkPanel';
 import { ChefPublicationPanel } from './ChefPublicationPanel';
+import ChefApplicationForm, { validateApplication } from './ChefApplicationForm';
 
 const empty = () => ({
   name: '', serviceArea: '', experience: '', interests: '', availability: '', phone: '', contactPreference: 'email',
@@ -143,6 +144,8 @@ function ApplicationPanel({ token, email, onChange }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
+  const [problems, setProblems] = useState([]);
+  const statusRef = useRef(null);
   const load = useCallback(async () => {
     setBusy(true); setError(''); setMessage(''); setWithdrawing(false);
     try {
@@ -152,11 +155,25 @@ function ApplicationPanel({ token, email, onChange }) {
     finally { setBusy(false); }
   }, [token, onChange]);
   useEffect(() => { load(); }, [load]);
+  const baseline = application ? toForm(application) : empty();
+  const dirty = loaded && JSON.stringify(form) !== JSON.stringify(baseline);
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const warn = (event) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
+  useEffect(() => {
+    if (error || message || problems.length) statusRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, [error, message, problems]);
   const change = (key, value) => setForm((previous) => ({ ...previous, [key]: value }));
   const nestedChange = (key, field, value) => setForm((previous) => ({ ...previous, [key]: { ...previous[key], [field]: value } }));
   async function save(event) {
     event.preventDefault();
     const action = application?.status === 'withdrawn' ? 'reapply' : application?.status === 'needs-information' ? 'resubmit' : 'update';
+    const found = validateApplication(form, { acknowledgmentRequired: !application || application.status === 'withdrawn' });
+    setProblems(found); setError(''); setMessage('');
+    if (found.length) { document.getElementById(`chef-q-${found[0].field}`)?.focus(); return; }
     await mutate(application ? { ...form, action, expectedVersion: application.version } : form, application ? 'PATCH' : 'POST');
   }
   async function mutate(body, method) {
@@ -168,43 +185,30 @@ function ApplicationPanel({ token, email, onChange }) {
     } catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
-  return <Panel title="Your application and work profile">
+  const intro = {
+    pending: 'Your application is with Local Effort for review. You can keep editing it below; changes are saved to this same application.',
+    reviewed: 'Your application has been reviewed. A review is not membership admission. Membership needs a separate offer and accepted terms.',
+    'needs-information': 'Local Effort asked for more information. Update your details below and resubmit.',
+    withdrawn: 'You withdrew this application. You can reapply with the details below.',
+  }[application?.status];
+  return <Panel title={application ? 'Your application' : 'Apply to the chef cooperative'}>
     <div className="hub-form">
       <p>Signed in as {email}. Application records are available only to this sign-in identity and authorized reviewers.</p>
-      <p>No fees are due to apply. Membership offers, signed terms, admission and any dues assessment are separate steps. Application review is not employment, equity, or guaranteed work.</p>
-      <button type="button" className="hub-text-button" disabled={busy} onClick={load}>Reload saved application (discards unsaved changes)</button>
-      {application && <div className="hub-notice"><strong>{statusLabel(application.status)}</strong><div>Revision {application.version} · saved {date(application.updatedAt)}</div>{application.applicantReason && <p>{application.applicantReason}</p>}</div>}
-      {error && <p className="hub-error" role="alert">{error}</p>}
-      {message && <p className="hub-notice" role="status">{message}</p>}
-      {!loaded && <p>{busy ? 'Loading private application…' : 'Your application could not load. Use reload to try again.'}</p>}
+      {application && <div className="hub-notice"><strong>{statusLabel(application.status)}</strong>
+        <div>{intro}</div>
+        {application.applicantReason && <p><strong>Message from Local Effort:</strong> {application.applicantReason}</p>}
+        <div className="hub-help">Revision {application.version} · saved {date(application.updatedAt)}. No message is sent when status changes; check back here.</div></div>}
+      <details className="hub-chef-details">
+        <summary>What applying does and does not mean</summary>
+        <p>No fees are due to apply. Membership offers, signed terms, admission and any dues assessment are separate steps. Application review is not employment, equity, or guaranteed work.</p>
+      </details>
+      {!loaded && <><p>{busy ? 'Loading private application…' : 'Your application could not load.'}</p>
+        {error && <p className="hub-error" role="alert">{error}</p>}
+        {!busy && <button type="button" className="hub-text-button" onClick={load}>Try again</button>}</>}
     </div>
-    {loaded && <form onSubmit={save} className="hub-form">
-      <fieldset disabled={busy} className="hub-chef-fieldset">
-        <legend>{application ? 'Private application details' : 'Start with a short questionnaire'}</legend>
-        <div className="hub-chef-honeypot" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => change('website', e.target.value)} /></label></div>
-        <Field label="Your name"><input required autoComplete="name" maxLength={120} value={form.name} onChange={(e) => change('name', e.target.value)} /></Field>
-        <Field label="Service area / where you can work"><input required maxLength={300} value={form.serviceArea} onChange={(e) => change('serviceArea', e.target.value)} /></Field>
-        <Field label="Cooking and work experience"><textarea required maxLength={3000} rows={4} value={form.experience} onChange={(e) => change('experience', e.target.value)} /></Field>
-        <Field label="What interests you: referrals, prep work, kitchen access, or other goals"><textarea required maxLength={1500} rows={3} value={form.interests} onChange={(e) => change('interests', e.target.value)} /></Field>
-        <Field label="Availability and work preferences"><textarea required maxLength={1500} rows={3} value={form.availability} onChange={(e) => change('availability', e.target.value)} /></Field>
-        <Field label="Preferred contact method (no automatic messages)"><select value={form.contactPreference} onChange={(e) => change('contactPreference', e.target.value)}><option value="email">Email</option><option value="phone">Phone</option><option value="either">Either email or phone</option></select></Field>
-        <Field label="Phone (optional unless phone contact selected)"><input type="tel" autoComplete="tel" maxLength={40} required={form.contactPreference !== 'email'} value={form.phone} onChange={(e) => change('phone', e.target.value)} /></Field>
-        {application && <>
-          <h3>Fuller private work profile</h3>
-          <p className="hub-help">Optional details for work discussions. Do not enter SSNs, EINs, banking information, W-9 details, medical records, or identity documents here or in public drafts.</p>
-          {[['services', 'Services you can offer', 2000], ['cuisines', 'Cuisines and specialties', 1000], ['training', 'Relevant training / food-safety experience (no document uploads)', 1500], ['equipment', 'Equipment and kitchen preferences', 1500], ['travel', 'Travel range and logistics', 1000]].map(([key, label, max]) => <Field key={key} label={label}><textarea maxLength={max} rows={3} value={form.workProfile[key]} onChange={(e) => nestedChange('workProfile', key, e.target.value)} /></Field>)}
-          <h3>Optional public-profile draft — still private</h3>
-          <p>This private draft does not publish anything. The consent below permits consideration only. After admission, the separate public-listing panel requires consent to an exact saved revision and owner moderation.</p>
-          <Field label="Public biography draft"><textarea maxLength={2000} rows={4} value={form.publicDraft.bio} onChange={(e) => nestedChange('publicDraft', 'bio', e.target.value)} /></Field>
-          <Field label="Public services draft"><textarea maxLength={1500} rows={3} value={form.publicDraft.services} onChange={(e) => nestedChange('publicDraft', 'services', e.target.value)} /></Field>
-          <Field label="Photo URL draft (optional public HTTPS link; not uploaded or previewed)"><input type="url" maxLength={2048} value={form.publicDraft.photoUrl} onChange={(e) => nestedChange('publicDraft', 'photoUrl', e.target.value)} /></Field>
-          <label className="hub-chef-check"><input type="checkbox" checked={form.publicationConsent} onChange={(e) => change('publicationConsent', e.target.checked)} /><span>I separately consent to consideration of my biography, services, and photo draft for future public publication, only after owner moderation. I can remove this consent here.</span></label>
-          <h3>Keep tax records out of this application</h3><p>Do not send or upload a W-9 here. Follow only the secure provider instructions in your membership offer after owner classification and provider review. This workspace does not send payroll invitations or collect tax or bank records.</p>
-        </>}
-        {(!application || application.status === 'withdrawn') && <label className="hub-chef-check"><input type="checkbox" required checked={form.acknowledgment} onChange={(e) => change('acknowledgment', e.target.checked)} /><span>I understand this is a no-fee application, not membership admission, employment, an equity grant, or guaranteed work. I consent to private review by authorized Local Effort reviewers. Membership requires a separate offer and accepted terms; withdrawing retains the private application and review history.</span></label>}
-        <button type="submit" className="hub-primary-button" disabled={busy}>{busy ? 'Saving…' : !application ? 'Submit no-fee application' : application.status === 'withdrawn' ? 'Reapply with these details' : application.status === 'needs-information' ? 'Save and resubmit for review' : 'Save private profile'}</button>
-      </fieldset>
-    </form>}
+    {loaded && <ChefApplicationForm form={form} change={change} nestedChange={nestedChange} application={application} email={email} busy={busy} dirty={dirty}
+      problems={problems} error={error} message={message} statusRef={statusRef} onSubmit={save} onReload={load}
+      onDiscard={() => { setForm(baseline); setProblems([]); setError(''); setMessage(''); }} />}
     {application && application.status !== 'withdrawn' && <div className="hub-form">
       {withdrawing ? <div className="hub-notice"><p>Withdraw this application? Review stops and publication consent is removed. The private record and history remain; no message is sent.</p><div className="hub-button-row"><button type="button" disabled={busy} onClick={() => mutate({ action: 'withdraw', expectedVersion: application.version, website: form.website }, 'PATCH')}>Confirm withdrawal</button><button type="button" disabled={busy} onClick={() => setWithdrawing(false)}>Keep application</button></div></div> : <button type="button" className="hub-text-button" disabled={busy} onClick={() => setWithdrawing(true)}>Withdraw application</button>}
     </div>}

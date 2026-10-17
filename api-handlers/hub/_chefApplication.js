@@ -20,10 +20,18 @@ function object(value, allowed, label) {
   for (const key of Object.keys(value)) if (!allowed.includes(key)) fail(400, `Unsupported ${label} field: ${key}`);
   return value;
 }
+const LABELS = {
+  name: 'Your name', serviceArea: 'Where you can work', experience: 'Your experience', interests: 'What you are looking for', availability: 'Your availability', phone: 'Your phone number',
+  'workProfile.services': 'Services', 'workProfile.cuisines': 'Cuisines and specialties', 'workProfile.training': 'Training', 'workProfile.equipment': 'Equipment', 'workProfile.travel': 'Travel range',
+  'publicDraft.bio': 'Public biography', 'publicDraft.services': 'Public services', 'publicDraft.photoUrl': 'Photo link',
+};
 function text(value, max, label, required = false) {
-  if (typeof value !== 'string') fail(400, `${label} must be text`);
+  const name = LABELS[label] || label;
+  if (typeof value !== 'string') fail(400, `${name} must be text`);
   const clean = value.trim();
-  if (clean.length > max || (required && !clean) || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(clean)) fail(400, `Invalid ${label}`);
+  if (required && !clean) fail(400, `${name} is required`);
+  if (clean.length > max) fail(400, `${name} is too long (limit ${max} characters)`);
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(clean)) fail(400, `${name} contains characters that cannot be saved`);
   return clean;
 }
 function nested(value, bounds, label) {

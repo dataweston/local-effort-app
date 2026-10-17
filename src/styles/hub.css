@@ -2312,6 +2312,37 @@
   .hub-chef-review-detail dd { margin-bottom: 10px; }
 }
 
+/* Chef application questionnaire */
+.hub-chef-section { display: grid; gap: 16px; padding-top: 18px; border-top: 1px solid var(--hub-border-light); }
+.hub-chef-section:first-of-type { border-top: 0; padding-top: 0; }
+.hub-chef-section h3 { margin: 0; font-family: var(--hub-font-display); font-size: 17px; }
+.hub-chef-q { display: grid; gap: 4px; min-width: 0; }
+.hub-chef-q > label { font-size: 14.5px; font-weight: 600; color: var(--hub-ink); }
+.hub-chef-q .hub-help, .hub-chef-radios .hub-help { margin: 0; }
+.hub-chef-q input, .hub-chef-q textarea { width: 100%; border: 1px solid var(--hub-border); border-radius: var(--hub-radius); padding: 0 12px; height: 44px; font: inherit; font-size: 16px; background: var(--hub-panel); color: var(--hub-ink); }
+.hub-chef-q textarea { height: auto; padding: 10px 12px; line-height: 1.5; resize: vertical; }
+.hub-chef-q input:focus, .hub-chef-q textarea:focus { outline: none; border-color: var(--hub-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hub-accent) 18%, transparent); }
+.hub-chef-q.has-error input, .hub-chef-q.has-error textarea { border-color: var(--hub-danger); }
+.hub-chef-optional { font-weight: 400; color: var(--hub-muted); }
+.hub-chef-count { margin: 0; font-size: 12.5px; color: var(--hub-muted); justify-self: end; }
+.hub-chef-count.is-over { color: var(--hub-danger); font-weight: 600; }
+.hub-chef-radios { display: grid; gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.hub-chef-radios legend { padding: 0; margin-bottom: 4px; font-size: 14.5px; font-weight: 600; }
+.hub-chef-check input[type="radio"] { width: 18px; height: 18px; margin-top: 3px; flex: 0 0 auto; }
+.hub-chef-details { border: 1px solid var(--hub-border); border-radius: var(--hub-radius); padding: 0 14px; }
+.hub-chef-details > summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.hub-chef-details[open] { padding-bottom: 14px; display: grid; gap: 14px; }
+.hub-chef-details[open] > summary { padding-bottom: 0; }
+.hub-chef-details > p { margin: 0 0 12px; }
+.hub-chef-ack { border: 1px solid var(--hub-border); border-radius: var(--hub-radius); padding: 12px 14px; }
+.hub-chef-ack.has-error { border-color: var(--hub-danger); }
+.hub-chef-status ul { margin: 6px 0 0; padding-left: 20px; }
+.hub-chef-status:empty { display: none; }
+.hub-chef-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+@media (max-width: 600px) {
+  .hub-chef-actions .hub-primary-button { width: 100%; height: 46px; }
+}
+
 .hub-chef-preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
 .hub-chef-membership-admin { border-top: 1px solid var(--hub-border); padding-top: 14px; min-width: 0; }
 .hub-chef-form { display: grid; gap: 14px; min-width: 0; }
