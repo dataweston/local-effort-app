@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  BookOpen,
   CalendarDays,
   ClipboardList,
   ChartNoAxesCombined,
@@ -31,6 +32,7 @@ import { PrivilegedTools } from '../components/hub/HubPrivilegedTools';
 import { OwnerInterviewView } from '../components/hub/HubOwnerInterviewView';
 import { LocalistClosedScreen, LocalistGuestShell, LocalistView } from '../components/hub/HubLocalistView';
 import { MembershipView } from '../components/hub/HubMembershipView';
+import { MenuLibraryView } from '../components/hub/HubMenuLibraryView';
 import { SecurityGuestShell, SecurityView } from '../components/hub/HubSecurityView';
 import HubChefView from './hub/HubChefView';
 import '../styles/hub.css';
@@ -45,6 +47,7 @@ const tabs = [
 
 
 const mealPrepTab = { id: 'weeklyMealPrep', label: 'Meal Prep', icon: Soup };
+const menuLibraryTab = { id: 'menuLibrary', label: 'Menu Library', icon: BookOpen };
 
 const foodInputsTab = { id: 'foodInputs', label: 'Ingredient Intake', icon: Utensils };
 
@@ -183,6 +186,7 @@ export default function HubPage() {
   const customerTabs = [
     todayTab,
     mealPrepTab,
+    menuLibraryTab,
     foodInputsTab,
     ...(hasMemberArea ? [membershipTab] : []),
   ];
@@ -193,8 +197,8 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [...tabs, ...(isOwnerView ? [interviewTab] : []), mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, membershipTab, securityTab]
-    : [...tabs, mealPrepTab, foodInputsTab, localistTab, membershipTab, securityTab];
+    ? [...tabs, ...(isOwnerView ? [interviewTab] : []), mealPrepTab, menuLibraryTab, foodInputsTab, economicsTab, adminTab, localistTab, membershipTab, securityTab]
+    : [...tabs, mealPrepTab, menuLibraryTab, foodInputsTab, localistTab, membershipTab, securityTab];
   const mobileNavTabs = isInputsRoute
     ? [foodInputsTab]
     : isLocalist
@@ -202,8 +206,8 @@ export default function HubPage() {
     : isCustomer
     ? customerTabs
     : isPrivileged
-    ? [tabs[0], tabs[1], tabs[3], mealPrepTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
-    : [tabs[0], tabs[1], mealPrepTab, foodInputsTab, tabs[3], localistTab, securityTab];
+    ? [tabs[0], tabs[1], tabs[3], mealPrepTab, menuLibraryTab, foodInputsTab, economicsTab, adminTab, localistTab, securityTab]
+    : [tabs[0], tabs[1], mealPrepTab, menuLibraryTab, foodInputsTab, tabs[3], localistTab, securityTab];
   // Tabs a customer is allowed to land on; anything else falls back to Today.
   const customerTabIds = new Set(customerTabs.map((t) => t.id));
   const localistTabIds = new Set(['localist', 'membership']);
@@ -362,6 +366,7 @@ export default function HubPage() {
         {activeTab === 'docs' && <DocsView accessToken={auth.accessToken} docs={docs} reloadDocs={reloadDocs} isPrivileged={isPrivileged} canEdit={!isCustomer} sharedDocId={sharedDocId} />}
         {activeTab === 'people' && <PeopleView people={people} onMessage={() => setTab('chat')} />}
         {activeTab === 'weeklyMealPrep' && <WeeklyMealPrepView accessToken={auth.accessToken} isPrivileged={isPrivileged} isCustomer={isCustomer} />}
+        {activeTab === 'menuLibrary' && <MenuLibraryView accessToken={auth.accessToken} />}
         {activeTab === 'foodInputs' && <FoodInputsView accessToken={auth.accessToken} />}
         {activeTab === 'economics' && isPrivileged && <EconomicsModelView accessToken={auth.accessToken} />}
         {activeTab === 'interview' && isOwnerView && <OwnerInterviewView accessToken={auth.accessToken} />}
