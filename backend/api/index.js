@@ -982,6 +982,7 @@ try {
       tools: [
         'support.search',
         'sanity.query',
+        'menu.dishes.search',
         'ucp.profile',
         'ucp.checkout.create',
         'ucp.checkout.get',
@@ -1725,6 +1726,15 @@ app.all('/api/hub/resolve-dish', async (req, res, next) => {
     await require('../../api-handlers/hub/resolve-dish')(req, res);
   } catch (err) {
     logger.error({ err, method: req.method }, 'hub resolve dish handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/menu-library', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/menu-library')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub menu library handler failed');
     next(err);
   }
 });

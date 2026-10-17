@@ -157,6 +157,36 @@ function registerSupportTools(server) {
   );
 }
 
+function registerMenuLibraryTools(server) {
+  server.registerTool(
+    'menu.dishes.search',
+    {
+      title: 'Search published dishes',
+      description:
+        'Search the dishes Local Effort has published. Returns dish names, descriptions, courses, proteins, seasons and owner-confirmed dietary tags. Never includes prices, client names or allergen statements; ask the kitchen about allergies.',
+      inputSchema: z.object({
+        query: z.string().optional(),
+        diet: z.string().optional(),
+        course: z.string().optional(),
+        protein: z.string().optional(),
+        limit: z.number().int().min(1).max(50).optional(),
+      }),
+    },
+    async ({ query, diet, course, protein, limit }) => {
+      const { prisma } = require('../../api-handlers/_lib/prisma');
+      const { loadPublicDishes } = require('../api/menuLibraryPublic');
+      const q = (query || '').trim().toLowerCase();
+      const dishes = (await loadPublicDishes(prisma))
+        .filter((d) => !diet || d.diets.includes(diet))
+        .filter((d) => !course || d.courses.includes(course))
+        .filter((d) => !protein || d.proteins.includes(protein))
+        .filter((d) => !q || `${d.title} ${d.description}`.toLowerCase().includes(q))
+        .slice(0, limit || 20);
+      return { content: [{ type: 'json', json: { count: dishes.length, dishes } }] };
+    }
+  );
+}
+
 function registerSanityResources(server) {
   const docTemplate = new ResourceTemplate('sanity-document://{docId}', { list: undefined });
   server.registerResource(
@@ -427,6 +457,7 @@ function createMcpServer({ name = 'local-effort-mcp', version = '0.1.0' } = {}) 
   const server = new McpServer({ name, version });
   registerSupportResources(server);
   registerSupportTools(server);
+  registerMenuLibraryTools(server);
   registerSanityResources(server);
   registerSanityTools(server);
   registerUcpResources(server);

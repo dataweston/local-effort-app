@@ -20,6 +20,8 @@ const MEMORY_KINDS = Object.freeze([
   'inference',
   'inbox',
   'owner',
+  'dish',
+  'menu',
 ]);
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 50;
@@ -336,11 +338,74 @@ async function searchOwnerEvidence(prisma, query, pattern, limit) {
     LIMIT ${limit}
   `);
 }
+async function searchDishes(prisma, query, pattern, limit) {
+  return prisma.$queryRaw(Prisma.sql`
+    SELECT d.id,
+           'dish'::text AS kind,
+           'menu_library'::text AS source,
+           d.id AS "sourceId",
+           d."updatedAt" AS "occurredAt",
+           d.title AS title,
+           concat_ws(E'\n', d.title, d.description,
+             'courses: ' || array_to_string(d.courses, ', '),
+             'proteins: ' || array_to_string(d.proteins, ', '),
+             'diets: ' || array_to_string(d.diets, ', '),
+             'seasons: ' || array_to_string(d.seasons, ', '),
+             'components: ' || array_to_string(d.components, ', ')) AS text,
+           jsonb_build_object('slug', d.slug, 'visibility', d."libraryVisibility", 'courses', d.courses,
+             'proteins', d.proteins, 'diets', d.diets, 'seasons', d.seasons) AS metadata,
+           (ts_rank(to_tsvector('simple', d.title || ' ' || COALESCE(d.description, '') || ' ' || array_to_string(d.components, ' ')),
+             websearch_to_tsquery('simple', ${query}))
+             + CASE WHEN d.title ILIKE ${pattern} ESCAPE '\\' THEN 1 ELSE 0 END)::float8 AS score
+    FROM "Dish" d
+    WHERE d."inLibrary" = true
+      AND (
+        to_tsvector('simple', d.title || ' ' || COALESCE(d.description, '') || ' ' || array_to_string(d.components, ' '))
+          @@ websearch_to_tsquery('simple', ${query})
+        OR d.title ILIKE ${pattern} ESCAPE '\\'
+        OR COALESCE(d.description, '') ILIKE ${pattern} ESCAPE '\\'
+      )
+    ORDER BY score DESC, d."updatedAt" DESC
+    LIMIT ${limit}
+  `);
+}
+
+async function searchMenus(prisma, query, pattern, limit) {
+  return prisma.$queryRaw(Prisma.sql`
+    SELECT m.id,
+           'menu'::text AS kind,
+           'menu_library'::text AS source,
+           m.id AS "sourceId",
+           COALESCE(m."occurredAt", m."updatedAt") AS "occurredAt",
+           m.title AS title,
+           concat_ws(E'\n', m.title, m."clientLabel", m.occasion, m."eventDateText", m.guests, m.notes,
+             (SELECT string_agg(i.course || ': ' || i.wording, E'\n' ORDER BY i.position)
+                FROM "LibraryMenuItem" i WHERE i."menuId" = m.id)) AS text,
+           jsonb_build_object('slug', m.slug, 'kind', m.kind, 'program', m.program, 'status', m.status) AS metadata,
+           (ts_rank(to_tsvector('simple', m.title || ' ' || COALESCE(m."clientLabel", '') || ' ' || COALESCE(m.notes, '')
+               || ' ' || COALESCE((SELECT string_agg(i.wording, ' ') FROM "LibraryMenuItem" i WHERE i."menuId" = m.id), '')),
+             websearch_to_tsquery('simple', ${query}))
+             + CASE WHEN m.title ILIKE ${pattern} ESCAPE '\\' THEN 1 ELSE 0 END)::float8 AS score
+    FROM "LibraryMenu" m
+    WHERE (
+        to_tsvector('simple', m.title || ' ' || COALESCE(m."clientLabel", '') || ' ' || COALESCE(m.notes, '')
+          || ' ' || COALESCE((SELECT string_agg(i.wording, ' ') FROM "LibraryMenuItem" i WHERE i."menuId" = m.id), ''))
+          @@ websearch_to_tsquery('simple', ${query})
+        OR m.title ILIKE ${pattern} ESCAPE '\\'
+        OR COALESCE(m."clientLabel", '') ILIKE ${pattern} ESCAPE '\\'
+      )
+    ORDER BY score DESC, COALESCE(m."occurredAt", m."updatedAt") DESC
+    LIMIT ${limit}
+  `);
+}
+
 
 const SEARCHERS = Object.freeze({
   source: searchSource,
   ledger: searchLedger,
   entity: searchEntities,
+  dish: searchDishes,
+  menu: searchMenus,
   assertion: searchAssertions,
   inference: searchInferences,
   inbox: searchInbox,

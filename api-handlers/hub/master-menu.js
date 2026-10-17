@@ -38,6 +38,7 @@ const {
   resolveWeekStart,
   syncMealPrepWeek,
 } = require('../../backend/api/planner/mealPrepProduction');
+const { linkWeekToLibrary } = require('../../backend/api/menuLibraryWeek');
 
 
 
@@ -128,12 +129,25 @@ async function handler(req, res) {
       })
       : null;
 
+    // Mirror the committed week into the menu library. The sale/production records above are
+    // already durable, so a library failure is reported, not fatal.
+    let library = null;
+    if (commit) {
+      try {
+        library = { ok: true, ...(await linkWeekToLibrary({ prisma, weekStart, lines: dishes })) };
+      } catch (err) {
+        console.error('[hub/master-menu] menu library link failed', err);
+        library = { ok: false, error: 'Menu library link failed' };
+      }
+    }
+
     return res.status(200).json({
       ok: true,
       generatedAt: new Date().toISOString(),
       weekStart,
       committed: commit,
       dishes,
+      library,
       summary: { total: dishes.length, resolved, unresolved: dishes.length - resolved, created, byMeal },
       production: production
         ? {
