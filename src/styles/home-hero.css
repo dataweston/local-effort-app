@@ -40,7 +40,7 @@
   padding: clamp(1.15rem, 2.2vw, 2rem);
   background: rgb(250 246 235 / 78%);
   box-shadow: 0 1px 0 rgb(49 43 37 / 10%);
-  font-family: var(--font-editorial, 'Futura', 'Avenir Next', sans-serif);
+  font-family: var(--font-office-code);
   font-size: clamp(1.05rem, 1.7vw, 1.55rem);
   line-height: 1.65;
 }
@@ -50,7 +50,7 @@
 .home-hero__note h2 { font-size: 1.25em; }
 .home-hero__note h3 { font-size: 1.1em; }
 .home-hero__note blockquote { margin: .7em 0; padding-left: .8em; border-left: 1px solid rgb(49 43 37 / 35%); }
-.home-hero__note code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: .85em; }
+.home-hero__note code { font-family: var(--font-office-code); font-size: .85em; }
 .home-hero__note a { text-decoration: underline; text-underline-offset: .15em; }
 .home-hero__spacer { height: .45em; }
 .home-hero__list-line { padding-left: .4em; }
