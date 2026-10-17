@@ -1,0 +1,23 @@
+{
+  "dynamicPrefixes": ["/blog/", "/product/"],
+  "links": [
+    { "id": "firehouse", "url": "/firehouse", "label": "FIREHOUSE event space", "aliases": ["firehouse"] },
+    { "id": "pizza-on-smith", "url": "/pizza-on-smith", "label": "Pizza on Smith order page", "aliases": ["frozen pizza drop", "pizza drop", "frozen pizza", "pizza on smith"] },
+    { "id": "chef-cooperative", "url": "/chef-cooperative", "label": "Chef cooperative", "aliases": ["chefs", "chef cooperative", "join the cooperative"] },
+    { "id": "weekly-meals", "url": "/weekly-meals", "label": "Weekly meals", "aliases": ["weekly meals", "meal prep"] },
+    { "id": "small-events", "url": "/small-events", "label": "Small events", "aliases": ["small events"] },
+    { "id": "office-catering", "url": "/office-catering", "label": "Office catering", "aliases": ["office catering"] },
+    { "id": "private-events", "url": "/private-events", "label": "Private events at our two spaces", "aliases": ["our two spaces"] },
+    { "id": "localkitchen", "url": "/localkitchen", "label": "Local Kitchen event space", "aliases": ["local kitchen"] },
+    { "id": "chez-garage", "url": "/chez-garage", "label": "Chez Garage pop-up", "aliases": ["chez garage"] },
+    { "id": "happymonday", "url": "/happymonday", "label": "Happy Monday Coffee menu", "aliases": ["happy monday"] },
+    { "id": "pizza-party", "url": "/pizza-party", "label": "Pizza party booking", "aliases": ["pizza party", "pizza parties"] },
+    { "id": "localist", "url": "/localist", "label": "Become a Localist", "aliases": ["localist", "localists", "membership"] },
+    { "id": "gift-cards", "url": "/gift-cards", "label": "Gift cards", "aliases": ["gift cards", "gift card"] },
+    { "id": "psyche", "url": "/psyche", "label": "Psyche olive oil", "aliases": ["psyche", "olive oil"] },
+    { "id": "308b-member", "url": "/308b-member", "label": "308B member offerings", "aliases": ["308b", "member offerings"] },
+    { "id": "blog", "url": "/blog", "label": "Local Report", "aliases": ["kitchen stories", "local report"] },
+    { "id": "releases", "url": "/releases", "label": "Press and releases", "aliases": ["press releases"] },
+    { "id": "return-policy", "url": "/return-policy", "label": "Return and exchange policy", "aliases": ["return policy"] }
+  ]
+}

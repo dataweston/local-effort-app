@@ -16,7 +16,8 @@
       "config": {
         "includeFiles": [
           "skills/le-economist/references/**",
-          "src/config/venues.json"
+          "src/config/venues.json",
+          "shared/home-bulletin.mjs"
         ]
       }
     }

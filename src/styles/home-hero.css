@@ -51,7 +51,7 @@
 .home-hero__note h3 { font-size: 1.1em; }
 .home-hero__note blockquote { margin: .7em 0; padding-left: .8em; border-left: 1px solid rgb(49 43 37 / 35%); }
 .home-hero__note code { font-family: var(--font-office-code); font-size: .85em; }
-.home-hero__note a { text-decoration: underline; text-underline-offset: .15em; }
+.home-hero__note a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
 .home-hero__spacer { height: .45em; }
 .home-hero__list-line { padding-left: .4em; }
 .home-hero__edit, .home-hero__edit-actions button, .home-hero__format button {
@@ -85,6 +85,11 @@
 .home-hero__editor textarea:focus { outline: 1px solid rgb(49 43 37 / 45%); }
 .home-hero__preview-label { margin: .75rem 0 .35rem; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
 .home-hero__preview { padding-top: .7rem; border-top: 1px solid rgb(49 43 37 / 16%); font-size: .95em; }
+.home-hero__suggestions { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid rgb(49 43 37 / 16%); font-size: .78rem; }
+.home-hero__suggestions ul { margin: 0 0 .4rem; padding: 0; list-style: none; }
+.home-hero__suggestions li { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding: .15rem 0; }
+.home-hero__suggestions button { border: 0; padding: .25rem .35rem; color: inherit; background: transparent; font: inherit; text-decoration: underline; cursor: pointer; }
+.home-hero__suggest-note { margin: .4rem 0 0; font-size: .78rem; opacity: .7; }
 .home-hero__gallery-link {
   position: absolute;
   right: clamp(1.5rem, 5vw, 5rem);
