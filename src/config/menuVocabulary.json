@@ -1,0 +1,67 @@
+{
+  "courses": [
+    { "id": "snack", "label": "Snacks" },
+    { "id": "board", "label": "Boards" },
+    { "id": "starter", "label": "Starters" },
+    { "id": "soup", "label": "Soups" },
+    { "id": "salad", "label": "Salads" },
+    { "id": "main", "label": "Mains" },
+    { "id": "side", "label": "Sides" },
+    { "id": "bread", "label": "Bread" },
+    { "id": "dessert", "label": "Desserts" },
+    { "id": "breakfast", "label": "Breakfast" },
+    { "id": "drink", "label": "Drinks" },
+    { "id": "pantry", "label": "Pantry" }
+  ],
+  "proteins": [
+    { "id": "beef", "label": "Beef" },
+    { "id": "pork", "label": "Pork" },
+    { "id": "lamb", "label": "Lamb" },
+    { "id": "poultry", "label": "Chicken and turkey" },
+    { "id": "duck", "label": "Duck" },
+    { "id": "fish", "label": "Fish" },
+    { "id": "shellfish", "label": "Shellfish" },
+    { "id": "egg", "label": "Egg" },
+    { "id": "dairy-led", "label": "Cheese and dairy" },
+    { "id": "legume", "label": "Beans and legumes" },
+    { "id": "tofu", "label": "Tofu" },
+    { "id": "vegetable-led", "label": "Vegetable" }
+  ],
+  "diets": [
+    { "id": "vegetarian", "label": "Vegetarian", "schemaOrg": "https://schema.org/VegetarianDiet" },
+    { "id": "vegan", "label": "Vegan", "schemaOrg": "https://schema.org/VeganDiet" },
+    { "id": "gluten-free", "label": "Gluten free", "schemaOrg": "https://schema.org/GlutenFreeDiet" },
+    { "id": "dairy-free", "label": "Dairy free", "schemaOrg": "https://schema.org/LowLactoseDiet" }
+  ],
+  "seasons": [
+    { "id": "spring", "label": "Spring" },
+    { "id": "summer", "label": "Summer" },
+    { "id": "fall", "label": "Fall" },
+    { "id": "winter", "label": "Winter" }
+  ],
+  "formats": [
+    { "id": "plated", "label": "Plated" },
+    { "id": "family-style", "label": "Family style" },
+    { "id": "buffet", "label": "Buffet" },
+    { "id": "passed", "label": "Passed" },
+    { "id": "board", "label": "Board" },
+    { "id": "drop-off", "label": "Drop-off" },
+    { "id": "meal-prep", "label": "Meal prep" }
+  ],
+  "programs": [
+    { "id": "events", "label": "Events" },
+    { "id": "meal-prep", "label": "Meal prep" },
+    { "id": "cafe", "label": "Cafe and pop-ups" }
+  ],
+  "visibility": [
+    { "id": "internal", "label": "Owner and staff only" },
+    { "id": "clients", "label": "Clients" },
+    { "id": "public", "label": "Public" }
+  ],
+  "menuKinds": [
+    { "id": "archive", "label": "Past menu" },
+    { "id": "template", "label": "Template" },
+    { "id": "proposal", "label": "Proposal" },
+    { "id": "meal_prep_week", "label": "Meal prep week" }
+  ]
+}

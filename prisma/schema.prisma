@@ -266,6 +266,21 @@ model Dish {
   tags          String[]                @default([])
   categories    String[]                @default([])
   allergens     String[]                @default([])
+  // Menu library (see docs/menu-library-spec.md). inLibrary=false rows are weekly-order-only dishes.
+  slug              String?                 @unique
+  inLibrary         Boolean                 @default(false)
+  libraryVisibility String                  @default("internal")
+  courses           String[]                @default([])
+  proteins          String[]                @default([])
+  diets             String[]                @default([])
+  dietsInferred     String[]                @default([])
+  dietsVerifiedAt   DateTime?
+  seasons           String[]                @default([])
+  cuisines          String[]                @default([])
+  components        String[]                @default([])
+  formats           String[]                @default([])
+  programs          String[]                @default([])
+  variantSlugs      String[]                @default([])
   status        String                  @default("draft")
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
@@ -277,7 +292,58 @@ model Dish {
   sourceLinks   DishSourceLink[]
   orderItems    OrderItem[]
   drafts        DishDraft[]
+  libraryItems      LibraryMenuItem[]
   feedback      DishFeedback[]
+}
+
+model LibraryMenu {
+  id             String            @id @default(uuid())
+  slug           String            @unique
+  title          String
+  kind           String            @default("archive")
+  program        String            @default("events")
+  occasion       String?
+  clientLabel    String?
+  status         String?
+  eventDateText  String?
+  guests         String?
+  priceNote      String?
+  notes          String?
+  sourceKey      String            @unique
+  sourceThreadId String?
+  occurredAt     DateTime?
+  visibility     String            @default("internal")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  items          LibraryMenuItem[]
+
+  @@index([kind])
+  @@index([occurredAt])
+}
+
+model LibraryMenuItem {
+  id       String      @id @default(uuid())
+  menuId   String
+  dishId   String
+  course   String
+  wording  String
+  position Int         @default(0)
+  menu     LibraryMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  dish     Dish        @relation(fields: [dishId], references: [id])
+
+  @@index([menuId])
+  @@index([dishId])
+}
+
+model LibraryDishPreference {
+  id        String   @id @default(uuid())
+  userId    String
+  dishId    String
+  kind      String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dishId])
+  @@index([dishId])
 }
 
 model MenuWeek {
@@ -2555,6 +2621,7 @@ model ChefPublicProfileEvent {
 
   @@unique([profileId, version])
 }
+
 model ChefDuesAssessment {
   id               String   @id @default(uuid())
   membershipId     String
@@ -2597,6 +2664,7 @@ model ChefDuesEvent {
 
   @@unique([assessmentId, version])
 }
+
 model ChefWorkOpportunity {
   id                        String @id @default(uuid())
   policyId                  String
@@ -2625,6 +2693,7 @@ model ChefWorkOpportunity {
   assignedMembership        ChefMembership? @relation("ChefWorkAssignee", fields: [assignedMembershipId], references: [id], onDelete: Restrict)
   offers                    ChefWorkOffer[]
   events                    ChefWorkEvent[]
+
   @@index([status, startsAt])
 }
 
@@ -2642,6 +2711,7 @@ model ChefWorkOffer {
   respondedAt         DateTime?
   opportunity         ChefWorkOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
   membership          ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+
   @@unique([opportunityId, membershipId])
   @@index([membershipId, status])
 }
@@ -2657,6 +2727,7 @@ model ChefWorkEvent {
   createdAt     DateTime @default(now())
   opportunity   ChefWorkOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
   membership    ChefMembership? @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+
   @@index([opportunityId, createdAt])
 }
 
@@ -2682,6 +2753,7 @@ model ChefContribution {
   revisions        ChefContributionRevision[]
   reviews          ChefContributionReview[] @relation("ChefContributionReviews")
   allocation       ChefCapitalSelection?
+
   @@index([applicationId, createdAt])
   @@index([status, policyId])
 }
@@ -2702,6 +2774,7 @@ model ChefContributionRevision {
   createdAt             DateTime @default(now())
   contribution          ChefContribution @relation(fields: [contributionId], references: [id], onDelete: Restrict)
   engagement            ChefEngagement @relation(fields: [engagementId], references: [id], onDelete: Restrict)
+
   @@unique([contributionId, revision])
 }
 
@@ -2719,6 +2792,7 @@ model ChefContributionReview {
   contribution      ChefContribution @relation("ChefContributionReviews", fields: [contributionId], references: [id], onDelete: Restrict)
   approvedFor       ChefContribution? @relation("ChefContributionApprovedReview")
   selections        ChefCapitalSelection[]
+
   @@index([contributionId, revision])
 }
 
@@ -2748,6 +2822,7 @@ model ChefCapitalClose {
   cancellationReason      String?
   policy                  ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
   allocations             ChefCapitalAllocation[]
+
   @@index([policyId, status])
 }
 
@@ -2762,6 +2837,7 @@ model ChefCapitalAllocation {
   close            ChefCapitalClose @relation(fields: [closeId], references: [id], onDelete: Restrict)
   membership       ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
   contributions    ChefCapitalSelection[]
+
   @@unique([closeId, membershipId])
   @@index([membershipId])
 }
@@ -2812,6 +2888,7 @@ model ChefEngagement {
   policy            ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
   events            ChefEngagementEvent[]
   contributionRevisions ChefContributionRevision[]
+
   @@index([applicationId, status])
 }
 
@@ -2824,5 +2901,6 @@ model ChefEngagementEvent {
   actorUid     String
   createdAt    DateTime @default(now())
   engagement   ChefEngagement @relation(fields: [engagementId], references: [id], onDelete: Restrict)
+
   @@unique([engagementId, version])
 }
