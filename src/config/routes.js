@@ -2,13 +2,12 @@
 // Drives: prerender, sitemap, <head> meta, vercel.json routing.
 
 import { VENUES, getVenue, isPublishable } from './venues';
-import chefCooperativePageData from '../store/data/generatedChefCooperativePageData.json';
 
 export const PUBLIC_ROUTES = [
   {
     path: '/chef-cooperative',
-    title: chefCooperativePageData.page.metaTitle,
-    description: chefCooperativePageData.page.metaDescription,
+    title: "Join our chef's cooperative | Local Effort Cooperative",
+    description: "Join the list for more information about Local Effort's chef cooperative, or talk with us directly.",
     prerender: true,
   },
   {

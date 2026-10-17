@@ -20,7 +20,7 @@ primary-pages:
 - /psyche        Psyche olive oil product page
 - /february      Seasonal home-dinner booking page
 - /localist      Localist weekly meals SMS list signup (North Minneapolis pickup)
-- /chef-cooperative Local Effort is developing a cooperative for independent chefs in St. Paul: shared work opportunities, resources and a conditional ownership path. Proposed $50/month operating dues are not adopted. Apply via /hub/chef (sign-in required) for private review; free to apply, no payment details requested. No guaranteed work, kitchen time, membership or equity. Separate from customer Localist; not a job vacancy.
+- /chef-cooperative Invitation to join Local Effort's chef cooperative: join the list for more information, or talk with the team directly. Terms are not yet published.
 - /weekly-order  Weekly order checkout surface (customer-specific; not in search index)
 
 support:

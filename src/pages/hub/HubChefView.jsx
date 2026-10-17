@@ -46,7 +46,7 @@ function ChefSignIn({ auth }) {
     <button type="button" className="hub-primary-button hub-google-button" disabled={busy} onClick={signIn}>{busy ? 'Opening Google…' : 'Continue with Google'}</button>
     <p className="hub-help">Choose the same Google account on every visit. No invitation or authentication email is sent by this application.</p>
     {error && <p className="hub-error" role="alert">{error}</p>}
-    <a href="/chef-cooperative">Back to the chef cooperative information</a>
+    <a href="/chef-cooperative">Back to the chef cooperative page</a>
   </div></main>;
 }
 

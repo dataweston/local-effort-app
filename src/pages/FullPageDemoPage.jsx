@@ -27,8 +27,7 @@ import { SERVICE_STYLES, estimateEvent, MIN_GUESTS, MAX_GUESTS, DEPOSIT_BPS, usd
 // pages so the home funnel and the indexable pages cannot drift apart.
 import { QuickEventBookForm } from '../components/services/slipForms';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { parseBulletin, resolveBulletin, suggestLinks, applySuggestions } from '../../shared/home-bulletin.mjs';
-import bulletinLinkRegistry from '../../shared/home-bulletin-links.json';
+import Bulletin from '../components/Bulletin';
 import '../styles/home-hero.css';
 import '../styles/home-tabs.css';
 
@@ -41,25 +40,6 @@ const SMALL_EVENT_LABELS = {
 const EVENT_TYPES = Object.keys(SMALL_EVENT_LABELS);
 const PIZZA_FROM_CENTS = SERVICE_STYLES[0].minCents;
 const PIZZA_FROM_PER_GUEST = usd(PIZZA_FROM_CENTS);
-const renderBulletinNodes = (nodes, keyPrefix) => nodes.map((node, index) => {
-  const key = `${keyPrefix}-${index}`;
-  if (node.type === 'text') return node.text;
-  if (node.type === 'code') return <code key={key}>{node.text}</code>;
-  if (node.type === 'strong') return <strong key={key}>{renderBulletinNodes(node.children, key)}</strong>;
-  if (node.type === 'em') return <em key={key}>{renderBulletinNodes(node.children, key)}</em>;
-  // Site pages open in the same tab; only outside links open a new one.
-  if (node.internal || !node.href.startsWith('https:')) return <a key={key} href={node.href}>{renderBulletinNodes(node.children, key)}</a>;
-  return <a key={key} href={node.href} target="_blank" rel="noreferrer">{renderBulletinNodes(node.children, key)}</a>;
-});
-const renderBulletin = (markdown) => parseBulletin(markdown).map((block, index) => {
-  const key = `bulletin-${index}`;
-  if (block.type === 'spacer') return <div className="home-hero__spacer" key={key} />;
-  const content = renderBulletinNodes(block.children, key);
-  if (block.type === 'heading') { const Tag = `h${block.level}`; return <Tag key={key}>{content}</Tag>; }
-  if (block.type === 'list') return <div className="home-hero__list-line" key={key}>– {content}</div>;
-  if (block.type === 'quote') return <blockquote key={key}>{content}</blockquote>;
-  return <p key={key}>{content}</p>;
-});
 const ESTIMATE_LIFESPAN_DAYS = 5;
 const HOLD_WINDOW_HOURS = 24;
 const ANNOUNCEMENT_HEIGHT = 56; // Increased for mobile two-line support
@@ -323,14 +303,6 @@ const FullPageDemoPage = () => {
   const [galleryHeight, setGalleryHeight] = useState(2000);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryRequested, setGalleryRequested] = useState(false);
-  const [bulletin, setBulletin] = useState('');
-  const [bulletinDraft, setBulletinDraft] = useState('');
-  const [bulletinEditing, setBulletinEditing] = useState(false);
-  const [bulletinSaving, setBulletinSaving] = useState(false);
-  const [bulletinStatus, setBulletinStatus] = useState('');
-  const bulletinTextareaRef = useRef(null);
-  const [bulletinFacts, setBulletinFacts] = useState(null);
-  const [bulletinSuggestions, setBulletinSuggestions] = useState(null);
   const [layoutConfig, setLayoutConfig] = useState({ columns: 0, columnWidth: 0, gap: 10 });
   const containerRef = useRef(null);
   const [layoutReady, setLayoutReady] = useState(false);
@@ -1729,86 +1701,6 @@ const toServerEstimate = (estimate) => ({
   }, [galleryOpen, galleryRequested, loading, fetchImages]);
 
   useEffect(() => {
-    fetch('/api/home-bulletin').then((response) => response.ok ? response.json() : null)
-      .then((data) => {
-        if (!data || typeof data.markdown !== 'string') return;
-        setBulletin(data.markdown);
-        setBulletinFacts(data.facts || null);
-      })
-      .catch(() => {});
-  }, []);
-
-  // What Save stores: the draft plus every suggestion the admin did not remove,
-  // exactly as the preview shows it. Live values stay as tokens so they never go stale.
-  const bulletinToSave = bulletinSuggestions ? applySuggestions(bulletinDraft, bulletinSuggestions) : bulletinDraft;
-  const bulletinPreview = resolveBulletin(bulletinToSave, bulletinFacts);
-  // Suggestions carry text offsets, so any edit to the draft (typing or a toolbar button) retires them.
-  useEffect(() => { setBulletinSuggestions(null); }, [bulletinDraft]);
-
-  const saveBulletin = async () => {
-    setBulletinSaving(true);
-    setBulletinStatus('');
-    try {
-      const response = await fetch('/api/home-bulletin', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ markdown: bulletinToSave }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Could not save');
-      setBulletin(data.markdown || '');
-      if (data.facts) setBulletinFacts(data.facts);
-      setBulletinEditing(false);
-      setBulletinSuggestions(null);
-      setBulletinStatus('Saved');
-    } catch (error) {
-      setBulletinStatus(error.message || 'Could not save');
-    } finally {
-      setBulletinSaving(false);
-    }
-  };
-
-  const insertBulletinMarkdown = (before, after = '', placeholder = 'text') => {
-    const input = bulletinTextareaRef.current;
-    const start = input?.selectionStart ?? bulletinDraft.length;
-    const end = input?.selectionEnd ?? start;
-    const selected = bulletinDraft.slice(start, end) || placeholder;
-    const next = `${bulletinDraft.slice(0, start)}${before}${selected}${after}${bulletinDraft.slice(end)}`;
-    setBulletinDraft(next);
-    requestAnimationFrame(() => {
-      input?.focus();
-      input?.setSelectionRange(start + before.length, start + before.length + selected.length);
-    });
-  };
-
-  const suggestBulletinLinks = () => {
-    setBulletinSuggestions(suggestLinks(bulletinDraft, bulletinLinkRegistry));
-    setBulletinStatus('');
-  };
-
-  const acceptBulletinSuggestions = () => {
-    setBulletinDraft(applySuggestions(bulletinDraft, bulletinSuggestions));
-    setBulletinSuggestions(null);
-  };
-
-  const insertBulletinLink = () => {
-    const input = bulletinTextareaRef.current;
-    const start = input?.selectionStart ?? bulletinDraft.length;
-    const end = input?.selectionEnd ?? start;
-    const selected = bulletinDraft.slice(start, end);
-    const selectedIsUrl = /^https?:\/\/\S+$/.test(selected);
-    const label = selectedIsUrl ? 'link text' : selected || 'link text';
-    const url = selectedIsUrl ? selected : 'https://';
-    setBulletinDraft(`${bulletinDraft.slice(0, start)}[${label}](${url})${bulletinDraft.slice(end)}`);
-    requestAnimationFrame(() => {
-      input?.focus();
-      // Select whichever half the editor still needs, so typing or pasting fills it in.
-      const from = selectedIsUrl ? start + 1 : start + label.length + 3;
-      input?.setSelectionRange(from, from + (selectedIsUrl ? label.length : url.length));
-    });
-  };
-
-  useEffect(() => {
     const timer = setTimeout(() => setAnnouncementVisible(true), 1200);
     return () => clearTimeout(timer);
   }, []);
@@ -2819,53 +2711,7 @@ const toServerEstimate = (estimate) => ({
                     </figcaption>
                   </div>
                 </figure>
-                <div className="home-hero__bulletin">
-                  {bulletinEditing ? (
-                    <div className="home-hero__editor">
-                      <div className="home-hero__format" aria-label="Formatting tools">
-                        <button type="button" aria-label="Bold" title="Bold" onClick={() => insertBulletinMarkdown('**', '**')}><strong>B</strong></button>
-                        <button type="button" aria-label="Italic" title="Italic" onClick={() => insertBulletinMarkdown('*', '*')}><em>I</em></button>
-                        <button type="button" onClick={() => insertBulletinMarkdown('## ', '', 'Heading')}>Heading</button>
-                        <button type="button" onClick={() => insertBulletinMarkdown('- ', '', 'List item')}>List</button>
-                        <button type="button" onClick={insertBulletinLink}>Link</button>
-                        <button type="button" onClick={suggestBulletinLinks}>Auto-link</button>
-                      </div>
-                      <textarea ref={bulletinTextareaRef} aria-label="Bulletin markdown" value={bulletinDraft} onChange={(event) => setBulletinDraft(event.target.value)} rows={9} />
-                      <div className="home-hero__preview-label">Preview</div>
-                      <div className="home-hero__note home-hero__preview">{renderBulletin(bulletinPreview.markdown)}</div>
-                      {bulletinPreview.notes.map((note) => <p className="home-hero__suggest-note" key={`note-${note.line}`}>Line {note.line}. {note.reason}</p>)}
-                      {bulletinSuggestions && (
-                        <div className="home-hero__suggestions">
-                          {bulletinSuggestions.length === 0 ? <p className="home-hero__suggest-note">No more links to suggest.</p> : (
-                            <>
-                              <ul>
-                                {bulletinSuggestions.map((suggestion) => (
-                                  <li key={suggestion.id}>
-                                    <span>“{suggestion.text}” links to {suggestion.label} ({suggestion.url})</span>
-                                    <button type="button" onClick={() => setBulletinSuggestions(bulletinSuggestions.filter((other) => other.id !== suggestion.id))}>Remove</button>
-                                  </li>
-                                ))}
-                              </ul>
-                              <button type="button" onClick={acceptBulletinSuggestions}>Accept all</button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                      <div className="home-hero__edit-actions">
-                        <button type="button" onClick={saveBulletin} disabled={bulletinSaving}>{bulletinSaving ? 'Saving' : 'Save'}</button>
-                        <button type="button" onClick={() => { setBulletinEditing(false); setBulletinSuggestions(null); setBulletinStatus(''); }}>Cancel</button>
-                        <span aria-live="polite">{bulletinStatus}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="home-hero__note">
-                        {renderBulletin(resolveBulletin(bulletin, bulletinFacts).markdown)}
-                      </div>
-                      {isAdmin && <button type="button" className="home-hero__edit" onClick={() => { setBulletinDraft(bulletin); setBulletinEditing(true); }}>Edit</button>}
-                    </>
-                  )}
-                </div>
+                <Bulletin slug="home" isAdmin={isAdmin} accessToken={accessToken} />
                 <button type="button" className="home-hero__gallery-link" onClick={() => setGalleryOpen(true)}>view gallery</button>
               </section>
             ) : loading ? (

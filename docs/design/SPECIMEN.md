@@ -4,9 +4,9 @@ The material system behind every page reachable from the header: `/`,
 `/weekly-meals`, `/small-events`, `/sale`, `/localist`,
 and the home panels for Local Pizza, For Business and About.
 
-The chef-cooperative page uses this system but is temporarily absent from the
-header at the owner's request (as of 2026-10-15). Restore its header link only
-when the owner approves readiness; direct page and application URLs remain.
+The chef-cooperative page uses this system but is absent from the header at the
+owner's request (as of 2026-10-15). Restore its header link only when the owner
+approves readiness; the direct page URL remains.
 
 Sources are the twenty-one works in [REFERENCE-SET.md](./REFERENCE-SET.md).
 Implementation is `src/styles/specimen.css`, tokens in
@@ -103,52 +103,22 @@ thing on the page. The script is therefore not *persuade, then ask* — it is
 Cover the CTA and the page still points at it: the slip is where the eye enters
 and the closing slip is where it exits.
 
-The chef cooperative page leads with the chef's opportunity, not the operating
-dues. A large St. Paul recruitment statement and a smaller application sheet
-introduce an independent practice, shared resources and a proposed ownership
-path. The application button precedes the longer sign-in explanation, remaining
-visible within an 844px-tall mobile viewport at both 360px and 390px widths.
-Ruled benefits lead into the single dark ownership section; proposed dues,
-the actual application sequence and native term/privacy disclosures follow.
-No photograph is invented when the CMS has no authorized image. The directory
-mounts only when the CMS explicitly enables it; it still reads live consent-
-checked profiles and never uses a generated profile snapshot.
+The chef cooperative page (`/chef-cooperative`, `src/pages/ChefCooperativePage.jsx`,
+styles in `src/styles/chef-cooperative.css`) is a recruitment page as of
+2026-10-16 (owner: Local Effort Cooperative). A National Park headline over
+the Nieuwenhuis study sheet (RP-T-1969-185), a paragraph, the markdown bulletin
+(row `chef-cooperative` in `/api/home-bulletin?slug=chef-cooperative`, edited
+in place by an admin, same component as the home page), one dark field holding
+the join-the-list form and the direct-contact link, and an FAQ whose entries
+live in `src/pages/chefCooperativeFaq.js`. The form posts to
+`/api/messages/submit` with type `chef-cooperative-interest`.
 
-All substantive `/chef-cooperative` text belongs to the Sanity singleton
-`chefCooperativePage` / `chef-cooperative-page`, including metadata, proposal
-limits, benefit explanations, privacy and contact. Studio exposes it under
-Content → Chef Cooperative Page. `shared/chef-cooperative-page.json` owns the
-exact projected public query, and `shared/chef-cooperative-content.mjs` validates
-the seed, Studio content, generated snapshot and live browser refresh.
-
-`node scripts/seed-chef-cooperative-page.cjs` previews prepared public copy
-locally; explicit owner-authorized `--apply` creates the document only if absent
-and never replaces owner edits. `node scripts/generate-chef-cooperative-page-data.js`
-reads published CMS content before the build's content guard and Vite steps.
-It retains a valid previous CMS snapshot during an outage and fails when neither
-published content nor a valid prior snapshot exists. The prepared seed is never
-used as a public runtime fallback. Publishing content, deploying Studio schema
-and deploying the website are separate authorizations.
-
-Recruitment redesign — owner: Local Effort Cooperative; as of 2026-10-16
-(America/Chicago). The owner authorized publication of rewritten CMS copy
-separately from website deployment. Published `chef-cooperative-page` revision
-`PymCQT0PdUnqccVhpGDbPX` was read back and regenerated into the public snapshot;
-the proposed $50 dues, no-fee application and conditional ownership remain
-unchanged in substance. Static AI guides use the same St. Paul recruitment
-positioning. Review at deployment: the website layout and its shared public
-Sanity-query allowlist must deploy together. No deployment, membership adoption,
-applicant creation or outbound message was performed for this redesign.
-
-Verification: the actual page and production Header/Footer were bundled into a
-throwaway browser harness and inspected at 1440px and 390px, with overflow and
-CTA checks also at 360px and 768px. The harness read the published CMS using the
-exact shared query directly from Sanity; it did not pretend the unshipped proxy
-allowlist was already live. Ownership, dues and privacy disclosures opened,
-section links landed below the fixed header, and the application link reached
-the production `/hub/chef` Google sign-in gate. Authenticated application
-completion was not exercised. `pnpm check:content` passed. Review by: deployment
-of this redesign, or the next change to membership terms or application flow.
+The paragraph, bulletin and FAQ are lorem ipsum until the owner supplies the
+words; terms, dues and ownership are not stated anywhere on the page. The prior
+CMS-driven page is kept, unrouted, as `ChefCooperativePageRetired.jsx` with
+`chef-cooperative-retired.css`; its Sanity singleton and snapshot pipeline
+(`scripts/generate-chef-cooperative-page-data.js`, part of `build`) are
+unchanged and still run.
 
 ### The home page
 

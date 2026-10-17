@@ -14,6 +14,14 @@ const loadRules = () => (bulletinRules ||= import('../../../shared/home-bulletin
 
 const iso = (ms) => (Number.isFinite(ms) ? new Date(ms).toISOString() : null);
 
+// One bulletin per page that has one. The slug is the row id, so it is
+// whitelisted: an admin token must not be able to mint arbitrary rows.
+const BULLETIN_SLUGS = ['home', 'chef-cooperative'];
+const slugOf = (req) => {
+  const slug = req.query.slug === undefined ? 'home' : String(req.query.slug);
+  return BULLETIN_SLUGS.includes(slug) ? slug : null;
+};
+
 // The Pizza on Smith ordering window is owned by the CMS; the bulletin reads it
 // here instead of carrying dates in its text.
 async function liveFacts() {
@@ -26,10 +34,12 @@ async function liveFacts() {
   }
 }
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
+  const slug = slugOf(req);
+  if (!slug) return res.status(404).json({ error: 'Unknown bulletin' });
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
   try {
-    const row = await prisma.homeBulletin.findUnique({ where: { id: 'home' } });
+    const row = await prisma.homeBulletin.findUnique({ where: { id: slug } });
     return res.json({ markdown: row?.markdown || '', facts: await liveFacts() });
   } catch (error) {
     console.error('GET /api/home-bulletin failed:', error);
@@ -38,6 +48,8 @@ router.get('/', async (_req, res) => {
 });
 
 router.put('/', async (req, res) => {
+  const slug = slugOf(req);
+  if (!slug) return res.status(404).json({ error: 'Unknown bulletin' });
   if (!prisma) return res.status(503).json({ error: 'Database unavailable' });
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -59,8 +71,8 @@ router.put('/', async (req, res) => {
       });
     }
     const row = await prisma.homeBulletin.upsert({
-      where: { id: 'home' },
-      create: { id: 'home', markdown },
+      where: { id: slug },
+      create: { id: slug, markdown },
       update: { markdown },
     });
     return res.json({ markdown: row.markdown, facts: await liveFacts() });

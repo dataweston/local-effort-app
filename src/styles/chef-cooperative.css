@@ -1,595 +1,263 @@
-/* Chef recruitment: a working sheet, an invitation, then an ownership proposal.
-   Sources: docs/design/SPECIMEN.md (de Boodt's ruled ledger; Coorte's single
-   dark field), brand-tokens.css (sheet, mount, void, rules, directional shadow
-   and motion), home-tabs.css:14-16 (General Sans structure, Source Sans 3 prose,
-   Office Code Pro facts). The existing service-page shell supplies real paper.
-   No entrance animation: the proposal is readable before any JavaScript runs. */
+/* /chef-cooperative. Fields, frame and caption strip come from specimen.css;
+   this file only lays them out. Every colour and duration is a token from
+   brand-tokens.css; National Park is --font-national-park (index.css:67). */
 
-.chef-cooperative {
-  overflow-wrap: anywhere;
-}
-
-.chef-cooperative .service-page__body {
-  --service-rhythm: clamp(4rem, 8vw, 7.5rem);
-  --coop-rule: var(--specimen-rule);
-  --coop-focus: var(--brand-olive-deep);
-  max-width: 1320px;
-  font-family: var(--font-body);
+.chef-coop {
+  min-height: 100vh;
+  background: var(--brand-sheet);
   color: var(--brand-ink);
 }
 
-.chef-cooperative .service-page__body *,
-.chef-cooperative .service-page__body *::before,
-.chef-cooperative .service-page__body *::after {
-  box-sizing: border-box;
+.chef-coop h1,
+.chef-coop h2 {
+  font-family: var(--font-national-park);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
-.chef-cooperative .service-page__body :is(a, summary):focus-visible {
-  outline: 3px solid var(--coop-focus);
-  outline-offset: 5px;
-  border-radius: 0;
+.chef-coop a {
+  color: inherit;
+  text-underline-offset: 0.18em;
 }
 
-.chef-cooperative [id] {
-  scroll-margin-top: 7rem;
+.chef-coop__hero-copy .chef-coop__links a,
+.chef-coop__join-copy a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
 }
 
-.chef-cooperative :is(
-  .chef-cooperative__hero,
-  .chef-cooperative__section,
-  .chef-cooperative__row,
-  .chef-cooperative__ownership,
-  .chef-cooperative__close
-) > * {
+/* ── Plates ───────────────────────────────────────────────────────────── */
+
+.chef-coop__plate {
+  margin: 0;
   min-width: 0;
 }
 
-.chef-cooperative :is(
-  .chef-cooperative__hero,
-  .chef-cooperative__benefits,
-  .chef-cooperative__ownership,
-  .chef-cooperative__dues,
-  .chef-cooperative__application,
-  .chef-cooperative__close
-) h2 {
-  max-width: 20ch;
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 3.6vw, 3.25rem);
-  font-weight: 650;
-  line-height: 1.08;
-  letter-spacing: -.025em;
-  color: inherit;
-  text-wrap: balance;
-}
-
-.chef-cooperative :is(.chef-cooperative__row, .chef-cooperative__steps) h3 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.7vw, 1.55rem);
-  font-weight: 650;
-  line-height: 1.25;
-  letter-spacing: -.015em;
-  color: inherit;
-  text-wrap: balance;
-}
-
-.chef-cooperative__copy {
-  max-width: 62ch;
-  font-family: var(--font-body);
-  font-size: 1.0625rem;
-  line-height: 1.7;
-}
-
-.chef-cooperative__copy p {
-  margin: 0 0 1.15em;
-}
-
-.chef-cooperative__copy > :last-child {
-  margin-bottom: 0;
-}
-
-.chef-cooperative__copy :is(ul, ol) {
-  padding-left: 1.4em;
-}
-
-.chef-cooperative__copy li + li {
-  margin-top: .5em;
-}
-
-.chef-cooperative__copy a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: .2em;
-  text-decoration-thickness: 1px;
-}
-
-/* The invitation stays small enough that the opportunity leads the page. */
-.chef-cooperative__hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-  align-items: start;
-  gap: clamp(2rem, 5vw, 5rem);
-  padding-top: clamp(2.5rem, 6vw, 5.5rem);
-}
-
-.chef-cooperative .chef-cooperative__hero h1 {
-  max-width: 12ch;
-  margin: 0 0 clamp(1.75rem, 3vw, 2.75rem);
-  font-family: var(--font-display);
-  font-size: clamp(3.25rem, 7.5vw, 6.75rem);
-  font-weight: 650;
-  line-height: .98;
-  letter-spacing: -.055em;
-  color: var(--brand-ink);
-  text-wrap: balance;
-  white-space: pre-line;
-}
-
-.chef-cooperative__intro .chef-cooperative__copy {
-  max-width: 55ch;
-  font-size: clamp(1.125rem, 1.55vw, 1.375rem);
-  line-height: 1.6;
-}
-
-.chef-cooperative__invitation {
-  margin-top: clamp(.5rem, 3vw, 2.75rem);
-  padding: clamp(1.35rem, 2.6vw, 2.25rem);
-  border: 1px solid var(--coop-rule);
-  border-top: 3px solid var(--brand-ink);
-  background: var(--brand-sheet);
-  box-shadow: var(--specimen-shadow);
-}
-
-.chef-cooperative .chef-cooperative__invitation h2 {
-  max-width: 18ch;
-  margin-bottom: 1rem;
-  font-size: clamp(1.65rem, 2.4vw, 2.15rem);
-  line-height: 1.12;
-}
-
-.chef-cooperative__invitation .chef-cooperative__copy {
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.chef-cooperative .chef-cooperative__apply {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  min-height: 52px;
-  margin-top: 1.5rem;
-  padding: .95rem 1.1rem;
-  border: 1px solid var(--brand-ink);
-  border-radius: 0;
-  background: var(--brand-ink);
-  color: var(--brand-sheet);
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 650;
-  line-height: 1.35;
-  text-decoration: none;
-  transition: background-color var(--le-dur-1) var(--le-ease),
-    border-color var(--le-dur-1) var(--le-ease);
-}
-
-.chef-cooperative .chef-cooperative__apply:hover {
-  border-color: var(--brand-olive-deep);
-  background: var(--brand-olive-deep);
-  color: var(--brand-sheet);
-}
-
-.chef-cooperative__apply span {
-  flex-shrink: 0;
-  font-size: 1.4rem;
-  font-weight: 400;
-  line-height: 1;
-}
-
-.chef-cooperative__signup {
-  margin: 1rem 0 0;
-  font-size: .9375rem;
-  font-weight: 600;
-  line-height: 1.55;
-}
-
-.chef-cooperative__invitation .chef-cooperative__signup {
-  margin-bottom: 1.25rem;
-}
-
-.chef-cooperative .chef-cooperative__email {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  max-width: 100%;
-  margin-top: .65rem;
-  padding-block: .5rem;
-  color: inherit;
-  font-size: 1rem;
-  line-height: 1.5;
-  text-decoration: underline;
-  text-underline-offset: .25em;
-  text-decoration-thickness: 1px;
-}
-
-.chef-cooperative .chef-cooperative__email:hover,
-.chef-cooperative__copy a:hover {
-  text-decoration-thickness: 2px;
-}
-
-.chef-cooperative__photo {
-  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
-}
-
-.chef-cooperative__photo img {
-  display: block;
+.chef-coop__plate img {
   width: 100%;
   height: auto;
-  max-height: 38rem;
-  object-fit: cover;
-  box-shadow: var(--specimen-shadow);
 }
 
-.chef-cooperative__photo figcaption {
-  max-width: 62ch;
-  padding-top: 1rem;
-  font-size: .9375rem;
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+
+.chef-coop__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(5.5rem, 10vw, 8rem) clamp(1.25rem, 6vw, 6rem) clamp(2.5rem, 6vw, 5rem);
+}
+
+.chef-coop__hero h1 {
+  font-size: clamp(2.9rem, 7.4vw, 7rem);
+  text-wrap: balance;
+}
+
+.chef-coop__hero-copy p {
+  max-width: 34rem;
+  margin: 1.6rem 0 0;
+  font-size: clamp(1.02rem, 1.3vw, 1.2rem);
   line-height: 1.6;
 }
 
-/* Text wayfinding, not a second set of calls to action. */
-.chef-cooperative__jump-links {
+.chef-coop__hero-copy .chef-coop__links {
   display: flex;
   flex-wrap: wrap;
-  gap: .25rem clamp(1.25rem, 3vw, 2.75rem);
-  margin-top: clamp(2.5rem, 5vw, 4.5rem);
-  padding-block: .6rem;
-  border-block: 1px solid var(--coop-rule);
+  gap: 0.6rem 2rem;
+  font-family: var(--font-yomogi);
+  font-size: 1.2rem;
 }
 
-.chef-cooperative__jump-links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  max-width: 26ch;
-  padding-block: .5rem;
-  color: inherit;
-  font-size: 1rem;
-  line-height: 1.4;
-  text-decoration: underline;
-  text-underline-offset: .25em;
-  text-decoration-color: var(--specimen-rule);
-}
+/* ── Bulletin ─────────────────────────────────────────────────────────── */
 
-.chef-cooperative__jump-links a:hover {
-  text-decoration-color: currentColor;
-  text-decoration-thickness: 2px;
-}
-
-/* Ruled explanations: each benefit gets a heading and a readable measure. */
-.chef-cooperative__benefits {
-  margin-top: var(--service-rhythm);
-}
-
-.chef-cooperative__ledger {
-  margin-top: clamp(1.75rem, 3vw, 2.75rem);
-  border-bottom: 1px solid var(--coop-rule);
-}
-
-.chef-cooperative__row {
+.chef-coop__bulletin {
   display: grid;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  gap: 1rem clamp(2rem, 6vw, 6rem);
-  padding-block: clamp(1.5rem, 3vw, 2.5rem);
-  border-top: 1px solid var(--coop-rule);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 6vw, 6rem);
 }
 
-.chef-cooperative__row h3 {
-  max-width: 22ch;
+/* home-hero.css sizes the note for a hero; on this page it sits beside a plate. */
+.chef-coop__bulletin .home-hero__bulletin {
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  background: color-mix(in srgb, var(--brand-linen) 70%, transparent);
 }
 
-.chef-cooperative__independence {
-  max-width: 62ch;
-  margin: 1.75rem 0 0 auto;
-  padding-left: 1.25rem;
-  border-left: 2px solid var(--brand-olive);
-}
+/* ── Join (the page's one void field) ─────────────────────────────────── */
 
-/* The only dark field belongs to the possibility of shared ownership. */
-.chef-cooperative__ownership {
-  --ht-ink: var(--brand-linen);
-  --coop-rule: color-mix(in srgb, var(--brand-linen) 42%, transparent);
-  --coop-focus: var(--brand-sheet);
+.chef-coop__join {
   display: grid;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  gap: 2rem clamp(2rem, 6vw, 6rem);
-  margin-top: var(--service-rhythm);
-  padding: clamp(1.5rem, 4vw, 3.5rem);
-  background: var(--brand-void);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 28rem);
+  align-items: start;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 6vw, 6rem);
+  overflow: clip;
   color: var(--brand-linen);
 }
 
-.chef-cooperative .chef-cooperative__ownership h2 {
-  max-width: 13ch;
-  font-size: clamp(2.5rem, 4.5vw, 4rem);
-  line-height: 1.03;
+.chef-coop__join h2 {
+  color: var(--brand-linen);
+  font-size: clamp(2.2rem, 4.6vw, 4rem);
 }
 
-.chef-cooperative__ownership-body .chef-cooperative__copy {
-  font-size: clamp(1.125rem, 1.5vw, 1.25rem);
-  line-height: 1.65;
+.chef-coop__join-copy p {
+  max-width: 30rem;
+  margin: 1.2rem 0 0;
+  line-height: 1.6;
 }
 
-.chef-cooperative__ownership ::selection {
+.chef-coop__join a {
+  text-decoration-color: var(--brand-oxide);
+}
+
+.chef-coop__form {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chef-coop__form label {
+  margin-top: 0.9rem;
+  font-family: var(--font-office-code, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--brand-linen) 70%, transparent);
+}
+
+.chef-coop__form input {
+  width: 100%;
+  padding: 0.7rem 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-linen) 55%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--brand-linen);
+  font: inherit;
+  font-size: 1.1rem;
+}
+
+.chef-coop__form input:focus {
+  outline: none;
+  border-bottom-color: var(--brand-linen);
+}
+
+.chef-coop__form input:focus-visible {
+  outline: 2px dashed var(--brand-oxide);
+  outline-offset: 4px;
+}
+
+.chef-coop__form button {
+  justify-self: start;
+  margin-top: 1.6rem;
+  padding: 0.8rem 1.4rem;
+  border: 1px solid var(--brand-linen);
+  border-radius: 0;
+  background: transparent;
+  color: var(--brand-linen);
+  font: inherit;
+  font-family: var(--font-yomogi);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color var(--le-dur-1) var(--le-ease), color var(--le-dur-1) var(--le-ease);
+}
+
+.chef-coop__form button:hover:not(:disabled) {
   background: var(--brand-linen);
   color: var(--brand-void);
 }
 
-/* Costs and the real application sequence deliberately return to the sheet. */
-.chef-cooperative__section {
-  display: grid;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  gap: 2rem clamp(2rem, 6vw, 6rem);
-  margin-top: var(--service-rhythm);
-  padding-top: clamp(1.75rem, 3vw, 2.75rem);
-  border-top: 1px solid var(--coop-rule);
+.chef-coop__form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
-.chef-cooperative__price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: .4rem .85rem;
-  margin-top: 1.5rem;
-  font-family: var(--font-office-code);
+.chef-coop__error {
+  margin: 0.8rem 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--accent-apple);
 }
 
-.chef-cooperative__price strong {
-  font-size: clamp(2rem, 3vw, 2.75rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -.04em;
-  font-variant-numeric: tabular-nums;
-}
-
-.chef-cooperative__price span {
-  max-width: 22ch;
-  font-size: .8125rem;
+.chef-coop__thanks {
+  margin: 0;
+  max-width: 26rem;
+  font-family: var(--font-yomogi);
+  font-size: 1.35rem;
   line-height: 1.5;
 }
 
-.chef-cooperative__status {
-  max-width: 36ch;
-  margin: .85rem 0 0;
-  font-family: var(--font-office-code);
-  font-size: .8125rem;
+/* Visually removed, kept in the DOM for bots. Stays inside the form: an off-screen offset let focus scroll the clipped void sideways. */
+.chef-coop__hp {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+
+.chef-coop__faq {
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 6vw, 6rem) clamp(4rem, 9vw, 8rem);
+}
+
+.chef-coop__faq h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.chef-coop__faq-list {
+  max-width: 46rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--specimen-rule);
+}
+
+.chef-coop__faq-item {
+  border-bottom: 1px solid var(--specimen-rule-hair);
+}
+
+.chef-coop__faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.1rem 0;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.chef-coop__faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.chef-coop__faq-item summary::after {
+  content: '+';
+  font-family: var(--font-office-code, monospace);
+  flex: none;
+}
+
+.chef-coop__faq-item[open] summary::after {
+  content: '\2212';
+}
+
+.chef-coop__faq-item p {
+  margin: 0 0 1.1rem;
+  max-width: 40rem;
   line-height: 1.65;
 }
 
-.chef-cooperative__notice {
-  max-width: 62ch;
-  margin-top: 1.5rem;
-  padding-left: 1.25rem;
-  border-left: 2px solid var(--brand-olive);
-}
+/* ── Narrow ───────────────────────────────────────────────────────────── */
 
-.chef-cooperative__application .chef-cooperative__apply {
-  max-width: 21rem;
-}
-
-.chef-cooperative__steps {
-  display: block;
-  margin: 0;
-  padding-left: 1.85rem;
-  list-style: decimal outside;
-}
-
-.chef-cooperative__steps > li {
-  padding: 0 0 1.75rem .65rem;
-}
-
-.chef-cooperative__steps > li + li {
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--coop-rule);
-}
-
-.chef-cooperative__steps > li:last-child {
-  padding-bottom: 0;
-}
-
-.chef-cooperative__steps > li::marker {
-  font-family: var(--font-office-code);
-  font-size: .9375rem;
-  color: var(--brand-olive-deep);
-}
-
-.chef-cooperative__steps .chef-cooperative__copy {
-  margin-top: .7rem;
-}
-
-/* Native disclosures remain discoverable and fully keyboard operable. */
-.chef-cooperative__details {
-  min-width: 0;
-  margin-top: 1.75rem;
-  border-block: 1px solid var(--coop-rule);
-}
-
-.chef-cooperative__details summary {
-  min-height: 52px;
-  padding: 1rem .25rem;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5;
-  color: inherit;
-  cursor: pointer;
-}
-
-.chef-cooperative__details summary::marker {
-  color: inherit;
-  font-size: .85em;
-}
-
-.chef-cooperative__details summary:hover {
-  text-decoration: underline;
-  text-underline-offset: .25em;
-}
-
-.chef-cooperative__details[open] summary {
-  margin-bottom: .5rem;
-}
-
-.chef-cooperative__details > .chef-cooperative__copy {
-  padding-bottom: 1.5rem;
-}
-
-.chef-cooperative__terms {
-  max-width: 62ch;
-  margin: 0;
-  padding: 0 0 1.5rem 1.35rem;
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-.chef-cooperative__terms li {
-  padding-left: .25rem;
-}
-
-.chef-cooperative__terms li + li {
-  margin-top: .85rem;
-}
-
-.chef-cooperative__fine-print {
-  max-width: 62ch;
-  margin: var(--service-rhythm) 0 0 auto;
-}
-
-.chef-cooperative__proposal {
-  margin-bottom: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 3px double var(--coop-rule);
-}
-
-.chef-cooperative__fine-print .chef-cooperative__copy {
-  font-size: 1rem;
-}
-
-.chef-cooperative__fine-print > .chef-cooperative__copy {
-  margin-top: 1.5rem;
-}
-
-.chef-cooperative__fine-print .chef-cooperative__details {
-  margin-bottom: 1.75rem;
-}
-
-/* Release: an open conversation beside the invitation, not another pitch. */
-.chef-cooperative__close {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 2rem clamp(2rem, 6vw, 6rem);
-  margin-top: var(--service-rhythm);
-  padding-block: clamp(2rem, 4vw, 3.5rem) 1rem;
-  border-top: 1px solid var(--coop-rule);
-}
-
-.chef-cooperative__close .chef-cooperative__copy {
-  margin-top: 1.25rem;
-}
-
-.chef-cooperative__closing-slip {
-  padding-top: 1.25rem;
-  border-top: 3px double var(--coop-rule);
-}
-
-.chef-cooperative__closing-slip .chef-cooperative__apply {
-  margin-top: 0;
-}
-
-@media (max-width: 900px) {
-  .chef-cooperative__hero {
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: 2rem;
-  }
-
-  .chef-cooperative .chef-cooperative__hero h1 {
-    font-size: clamp(3.25rem, 7.8vw, 5rem);
-  }
-
-  .chef-cooperative__ownership {
-    column-gap: 2rem;
-  }
-}
-
-@media (max-width: 700px) {
-  .chef-cooperative__hero,
-  .chef-cooperative__section,
-  .chef-cooperative__row,
-  .chef-cooperative__ownership,
-  .chef-cooperative__close {
+@media (max-width: 56rem) {
+  .chef-coop__hero,
+  .chef-coop__bulletin,
+  .chef-coop__join {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .chef-cooperative__hero {
-    gap: 2.5rem;
-    padding-top: 2.5rem;
-  }
-
-  .chef-cooperative .chef-cooperative__hero h1 {
-    max-width: 13ch;
-    font-size: clamp(3.25rem, 12vw, 5rem);
-    letter-spacing: -.045em;
-  }
-
-  .chef-cooperative__invitation {
-    margin-top: 0;
-  }
-
-  .chef-cooperative__jump-links {
-    column-gap: 1.5rem;
-  }
-
-  .chef-cooperative__jump-links a {
-    max-width: 100%;
-  }
-
-  .chef-cooperative__row {
-    gap: .85rem;
-    padding-block: 1.5rem;
-  }
-
-  .chef-cooperative__row h3 {
-    max-width: 28ch;
-  }
-
-  .chef-cooperative__ownership {
-    gap: 1.75rem;
-  }
-
-  .chef-cooperative__section {
-    gap: 1.75rem;
-  }
-
-  .chef-cooperative__application .chef-cooperative__apply {
-    max-width: none;
-  }
-
-  .chef-cooperative__steps {
-    padding-left: 1.5rem;
-  }
-
-  .chef-cooperative__steps > li {
-    padding-left: .4rem;
-  }
-
-  .chef-cooperative__close {
-    gap: 2.5rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .chef-cooperative .chef-cooperative__apply {
-    transition: none;
   }
 }
