@@ -2311,3 +2311,9 @@
   .hub-chef-review-detail dl { grid-template-columns: 1fr; gap: 4px; }
   .hub-chef-review-detail dd { margin-bottom: 10px; }
 }
+
+.hub-chef-preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
+.hub-chef-membership-admin { border-top: 1px solid var(--hub-border); padding-top: 14px; min-width: 0; }
+.hub-chef-form { display: grid; gap: 14px; min-width: 0; }
+.hub-chef-form .hub-field { min-width: 0; }
+.hub-chef-form input[type="checkbox"] { width: 18px; height: 18px; min-height: 0; padding: 0; justify-self: start; }

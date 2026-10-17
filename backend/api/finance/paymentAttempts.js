@@ -85,6 +85,7 @@ async function settleInvoiceFromAllocations(tx, invoiceId) {
   let status = invoice.status;
   if (outstandingCents === 0) status = 'paid';
   else if (paidCents > 0) status = 'partially_paid';
+  else if (status === 'paid' || status === 'partially_paid') status = 'issued';
 
   return tx.commercialInvoice.update({
     where: { id: invoiceId },

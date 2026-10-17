@@ -35,6 +35,49 @@ function amountCentsOf(payment) {
   return Math.round(Number(amount) || 0);
 }
 
+function isChefDuesAttempt(attempt) {
+  return attempt?.metadata?.saleConfirmationFacts?.flow === 'chef-dues'
+    || attempt?.metadata?.channel === 'chef-dues_hosted_link';
+}
+
+// Private dues have one immutable invoice/attempt, not a reusable public basket.
+// Reject mismatched evidence before finance state or confirmation recovery advances.
+function assertChefDuesPaymentEvidence(payment, attempt, locationId) {
+  const reject = () => {
+    throw Object.assign(new Error('Completed Square payment does not match the owned chef dues attempt'), {
+      code: 'chef-dues-payment-evidence-rejected', status: 409,
+    });
+  };
+  const amount = payment?.amountMoney || payment?.amount_money;
+  const cents = Number(amount?.amount);
+  if (!attempt?.id || attempt.provider !== PROVIDER || !attempt.invoiceId || !attempt.commercialOrderId
+    || !payment?.id || payment.status !== 'COMPLETED' || !locationId
+    || field(payment, 'locationId', 'location_id') !== locationId
+    || !Number.isSafeInteger(cents) || cents <= 0 || cents !== attempt.requestedCents
+    || amount?.currency !== attempt.currency
+    || (attempt.externalPaymentId && attempt.externalPaymentId !== payment.id)) reject();
+  const reference = field(payment, 'referenceId', 'reference_id');
+  const storedOrderId = attempt.metadata?.squareOrderId;
+  if (storedOrderId) {
+    if (field(payment, 'orderId', 'order_id') !== storedOrderId) reject();
+    if (reference && reference !== attempt.commercialOrderId && reference !== attempt.id) reject();
+  } else if (reference !== attempt.commercialOrderId && reference !== attempt.id) reject();
+}
+
+async function claimChefDuesPaymentEvidence(prisma, payment, attempt, locationId) {
+  assertChefDuesPaymentEvidence(payment, attempt, locationId);
+  // Reserve the verified identity with CAS before the existing success writer.
+  // A post-claim failure is repairable by the same payment; a different payment
+  // can never replace it, even when two authenticated events race.
+  const claimed = await prisma.financePaymentAttempt.updateMany({
+    where: { id: attempt.id, OR: [{ externalPaymentId: null }, { externalPaymentId: payment.id }] },
+    data: { externalPaymentId: payment.id },
+  });
+  if (claimed.count !== 1) throw Object.assign(new Error('Chef dues attempt already belongs to another payment'), {
+    code: 'chef-dues-payment-evidence-rejected', status: 409,
+  });
+}
+
 /** Find the attempt a Square payment belongs to, or null if nothing claims it. */
 async function findAttemptForPayment(prisma, payment) {
   const externalPaymentId = payment?.id ? String(payment.id) : null;
@@ -78,7 +121,7 @@ async function findAttemptForPayment(prisma, payment) {
  * report it: `linked` when an attempt was advanced, `orphan` when the capture
  * had no attempt behind it, `ignored` when the payment is not completed.
  */
-async function recordSquarePaymentEvidence(payment, { prisma, logger = null } = {}) {
+async function recordSquarePaymentEvidence(payment, { prisma, logger = null, locationId = process.env.SQUARE_LOCATION_ID } = {}) {
   if (!prisma || !payment?.id) return { outcome: 'ignored', reason: 'no-prisma-or-payment' };
   if (String(payment.status || '').toUpperCase() !== 'COMPLETED') {
     return { outcome: 'ignored', reason: 'not-completed' };
@@ -90,6 +133,7 @@ async function recordSquarePaymentEvidence(payment, { prisma, logger = null } = 
     const attempt = await findAttemptForPayment(prisma, payment);
 
     if (attempt) {
+      if (isChefDuesAttempt(attempt)) await claimChefDuesPaymentEvidence(prisma, payment, attempt, locationId);
       // Idempotent by construction: the transaction upserts on
       // (provider, externalPaymentId) and allocations upsert on their target.
       await markPaymentAttemptSucceeded({
@@ -196,8 +240,12 @@ async function reconcilePendingAttempts({
 
     if (payment) {
       summary.recovered += 1;
-      if (dryRun) continue;
       try {
+        if (isChefDuesAttempt(attempt)) {
+          assertChefDuesPaymentEvidence(payment, attempt, process.env.SQUARE_LOCATION_ID);
+          if (!dryRun) await claimChefDuesPaymentEvidence(prisma, payment, attempt, process.env.SQUARE_LOCATION_ID);
+        }
+        if (dryRun) continue;
         await markPaymentAttemptSucceeded({
           prisma,
           attemptId: attempt.id,
@@ -247,6 +295,8 @@ async function reconcilePendingAttempts({
 }
 
 module.exports = {
+  assertChefDuesPaymentEvidence,
+  claimChefDuesPaymentEvidence,
   findAttemptForPayment,
   recordSquarePaymentEvidence,
   reconcilePendingAttempts,

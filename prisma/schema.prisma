@@ -930,6 +930,7 @@ model CommercialInvoice {
   order            CommercialOrder?           @relation(fields: [orderId], references: [id])
   paymentAttempts  FinancePaymentAttempt[]
   allocations      FinancePaymentAllocation[]
+  chefDuesAssessment ChefDuesAssessment?
 
   @@unique([sourceSystem, sourceId])
   @@index([status, dueAt])
@@ -2417,6 +2418,10 @@ model ChefApplication {
   updatedAt                DateTime @updatedAt
   user                     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   history                  ChefApplicationHistory[]
+  memberships              ChefMembership[]
+  publicProfile            ChefPublicProfile?
+  workContributions ChefContribution[]
+  workEngagements   ChefEngagement[]
 
   @@index([status, updatedAt])
 }
@@ -2436,4 +2441,388 @@ model ChefApplicationHistory {
   application    ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@unique([applicationId, version])
+}
+
+// Membership offers preserve the exact CMS terms accepted by each applicant.
+// No staff access, payroll invitation, automatic charge, or equity grant follows.
+model ChefMembershipPolicy {
+  id               String   @id @default(uuid())
+  sourceRevision   String   @unique
+  version          String   @unique
+  snapshot         Json
+  adoptedByUid     String
+  adoptedAt        DateTime @default(now())
+  retiredAt        DateTime?
+  retiredByUid     String?
+  memberships      ChefMembership[]
+  duesAssessments   ChefDuesAssessment[]
+  workOpportunities ChefWorkOpportunity[]
+  contributions    ChefContribution[]
+  capitalCloses    ChefCapitalClose[]
+  engagements      ChefEngagement[]
+}
+
+model ChefMembership {
+  id                         String   @id @default(uuid())
+  applicationId              String
+  policyId                   String
+  status                     String   @default("offered")
+  version                    Int      @default(1)
+  offeredByUid               String
+  offeredAt                  DateTime @default(now())
+  acceptedName               String?
+  acceptedAt                 DateTime?
+  orientationVerifiedAt      DateTime?
+  orientationVerifiedByUid   String?
+  onboardingVerifiedAt       DateTime?
+  onboardingVerifiedByUid    String?
+  admittedAt                 DateTime?
+  admittedByUid              String?
+  endedAt                    DateTime?
+  memberReason               String   @default("")
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  application                ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  policy                     ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  events                     ChefMembershipEvent[]
+  publicProfiles             ChefPublicProfile[]
+  duesAssessments   ChefDuesAssessment[]
+  workOffers        ChefWorkOffer[]
+  workAssignments   ChefWorkOpportunity[] @relation("ChefWorkAssignee")
+  workEvents        ChefWorkEvent[]
+  contributions     ChefContribution[]
+  capitalAllocations ChefCapitalAllocation[]
+  engagements       ChefEngagement[]
+
+  @@index([status, updatedAt])
+  @@index([applicationId, offeredAt])
+}
+
+model ChefMembershipEvent {
+  id             String   @id @default(uuid())
+  membershipId   String
+  version        Int
+  action         String
+  fromStatus     String?
+  toStatus       String
+  memberReason   String   @default("")
+  privateNote    String   @default("")
+  actorUid       String
+  createdAt      DateTime @default(now())
+  membership     ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+
+  @@unique([membershipId, version])
+}
+
+// Public content is a separate opt-in record, never an applicant projection.
+model ChefPublicProfile {
+  id                           String   @id @default(uuid())
+  applicationId                String   @unique
+  membershipId                 String
+  slug                         String   @unique
+  draft                        Json
+  draftVersion                 Int      @default(1)
+  version                      Int      @default(1)
+  consentedVersion             Int?
+  consentedApplicationVersion  Int?
+  consentedPolicyId            String?
+  consentedAt                  DateTime?
+  consentText                  String?
+  approvedVersion              Int?
+  approvedAt                   DateTime?
+  approvedByUid                String?
+  removedAt                    DateTime?
+  moderationReason             String   @default("")
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+  application                  ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  membership                   ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  events                       ChefPublicProfileEvent[]
+
+  @@index([approvedAt, id])
+}
+
+model ChefPublicProfileEvent {
+  id               String   @id @default(uuid())
+  profileId        String
+  version          Int
+  action           String
+  actorUid         String
+  privateNote      String   @default("")
+  snapshot         Json
+  createdAt        DateTime @default(now())
+  profile          ChefPublicProfile @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@unique([profileId, version])
+}
+model ChefDuesAssessment {
+  id               String   @id @default(uuid())
+  membershipId     String
+  policyId         String
+  policySnapshot   Json
+  period           String
+  serviceStartAt   DateTime
+  serviceEndAt     DateTime
+  dueAt            DateTime
+  assessedCents    Int
+  payableCents     Int
+  adjustmentReason String   @default("")
+  reason           String
+  assessedByUid    String
+  invoiceId        String   @unique
+  version          Int      @default(1)
+  frozenAt         DateTime?
+  confirmationFacts Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  membership       ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  policy           ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  invoice          CommercialInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  events           ChefDuesEvent[]
+
+  @@unique([membershipId, period])
+  @@index([dueAt])
+}
+
+model ChefDuesEvent {
+  id             String   @id @default(uuid())
+  assessmentId   String
+  version        Int
+  action         String
+  reason         String
+  actorUid       String
+  outcome        String
+  createdAt      DateTime @default(now())
+  assessment     ChefDuesAssessment @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+
+  @@unique([assessmentId, version])
+}
+model ChefWorkOpportunity {
+  id                        String @id @default(uuid())
+  policyId                  String
+  policySnapshot            Json
+  kind                      String
+  title                     String
+  scope                     String
+  startsAt                  DateTime
+  endsAt                    DateTime
+  responseDeadline          DateTime
+  timeZone                  String
+  compensation              String
+  engagementReference       String
+  suitability               String
+  allocationPolicyReference String
+  status                    String @default("open")
+  version                   Int @default(1)
+  createdByUid              String
+  createdAt                 DateTime @default(now())
+  assignedMembershipId      String?
+  assignmentReason          String?
+  clientChoiceEvidence      String?
+  assignedByUid             String?
+  assignedAt                DateTime?
+  policy                    ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  assignedMembership        ChefMembership? @relation("ChefWorkAssignee", fields: [assignedMembershipId], references: [id], onDelete: Restrict)
+  offers                    ChefWorkOffer[]
+  events                    ChefWorkEvent[]
+  @@index([status, startsAt])
+}
+
+model ChefWorkOffer {
+  id                  String @id @default(uuid())
+  opportunityId       String
+  membershipId        String
+  version             Int @default(1)
+  status              String @default("offered")
+  eligibilityEvidence String
+  orderingEvidence    String
+  offeredByUid        String
+  createdAt           DateTime @default(now())
+  responseReason      String?
+  respondedAt         DateTime?
+  opportunity         ChefWorkOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  membership          ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  @@unique([opportunityId, membershipId])
+  @@index([membershipId, status])
+}
+
+model ChefWorkEvent {
+  id            String @id @default(uuid())
+  opportunityId String
+  membershipId  String?
+  actorUid      String
+  action        String
+  reason        String
+  clientChoiceEvidence String?
+  createdAt     DateTime @default(now())
+  opportunity   ChefWorkOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  membership    ChefMembership? @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  @@index([opportunityId, createdAt])
+}
+
+model ChefContribution {
+  id               String @id @default(uuid())
+  applicationId    String
+  membershipId     String
+  policyId         String
+  policySnapshot   Json
+  status           String @default("submitted")
+  version          Int @default(1)
+  currentRevision  Int @default(1)
+  submittedByUid   String
+  createdAt        DateTime @default(now())
+  correctsId       String? @unique
+  approvedReviewId String? @unique
+  application      ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  membership       ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  policy           ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  corrects         ChefContribution? @relation("ChefContributionCorrection", fields: [correctsId], references: [id], onDelete: Restrict)
+  correction       ChefContribution? @relation("ChefContributionCorrection")
+  approvedReview   ChefContributionReview? @relation("ChefContributionApprovedReview", fields: [approvedReviewId], references: [id], onDelete: Restrict)
+  revisions        ChefContributionRevision[]
+  reviews          ChefContributionReview[] @relation("ChefContributionReviews")
+  allocation       ChefCapitalSelection?
+  @@index([applicationId, createdAt])
+  @@index([status, policyId])
+}
+
+model ChefContributionRevision {
+  id                    String @id @default(uuid())
+  contributionId        String
+  revision              Int
+  minutes               Int
+  category              String
+  workDate              String
+  engagementId          String
+  compensationReference String
+  evidenceReference     String
+  policyReference       String
+  reason                String
+  submittedByUid        String
+  createdAt             DateTime @default(now())
+  contribution          ChefContribution @relation(fields: [contributionId], references: [id], onDelete: Restrict)
+  engagement            ChefEngagement @relation(fields: [engagementId], references: [id], onDelete: Restrict)
+  @@unique([contributionId, revision])
+}
+
+model ChefContributionReview {
+  id                String @id @default(uuid())
+  contributionId    String
+  revision          Int
+  decision          String
+  verifiedMinutes   Int
+  policyReference   String
+  evidenceReference String
+  reason            String
+  actorUid          String
+  createdAt         DateTime @default(now())
+  contribution      ChefContribution @relation("ChefContributionReviews", fields: [contributionId], references: [id], onDelete: Restrict)
+  approvedFor       ChefContribution? @relation("ChefContributionApprovedReview")
+  selections        ChefCapitalSelection[]
+  @@index([contributionId, revision])
+}
+
+model ChefCapitalClose {
+  id                      String @id @default(uuid())
+  policyId                String
+  policySnapshot          Json
+  classReference          String
+  periodStart             String
+  periodEnd               String
+  timeZone                String
+  poolCents               BigInt
+  retentionBps            Int
+  accountantEvidence      String
+  authorityEvidence       String
+  selectedContributionIds Json
+  status                  String @default("prepared")
+  version                 Int @default(1)
+  reason                  String
+  preparedByUid           String
+  createdAt               DateTime @default(now())
+  approvedByUid           String?
+  approvedAt              DateTime?
+  approvalReason          String?
+  cancelledAt             DateTime?
+  cancelledByUid          String?
+  cancellationReason      String?
+  policy                  ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  allocations             ChefCapitalAllocation[]
+  @@index([policyId, status])
+}
+
+model ChefCapitalAllocation {
+  id               String @id @default(uuid())
+  closeId          String
+  membershipId     String
+  verifiedMinutes  Int
+  totalCents       BigInt
+  retainedCents    BigInt
+  cashPayableCents  BigInt
+  close            ChefCapitalClose @relation(fields: [closeId], references: [id], onDelete: Restrict)
+  membership       ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  contributions    ChefCapitalSelection[]
+  @@unique([closeId, membershipId])
+  @@index([membershipId])
+}
+
+model ChefCapitalSelection {
+  id               String @id @default(uuid())
+  contributionId   String @unique
+  allocationId     String
+  reviewId         String
+  revision         Int
+  verifiedMinutes  Int
+  contribution     ChefContribution @relation(fields: [contributionId], references: [id], onDelete: Restrict)
+  allocation       ChefCapitalAllocation @relation(fields: [allocationId], references: [id], onDelete: Restrict)
+  review           ChefContributionReview @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+}
+
+model ChefEngagement {
+  id                String @id @default(uuid())
+  applicationId     String
+  membershipId      String
+  policyId          String
+  policySnapshot    Json
+  templateSnapshot  Json
+  kind              String
+  startsAt          DateTime
+  endsAt            DateTime
+  timeZone          String
+  scope             String
+  compensation      String
+  facility          String
+  schedule          String
+  safetyInsurance   String
+  cancellationTerms String
+  authorityReference String
+  status            String @default("offered")
+  version           Int @default(1)
+  ownerUid          String
+  ownerConfirmedAt  DateTime
+  ownerReason       String
+  signedName        String?
+  signedByUid       String?
+  signedAt          DateTime?
+  cancelledByUid    String?
+  cancelledAt       DateTime?
+  cancellationReason String?
+  application       ChefApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  membership        ChefMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  policy            ChefMembershipPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  events            ChefEngagementEvent[]
+  contributionRevisions ChefContributionRevision[]
+  @@index([applicationId, status])
+}
+
+model ChefEngagementEvent {
+  id           String @id @default(uuid())
+  engagementId String
+  version      Int
+  action       String
+  reason       String
+  actorUid     String
+  createdAt    DateTime @default(now())
+  engagement   ChefEngagement @relation(fields: [engagementId], references: [id], onDelete: Restrict)
+  @@unique([engagementId, version])
 }

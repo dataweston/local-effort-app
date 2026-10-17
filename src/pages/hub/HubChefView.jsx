@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api, Field, Panel } from '../../components/hub/hubShared';
+import { ChefMembershipPanel, ChefMembershipAdministration } from './ChefMembershipPanels';
+import { ChefDuesPanel } from './ChefDuesPanel';
+import { ChefWorkPanel } from './ChefWorkPanel';
+import { ChefPublicationPanel } from './ChefPublicationPanel';
 
 const empty = () => ({
   name: '', serviceArea: '', experience: '', interests: '', availability: '', phone: '', contactPreference: 'email',
@@ -123,11 +127,15 @@ function ReviewPanel({ token }) {
         </form> : <p>{detail.status === 'withdrawn' ? 'The applicant must reapply before review can resume.' : 'Read-only review access.'}</p>}
         <History history={detail.history} privateReview />
       </section>}
+      <ChefMembershipAdministration token={token} application={detail} />
+      <ChefDuesPanel token={token} owner />
+      <ChefWorkPanel token={token} owner />
+      <ChefPublicationPanel token={token} owner />
     </div>
   </Panel>;
 }
 
-function ApplicationPanel({ token, email }) {
+function ApplicationPanel({ token, email, onChange }) {
   const [application, setApplication] = useState(null);
   const [form, setForm] = useState(empty);
   const [loaded, setLoaded] = useState(false);
@@ -139,10 +147,10 @@ function ApplicationPanel({ token, email }) {
     setBusy(true); setError(''); setMessage(''); setWithdrawing(false);
     try {
       const result = await api('/api/hub/chef-application', token);
-      setApplication(result.application); setForm(result.application ? toForm(result.application) : empty()); setLoaded(true);
+      setApplication(result.application); onChange(result.application); setForm(result.application ? toForm(result.application) : empty()); setLoaded(true);
     } catch (err) { setError(err.message); }
     finally { setBusy(false); }
-  }, [token]);
+  }, [token, onChange]);
   useEffect(() => { load(); }, [load]);
   const change = (key, value) => setForm((previous) => ({ ...previous, [key]: value }));
   const nestedChange = (key, field, value) => setForm((previous) => ({ ...previous, [key]: { ...previous[key], [field]: value } }));
@@ -155,7 +163,7 @@ function ApplicationPanel({ token, email }) {
     setError(''); setMessage(''); setBusy(true);
     try {
       const result = await api('/api/hub/chef-application', token, { method, body: JSON.stringify(body) });
-      setApplication(result.application); setForm(toForm(result.application)); setWithdrawing(false);
+      setApplication(result.application); onChange(result.application); setForm(toForm(result.application)); setWithdrawing(false);
       setMessage(result.application.status === 'withdrawn' ? 'Application withdrawn. Publication consent removed. Your private record is retained for review history; you can reapply here.' : 'Saved to your private application. No payment, membership admission, public publication, or message was triggered.');
     } catch (err) { setError(err.message); }
     finally { setBusy(false); }
@@ -163,7 +171,7 @@ function ApplicationPanel({ token, email }) {
   return <Panel title="Your application and work profile">
     <div className="hub-form">
       <p>Signed in as {email}. Application records are available only to this sign-in identity and authorized reviewers.</p>
-      <p>No fees due at signup. Dues and membership terms are not adopted. Application review is not a membership, employment, equity, or guaranteed-work decision.</p>
+      <p>No fees are due to apply. Membership offers, signed terms, admission and any dues assessment are separate steps. Application review is not employment, equity, or guaranteed work.</p>
       <button type="button" className="hub-text-button" disabled={busy} onClick={load}>Reload saved application (discards unsaved changes)</button>
       {application && <div className="hub-notice"><strong>{statusLabel(application.status)}</strong><div>Revision {application.version} · saved {date(application.updatedAt)}</div>{application.applicantReason && <p>{application.applicantReason}</p>}</div>}
       {error && <p className="hub-error" role="alert">{error}</p>}
@@ -186,14 +194,14 @@ function ApplicationPanel({ token, email }) {
           <p className="hub-help">Optional details for work discussions. Do not enter SSNs, EINs, banking information, W-9 details, medical records, or identity documents here or in public drafts.</p>
           {[['services', 'Services you can offer', 2000], ['cuisines', 'Cuisines and specialties', 1000], ['training', 'Relevant training / food-safety experience (no document uploads)', 1500], ['equipment', 'Equipment and kitchen preferences', 1500], ['travel', 'Travel range and logistics', 1000]].map(([key, label, max]) => <Field key={key} label={label}><textarea maxLength={max} rows={3} value={form.workProfile[key]} onChange={(e) => nestedChange('workProfile', key, e.target.value)} /></Field>)}
           <h3>Optional public-profile draft — still private</h3>
-          <p>No directory publication is enabled here. Separate consent below only permits consideration for a future moderated listing; it does not publish anything.</p>
+          <p>This private draft does not publish anything. The consent below permits consideration only. After admission, the separate public-listing panel requires consent to an exact saved revision and owner moderation.</p>
           <Field label="Public biography draft"><textarea maxLength={2000} rows={4} value={form.publicDraft.bio} onChange={(e) => nestedChange('publicDraft', 'bio', e.target.value)} /></Field>
           <Field label="Public services draft"><textarea maxLength={1500} rows={3} value={form.publicDraft.services} onChange={(e) => nestedChange('publicDraft', 'services', e.target.value)} /></Field>
           <Field label="Photo URL draft (optional public HTTPS link; not uploaded or previewed)"><input type="url" maxLength={2048} value={form.publicDraft.photoUrl} onChange={(e) => nestedChange('publicDraft', 'photoUrl', e.target.value)} /></Field>
           <label className="hub-chef-check"><input type="checkbox" checked={form.publicationConsent} onChange={(e) => change('publicationConsent', e.target.checked)} /><span>I separately consent to consideration of my biography, services, and photo draft for future public publication, only after owner moderation. I can remove this consent here.</span></label>
-          <h3>Tax onboarding is not open</h3><p>Do not send or upload a W-9 here. Any future tax onboarding must use a separate owner-approved secure Square workflow, after classification and provider review. No payroll invitation is sent.</p>
+          <h3>Keep tax records out of this application</h3><p>Do not send or upload a W-9 here. Follow only the secure provider instructions in your membership offer after owner classification and provider review. This workspace does not send payroll invitations or collect tax or bank records.</p>
         </>}
-        {(!application || application.status === 'withdrawn') && <label className="hub-chef-check"><input type="checkbox" required checked={form.acknowledgment} onChange={(e) => change('acknowledgment', e.target.checked)} /><span>I understand this is a no-fee application to a proposed program, not membership admission, employment, an equity grant, or guaranteed work. I consent to private review by authorized Local Effort reviewers. Final membership and retention policies remain to be adopted; withdrawing retains the private application and review history.</span></label>}
+        {(!application || application.status === 'withdrawn') && <label className="hub-chef-check"><input type="checkbox" required checked={form.acknowledgment} onChange={(e) => change('acknowledgment', e.target.checked)} /><span>I understand this is a no-fee application, not membership admission, employment, an equity grant, or guaranteed work. I consent to private review by authorized Local Effort reviewers. Membership requires a separate offer and accepted terms; withdrawing retains the private application and review history.</span></label>}
         <button type="submit" className="hub-primary-button" disabled={busy}>{busy ? 'Saving…' : !application ? 'Submit no-fee application' : application.status === 'withdrawn' ? 'Reapply with these details' : application.status === 'needs-information' ? 'Save and resubmit for review' : 'Save private profile'}</button>
       </fieldset>
     </form>}
@@ -206,12 +214,15 @@ function ApplicationPanel({ token, email }) {
 
 export default function HubChefView({ auth }) {
   const [signOutError, setSignOutError] = useState('');
+  const [application, setApplication] = useState(null);
   if (auth.loading) return <main className="hub-auth-screen"><p>Loading chef workspace…</p></main>;
   if (!auth.user) return <ChefSignIn auth={auth} />;
   if (!auth.accessToken) return <main className="hub-auth-screen"><p>Waiting for your authenticated session…</p></main>;
   return <div className="hub-app hub-chef-workspace"><main className="hub-main">
     <header className="hub-topbar"><div><h1>Chef workspace</h1><p>Private application, work profile, and review</p></div><button type="button" className="hub-signout" onClick={async () => { try { await auth.signOut(); } catch (err) { setSignOutError(err.message); } }}>Sign out</button></header>
     {signOutError && <p className="hub-error" role="alert">{signOutError}</p>}
-    <div className="hub-chef-layout"><ReviewPanel key={`review-${auth.user.id}`} token={auth.accessToken} /><ApplicationPanel key={auth.user.id} token={auth.accessToken} email={auth.user.email} /></div>
+    <ChefMembershipPanel key={`member-${auth.user.id}`} token={auth.accessToken} />
+    <div className="hub-chef-layout"><ReviewPanel key={`review-${auth.user.id}`} token={auth.accessToken} /><ApplicationPanel key={auth.user.id} token={auth.accessToken} email={auth.user.email} onChange={setApplication} /></div>
+    {application && <><ChefDuesPanel key={`dues-${auth.user.id}`} token={auth.accessToken} /><ChefWorkPanel key={`work-${auth.user.id}`} token={auth.accessToken} /><ChefPublicationPanel key={`publication-${auth.user.id}`} token={auth.accessToken} /></>}
   </main></div>;
 }

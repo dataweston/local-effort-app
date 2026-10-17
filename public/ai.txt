@@ -29,6 +29,7 @@ support:
 - API: GET /api/public/pricing-faq             Pricing FAQ JSON
 - API: GET /api/public/estimator-help          Estimator guidance JSON
 - API: GET /api/public/partners                Founder-reviewed vendors, producers, stockists, venues, and collaborators
+- API: GET /api/chef-profiles                  Live consent-checked, moderated chef listings only when the CMS directory is enabled; excludes private applicant/contact data. Do not retain snapshots; consent can be withdrawn.
 - API: GET /api/search-images?query=TAG        Public image search results
 - Email: POST /api/messages/submit             General contact endpoint (JSON: name, email, phone, subject, message; leave "website" empty)
 

@@ -38,6 +38,15 @@ export default {
     section('privacy', 'Private application and optional public draft', [text('heading'), rich('body', 'Privacy, moderation and secure tax-onboarding boundary')]),
     section('contact', 'Questions and reply contact', [text('heading'), rich('body'), {name: 'email', title: 'Reply email', type: 'string', validation: (Rule) => Rule.required().email()}, text('label', 'Email link label')]),
     {
+      name: 'directory', title: 'Live moderated chef directory', type: 'object',
+      description: 'Disabled until publication terms and owner moderation are ready. Profiles are read live; private applications are never exported.',
+      fields: [
+        {name: 'enabled', title: 'Enable the moderated directory', type: 'boolean', initialValue: false},
+        {name: 'heading', title: 'Directory heading', type: 'string', validation: Rule => Rule.custom((value, context) => context.parent?.enabled && !value?.trim() ? 'Required when enabled' : true)},
+        {name: 'body', title: 'Directory introduction', type: 'text', validation: Rule => Rule.custom((value, context) => context.parent?.enabled && !value?.trim() ? 'Required when enabled' : true)},
+      ],
+    },
+    {
       name: 'heroImage', title: 'Optional real photograph', type: 'image', options: {hotspot: true},
       description: 'Use an existing authorized photograph, not stock or an implied kitchen-access guarantee.',
       fields: [{name: 'alt', title: 'Alternative text', type: 'string', validation: (Rule) => Rule.custom((value, context) => context.parent?.asset && !value?.trim() ? 'Describe the photograph for screen readers.' : true)}, {name: 'caption', title: 'Caption', type: 'string'}],

@@ -18,7 +18,7 @@ const GROUPED_TYPES = [
   // Sales
   'sale', 'salePage', 'happyMondayPage', 'happyMondaySalePage', 'tinyDinerSalePage', 'pizzaOnSmithPage',
   // Content
-  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner', 'chefCooperativePage',
+  'page', 'blogPost', 'release', 'publicEvent', 'testimonial', 'partner', 'chefCooperativePage', 'chefMembershipTerms',
   'menu', 'menuSection', 'menuItems', 'mealPrepMenu',
   'hubLocalistContent', 'hubLocalistItem',
   // People & Community
@@ -40,7 +40,7 @@ export default defineConfig({
 
   document: {
     actions: (prev, context) => {
-      if (context.schemaType === 'chefCooperativePage') {
+      if (['chefCooperativePage', 'chefMembershipTerms'].includes(context.schemaType)) {
         return prev.filter((action) => action.action !== 'duplicate')
       }
       if (context.schemaType === 'release') {
@@ -106,6 +106,10 @@ export default defineConfig({
                     .id('chef-cooperative-page')
                     .title('Chef Cooperative Page')
                     .child(S.document().schemaType('chefCooperativePage').documentId('chef-cooperative-page').title('Chef Cooperative Page')),
+                  S.listItem()
+                    .id('chef-membership-terms')
+                    .title('Chef Membership Terms')
+                    .child(S.document().schemaType('chefMembershipTerms').documentId('chef-membership-terms').title('Chef Membership Terms')),
                   S.documentTypeListItem('blogPost').title('Blog Posts'),
                   S.documentTypeListItem('release').title('Press Releases'),
                   S.documentTypeListItem('publicEvent').title('Events'),
@@ -177,7 +181,7 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
-    templates: (prev: Template[]) => prev.filter((template) => template.schemaType !== 'chefCooperativePage'),
+    templates: (prev: Template[]) => prev.filter((template) => !['chefCooperativePage', 'chefMembershipTerms'].includes(template.schemaType)),
   },
   templates: (prev: Template[]) => [
     ...prev,

@@ -1549,6 +1549,33 @@ app.all('/api/hub/chef-applications', async (req, res, next) => {
   }
 });
 
+app.all('/api/hub/chef-membership', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/chef-membership')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub chef membership handler failed');
+    next(err);
+  }
+});
+
+app.all('/api/hub/chef-memberships', async (req, res, next) => {
+  try {
+    await require('../../api-handlers/hub/chef-memberships')(req, res);
+  } catch (err) {
+    logger.error({ err, method: req.method }, 'hub chef membership administration failed');
+    next(err);
+  }
+});
+
+const chefDuesHandlers = require('../../api-handlers/hub/_chefDues').createChefDuesHandlers({ emailOutboxService, getSanityReadClient });
+app.all('/api/hub/chef-dues', chefDuesHandlers.self);
+app.all('/api/hub/chef-dues-admin', chefDuesHandlers.admin);
+app.all('/api/hub/chef-work', require('../../api-handlers/hub/chef-work'));
+app.all('/api/hub/chef-work-admin', require('../../api-handlers/hub/chef-work-admin'));
+app.all('/api/hub/chef-publication', require('../../api-handlers/hub/chef-publication'));
+app.all('/api/hub/chef-publication-admin', require('../../api-handlers/hub/chef-publication-admin'));
+app.all('/api/chef-profiles', require('../../api-handlers/chef-profiles'));
+
 app.all('/api/hub/people', async (req, res, next) => {
   try {
     await require('../../api-handlers/hub/people')(req, res);

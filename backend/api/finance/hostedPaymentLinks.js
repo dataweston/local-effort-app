@@ -3,18 +3,26 @@ const { startCommercialCheckout } = require('./commercialOrders');
 
 const digest = (value) => crypto.createHash('sha256').update(value).digest('hex').slice(0, 36);
 
-async function createHostedPaymentLink({ prisma, squareClient, locationId, flow, checkoutAttemptId, customer = {}, totalCents, lines, facts, basket, note, checkoutOptions }) {
+function hostedPaymentIdempotencyKey(flow, checkoutAttemptId, basket) {
   const identity = typeof checkoutAttemptId === 'string' && checkoutAttemptId.trim()
     ? checkoutAttemptId.trim()
     : JSON.stringify(basket);
-  const idempotencyKey = `hl-${digest(`${flow}:${identity}`)}`;
+  return `hl-${digest(`${flow}:${identity}`)}`;
+}
+
+async function createHostedPaymentLink({ prisma, squareClient, locationId, flow, checkoutAttemptId, customer = {}, totalCents, lines, facts, basket, note, checkoutOptions, channel, businessLineKey, invoiceId, agreementId, serviceStartAt, serviceEndAt }) {
+  const idempotencyKey = hostedPaymentIdempotencyKey(flow, checkoutAttemptId, basket);
   const checkout = await startCommercialCheckout({
     prisma,
     idempotencyKey,
     sourceSystem: flow,
     sourceId: `${flow}:hosted:${idempotencyKey}`,
-    channel: flow === 'crowdfunding' ? 'store' : 'small_events',
-    businessLineKey: flow === 'crowdfunding' ? 'pizza' : 'events',
+    channel: channel ?? (flow === 'crowdfunding' ? 'store' : 'small_events'),
+    businessLineKey: businessLineKey ?? (flow === 'crowdfunding' ? 'pizza' : 'events'),
+    invoiceId,
+    agreementId,
+    serviceStartAt,
+    serviceEndAt,
     customerName: customer.name,
     customerEmail: customer.email,
     totalCents,
@@ -52,4 +60,4 @@ async function createHostedPaymentLink({ prisma, squareClient, locationId, flow,
   return url;
 }
 
-module.exports = { createHostedPaymentLink };
+module.exports = { createHostedPaymentLink, hostedPaymentIdempotencyKey };

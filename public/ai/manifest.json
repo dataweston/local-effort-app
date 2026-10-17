@@ -81,6 +81,13 @@
   "apis": [
     {
       "method": "GET",
+      "path": "/api/chef-profiles",
+      "description": "Live consent-checked, owner-moderated chef listings when the CMS directory is enabled. Private applications, contact data and review evidence are excluded. Do not retain a directory snapshot; consent can be withdrawn.",
+      "query": { "cursor": "optional pagination cursor", "slug": "optional exact public listing identifier" },
+      "response": "application/json"
+    },
+    {
+      "method": "GET",
       "path": "/api/support/search",
       "description": "Semantic search API across public content chunks.",
       "query": { "q": "search query string" },

@@ -39,8 +39,12 @@ import hubLocalistContent from './hubLocalistContent'
 import hubLocalistItem from './hubLocalistItem'
 import dinnerEvent from './dinnerEvent'
 import chefCooperativePage from './chefCooperativePage'
+import chefMembershipTerms from './chefMembershipTerms'
+import chefEngagementTerms from './chefEngagementTerms'
 
 export const schemaTypes = [
+  chefMembershipTerms,
+  chefEngagementTerms,
   page,
   siteSettings,
   person,

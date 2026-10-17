@@ -1,6 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
+const { getSanityClient, getSanityReadClient } = require('../backend/api/sanityClient');
+const { logger } = require('../backend/api/logger');
+const { createBrevoService } = require('../backend/api/services/brevo');
+const { createEmailOutboxService } = require('../backend/api/services/emailOutbox');
+const brevoService = createBrevoService({ getSanityClient, logger });
+const emailOutboxService = createEmailOutboxService({ getSanityClient, getSanityReadClient, brevoService, logger });
 
 const app = express();
 const port = Number(process.env.HUB_DEV_API_PORT || process.env.PORT || 3001);
@@ -27,6 +33,16 @@ function mount(path, handlerPath) {
 mount('/api/hub/profile', '../api-handlers/hub/profile');
 mount('/api/hub/chef-application', '../api-handlers/hub/chef-application');
 mount('/api/hub/chef-applications', '../api-handlers/hub/chef-applications');
+mount('/api/hub/chef-membership', '../api-handlers/hub/chef-membership');
+mount('/api/hub/chef-memberships', '../api-handlers/hub/chef-memberships');
+const chefDuesHandlers = require('../api-handlers/hub/_chefDues').createChefDuesHandlers({ emailOutboxService, getSanityReadClient });
+app.all('/api/hub/chef-dues', chefDuesHandlers.self);
+app.all('/api/hub/chef-dues-admin', chefDuesHandlers.admin);
+mount('/api/hub/chef-work', '../api-handlers/hub/chef-work');
+mount('/api/hub/chef-work-admin', '../api-handlers/hub/chef-work-admin');
+mount('/api/hub/chef-publication', '../api-handlers/hub/chef-publication');
+mount('/api/hub/chef-publication-admin', '../api-handlers/hub/chef-publication-admin');
+mount('/api/chef-profiles', '../api-handlers/chef-profiles');
 mount('/api/hub/people', '../api-handlers/hub/people');
 mount('/api/hub/docs', '../api-handlers/hub/docs');
 mount('/api/hub/conversations', '../api-handlers/hub/conversations');

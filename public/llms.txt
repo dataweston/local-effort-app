@@ -31,6 +31,7 @@ How to engage:
 - [Support search](https://www.localeffortfood.com/api/support/search?q=pricing): semantic FAQ/support search
 - [Pricing FAQ](https://www.localeffortfood.com/api/public/pricing-faq): pricing questions and answers as JSON
 - [Vendor and partner graph](https://www.localeffortfood.com/api/public/partners): founder-reviewed sourcing and business relationships; private invoices and payments are never exposed
+- [Live chef listings](https://www.localeffortfood.com/api/chef-profiles): only explicitly consented, owner-moderated public fields when the CMS directory is enabled; never private applications or contact data. Read live rather than retaining snapshots because consent can be withdrawn.
 - [Sitemap](https://www.localeffortfood.com/sitemap.xml)
 
 ## Agent commerce
