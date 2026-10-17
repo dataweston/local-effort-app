@@ -22,8 +22,7 @@
   text-underline-offset: 0.18em;
 }
 
-.chef-coop__hero-copy .chef-coop__links a,
-.chef-coop__join-copy a {
+.chef-coop__hero-copy .chef-coop__links a {
   text-decoration: underline;
   text-decoration-thickness: 1px;
 }
@@ -51,7 +50,7 @@
 }
 
 .chef-coop__hero h1 {
-  font-size: clamp(2.9rem, 7.4vw, 7rem);
+  font-size: clamp(2.2rem, 5vw, 4.6rem);
   text-wrap: balance;
 }
 
@@ -73,132 +72,46 @@
 /* ── Bulletin ─────────────────────────────────────────────────────────── */
 
 .chef-coop__bulletin {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  align-items: start;
-  gap: clamp(2rem, 6vw, 6rem);
-  padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 6vw, 6rem);
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem);
 }
 
-/* home-hero.css sizes the note for a hero; on this page it sits beside a plate. */
+/* home-hero.css sizes the note for a hero; here it is a column of its own. */
 .chef-coop__bulletin .home-hero__bulletin {
+  max-width: 44rem;
   font-size: clamp(1rem, 1.35vw, 1.2rem);
   background: color-mix(in srgb, var(--brand-linen) 70%, transparent);
 }
 
-/* ── Join (the page's one void field) ─────────────────────────────────── */
+/* ── Benefits ─────────────────────────────────────────────────────────── */
 
-.chef-coop__join {
+.chef-coop__benefits {
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 6vw, 6rem);
+}
+
+.chef-coop__benefits h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.chef-coop__benefit-list {
+  max-width: 44rem;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--specimen-rule);
+}
+
+.chef-coop__benefit-list li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 28rem);
-  align-items: start;
-  gap: clamp(2rem, 6vw, 6rem);
-  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 6vw, 6rem);
-  overflow: clip;
-  color: var(--brand-linen);
-}
-
-.chef-coop__join h2 {
-  color: var(--brand-linen);
-  font-size: clamp(2.2rem, 4.6vw, 4rem);
-}
-
-.chef-coop__join-copy p {
-  max-width: 30rem;
-  margin: 1.2rem 0 0;
-  line-height: 1.6;
-}
-
-.chef-coop__join a {
-  text-decoration-color: var(--brand-oxide);
-}
-
-.chef-coop__form {
-  position: relative;
-  display: grid;
-  gap: 0.35rem;
-}
-
-.chef-coop__form label {
-  margin-top: 0.9rem;
-  font-family: var(--font-office-code, monospace);
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--brand-linen) 70%, transparent);
-}
-
-.chef-coop__form input {
-  width: 100%;
-  padding: 0.7rem 0;
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--brand-linen) 55%, transparent);
-  border-radius: 0;
-  background: transparent;
-  color: var(--brand-linen);
-  font: inherit;
-  font-size: 1.1rem;
-}
-
-.chef-coop__form input:focus {
-  outline: none;
-  border-bottom-color: var(--brand-linen);
-}
-
-.chef-coop__form input:focus-visible {
-  outline: 2px dashed var(--brand-oxide);
-  outline-offset: 4px;
-}
-
-.chef-coop__form button {
-  justify-self: start;
-  margin-top: 1.6rem;
-  padding: 0.8rem 1.4rem;
-  border: 1px solid var(--brand-linen);
-  border-radius: 0;
-  background: transparent;
-  color: var(--brand-linen);
-  font: inherit;
-  font-family: var(--font-yomogi);
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: background-color var(--le-dur-1) var(--le-ease), color var(--le-dur-1) var(--le-ease);
-}
-
-.chef-coop__form button:hover:not(:disabled) {
-  background: var(--brand-linen);
-  color: var(--brand-void);
-}
-
-.chef-coop__form button:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.chef-coop__error {
-  margin: 0.8rem 0 0;
-  padding-left: 0.7rem;
-  border-left: 2px solid var(--accent-apple);
-}
-
-.chef-coop__thanks {
-  margin: 0;
-  max-width: 26rem;
-  font-family: var(--font-yomogi);
-  font-size: 1.35rem;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  padding: 1.05rem 0;
+  border-bottom: 1px solid var(--specimen-rule-hair);
+  font-size: clamp(1.05rem, 1.4vw, 1.25rem);
   line-height: 1.5;
 }
 
-/* Visually removed, kept in the DOM for bots. Stays inside the form: an off-screen offset let focus scroll the clipped void sideways. */
-.chef-coop__hp {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  opacity: 0;
-  pointer-events: none;
+.chef-coop__benefit-list li::before {
+  content: '\2013';
+  font-family: var(--font-office-code);
 }
 
 /* ── FAQ ──────────────────────────────────────────────────────────────── */
@@ -255,9 +168,7 @@
 /* ── Narrow ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 56rem) {
-  .chef-coop__hero,
-  .chef-coop__bulletin,
-  .chef-coop__join {
+  .chef-coop__hero {
     grid-template-columns: minmax(0, 1fr);
   }
 }

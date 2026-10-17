@@ -106,15 +106,17 @@ and the closing slip is where it exits.
 The chef cooperative page (`/chef-cooperative`, `src/pages/ChefCooperativePage.jsx`,
 styles in `src/styles/chef-cooperative.css`) is a recruitment page as of
 2026-10-16 (owner: Local Effort Cooperative). A National Park headline over
-the Nieuwenhuis study sheet (RP-T-1969-185), a paragraph, the markdown bulletin
-(row `chef-cooperative` in `/api/home-bulletin?slug=chef-cooperative`, edited
-in place by an admin, same component as the home page), one dark field holding
-the join-the-list form and the direct-contact link, and an FAQ whose entries
-live in `src/pages/chefCooperativeFaq.js`. The form posts to
-`/api/messages/submit` with type `chef-cooperative-interest`.
+the Nieuwenhuis study sheet (RP-T-1969-185), a paragraph with a direct-contact
+link, the markdown bulletin (row `chef-cooperative` in
+`/api/home-bulletin?slug=chef-cooperative`, edited in place by an admin, same
+component as the home page), a ruled bulleted list of reasons to join
+(`src/pages/chefCooperativeBenefits.js`), and an FAQ whose entries live in
+`src/pages/chefCooperativeFaq.js`. There is no form and no dark field on this
+page; the only call to action is the direct-contact link.
 
-The paragraph, bulletin and FAQ are lorem ipsum until the owner supplies the
-words; terms, dues and ownership are not stated anywhere on the page. The prior
+The paragraph, bulletin, benefits and FAQ are lorem ipsum until the owner
+supplies the words; terms, dues and ownership are not stated anywhere on the
+page. The prior
 CMS-driven page is kept, unrouted, as `ChefCooperativePageRetired.jsx` with
 `chef-cooperative-retired.css`; its Sanity singleton and snapshot pipeline
 (`scripts/generate-chef-cooperative-page-data.js`, part of `build`) are
