@@ -542,10 +542,6 @@
       "src": "^/product/smith-cheese-6/+$",
       "dest": "https://www.localeffortfood.com/product/smith-cheese-6",
       "status": 308
-    {
-      "src": "^/dishes$",
-      "dest": "/prerender/dishes/index.html"
-    },
     },
     {
       "src": "^/product/smith-kids-3/+$",
@@ -560,6 +556,10 @@
     {
       "src": "^/chef-cooperative$",
       "dest": "/prerender/chef-cooperative/index.html"
+    },
+    {
+      "src": "^/dishes$",
+      "dest": "/prerender/dishes/index.html"
     },
     {
       "src": "^/pizza-on-smith$",
