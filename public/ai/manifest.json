@@ -1,7 +1,7 @@
 {
   "site": "https://www.localeffortfood.com",
   "name": "Local Effort Cooperative",
-  "updated": "2026-10-15T00:00:00Z",
+  "updated": "2026-10-16T00:00:00Z",
   "description": "Twin Cities personal chef, small-event catering, and product checkout surfaces with public machine-readable APIs, feeds, and agent commerce endpoints.",
   "mcpServers": [
     {
@@ -75,7 +75,7 @@
     { "path": "/psyche", "title": "Psyche Olive Oil", "summary": "Public product page for Psyche olive oil." },
     { "path": "/february", "title": "February Home Dinner", "summary": "Public booking page for the February dinner offering." },
     { "path": "/localist", "title": "Localist", "summary": "SMS list signup for weekly low-cost meals with North Minneapolis pickup." },
-    { "path": "/chef-cooperative", "title": "For Independent Chefs", "summary": "Proposed independent chef cooperative and no-fee application via /hub/chef. Separate from customer Localist; not employment hiring, automatic membership or an equity offer. Read the page for current proposed terms." },
+    { "path": "/chef-cooperative", "title": "Independent Chefs in St. Paul", "summary": "Local Effort is developing a cooperative for independent chefs in St. Paul: shared work opportunities, resources and a conditional ownership path. Proposed $50/month operating dues are not adopted. Apply via /hub/chef (sign-in required) for private review; free to apply, no payment details requested. No guaranteed work, kitchen time, membership or equity. Separate from customer Localist; not a job vacancy." },
     { "path": "/weekly-order", "title": "Weekly Order", "summary": "Weekly order checkout surface." }
   ],
   "apis": [

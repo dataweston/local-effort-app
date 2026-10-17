@@ -103,13 +103,16 @@ thing on the page. The script is therefore not *persuade, then ask* — it is
 Cover the CTA and the page still points at it: the slip is where the eye enters
 and the closing slip is where it exits.
 
-The chef cooperative page uses the same slip-first grammar without making an
-application look like a purchase. Proposed operating dues, their non-adopted
-status and the no-fees-at-signup notice precede the `/hub/chef` application link.
-Ruled explanations distinguish independent chef participation from employment
-and customer Localist membership; the single dark band holds the conditional
-ownership discussion. No photograph is required when there is no specifically
-approved image for this proposal.
+The chef cooperative page leads with the chef's opportunity, not the operating
+dues. A large St. Paul recruitment statement and a smaller application sheet
+introduce an independent practice, shared resources and a proposed ownership
+path. The application button precedes the longer sign-in explanation, remaining
+visible within an 844px-tall mobile viewport at both 360px and 390px widths.
+Ruled benefits lead into the single dark ownership section; proposed dues,
+the actual application sequence and native term/privacy disclosures follow.
+No photograph is invented when the CMS has no authorized image. The directory
+mounts only when the CMS explicitly enables it; it still reads live consent-
+checked profiles and never uses a generated profile snapshot.
 
 All substantive `/chef-cooperative` text belongs to the Sanity singleton
 `chefCooperativePage` / `chef-cooperative-page`, including metadata, proposal
@@ -126,6 +129,26 @@ It retains a valid previous CMS snapshot during an outage and fails when neither
 published content nor a valid prior snapshot exists. The prepared seed is never
 used as a public runtime fallback. Publishing content, deploying Studio schema
 and deploying the website are separate authorizations.
+
+Recruitment redesign — owner: Local Effort Cooperative; as of 2026-10-16
+(America/Chicago). The owner authorized publication of rewritten CMS copy
+separately from website deployment. Published `chef-cooperative-page` revision
+`PymCQT0PdUnqccVhpGDbPX` was read back and regenerated into the public snapshot;
+the proposed $50 dues, no-fee application and conditional ownership remain
+unchanged in substance. Static AI guides use the same St. Paul recruitment
+positioning. Review at deployment: the website layout and its shared public
+Sanity-query allowlist must deploy together. No deployment, membership adoption,
+applicant creation or outbound message was performed for this redesign.
+
+Verification: the actual page and production Header/Footer were bundled into a
+throwaway browser harness and inspected at 1440px and 390px, with overflow and
+CTA checks also at 360px and 768px. The harness read the published CMS using the
+exact shared query directly from Sanity; it did not pretend the unshipped proxy
+allowlist was already live. Ownership, dues and privacy disclosures opened,
+section links landed below the fixed header, and the application link reached
+the production `/hub/chef` Google sign-in gate. Authenticated application
+completion was not exercised. `pnpm check:content` passed. Review by: deployment
+of this redesign, or the next change to membership terms or application flow.
 
 ### The home page
 

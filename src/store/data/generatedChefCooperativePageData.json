@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-15T06:13:54.118Z",
+  "generatedAt": "2026-10-17T04:27:50.353Z",
   "source": {
     "projectId": "d6l9d0ea",
     "dataset": "localeffort",
@@ -7,9 +7,9 @@
   },
   "page": {
     "_id": "chef-cooperative-page",
-    "_rev": "CD00GU2VdrxzuSVo3LCu7c",
+    "_rev": "PymCQT0PdUnqccVhpGDbPX",
     "_type": "chefCooperativePage",
-    "_updatedAt": "2026-10-15T18:03:16Z",
+    "_updatedAt": "2026-10-17T04:27:48Z",
     "application": {
       "body": [
         {
@@ -20,15 +20,15 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "Use the chef workspace in the Hub to tell us about your experience, the work you want to do, your area and availability. Applying is free. It starts a private review process—not a job offer, automatic membership or a promise of work."
+              "text": "Already working independently, or ready to start? Sign in to the chef Hub to tell us about your experience, interests, area and availability. It starts a private review—not a commitment."
             }
           ],
           "markDefs": [],
           "style": "normal"
         }
       ],
-      "ctaLabel": "Start a chef application",
-      "heading": "Start with a conversation about your work.",
+      "ctaLabel": "Start your chef application",
+      "heading": "Tell us what you want to cook.",
       "nextSteps": [
         {
           "_key": "apply",
@@ -41,14 +41,14 @@
                   "_key": "s0",
                   "_type": "span",
                   "marks": [],
-                  "text": "Create or use your Hub sign-in, then share enough about your chef practice and interests for a fit conversation. Do not put Social Security numbers, bank details or tax documents in your application."
+                  "text": "Create or use your Hub sign-in, then tell us about your work and interests. Leave out tax documents, tax IDs and bank details."
                 }
               ],
               "markDefs": [],
               "style": "normal"
             }
           ],
-          "heading": "Sign in and share the essentials"
+          "heading": "Sign in and introduce yourself"
         },
         {
           "_key": "review",
@@ -61,14 +61,14 @@
                   "_key": "s0",
                   "_type": "span",
                   "marks": [],
-                  "text": "Local Effort reviews the application and may discuss experience, services and what collaboration could look like. An interest or fit decision is not legal admission, an assignment of work or an ownership grant."
+                  "text": "Local Effort privately reviews your application and may follow up about your services and possible collaboration. Review is not a job offer, work assignment, admission or ownership grant."
                 }
               ],
               "markDefs": [],
               "style": "normal"
             }
           ],
-          "heading": "Talk through fit and questions"
+          "heading": "Talk about the fit"
         },
         {
           "_key": "agree",
@@ -81,14 +81,14 @@
                   "_key": "s0",
                   "_type": "span",
                   "marks": [],
-                  "text": "Any future membership, kitchen use or paid engagement requires its own approved terms and explicit agreement. Final admission and work access are separate steps. There is no payment, automatic enrollment or external payroll invitation in this application."
+                  "text": "Membership, kitchen use and paid work each need approved terms and your agreement. Admission and work access are separate steps; applying triggers no payment, automatic enrollment or payroll invitation."
                 }
               ],
               "markDefs": [],
               "style": "normal"
             }
           ],
-          "heading": "Agree before any commitment"
+          "heading": "Decide with the terms in front of you"
         }
       ]
     },
@@ -104,14 +104,14 @@
                 "_key": "s0",
                 "_type": "span",
                 "marks": [],
-                "text": "The proposal gives eligible, available chef members preferred consideration for suitable referrals and jobs that reach Local Effort. Client choice, fit and food-safety requirements still matter. The allocation process must be agreed and transparent; this is not a guarantee of clients, jobs, hours or earnings."
+                "text": "Members would get preferred consideration for referrals and jobs reaching Local Effort. Allocation rules must be transparent, with client choice, fit and food safety respected. No clients, jobs or earnings are guaranteed."
               }
             ],
             "markDefs": [],
             "style": "normal"
           }
         ],
-        "heading": "A first look at suitable opportunities"
+        "heading": "First consideration for suitable work"
       },
       {
         "_key": "prep",
@@ -124,14 +124,14 @@
                 "_key": "s0",
                 "_type": "span",
                 "marks": [],
-                "text": "Available preparation hours would be offered to suitable members first, with scope and pay agreed for each engagement. A shared pool is a way to distribute work that exists—not a promise that any minimum number of hours will exist."
+                "text": "Suitable members would be offered available prep hours first, with scope and pay agreed for each engagement. There is no guaranteed minimum of hours."
               }
             ],
             "markDefs": [],
             "style": "normal"
           }
         ],
-        "heading": "A pool of available prep work"
+        "heading": "Share the available prep work"
       },
       {
         "_key": "kitchen",
@@ -144,14 +144,14 @@
                 "_key": "s0",
                 "_type": "span",
                 "marks": [],
-                "text": "Members could seek and negotiate kitchen hours individually around availability, facilities, needs and contributions. Joining would not automatically allot kitchen time or include free use. Any prep-for-kitchen exchange would need separate written terms, fair valuation and appropriate review."
+                "text": "Kitchen hours would be negotiated around availability, needs and contributions—not automatically allotted or free. Any prep-for-kitchen exchange needs written terms, fair valuation and appropriate review."
               }
             ],
             "markDefs": [],
             "style": "normal"
           }
         ],
-        "heading": "Kitchen time, worked out together"
+        "heading": "Negotiate the kitchen time you need"
       },
       {
         "_key": "promotion",
@@ -164,14 +164,14 @@
                 "_key": "s0",
                 "_type": "span",
                 "marks": [],
-                "text": "Optional promotion could include a chef biography, photographs and services on the website or in shared spaces. Public listings would require separate consent and moderation. An application or private work profile would never become a public listing automatically."
+                "text": "An optional public biography, photos and services could help introduce your practice on our website or in shared spaces. Listings need separate consent and review; applications never become public automatically."
               }
             ],
             "markDefs": [],
             "style": "normal"
           }
         ],
-        "heading": "A public presence, if you want one"
+        "heading": "Let people find your work"
       },
       {
         "_key": "ownership",
@@ -184,17 +184,17 @@
                 "_key": "s0",
                 "_type": "span",
                 "marks": [],
-                "text": "The proposed model makes qualifying participation a basis for ownership review, subject to adopted governance, eligibility rules and the cooperative’s actual finances. Dues or hours alone do not issue equity. The ownership approach below is a design direction, not an entitlement."
+                "text": "Qualifying contributions could open a path to ownership under approved rules and the cooperative’s finances. Hours or dues alone do not grant equity."
               }
             ],
             "markDefs": [],
             "style": "normal"
           }
         ],
-        "heading": "A possible path to ownership"
+        "heading": "Work toward a shared stake"
       }
     ],
-    "benefitsHeading": "What we are working toward",
+    "benefitsHeading": "More ways to work. People to build with.",
     "contact": {
       "body": [
         {
@@ -205,7 +205,7 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "Ask about the proposed model, accessibility, your application or how your information is used. We would rather clarify a term than have you join on an assumption. The proposal remains open for review; final rights and obligations belong in approved agreements, not in a website promise."
+              "text": "Ask about the cooperative, accessibility, your application or privacy. You do not need all the answers before saying hello. Final rights and responsibilities will be set in approved agreements."
             }
           ],
           "markDefs": [],
@@ -216,6 +216,7 @@
       "heading": "Questions before you apply?",
       "label": "Write to Local Effort"
     },
+    "directory": null,
     "dues": {
       "amountLabel": "per month · proposed operating dues",
       "collectionNotice": [
@@ -227,15 +228,15 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "There is nothing to pay to apply. No dues will be collected through this signup, while terms remain proposed, or before approved admission and your explicit acceptance of final agreements. Applying does not start billing or authorize a later automatic charge."
+              "text": "Applying costs nothing and authorizes no later charge. No dues are collected through signup, while terms are proposed, or before approved admission and your explicit agreement to final terms."
             }
           ],
           "markDefs": [],
           "style": "normal"
         }
       ],
-      "heading": "A shared operating budget, not a share purchase.",
-      "proposalLabel": "Recommendation only — not adopted",
+      "heading": "Share the running costs.",
+      "proposalLabel": "Proposed, not adopted",
       "rationale": [
         {
           "_key": "p0",
@@ -245,7 +246,7 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "We recommend modeling $50 in monthly operating dues to support coordination, shared software, education and promotion, with an operating reserve. This is a planning recommendation, not an approved budget or proof that these services are already funded."
+              "text": "The $50 monthly recommendation would support coordination, shared software, education, promotion and a reserve. The budget is not approved and these services are not yet funded by it."
             }
           ],
           "markDefs": [],
@@ -259,7 +260,7 @@
               "_key": "s1",
               "_type": "span",
               "marks": [],
-              "text": "Operating dues would support cooperative services. They would not buy a percentage of the company, become an individual savings balance, or replace payment for your work. Kitchen costs, job compensation and any exchanges would be agreed separately."
+              "text": "Dues would pay for shared operations—not buy shares, build personal savings or pay for your work. Kitchen costs, job pay and exchanges need separate agreements."
             }
           ],
           "markDefs": [],
@@ -267,11 +268,11 @@
         }
       ],
       "recommendedMonthlyAmountCents": 5000,
-      "undecidedHeading": "Before anyone pays",
+      "undecidedHeading": "Before dues can begin",
       "undecidedTerms": [
-        "Approve the dues amount, service budget, spending oversight and reserves.",
-        "Set billing timing, cancellation and refund terms, and a funded hardship-waiver policy.",
-        "Confirm admission criteria, governance rights and the agreements each member would accept."
+        "Approve the amount, budget, spending oversight and reserves.",
+        "Set billing, cancellation, refunds and a funded hardship-waiver policy.",
+        "Confirm admission rules, governance rights and member agreements."
       ]
     },
     "equity": {
@@ -284,7 +285,7 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "Our recommended direction is a contribution-based ownership path with individual capital accounts and democratic membership rights, subject to legal and accounting review and reconciliation with the cooperative’s existing ownership structure."
+              "text": "The idea is to build shared resources and give participating chefs a voice in the cooperative they help sustain. We propose a contribution-based path toward collective ownership, with individual capital accounts and democratic member rights—not ownership on application."
             }
           ],
           "markDefs": [],
@@ -298,7 +299,7 @@
               "_key": "s1",
               "_type": "span",
               "marks": [],
-              "text": "Admission, operating dues, paid work, contributed capital and any allocation of actual cooperative surplus are different things. No fixed company percentage is promised for an hour worked or a dues payment. Any future patronage allocation would depend on verified qualifying contributions, actual allocable surplus and the approvals required by adopted governing documents."
+              "text": "Eligibility, qualifying contributions and rights still need approval, legal and accounting review, and alignment with existing ownership. Dues, paid work, contributed capital and ownership are distinct. Any surplus allocation would depend on verified contributions, actual available surplus and the approvals required by governing documents."
             }
           ],
           "markDefs": [],
@@ -312,20 +313,20 @@
               "_key": "s2",
               "_type": "span",
               "marks": [],
-              "text": "This page does not offer an investment, a capital instrument, an equity grant or a guaranteed return. Applying does not change the cap table or give voting, ownership or general staff access."
+              "text": "No fixed stake or return is promised. This is not an investment offer or equity grant; applying gives no ownership, voting rights or general staff access."
             }
           ],
           "markDefs": [],
           "style": "normal"
         }
       ],
-      "heading": "Build a practice. Help shape the cooperative.",
-      "unresolvedHeading": "Still to be agreed",
+      "heading": "Your practice. A stake in what we build.",
+      "unresolvedHeading": "What members would need to agree",
       "unresolvedTerms": [
-        "Membership classes, admission authority, voting rights and appeal process.",
-        "Qualifying contributions, eligibility thresholds and treatment of paid or waived dues.",
-        "Capital-account rules, surplus allocation, vesting, losses and exit or redemption terms.",
-        "Legal, tax and worker-classification review before final agreements or paid engagements."
+        "Member classes, admission authority, voting rights and appeals.",
+        "Qualifying contributions, eligibility thresholds and paid or waived dues.",
+        "Capital accounts, surplus allocation, vesting, losses and exit or redemption.",
+        "Legal, tax and worker-classification review before agreements or paid work."
       ]
     },
     "heroImage": null,
@@ -338,7 +339,7 @@
             "_key": "s0",
             "_type": "span",
             "marks": [],
-            "text": "This is a path for independent chefs, not an employment vacancy. Each paid engagement would need its own agreed scope, compensation and responsibilities. Calling a relationship independent does not settle worker classification; legal and tax review must come before the relevant work arrangement."
+            "text": "This is an independent chef pathway, not a job vacancy. Each paid engagement needs agreed scope, pay and responsibilities. Membership does not determine worker classification; legal and tax review must precede the work arrangement."
           }
         ],
         "markDefs": [],
@@ -354,7 +355,7 @@
             "_key": "s0",
             "_type": "span",
             "marks": [],
-            "text": "For chefs building an independent practice—and working chefs thinking about taking that step. We are developing a cooperative path to share opportunities, preparation work, knowledge and the work of building something together."
+            "text": "Keep your independence. Build something together. Local Effort is developing a cooperative for St. Paul chefs to share work opportunities, resources and a path toward collective ownership—including chefs ready to start an independent practice."
           }
         ],
         "markDefs": [],
@@ -370,15 +371,15 @@
             "_key": "s0",
             "_type": "span",
             "marks": [],
-            "text": "Looking for meals rather than a place to build your chef practice? Localist is our separate customer membership. A chef application does not enroll you in Localist or purchase a customer subscription."
+            "text": "Looking for meals? Localist is our separate customer membership. Applying as a chef does not enroll you in Localist or buy a meal subscription."
           }
         ],
         "markDefs": [],
         "style": "normal"
       }
     ],
-    "metaDescription": "Explore Local Effort’s proposed chef cooperative and start a no-fee application. Independent chef collaboration, not employment hiring or consumer Localist membership.",
-    "metaTitle": "For Independent Chefs | Local Effort Cooperative",
+    "metaDescription": "Build your independent chef practice in St. Paul. Explore Local Effort’s developing cooperative, shared opportunities and proposed ownership path. Apply free.",
+    "metaTitle": "Independent Chefs in St. Paul | Local Effort Cooperative",
     "privacy": {
       "body": [
         {
@@ -389,7 +390,7 @@
               "_key": "s0",
               "_type": "span",
               "marks": [],
-              "text": "Application and work-preference information stays in the private applicant workspace for authorized review. Optional public biography, photographs and services are a separate opt-in draft and require moderation before publication. You can discuss publication or removal with us before anything goes live."
+              "text": "Application and work preferences stay in the applicant workspace for authorized review. A public biography, photos or services are a separate opt-in draft, reviewed before publication. Talk with us about publication or removal."
             }
           ],
           "markDefs": [],
@@ -403,14 +404,14 @@
               "_key": "s1",
               "_type": "span",
               "marks": [],
-              "text": "Do not submit a W-9, SSN, EIN, bank account or sensitive tax information in signup fields, a biography or ordinary email. If a later approved engagement needs tax onboarding, it must use a separately approved secure provider workflow—not this signup."
+              "text": "Keep W-9s, SSNs, EINs, bank details and sensitive tax information out of applications, biographies and ordinary email. Any later tax onboarding must use a separately approved secure provider workflow."
             }
           ],
           "markDefs": [],
           "style": "normal"
         }
       ],
-      "heading": "Your application is not your public biography."
+      "heading": "Your application stays private."
     },
     "proposalNotice": [
       {
@@ -421,14 +422,14 @@
             "_key": "s0",
             "_type": "span",
             "marks": [],
-            "text": "This is a proposal, not adopted membership terms. The benefits, dues and ownership approach below remain recommendations for owner, member and professional review. Applying does not admit you as a member or accept a final agreement."
+            "text": "This model is proposed, not adopted. Benefits, dues and ownership need owner, member and professional review. An application is not admission or acceptance of a membership agreement."
           }
         ],
         "markDefs": [],
         "style": "normal"
       }
     ],
-    "signupFeeNotice": "No fees due at signup. No card or payment details requested.",
-    "title": "Independent kitchens.\nA shared effort."
+    "signupFeeNotice": "Free to apply. No card or payment details requested.",
+    "title": "Your own chef practice.\nA shared future in St. Paul."
   }
 }
