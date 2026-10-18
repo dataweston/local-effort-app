@@ -7,7 +7,7 @@ export const PUBLIC_ROUTES = [
   {
     path: '/chef-cooperative',
     title: "Join our chef's cooperative | Local Effort Cooperative",
-    description: "Reasons to join Local Effort's chef cooperative, or talk with the team directly.",
+    description: "Join Local Effort’s chef-driven workers cooperative in St. Paul for shared work, kitchen access, promotion and a short path to equity ownership.",
     prerender: true,
   },
   {

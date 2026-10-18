@@ -20,7 +20,7 @@ primary-pages:
 - /psyche        Psyche olive oil product page
 - /february      Seasonal home-dinner booking page
 - /localist      Localist weekly meals SMS list signup (North Minneapolis pickup)
-- /chef-cooperative Invitation to join Local Effort's chef cooperative: reasons to join, or talk with the team directly. Terms are not yet published.
+- /chef-cooperative Chef-driven workers cooperative recruiting 3–4 local chefs in St. Paul: shared work, kitchen access, promotion and a short path to equity ownership. Contact the team for membership terms.
 - /dishes         Dishes Local Effort cooks, by course, with diet and protein filters. Only dishes the owner has published appear. Search them through the menu.dishes.search MCP tool.
 - /weekly-order  Weekly order checkout surface (customer-specific; not in search index)
 

@@ -114,9 +114,11 @@ component as the home page), a ruled bulleted list of reasons to join
 `src/pages/chefCooperativeFaq.js`. There is no form and no dark field on this
 page; the only call to action is the direct-contact link.
 
-The paragraph, bulletin, benefits and FAQ are lorem ipsum until the owner
-supplies the words; terms, dues and ownership are not stated anywhere on the
-page. The prior
+As of 2026-10-18, the hero, recruitment notes and benefits use owner-supplied
+copy. Shared margins and two ruled columns group the invitation and benefits,
+then the editable bulletin and FAQ; mobile stacks these in reading order.
+The FAQ still contains placeholder entries pending owner copy. The invitation
+states a short path to equity without inventing dues or membership terms. The prior
 CMS-driven page is kept, unrouted, as `ChefCooperativePageRetired.jsx` with
 `chef-cooperative-retired.css`; its Sanity singleton and snapshot pipeline
 (`scripts/generate-chef-cooperative-page-data.js`, part of `build`) are
