@@ -142,6 +142,116 @@
   font-family: var(--font-office-code);
 }
 
+/* The inquiry is a ruled continuation of the benefits sheet, not a separate card. */
+.chef-coop__interest-trigger,
+.chef-coop__interest-submit {
+  appearance: none;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--specimen-rule);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--le-dur-1) var(--le-ease);
+}
+
+.chef-coop__interest-trigger:hover,
+.chef-coop__interest-submit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-linen) 75%, transparent);
+}
+
+.chef-coop__interest-trigger:focus-visible,
+.chef-coop__interest-submit:focus-visible,
+.chef-coop__form input:focus-visible,
+.chef-coop__form textarea:focus-visible {
+  outline: 2px solid var(--brand-oxide);
+  outline-offset: 3px;
+}
+
+.chef-coop__interest-panel {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--specimen-rule-hair);
+}
+
+.chef-coop__form-intro,
+.chef-coop__form-success {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.chef-coop__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1.5rem;
+}
+
+.chef-coop__form-grid label {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.chef-coop__form-grid label span {
+  color: color-mix(in srgb, var(--brand-ink) 68%, transparent);
+  font-size: 0.9em;
+}
+
+.chef-coop__form input,
+.chef-coop__form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 1px solid var(--specimen-rule);
+  border-radius: 0;
+  padding: 0.65rem 0.2rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.chef-coop__form textarea {
+  resize: vertical;
+  border: 1px solid var(--specimen-rule-hair);
+  padding: 0.75rem;
+}
+
+.chef-coop__form input::placeholder {
+  color: color-mix(in srgb, var(--brand-ink) 55%, transparent);
+}
+
+.chef-coop__form-wide {
+  grid-column: 1 / -1;
+}
+
+.chef-coop__honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.chef-coop__form-error {
+  margin: 1rem 0 0;
+  color: #8d2424;
+}
+
+.chef-coop__form-privacy {
+  max-width: 36rem;
+  margin: 0.85rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
 /* ── FAQ ──────────────────────────────────────────────────────────────── */
 
 .chef-coop__faq {
@@ -199,5 +309,13 @@
   .chef-coop__hero,
   .chef-coop__grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chef-coop__form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chef-coop__form-wide {
+    grid-column: auto;
   }
 }

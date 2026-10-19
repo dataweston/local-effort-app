@@ -65,7 +65,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
   const { upsertContact, sendEmail, getHeaders, blacklistContact } = brevoService;
   const hasOutbox = !!(emailOutboxService && typeof emailOutboxService.enqueue === 'function');
   const submitRateBuckets = new Map();
-  const sensitiveSubmitTypes = new Set(['feedback', 'meal-prep-waitlist', 'subscribe', 'event-request', 'food-truck']);
+  const sensitiveSubmitTypes = new Set(['feedback', 'meal-prep-waitlist', 'subscribe', 'event-request', 'food-truck', 'chef-cooperative']);
   const parseListIds = (value) => {
     if (Array.isArray(value)) {
       return value
@@ -301,8 +301,11 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const name = readTrimmed(body.name, 200);
       const email = normalizeEmail(body.email);
       const phone = readTrimmed(body.phone, 80);
-      const subject = readTrimmed(body.subject, 240);
+      let subject = readTrimmed(body.subject, 240);
       let message = readTrimmed(body.message, 12000);
+      const portfolioUrl = readTrimmed(body.portfolioUrl, 300);
+      const socialMedia = readTrimmed(body.socialMedia, 300);
+      const professionalPicture = readTrimmed(body.professionalPicture, 2000);
       const sendCopy = !!body.sendCopy;
       const honeypot = readTrimmed(body.website, 255);
       const familySize = readTrimmed(body.familySize, 120);
@@ -314,7 +317,7 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
       const mealsInterested = readMealInterests(body.mealsInterested);
       // The waitlist asks for email only, so it may legitimately arrive with no
       // free-text message; one is synthesized from the answers below.
-      if (!message && type !== 'meal-prep-waitlist') {
+      if (!message && type !== 'meal-prep-waitlist' && type !== 'chef-cooperative') {
         return res.status(400).json({ error: 'Message is required' });
       }
 
@@ -357,8 +360,27 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         }
       }
 
+      if (type === 'chef-cooperative') {
+        if (!name || !phone || !email) {
+          return res.status(400).json({ error: 'Name, phone, and email are required' });
+        }
+        if (!BASIC_EMAIL_REGEX.test(email)) {
+          return res.status(400).json({ error: 'A valid email is required' });
+        }
+        subject = 'Chef Cooperative Inquiry';
+        message = [
+          'Chef cooperative information request',
+          `Name: ${name}`,
+          `Phone: ${phone}`,
+          `Email: ${email}`,
+          portfolioUrl ? `Website: ${portfolioUrl}` : null,
+          socialMedia ? `Social media: ${socialMedia}` : null,
+          professionalPicture ? `Interest and current professional picture:\n${professionalPicture}` : null,
+        ].filter(Boolean).join('\n');
+      }
+
       // Only upsert contact if email is provided
-      if (email) {
+      if (email && type !== 'chef-cooperative') {
         const [firstName, ...rest] = name.split(' ');
         await upsertContact({ email, firstName, lastName: rest.join(' '), phone });
       }
@@ -426,7 +448,9 @@ function createMessagesRouter({ logger, brevoService, getSanityClient, db, getSu
         }
       }
 
-      const teamEmail = process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL;
+      const teamEmail = type === 'chef-cooperative'
+        ? (process.env.CHEF_COOPERATIVE_INBOX_EMAIL || 'yum@localeffortfood.com')
+        : (process.env.SUPPORT_INBOX_EMAIL || process.env.TEAM_INBOX_EMAIL || process.env.SENDER_EMAIL);
       const senderEmail = process.env.SENDER_EMAIL || teamEmail;
       if (!teamEmail) return res.status(500).json({ error: 'No TEAM/SUPPORT inbox configured on server' });
 

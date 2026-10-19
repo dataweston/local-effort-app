@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Bulletin from '../components/Bulletin';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
@@ -70,6 +70,43 @@ function Sheet({ className = '', children, ...props }) {
 
 export default function ChefCooperativePage() {
   const { isAdmin, accessToken } = useSupabaseAuth();
+  const [formOpen, setFormOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const submitInterest = async (event) => {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError('');
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    try {
+      const response = await fetch('/api/messages/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'chef-cooperative',
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          portfolioUrl: formData.get('portfolioUrl'),
+          socialMedia: formData.get('socialMedia'),
+          professionalPicture: formData.get('professionalPicture'),
+          website: formData.get('website'),
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw new Error(result.error || 'We could not send your request. Please try again.');
+      setSubmitted(true);
+      form.reset();
+    } catch (error) {
+      setSubmitError(error.message || 'We could not send your request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="fullpage-demo-scope specimen chef-coop">
@@ -104,10 +141,6 @@ export default function ChefCooperativePage() {
           <Sheet className="chef-coop__invitation specimen-sheet" aria-labelledby="chef-coop-invitation-title">
             <h2 id="chef-coop-invitation-title">A place to build your practice</h2>
             <p>
-              Our permanent home is at 608 Smith Ave South in St. Paul. We are working from
-              the small professional kitchen now, with a public-facing eatery planned for spring.
-            </p>
-            <p>
               We are looking for 3–4 local chefs. Experience is awesome; less experience is
               welcome too. Everyone brings different strengths and tools to this weird game.
               What do you bring?
@@ -121,6 +154,45 @@ export default function ChefCooperativePage() {
                 <li key={benefit}>{benefit}</li>
               ))}
             </ul>
+            <button
+              className="chef-coop__interest-trigger"
+              type="button"
+              aria-expanded={formOpen}
+              aria-controls="chef-coop-interest-form"
+              onClick={() => { setFormOpen((open) => !open); setSubmitError(''); }}
+            >
+              Send me more information
+            </button>
+            {formOpen && (
+              <div className="chef-coop__interest-panel" id="chef-coop-interest-form">
+                {submitted ? (
+                  <p className="chef-coop__form-success" role="status">
+                    Thanks for reaching out. Your note has been sent to Local Effort. We’ll be in touch.
+                  </p>
+                ) : (
+                  <form className="chef-coop__form" onSubmit={submitInterest}>
+                    <p className="chef-coop__form-intro">Tell us how to reach you and a little about your work.</p>
+                    <div className="chef-coop__form-grid">
+                      <label>Name<input name="name" autoComplete="name" required maxLength="200" /></label>
+                      <label>Phone<input name="phone" type="tel" autoComplete="tel" required maxLength="80" /></label>
+                      <label>Email<input name="email" type="email" autoComplete="email" required maxLength="254" /></label>
+                      <label>Website <span>(optional)</span><input name="portfolioUrl" type="url" autoComplete="url" maxLength="300" /></label>
+                      <label>Social media <span>(optional)</span><input name="socialMedia" maxLength="300" placeholder="Handle or profile link" /></label>
+                      <label className="chef-coop__form-wide">
+                        Your interest and current professional picture <span>(optional)</span>
+                        <textarea name="professionalPicture" rows="4" maxLength="2000" />
+                      </label>
+                      <label className="chef-coop__honeypot" aria-hidden="true">Website<input name="website" tabIndex="-1" autoComplete="off" /></label>
+                    </div>
+                    {submitError && <p className="chef-coop__form-error" role="alert">{submitError}</p>}
+                    <button className="chef-coop__interest-submit" type="submit" disabled={submitting}>
+                      {submitting ? 'Sending…' : 'Send inquiry'}
+                    </button>
+                    <p className="chef-coop__form-privacy">We’ll use your details to respond to this inquiry. No confirmation email will be sent.</p>
+                  </form>
+                )}
+              </div>
+            )}
           </Sheet>
 
           <Sheet className="chef-coop__bulletin specimen-sheet" aria-label="Bulletin">

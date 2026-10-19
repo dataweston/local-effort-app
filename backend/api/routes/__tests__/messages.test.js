@@ -33,6 +33,7 @@ describe('messages router', () => {
   beforeEach(() => {
     process.env.SENDER_EMAIL = 'noreply@example.com';
     process.env.TEAM_INBOX_EMAIL = 'team@example.com';
+    process.env.CHEF_COOPERATIVE_INBOX_EMAIL = 'yum@localeffortfood.com';
     sendEmail = vi.fn().mockResolvedValue({});
     upsertContact = vi.fn().mockResolvedValue();
     const mockPatchCommit = vi.fn().mockResolvedValue({});
@@ -112,6 +113,44 @@ describe('messages router', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Feedback requires a valid email');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('delivers chef cooperative inquiries only to the Local Effort inbox without marketing or applicant email', async () => {
+    const app = buildApp();
+    const res = await request(app)
+      .post('/api/messages/submit')
+      .send({
+        type: 'chef-cooperative',
+        name: 'Alex Cook',
+        phone: '651-555-0100',
+        email: 'alex@example.com',
+        portfolioUrl: 'https://alex.example',
+        socialMedia: '@alexcooks',
+        professionalPicture: 'I run a small supper club.',
+        website: '',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(sendEmail.mock.calls[0][0]).toEqual(expect.objectContaining({
+      to: [{ email: 'yum@localeffortfood.com' }],
+      replyTo: { email: 'alex@example.com', name: 'Alex Cook' },
+    }));
+    expect(sendEmail.mock.calls[0][0].htmlContent).toContain('https://alex.example');
+    expect(sendEmail.mock.calls[0][0].htmlContent).toContain('I run a small supper club.');
+    expect(sendEmail.mock.calls[0][0].cc).toBeUndefined();
+    expect(upsertContact).not.toHaveBeenCalled();
+  });
+
+  it('rejects incomplete chef cooperative inquiries before sending', async () => {
+    const app = buildApp();
+    const res = await request(app)
+      .post('/api/messages/submit')
+      .send({ type: 'chef-cooperative', name: 'Alex Cook', email: 'alex@example.com' });
+
+    expect(res.status).toBe(400);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
