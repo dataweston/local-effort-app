@@ -4,9 +4,8 @@ The material system behind every page reachable from the header: `/`,
 `/weekly-meals`, `/small-events`, `/sale`, `/localist`,
 and the home panels for Local Pizza, For Business and About.
 
-The chef-cooperative page uses this system but is absent from the header at the
-owner's request (as of 2026-10-15). Restore its header link only when the owner
-approves readiness; the direct page URL remains.
+The chef-cooperative page uses this system and is nested under About in the
+header navigation.
 
 Sources are the twenty-one works in [REFERENCE-SET.md](./REFERENCE-SET.md).
 Implementation is `src/styles/specimen.css`, tokens in

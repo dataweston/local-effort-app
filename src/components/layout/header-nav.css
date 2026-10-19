@@ -122,6 +122,51 @@
   background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
 }
 
+.le-nav-group {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.le-nav-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: grid;
+  min-width: 13rem;
+  padding: 0.35rem;
+  border: 1px solid var(--color-border-default);
+  background: var(--brand-mount);
+  box-shadow: 0 8px 20px rgba(24, 19, 12, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.25rem);
+  transition: opacity var(--le-nav-dur) var(--le-nav-ease), transform var(--le-nav-dur) var(--le-nav-ease), visibility var(--le-nav-dur);
+}
+
+.le-nav-group:hover .le-nav-submenu,
+.le-nav-group:focus-within .le-nav-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.le-nav-subitem {
+  padding: 0.7rem 0.75rem;
+  color: var(--color-text-primary);
+  font-family: 'General Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.le-nav-subitem:hover,
+.le-nav-subitem:focus-visible,
+.le-nav-subitem[data-active='true'] {
+  background: color-mix(in srgb, var(--brand-bridge) 14%, transparent);
+  outline: none;
+}
+
 /* The featured destination (Local Pizza) wears its accent at rest: oven-orange
    text and a held hairline, so it reads apart from the other routes. */
 .le-nav-item[data-featured='true'],
@@ -252,6 +297,31 @@
 .le-sheet-item[data-active='true'] {
   box-shadow: inset 3px 0 0 0 var(--nav-accent);
   background-color: color-mix(in srgb, var(--nav-accent) 12%, transparent);
+}
+
+.le-sheet-subitem {
+  display: flex;
+  align-items: center;
+  min-height: 2.9rem;
+  padding: 0.65rem 0.75rem 0.65rem 1.75rem;
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary, var(--color-text-primary));
+  font-family: 'General Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.le-sheet-subitem::before {
+  content: '↳';
+  margin-right: 0.55rem;
+  color: var(--brand-bridge);
+}
+
+.le-sheet-subitem[data-active='true'] {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--brand-bridge) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--brand-bridge);
 }
 
 .le-sheet-cta {

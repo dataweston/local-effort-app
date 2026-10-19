@@ -69,6 +69,15 @@ export const HEADER_NAV = [
     href: '/#about',
     pageIndex: 3,
     accent: 'var(--brand-bridge)',
+    children: [
+      {
+        id: 'chef-cooperative',
+        label: 'Chef Cooperative',
+        description: 'Learn about chef membership and recruitment at Local Effort Cooperative',
+        href: '/chef-cooperative',
+        accent: 'var(--brand-bridge)',
+      },
+    ],
   },
 ];
 

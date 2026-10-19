@@ -80,7 +80,7 @@ export const Header = () => {
         <nav className="le-header__nav" aria-label="Main">
           {HEADER_NAV.map((item) => {
             const active = isItemActive(item);
-            return (
+            const link = (
               <a
                 key={item.id}
                 href={item.href}
@@ -94,6 +94,27 @@ export const Header = () => {
               >
                 {item.label}
               </a>
+            );
+            return (
+              <div className="le-nav-group" key={item.id}>
+                {link}
+                {item.children?.length > 0 && (
+                  <div className="le-nav-submenu" aria-label={`${item.label} pages`}>
+                    {item.children.map((child) => (
+                      <a
+                        key={child.id}
+                        href={child.href}
+                        className="le-nav-subitem"
+                        title={child.description}
+                        aria-current={location.pathname === child.href ? 'page' : undefined}
+                        data-active={location.pathname === child.href ? 'true' : 'false'}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
           <a
@@ -149,19 +170,33 @@ export const Header = () => {
                 {FULLPAGE_PAGES[0].label}
               </motion.a>
               {HEADER_NAV.map((item) => (
-                <motion.a
-                  key={item.id}
-                  href={item.href}
-                  onClick={go(item)}
-                  className="le-sheet-item"
-                  title={item.description}
-                  data-active={isItemActive(item) ? 'true' : 'false'}
-                  data-featured={item.featured ? 'true' : undefined}
-                  style={{ '--nav-accent': item.accent }}
-                  variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
-                >
-                  {item.label}
-                </motion.a>
+                <React.Fragment key={item.id}>
+                  <motion.a
+                    href={item.href}
+                    onClick={go(item)}
+                    className="le-sheet-item"
+                    title={item.description}
+                    data-active={isItemActive(item) ? 'true' : 'false'}
+                    data-featured={item.featured ? 'true' : undefined}
+                    style={{ '--nav-accent': item.accent }}
+                    variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                  >
+                    {item.label}
+                  </motion.a>
+                  {item.children?.map((child) => (
+                    <motion.a
+                      key={child.id}
+                      href={child.href}
+                      className="le-sheet-subitem"
+                      title={child.description}
+                      aria-current={location.pathname === child.href ? 'page' : undefined}
+                      data-active={location.pathname === child.href ? 'true' : 'false'}
+                      variants={{ hidden: { y: 8, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+                    >
+                      {child.label}
+                    </motion.a>
+                  ))}
+                </React.Fragment>
               ))}
               <motion.a
                 href={HEADER_CTA.href}
