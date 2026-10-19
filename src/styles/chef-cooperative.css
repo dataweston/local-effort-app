@@ -149,19 +149,21 @@
   appearance: none;
   margin-top: 1.5rem;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--specimen-rule);
+  border: 1px solid var(--accent-apple);
   border-radius: 0;
-  background: transparent;
-  color: inherit;
+  background: var(--accent-apple);
+  color: var(--brand-sheet);
   font: inherit;
+  font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: background-color var(--le-dur-1) var(--le-ease);
+  transition: background-color var(--le-dur-1) var(--le-ease), border-color var(--le-dur-1) var(--le-ease);
 }
 
 .chef-coop__interest-trigger:hover,
 .chef-coop__interest-submit:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--brand-linen) 75%, transparent);
+  border-color: var(--accent-poppy);
+  background: var(--accent-poppy);
 }
 
 .chef-coop__interest-trigger:focus-visible,
@@ -174,8 +176,9 @@
 
 .chef-coop__interest-panel {
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--specimen-rule-hair);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid var(--brand-oxide);
+  background: color-mix(in srgb, var(--brand-linen) 42%, var(--brand-sheet));
 }
 
 .chef-coop__form-intro,
@@ -318,5 +321,22 @@
 
   .chef-coop__form-wide {
     grid-column: auto;
+  }
+
+  .chef-coop__form-grid label {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .chef-coop__form input,
+  .chef-coop__form textarea,
+  .chef-coop__form-intro,
+  .chef-coop__form-privacy {
+    font-weight: 500;
+  }
+
+  .chef-coop__form input,
+  .chef-coop__form textarea {
+    border-color: var(--brand-ink);
   }
 }
