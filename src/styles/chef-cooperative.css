@@ -6,6 +6,7 @@
   min-height: 100vh;
   background: var(--brand-sheet);
   color: var(--brand-ink);
+  font-family: var(--font-display);
 }
 
 .chef-coop h1,

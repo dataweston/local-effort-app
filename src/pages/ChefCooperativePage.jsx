@@ -139,11 +139,13 @@ export default function ChefCooperativePage() {
 
         <div className="chef-coop__grid">
           <Sheet className="chef-coop__invitation specimen-sheet" aria-labelledby="chef-coop-invitation-title">
-            <h2 id="chef-coop-invitation-title">A place to build your practice</h2>
+            <h2 id="chef-coop-invitation-title">We&rsquo;re not hiring, but we are recruiting.</h2>
             <p>
-              We are looking for 3–4 local chefs. Experience is awesome; less experience is
-              welcome too. Everyone brings different strengths and tools to this weird game.
-              What do you bring?
+              <em>
+                We are looking for 3–4 local chefs. Experience is awesome; less experience is
+                welcome too. Everyone brings different strengths and tools to this weird game.
+                What do you bring?
+              </em>
             </p>
           </Sheet>
 
