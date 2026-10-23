@@ -48,7 +48,7 @@ Research snapshot: 2026-10-23. **21 contacts** (20 primary + one adjacent); cont
 
 ### 5. Charlie Rybak — Twin Cities Business
 
-- **Contact:** Not verified; use outlet/contact page
+- **Contact:** crybak@tcbmag.com (published in TCB's December 2025 editor letter)
 - **Observed beat:** Startup capital, infrastructure and economic development
 - **Editorial-fit hypothesis:** Writes about Minnesota fundraising and local capital architecture, and interviews industry experts. Approach via financing design and structural barriers.
 - **Local Effort approach:** Small-check Minnesota co-op capital, transparency and limitations
@@ -195,3 +195,11 @@ Research snapshot: 2026-10-23. **21 contacts** (20 primary + one adjacent); cont
 - Media and customer audiences currently overlap on a number of entries. Keep earned-media pitches out of customer product campaigns; audit historical consents and list assignments.
 - Old `emails/release-press-announcement-brevo.{html,txt}` advertises a September 2025 1,000-pizza crowdfunding drive; check all factual claims before reusing.
 - `src/pages/ReleasesPage.jsx` renders Sanity releases; `api/feeds/releases.rss.js` still has a single hardcoded 2025 release; feed needs repair for actual syndication.
+
+## Additional unusually important observed signal
+
+**Charlie Rybak:** The [December 2025 editor introduction](https://tcbmag.com/charlie-rybak-pleased-to-meet-you/) identifies him as a founder of three ventures and a former leader of a Minneapolis renewable-energy cooperative. This materially strengthens his relevance to a Minnesota food-cooperative capital/ownership story. Prefer pitching him the capital architecture with documentation rather than a pizza opening.
+
+**Stephanie March:** Her October 18, 2026 [Hyperlocal](https://mspmag.com/eat-and-drink/state-of-the-plate-hyperlocal/) essay explicitly frames local supply as *social capital* and resilient relationships, a closer fit to the brand's philosophy than a generic labor-cost reaction.
+
+**Em Cassel:** Her October 19, 2026 [Guavas Cafe profile](https://racketmn.com/guavas-cuban-cafe-is-a-little-slice-of-miami-on-chicago-avenue) uses a chef's Michelin background and unexpected career trajectory as the biographical engine of a restaurant profile, supporting a founder-profile approach as well as an economics pitch.
